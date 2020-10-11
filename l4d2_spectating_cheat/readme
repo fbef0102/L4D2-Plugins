@@ -1,0 +1,20 @@
+A spectator who watching the survivor at first person view can now see the infected model glows though the wall
+
+-Convar-
+//Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
+l4d2_specting_cheat_ghost_color "255 255 255"
+
+//Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
+l4d2_specting_cheat_alive_color "255 0 0"
+
+-Command-
+//Toggle Speatator watching cheat (spectator only)
+!speccheat
+!watchcheat
+!lookcheat
+!seecheat
+!meetcheat
+!starecheat
+!hellocheat
+!areyoucheat
+!fuckyoucheat

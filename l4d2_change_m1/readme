@@ -1,0 +1,4 @@
+If all Survivors die, change level to the current map m1 (coop only)
+
+-Convars-
+"l4d2_enable_change_m1", "1", 	"Enable this plugin?[1-Enable,0-Disable]"

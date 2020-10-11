@@ -1,0 +1,35 @@
+Force change to next mission when current mission(final stage) end.
+
+-Require-
+1. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?t=321696
+2. Proper Changelevel [Left 4 Fix]: https://forums.alliedmods.net/showthread.php?t=319156
+
+-ConVar-
+cfg\sourcemod\sm_l4d_mapchanger.cfg
+// Enables Force changelevel when mission end.
+sm_l4d_fmc "1"
+
+// Enables next mission to advertise to players.
+sm_l4d_fmc_announce "1"
+
+// Delay before coop mission change (float in sec).
+sm_l4d_fmc_chdelaycoop "10.0"
+
+// Delay before versus mission change (float in sec).
+sm_l4d_fmc_chdelayvs "1.0"
+
+// Quantity of events RoundEnd before force of changelevel in coop
+sm_l4d_fmc_crec "3"
+
+// Mission for change by default.
+sm_l4d_fmc_def "c2m1_highway"
+
+// Enables Force changelevel when all player die on final map in coop gamemode.
+sm_l4d_fmc_ifdie "0"
+
+// Version of L4D Force Mission Changer plugin.
+sm_l4d_fmc_version "1.7"
+
+
+
+	

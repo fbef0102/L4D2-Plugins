@@ -1,0 +1,16 @@
+Fixes upgrade packs pickup bug when using survivor model change
+
+Original Post: https://forums.alliedmods.net/showthread.php?t=322824
+
+-Convar-
+// Block use of special ammo with grenade launcher (0 - Allow | 1 - Block any | 2 - Block incendiary | 3 - Block explosive)
+upgrade_block_glauncher "0"
+
+// Play sound when ammo already used
+upgrade_denied_sound "1"
+
+// Explosive ammo multiplier on pickup
+upgrade_explosive_multi "1.0"
+
+// Incendiary ammo multiplier on pickup
+upgrade_incendiary_multi "1.0"

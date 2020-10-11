@@ -1,0 +1,4 @@
+If a player die as a survivor, this model survior bot keep death until map change or server shutdown
+
+-Convars-
+"l4d2_enable_death_survivor", "1", 	"enable this plugin?[1-Enable,0-Disable]"
