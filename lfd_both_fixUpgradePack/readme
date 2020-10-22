@@ -1,10 +1,18 @@
 Fixes upgrade packs pickup bug when using survivor model change
 
+-ChangeLog-
+v1.4
+-Remake code
+-remove unuseful convar
+-add timer to remove upgrade pack entity
+
+v1.0
 Original Post: https://forums.alliedmods.net/showthread.php?t=322824
 
 -Convar-
-// Block use of special ammo with grenade launcher (0 - Allow | 1 - Block any | 2 - Block incendiary | 3 - Block explosive)
-upgrade_block_glauncher "0"
+cfg\sourcemod\lfd_both_fixUpgradePack.cfg
+// Time in seconds to remove upgradepack after first use. (0=off)
+upgrade_clear_time "100"
 
 // Play sound when ammo already used
 upgrade_denied_sound "1"
