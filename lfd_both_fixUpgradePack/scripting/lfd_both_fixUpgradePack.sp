@@ -4,12 +4,29 @@
 #include <sdktools>
 #include <sdkhooks>
 
+#define sDENY_SOUND "buttons/button11.wav"
+int g_UpgradePackCanUseCount;
+Handle usedUpgrades[MAXPLAYERS+1];
+float lastSoundTime[MAXPLAYERS+1];
+bool bUsingExplosive[MAXPLAYERS+1];
+bool bDeleteEntity[2048];
+
+ConVar cvarDeniedSound;
+ConVar cvarIncendiaryMulti;
+ConVar cvarExplosiveMulti;
+ConVar cvarClearUpgradeTime;
+
+bool cvarDeniedSoundValue;
+float cvarIncendiaryMultiValue;
+float cvarExplosiveMultiValue;
+float cvarClearUpgradeTimeValue;
+
 public Plugin myinfo =
 {
 	name = "Upgrade Pack Fixes",
 	author = "bullet28, V10, Silvers, Harry",
-	description = "Fixes upgrade packs pickup bug when using survivor model change",
-	version = "1.3",
+	description = "Fixes upgrade packs pickup bug when using survivor model change + remove upgrade pack",
+	version = "1.4",
 	url = "https://steamcommunity.com/id/fbef0102/"
 }
 
@@ -26,21 +43,16 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success; 
 }
 
-#define sDENY_SOUND "buttons/button11.wav"
-int g_UpgradePackCanUseCount;
-Handle usedUpgrades[MAXPLAYERS+1];
-float lastSoundTime[MAXPLAYERS+1];
-bool bUsingExplosive[MAXPLAYERS+1];
+public void OnAllPluginsLoaded() {
 
-ConVar cvarDeniedSound;
-ConVar cvarBlockGlauncher;
-ConVar cvarIncendiaryMulti;
-ConVar cvarExplosiveMulti;
+	static char smxFileName[32] = "l4d2_upgradepackfix.smx";
+	if ( FindPluginByFile(smxFileName) != null ) 
+		SetFailState("Please remove '%s' before using this plugin", smxFileName);
 
-bool cvarDeniedSoundValue;
-int cvarBlockGlauncherValue;
-float cvarIncendiaryMultiValue;
-float cvarExplosiveMultiValue;
+	smxFileName = "l4d2_upgrade_block.smx";
+	if ( FindPluginByFile(smxFileName) != null ) 
+		SetFailState("Please remove '%s' before using this plugin", smxFileName);
+}
 
 public void OnPluginStart() {
 	Handle hGameData = LoadGameConfigFile("upgradepackfix");
@@ -49,32 +61,22 @@ public void OnPluginStart() {
 
 	ResetAllUsedUpgrades();
 
-	cvarDeniedSound = CreateConVar("upgrade_denied_sound", "1", "Play sound when ammo already used", FCVAR_NONE);
-	cvarBlockGlauncher = CreateConVar("upgrade_block_glauncher", "0", "Block use of special ammo with grenade launcher (0 - Allow | 1 - Block any | 2 - Block incendiary | 3 - Block explosive)", FCVAR_NONE);
-	cvarIncendiaryMulti = CreateConVar("upgrade_incendiary_multi", "1.0", "Incendiary ammo multiplier on pickup", FCVAR_NONE);
-	cvarExplosiveMulti = CreateConVar("upgrade_explosive_multi", "1.0", "Explosive ammo multiplier on pickup", FCVAR_NONE);
+	cvarDeniedSound = CreateConVar("upgrade_denied_sound", "1", "Play sound when ammo already used", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarIncendiaryMulti = CreateConVar("upgrade_incendiary_multi", "1.0", "Incendiary ammo multiplier on pickup", FCVAR_NOTIFY, true, 1.0);
+	cvarExplosiveMulti = CreateConVar("upgrade_explosive_multi", "1.0", "Explosive ammo multiplier on pickup", FCVAR_NOTIFY, true, 1.0);
+	cvarClearUpgradeTime = CreateConVar("upgrade_clear_time", "100", "Time in seconds to remove upgradepack after first use. (0=off)", FCVAR_NOTIFY, true, 0.0);
 
 	GetCvars();
 	cvarDeniedSound.AddChangeHook(OnConVarChange);
-	cvarBlockGlauncher.AddChangeHook(OnConVarChange);
 	cvarIncendiaryMulti.AddChangeHook(OnConVarChange);
 	cvarExplosiveMulti.AddChangeHook(OnConVarChange);
+	cvarClearUpgradeTime.AddChangeHook(OnConVarChange);
 
 	HookEvent("round_start", EventRoundStart);
 	HookEvent("player_bot_replace", OnBotSwap);
 	HookEvent("bot_player_replace", OnBotSwap);
 
 	AutoExecConfig(true, "lfd_both_fixUpgradePack");
-}
-
-public void OnAllPluginsLoaded() {
-	char smxFileName1[] = "l4d2_upgradepackfix.smx";
-	Handle hFoundPlugin1 = FindPluginByFile(smxFileName1);
-	if (hFoundPlugin1) SetFailState("Please remove %s before using this plugin", smxFileName1);
-
-	char smxFileName2[] = "l4d2_upgrade_block.smx";
-	Handle hFoundPlugin2 = FindPluginByFile(smxFileName2);
-	if (hFoundPlugin2) SetFailState("Please remove %s before using this plugin", smxFileName2);
 }
 
 public void OnMapStart()
@@ -89,9 +91,9 @@ public void OnConVarChange(ConVar convar, char[] oldValue, char[] newValue) {
 void GetCvars()
 {
 	cvarDeniedSoundValue = cvarDeniedSound.BoolValue;
-	cvarBlockGlauncherValue = cvarBlockGlauncher.IntValue;
 	cvarIncendiaryMultiValue = cvarIncendiaryMulti.FloatValue;
 	cvarExplosiveMultiValue = cvarExplosiveMulti.FloatValue;
+	cvarClearUpgradeTimeValue = cvarClearUpgradeTime.FloatValue;
 }
 
 public void OnClientPostAdminCheck(int client) {
@@ -111,7 +113,7 @@ public Action OnBotSwap(Event event, const char[] name, bool dontBroadcast)
 	{
 		if(usedUpgrades[player] != INVALID_HANDLE && usedUpgrades[bot] != INVALID_HANDLE)
 		{
-			if (StrEqual(name, "player_bot_replace")) 
+			if (strcmp(name, "player_bot_replace") == 0) 
 			{
 				for( int i=0 ; i < GetArraySize(usedUpgrades[player]) ; ++i )
 				{
@@ -150,8 +152,17 @@ void ResetUsedUpgrades(int client) {
 }
 
 public void OnEntityCreated(int entity, const char[] classname) {
-	if (StrEqual(classname, "upgrade_ammo_explosive") || StrEqual(classname, "upgrade_ammo_incendiary")) {
+	if (strcmp(classname, "upgrade_ammo_explosive") == 0 || strcmp(classname, "upgrade_ammo_incendiary") == 0 ) {
+		
 		SDKHook(entity, SDKHook_Use, OnUpgradeUse);
+		
+		int index;
+		for (int i = 1; i <= MaxClients; i++) {
+			if(isPlayerSurvivor(i) && (index = FindValueInArray(usedUpgrades[i], entity)) != -1)
+				RemoveFromArray(usedUpgrades[i],index);
+		}
+		
+		bDeleteEntity[entity] = false;
 	}
 }
 
@@ -170,13 +181,11 @@ public Action OnUpgradeUse(int entity, int activator, int caller, UseType type, 
 	int primaryItem = GetPlayerWeaponSlot(client, 0);
 	if (primaryItem == -1) return Plugin_Continue;
 
-	bUsingExplosive[client] = StrEqual(classname, "upgrade_ammo_explosive");
+	bUsingExplosive[client] = strcmp(classname, "upgrade_ammo_explosive") == 0 ? true : false ;
 	
 	SetEntProp(entity, Prop_Send, "m_iUsedBySurvivorsMask", 0);
 	
-	bool bForceBlocked = ShouldBeForceBlocked(client, primaryItem);
-	
-	if (bForceBlocked || FindValueInArray(usedUpgrades[client], entity) != -1) {
+	if (FindValueInArray(usedUpgrades[client], entity) != -1) {
 		PlayDenySound(client);
 		CheckKillPackage(entity);
 		return Plugin_Handled;
@@ -229,18 +238,6 @@ void PlayDenySound(int client) {
 	}
 }
 
-bool ShouldBeForceBlocked(int client, int primaryItem) {
-	if (cvarBlockGlauncherValue == 1 || (cvarBlockGlauncherValue == 2 && !bUsingExplosive[client]) || (cvarBlockGlauncherValue == 3 && bUsingExplosive[client])) {
-		char classname[32];
-		GetEntityClassname(primaryItem, classname, sizeof classname);
-		if (StrEqual(classname, "weapon_grenade_launcher")) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 void CheckKillPackage(int entity)
 {
 	bool bAllSurvivorPickUp = true;
@@ -261,7 +258,24 @@ void CheckKillPackage(int entity)
 				RemoveFromArray(usedUpgrades[i],index);
 		}
 		AcceptEntityInput(entity, "Kill");
+		return;
 	}
+	
+	if(bDeleteEntity[entity] == false)
+	{
+		bDeleteEntity[entity] = true;
+		if(cvarClearUpgradeTimeValue > 0.0) CreateTimer(cvarClearUpgradeTimeValue, Timer_RemoveEntity, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action Timer_RemoveEntity(Handle timer, int ref)
+{
+	int entity;
+	if(ref && (entity = EntRefToEntIndex(ref)) != INVALID_ENT_REFERENCE )
+	{
+		RemoveEntity(entity);
+	}
+	return Plugin_Continue;
 }
 
 
