@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.3"
 
 #pragma semicolon 1
 #pragma newdecls required //強制1.7以後的新語法
@@ -47,7 +47,7 @@ public void OnPluginStart()
 public Action SI_sh_OnSoundEmitted(int clients[64], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch,int  &flags)
 {
 
-	if (numClients >= 1 && IsClient(entity) ){
+	if (numClients >= 1 && IsVaildClient(entity) ){
 	
 		#if DEBUG
 			PrintToChatAll("Sound:%s - numClients %d, entity %d",sample, numClients, entity);
@@ -87,7 +87,7 @@ bool IsHunterGrowlSound(const char[] sample)
 	return false;
 }
 
-bool IsClient(int index)
+bool IsVaildClient(int index)
 {
-	return index > 0 && index <= MaxClients;
+	return index > 0 && index <= MaxClients && IsClientInGame(index);
 }
