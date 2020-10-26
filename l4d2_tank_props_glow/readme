@@ -1,8 +1,13 @@
 When a Tank punches a Hittable it adds a Glow to the hittable which all infected players can see.
 this video shows how it works: https://www.youtube.com/watch?v=UZDF6dbagxU&feature=youtu.be
 
--convars-
-(l4d2_tank_props_glow.cfg in \cfg\sourcemod\ folder.)
+-ChangLog-
+v1.8
+-Remake Code
+-Fade Tank Prop once Tank is dead
+
+-ConVar-
+left4dead2\cfg\sourcemod\l4d2_tank_props_glow.cfg
 // Prop Glow Color, three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
 // -
 // Default: "255 255 255"
