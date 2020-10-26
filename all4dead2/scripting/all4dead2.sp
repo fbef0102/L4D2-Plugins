@@ -25,7 +25,7 @@ Copyright 2020 Harry Potter
 // Define constants
 #define PLUGIN_NAME					"All4Dead"
 #define PLUGIN_TAG					"[A4D]"
-#define PLUGIN_VERSION				"3.2"
+#define PLUGIN_VERSION				"3.3"
 #define MENU_DISPLAY_TIME		15
 
 // Include necessary files
@@ -183,7 +183,7 @@ public void OnMapStart() {
 	
 	char mapbuf[32];
 	GetCurrentMap(mapbuf, sizeof(mapbuf));	
-	if(StrEqual(mapbuf, "c6m1_riverbank"))
+	if(strcmp(mapbuf, "c6m1_riverbank") == 0)
 		g_bSpawnWitchBride = true;
 	else
 		g_bSpawnWitchBride = false;
@@ -238,9 +238,9 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 */
 public Action Event_BossSpawn(Event event, const char[] name, bool dontBroadcast) {
 	if (always_force_bosses.BoolValue == false)
-		if (StrEqual(name, "tank_spawn") && director_force_tank.BoolValue)
+		if (strcmp(name, "tank_spawn") == 0 && director_force_tank.BoolValue)
 			Do_ForceTank(0, false);
-		else if (StrEqual(name, "witch_spawn") && director_force_witch.BoolValue)
+		else if (strcmp(name, "witch_spawn") == 0 && director_force_witch.BoolValue)
 			Do_ForceWitch(0, false);
 }
 
@@ -271,9 +271,9 @@ public void OnAdminMenuReady(Handle menu) {
 public void OnEntityCreated(int entity, const char[] classname) {
 	// If the last thing that was spawned as a zombie then store that entity
 	// for future use
-	if (StrEqual(classname, "infected", false)) {
+	if (strcmp(classname, "infected", false) == 0) {
 		last_zombie_spawned = entity;
-		if (currently_spawning && !StrEqual(change_zombie_model_to, "")) {
+		if (currently_spawning && strcmp(change_zombie_model_to, "") != 0) {
 			currently_spawning = false;
 			SetEntityModel(entity, change_zombie_model_to);
 			change_zombie_model_to = "";
@@ -282,10 +282,10 @@ public void OnEntityCreated(int entity, const char[] classname) {
 }
 
 public Action Timer_RefreshLocation(Handle timer) {
-	if (!IsValidEntity(last_zombie_spawned)) return Plugin_Continue;
+	if (!IsValidEntity(last_zombie_spawned) || !IsValidEdict(last_zombie_spawned)) return Plugin_Continue;
 	char class_name[128];
 	GetEdictClassname(last_zombie_spawned, class_name, 128);
-	if (!StrEqual(class_name, "infected")) return Plugin_Continue;
+	if (strcmp(class_name, "infected") != 0) return Plugin_Continue;
 	GetEntityAbsOrigin(last_zombie_spawned, last_zombie_spawn_location);
 	return Plugin_Continue;
 }
@@ -483,13 +483,13 @@ public Action Command_SpawnUInfected(int client, int args) {
 		char type[32];
 		GetCmdArg(1, type, sizeof(type));
 		int number;
-		if (StrEqual(type, "riot", false)) number = 0;
-		else if (StrEqual(type, "ceda", false)) number = 1;
-		else if (StrEqual(type, "clown", false)) number = 2;
-		else if (StrEqual(type, "mud", false)) number = 3;
-		else if (StrEqual(type, "roadcrew", false)) number = 4;
-		else if (StrEqual(type, "jimmy", false)) number = 5;
-		else if (StrEqual(type, "fallen", false)) number = 6;
+		if (strcmp(type, "riot", false) == 0) number = 0;
+		else if (strcmp(type, "ceda", false) == 0) number = 1;
+		else if (strcmp(type, "clown", false) == 0) number = 2;
+		else if (strcmp(type, "mud", false) == 0) number = 3;
+		else if (strcmp(type, "roadcrew", false) == 0) number = 4;
+		else if (strcmp(type, "jimmy", false) == 0) number = 5;
+		else if (strcmp(type, "fallen", false) == 0) number = 6;
 		Do_SpawnUncommonInfected(client, number);
 	}
 	return Plugin_Handled;
@@ -598,7 +598,7 @@ public Action Command_EnableAutoPlacement(int client, int args) {
 	}
 	char value[16];
 	GetCmdArg(1, value, sizeof(value));
-	if (StrEqual(value, "0"))
+	if (strcmp(value, "0") == 0)
 		Do_EnableAutoPlacement(client, false);		
 	else
 		Do_EnableAutoPlacement(client, true);
@@ -747,7 +747,7 @@ void Do_SpawnItem(int client, const char[] type) {
 
 void Do_CreateEntity(int client, const char[] name, const char[] model, float location[3], const bool zombie) {
 	int entity = CreateEntityByName(name);
-	if (StrEqual(model, "PROVIDED") == false)
+	if (strcmp(model, "PROVIDED") != 0)
 		SetEntityModel(entity, model);
 	DispatchSpawn(entity);
 	if (zombie) {
@@ -981,7 +981,7 @@ public Action Command_AlwaysForceBosses(int client, int args) {
 	}
 	char value[2];
 	GetCmdArg(1, value, sizeof(value));
-	if (StrEqual(value, "0"))
+	if (strcmp(value, "0") == 0)
 		Do_AlwaysForceBosses(client, false);		
 	else
 		Do_AlwaysForceBosses(client, true);
@@ -1034,7 +1034,7 @@ public Action Command_PanicForever(int client, int args) {
 	}
 	char value[2];
 	GetCmdArg(1, value, sizeof(value));
-	if (StrEqual(value, "0"))
+	if (strcmp(value, "0") == 0)
 		Do_PanicForever(client, false);
 	else
 		Do_PanicForever(client, true);
@@ -1070,7 +1070,7 @@ public Action Command_ForceTank(int client, int args) {
 	char value[2];
 	GetCmdArg(1, value, sizeof(value));
 
-	if (StrEqual(value, "0"))
+	if (strcmp(value, "0") == 0)
 		Do_ForceTank(client, false);	
 	else 
 		Do_ForceTank(client, true);
@@ -1105,7 +1105,7 @@ public Action Command_ForceWitch(int client, int args) {
 	}
 	char value[2];
 	GetCmdArg(1, value, sizeof(value));
-	if (StrEqual(value, "0"))
+	if (strcmp(value, "0") == 0)
 		Do_ForceWitch(client, false);
 	else 
 		Do_ForceWitch(client, true);
@@ -1209,7 +1209,7 @@ public Action Command_EnableNotifications(int client, int args) {
 	}
 	char value[2];
 	GetCmdArg(1, value, sizeof(value));
-	if (StrEqual(value, "0")) 
+	if (strcmp(value, "0") == 0) 
 		Do_EnableNotifications(client, false);		
 	else
 		Do_EnableNotifications(client, true);
@@ -1255,7 +1255,7 @@ public Action Command_EnableAllBotTeams(int client, int args) {
 	char value[2];
 	GetCmdArg(1, value, sizeof(value));
 
-	if (StrEqual(value, "0"))
+	if (strcmp(value, "0") == 0)
 		Do_EnableAllBotTeam(client, false);	
 	else
 		Do_EnableAllBotTeam(client, true);
