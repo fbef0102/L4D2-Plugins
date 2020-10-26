@@ -272,19 +272,19 @@ int FindTank() {
 }
 
 bool IsTank( int client ) {
-    if ( client < 0
-    || !IsClientConnected(client)
-    || !IsClientInGame(client)
-    || GetClientTeam(client) != 3
-    || !IsPlayerAlive(client) ) {
-        return false;
-    }
+	if ( client <= 0
+	|| client > MaxClients
+	|| !IsClientInGame(client)
+	|| GetClientTeam(client) != 3
+	|| !IsPlayerAlive(client) ) {
+		return false;
+	}
 
-    if ( GetEntProp(client, Prop_Send, "m_zombieClass") == TANK_ZOMBIE_CLASS ) {
-        return true;
-    }
-    
-    return false;
+	if ( GetEntProp(client, Prop_Send, "m_zombieClass") == TANK_ZOMBIE_CLASS ) {
+		return true;
+	}
+
+	return false;
 }
 
 public void TankPropsGlowAllow(Handle convar, const char[] oldValue, const char[] newValue) {
