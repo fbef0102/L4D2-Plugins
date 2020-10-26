@@ -1,8 +1,9 @@
 Enables admins to have control over the AI Director and spawn all weapons, melee, items, special infected, and Uncommon Infected without using sv_cheats 1
 
 -ChangeLog-
-v3.2
+v3.3
 -Display menu forever
+-fixed Invalid edict
 
 v3.1
 -Add Gnome and Cola.
