@@ -30,11 +30,12 @@ public void OnPluginStart() {
 	g_hCvarTankOnly =	CreateConVar(	"l4d2_tank_prop_glow_only",		"0",				"Only Tank can see the glow", FCVAR_NOTIFY);
 	g_hCvarTankSpec =	CreateConVar(	"l4d2_tank_prop_glow_spectators",		"1",				"Spectators can see the glow too", FCVAR_NOTIFY);
 
+	GetCvars();
 	g_hCvartankPropsGlow.AddChangeHook(TankPropsGlowAllow);
 	g_hCvarColor.AddChangeHook(ConVarChanged_Glow);
 	g_hCvarRange.AddChangeHook(ConVarChanged_Range);
-	g_hCvarTankOnly.AddChangeHook(ConVarChanged_TankOnly);
-	g_hCvarTankSpec.AddChangeHook(ConVarChanged_TankSpec);
+	g_hCvarTankOnly.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarTankSpec.AddChangeHook(ConVarChanged_Cvars);
 
 	AutoExecConfig(true, "l4d2_tank_props_glow");
 
@@ -244,7 +245,7 @@ void UnhookTankProps() {
 	int entity;
 	for ( int i = 0; i < GetArraySize(hTankPropsHit); i++ ) {
 		entity = GetArrayCell(hTankPropsHit, i);
-		if ( IsValidEdict(GetArrayCell(hTankPropsHit, i)) ) {
+		if ( IsValidEdict(entity) ) {
 			RemoveEntity(entity);
 			//PrintToChatAll("remove %d", entity);
 		}
@@ -288,18 +289,18 @@ bool IsTank( int client ) {
 }
 
 public void TankPropsGlowAllow(Handle convar, const char[] oldValue, const char[] newValue) {
-    if ( StringToInt(newValue) == 0 ) {
-        PluginDisable();
-    }
-    else {
-        PluginEnable();
-    }
+ 
+	if ( g_hCvartankPropsGlow.BoolValue == false ) {
+		PluginDisable();
+	}
+	else {
+		PluginEnable();
+	}
 }
 
 public void ConVarChanged_Glow( ConVar convar, const char[] oldValue, const char[] newValue ) {
-	char sColor[16];
-	g_hCvarColor.GetString(sColor, sizeof(sColor));
-	g_iCvarColor = GetColor(sColor);
+
+	GetCvars();
 
 	if(!tankSpawned) return;
 
@@ -318,7 +319,7 @@ public void ConVarChanged_Glow( ConVar convar, const char[] oldValue, const char
 
 public void ConVarChanged_Range( ConVar convar, const char[] oldValue, const char[] newValue ) {
 
-	g_iCvarRange = g_hCvarRange.IntValue;
+	GetCvars();
 
 	if(!tankSpawned) return;
 
@@ -334,13 +335,19 @@ public void ConVarChanged_Range( ConVar convar, const char[] oldValue, const cha
 	}
 }
 
-public void ConVarChanged_TankOnly( ConVar convar, const char[] oldValue, const char[] newValue ) {
-	
-	g_iCvarTankOnly = g_hCvarTankOnly.BoolValue;
+public void ConVarChanged_Cvars( ConVar convar, const char[] oldValue, const char[] newValue ) {
+	GetCvars();
 }
 
-public void ConVarChanged_TankSpec( ConVar convar, const char[] oldValue, const char[] newValue ) {
+void GetCvars()
+{
+	g_iCvarTankOnly = g_hCvarTankOnly.BoolValue;
 	g_iCvarTankSpec	= g_hCvarTankSpec.BoolValue;
+	g_iCvarRange = g_hCvarRange.IntValue;
+
+	char sColor[16];
+	g_hCvarColor.GetString(sColor, sizeof(sColor));
+	g_iCvarColor = GetColor(sColor);
 }
 
 int GetColor(char[] sTemp)
