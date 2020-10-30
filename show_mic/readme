@@ -1,0 +1,17 @@
+Voice Announce in centr text + create hat to Show Who is speaking.
+
+-Require-
+1. SM 1.10 or above
+2. Meta 1.11 or above
+3. ThirdPersonShoulder_Detect: https://forums.alliedmods.net/showthread.php?p=2529779
+
+-ChangeLog-
+v1.2
+-Remake code
+-Detect Thirdpserson
+
+v1.1
+Original Post: https://forums.alliedmods.net/showpost.php?p=2671963&postcount=7
+
+-Convar-
+None
