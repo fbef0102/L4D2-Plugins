@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2020/10/27)
+>All plugins in here only apply to L4D2 (last edited:2020/10/3)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -28,6 +28,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>clear_dead_body</b>: Remove Dead Body Entity
 * <b>antisaferoomdooropen</b>: First Saferoom door anti open in l4d2ack</b>: Fixes upgrade packs pickup bug when using survivor model change
 * <b>drop_secondary</b>: Survivor players will drop their secondary weapon (including melee) when they die
+* <b>show_mic</b>: Voice Announce in centr text + create hat to Show Who is speaking.
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6497 scripting
 # Others
