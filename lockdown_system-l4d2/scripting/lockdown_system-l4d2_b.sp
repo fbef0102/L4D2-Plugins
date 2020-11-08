@@ -162,6 +162,11 @@ public void OnMapStart()
 
 	char sMap[64];
 	GetCurrentMap(sMap, sizeof(sMap));
+	if (strcmp(sMap, "c10m2_drainage", false) == 0)
+	{
+		g_bTwoSafeRoomDoorBug = true;
+	}
+
 	if( sCvar[0] != '\0' )
 	{
 		if( strcmp(sCvar, "0") == 0 )
@@ -182,12 +187,6 @@ public void OnMapStart()
 	{
 		g_bValidMap = false;
 	}
-
-	if (strcmp(sMap, "c10m2_drainage", false) == 0)
-	{
-		g_bTwoSafeRoomDoorBug = true;
-	}
-
 
 	if (g_bValidMap)
 	{
