@@ -37,14 +37,14 @@ int WeaponAmmoOffest[view_as<int>(ID_WEAPON_MAX)];
 int WeaponMaxClip[view_as<int>(ID_WEAPON_MAX)];
 
 //cvars
-ConVar hEnableReloadClipCvar, hEnableClipRecoverCvar, hSmgTimeCvar, hRifleTimeCvar, hHuntingRifleTimeCvar,
+ConVar hEnable, hEnableClipRecoverCvar, hSmgTimeCvar, hRifleTimeCvar, hHuntingRifleTimeCvar,
 	hPistolTimeCvar, hDualPistolTimeCvar, hSmgSilencedTimeCvar, hSmgMP5TimeCvar, hAK47TimeCvar, hRifleDesertTimeCvar,
 	hSniperMilitaryTimeCvar, hGrenadeTimeCvar, hSG552TimeCvar, hAWPTimeCvar, hScoutTimeCvar, hMangumTimeCvar;
 ConVar hSmgClipCvar, hRifleClipCvar, hHuntingRifleClipCvar, hPistolClipCvar, hDualPistolClipCvar, hSmgSilencedClipCvar,
 	hSmgMP5ClipCvar, hAK47ClipCvar, hRifleDesertClipCvar, hSniperMilitaryClipCvar, hGrenadeClipCvar, hSG552ClipCvar,
 	hAWPClipCvar, hScoutClipCvar, hMangumClipCvar;
 
-bool g_EnableReloadClipCvar;
+bool g_bEnable;
 bool g_EnableClipRecoverCvar;
 float g_SmgTimeCvar;
 float g_RifleTimeCvar;
@@ -73,7 +73,7 @@ public Plugin myinfo =
 	name = "L4D2 weapon csgo reload",
 	author = "Harry Potter",
 	description = "reload like csgo weapon",
-	version = "1.9",
+	version = "2.0",
 	url = "Harry Potter myself,you bitch shit"
 };
 
@@ -93,7 +93,7 @@ public void OnPluginStart()
 {
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 
-	hEnableReloadClipCvar	= CreateConVar("l4d2_weapon_csgo_reload_allow", 		"1", 	"0=off plugin, 1=on plugin" 			  , FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	hEnable					= CreateConVar("l4d2_weapon_csgo_reload_allow", 		"1", 	"0=off plugin, 1=on plugin" 			  , FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	hEnableClipRecoverCvar	= CreateConVar("l4d2_weapon_csgo_reload_clip_recover", 	"1", 	"enable previous clip recover?"			  , FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	hSmgTimeCvar			= CreateConVar("l4d2_smg_reload_clip_time", 			"1.04", "reload time for smg clip"				  , FCVAR_NOTIFY, true, 0.0);
 	hRifleTimeCvar			= CreateConVar("l4d2_rifle_reload_clip_time", 			"1.2",  "reload time for rifle clip"			  , FCVAR_NOTIFY, true, 0.0);
@@ -128,7 +128,7 @@ public void OnPluginStart()
 
 	GetCvars();
 	
-	hEnableReloadClipCvar.AddChangeHook(ConVarChange_CvarChanged);
+	hEnable.AddChangeHook(ConVarChange_CvarChanged);
 	hEnableClipRecoverCvar.AddChangeHook(ConVarChange_CvarChanged);
 	hSmgTimeCvar.AddChangeHook(ConVarChange_CvarChanged);
 	hRifleTimeCvar.AddChangeHook(ConVarChange_CvarChanged);
@@ -178,157 +178,125 @@ public Action RoundStart_Event(Event event, const char[] name, bool dontBroadcas
 	}
 }
 
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+public void OnEntityCreated(int entity, const char[] classname)
 {
-	if(g_EnableReloadClipCvar == false || g_EnableClipRecoverCvar == false)	return Plugin_Continue;
-	
-	if (IsClientInGame(client) && !IsFakeClient(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client) && buttons & IN_RELOAD) //If survivor alive player is holding weapon and wants to reload
+	if(GetWeaponID(entity, classname) != ID_NONE)
 	{
-		int iCurrentWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon"); //抓人類目前裝彈的武器
-		if (iCurrentWeapon == -1 || !IsValidEntity(iCurrentWeapon))
-		{
-			return Plugin_Continue;
-		}
-		int previousclip = GetWeaponClip(iCurrentWeapon);
-		if(GetEntProp(iCurrentWeapon, Prop_Send, "m_bInReload") == 0)
-		{
-			char sWeaponName[32];
-			GetClientWeapon(client, sWeaponName, sizeof(sWeaponName));
-			#if DEBUG
-				PrintToChatAll("%N - %s clip:%d",client,sWeaponName,previousclip);
-			#endif
-			WeaponID weaponid = GetWeaponID(iCurrentWeapon,sWeaponName);
-			int MaxClip = WeaponMaxClip[weaponid];
-			
-			switch(weaponid)
-			{
-				case ID_SMG,ID_RIFLE,ID_HUNTING_RIFLE,ID_SMG_SILENCED,ID_SMG_MP5,
-				ID_AK47,ID_RIFLE_DESERT,ID_AWP,ID_GRENADE,ID_SCOUT,ID_SG552,
-				ID_SNIPER_MILITARY:
-				{
-					if (0 < previousclip && previousclip < MaxClip)	//If the his current mag equals the maximum allowed, remove reload from buttons
-					{
-						DataPack data = new DataPack();
-						data.WriteCell(client);
-						data.WriteCell(iCurrentWeapon);
-						data.WriteCell(previousclip);
-						data.WriteCell(weaponid);
-						data.Reset();
-						RequestFrame(RecoverWeaponClip, data);
+		#if DEBUG
+			PrintToChatAll("SDKHook %d - %s", entity, classname);
+		#endif
+		SDKHook(entity, SDKHook_SpawnPost, OnWeaponSpawned);
+	}
+}
 
-						/*Handle pack = new DataPack();
-						CreateDataTimer(0.1, RecoverWeaponClip, pack, TIMER_FLAG_NO_MAPCHANGE);
-						WritePackCell(pack, client);
-						WritePackCell(pack, iCurrentWeapon);
-						WritePackCell(pack, previousclip);
-						WritePackCell(pack, weaponid);*/
-					}
+/* OnWeaponSpawned()
+ *
+ * When a weapon is successfully spawned.
+ * ------------------------------------------------------------------ */
+public void OnWeaponSpawned(int weapon)
+{
+	if( !IsValidEntity(weapon) ) return;
+	
+	// Use SDKHookEx in case if not weapon was passed
+	SDKHook(weapon, SDKHook_Reload, OnWeaponReload_Pre);
+}
+
+public Action OnWeaponReload_Pre(int weapon)
+{
+	if(g_bEnable == false || g_EnableClipRecoverCvar == false) return Plugin_Continue;
+
+	int client = InUseClient(weapon);
+	if ( client != -1)
+	{
+		static char sWeaponName[32];
+		GetEdictClassname(weapon, sWeaponName, sizeof(sWeaponName));
+		WeaponID weaponid = GetWeaponID(weapon,sWeaponName);
+		int MaxClip = WeaponMaxClip[weaponid];
+			
+		switch(weaponid)
+		{
+			case ID_SMG,ID_RIFLE,ID_HUNTING_RIFLE,ID_SMG_SILENCED,ID_SMG_MP5,
+			ID_AK47,ID_RIFLE_DESERT,ID_AWP,ID_GRENADE,ID_SCOUT,ID_SG552,
+			ID_SNIPER_MILITARY:
+			{
+				int previousclip = GetWeaponClip(weapon);
+				if (0 < previousclip && previousclip < MaxClip)	//If the his current mag equals the maximum allowed, remove reload from buttons
+				{
+					#if DEBUG
+						PrintToChatAll("OnWeaponReload_Pre client: %N, sWeaponName: (%d)%s, previousclip: %d", client, weapon, sWeaponName, previousclip);
+					#endif
+					DataPack data = new DataPack();
+					data.WriteCell(GetClientUserId(client));
+					data.WriteCell(EntIndexToEntRef(weapon));
+					data.WriteCell(previousclip);
+					data.WriteCell(weaponid);
+					RequestFrame(RecoverWeaponClip, data);
 				}
-				default:
-					return Plugin_Continue;
+			}
+			default:
+			{
+				return Plugin_Continue;
 			}
 		}
 	}
+
 	return Plugin_Continue;
 }
 
 public void RecoverWeaponClip(DataPack data) { 
-	int client = data.ReadCell();
-	int CurrentWeapon = data.ReadCell();
+	data.Reset();
+	int client = GetClientOfUserId(data.ReadCell());
+	int CurrentWeapon = EntRefToEntIndex(data.ReadCell());
 	int previousclip = data.ReadCell();
 	WeaponID weaponid = data.ReadCell();
+	delete data;
 	int nowweaponclip;
 	
-	if ((nowweaponclip = GetWeaponClip(CurrentWeapon)) == WeaponMaxClip[weaponid] || //CurrentWeapon complete reload finished
-	nowweaponclip == previousclip //CurrentWeapon clip has been recovered
+	if (!IsValidAliveSurvivor(client) || //client wrong
+		CurrentWeapon == INVALID_ENT_REFERENCE || //weapon entity wrong
+		(nowweaponclip = GetWeaponClip(CurrentWeapon)) >= WeaponMaxClip[weaponid] || //CurrentWeapon complete reload finished
+		nowweaponclip == previousclip //CurrentWeapon clip has been recovered
 	)
 	{
 		return;
 	}
 	
-	if (nowweaponclip < WeaponMaxClip[weaponid] && nowweaponclip == 0)
-	{
-		int ammo = GetWeaponAmmo(client, WeaponAmmoOffest[weaponid]);
-		ammo -= previousclip;
-		#if DEBUG
-			PrintToChatAll("CurrentWeapon clip recovered");
-		#endif
-		SetWeaponAmmo(client,WeaponAmmoOffest[weaponid],ammo);
-		SetWeaponClip(CurrentWeapon,previousclip);
-	}
 
-	data.Close();
+	int ammo = GetWeaponAmmo(client, WeaponAmmoOffest[weaponid]);
+	ammo -= previousclip;
+	#if DEBUG
+		PrintToChatAll("CurrentWeapon clip recovered");
+	#endif
+	SetWeaponAmmo(client,WeaponAmmoOffest[weaponid],ammo);
+	SetWeaponClip(CurrentWeapon,previousclip);
 } 
 
-/*
-public Action RecoverWeaponClip(Handle timer, Handle pack)
+public void OnWeaponReload_Event(Event event, const char[] name, bool dontBroadcast) 
 {
-	ResetPack(pack);
-	int client = ReadPackCell(pack);
-	int CurrentWeapon = ReadPackCell(pack);
-	int previousclip = ReadPackCell(pack);
-	WeaponID weaponid = ReadPackCell(pack);
-	int nowweaponclip;
-	
-	if (CurrentWeapon == -1 || //CurrentWeapon drop
-	!IsValidEntity(CurrentWeapon) ||
-	client == 0 || //client disconnected
-	!IsClientInGame(client) || 
-	!IsPlayerAlive(client) ||
-	GetClientTeam(client)!=2 ||
-	!HasEntProp(CurrentWeapon, Prop_Send, "m_bInReload") ||
-	GetEntProp(CurrentWeapon, Prop_Send, "m_bInReload") == 0 || //reload interrupted
-	(nowweaponclip = GetWeaponClip(CurrentWeapon)) == WeaponMaxClip[weaponid] || //CurrentWeapon complete reload finished
-	nowweaponclip == previousclip //CurrentWeapon clip has been recovered
-	)
-	{
-		return Plugin_Handled;
-	}
-	
-	if (nowweaponclip < WeaponMaxClip[weaponid] && nowweaponclip == 0)
-	{
-		int ammo = GetWeaponAmmo(client, WeaponAmmoOffest[weaponid]);
-		ammo -= previousclip;
-		#if DEBUG
-			PrintToChatAll("CurrentWeapon clip recovered");
-		#endif
-		SetWeaponAmmo(client,WeaponAmmoOffest[weaponid],ammo);
-		SetWeaponClip(CurrentWeapon,previousclip);
-	}
-	return Plugin_Handled;
-}
-*/
-public Action OnWeaponReload_Event(Event event, const char[] name, bool dontBroadcast) 
-{
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (client < 1 || 
-		client > MaxClients ||
-		!IsClientInGame(client) ||
-		IsFakeClient(client) ||
-		GetClientTeam(client) != 2 ||
-		g_EnableReloadClipCvar == false) //disable this plugin
-		return Plugin_Continue;
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (!IsValidAliveSurvivor(client) || g_bEnable == false)
+		return;
 		
-	int iCurrentWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon"); //抓人類目前裝彈的武器
-	if (iCurrentWeapon == -1 || !IsValidEntity(iCurrentWeapon))
+	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon"); //抓人類目前裝彈的武器
+	if (weapon <= 0 || !IsValidEntity(weapon))
 	{
-		return Plugin_Continue;
+		return;
 	}
 	
 	g_hClientReload_Time[client] = GetEngineTime();
 	
-	char sWeaponName[32];
-	GetClientWeapon(client, sWeaponName, sizeof(sWeaponName));
-	WeaponID weaponid = GetWeaponID(iCurrentWeapon,sWeaponName);
+	static char sWeaponName[32];
+	GetEdictClassname(weapon, sWeaponName, sizeof(sWeaponName));
+	WeaponID weaponid = GetWeaponID(weapon,sWeaponName);
 	#if DEBUG
-		PrintToChatAll("%N - %s - weaponid: %d",client,sWeaponName,weaponid);
+		PrintToChatAll("OnWeaponReload_Event %N - (%d)%s - weaponid: %d",client,weapon,sWeaponName,weaponid);
 		for (int i = 0; i < 32; i++)
 		{
 			PrintToConsole(client, "Offset: %i - Count: %i", i, GetEntData(client, ammoOffset+(i*4)));
 		} 
 	#endif
 	
-	Handle pack;
+	DataPack pack = new DataPack();
 	switch(weaponid)
 	{
 		case ID_SMG: CreateDataTimer(g_SmgTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
@@ -364,108 +332,102 @@ public Action OnWeaponReload_Event(Event event, const char[] name, bool dontBroa
 			else
 				CreateDataTimer(g_MangumTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 		}
-		default: return Plugin_Continue;
+		default:
+		{
+			return;
+		}
 	}
-	WritePackCell(pack, client);
-	WritePackCell(pack, iCurrentWeapon);
-	WritePackCell(pack, weaponid);
-	WritePackCell(pack, g_hClientReload_Time[client]);
 	
-	return Plugin_Continue;
+	pack.WriteCell(GetClientUserId(client));
+	pack.WriteCell(EntIndexToEntRef(weapon));
+	pack.WriteCell(weaponid);
+	pack.WriteCell(g_hClientReload_Time[client]);
 }
 
-public Action WeaponReloadClip(Handle timer, Handle pack)
+public Action WeaponReloadClip(Handle timer, DataPack pack)
 {
-	ResetPack(pack);
-	int client = ReadPackCell(pack);
-	int CurrentWeapon = ReadPackCell(pack);
-	WeaponID weaponid = ReadPackCell(pack);
-	float reloadtime = ReadPackCell(pack);
+	pack.Reset();
+	int client = GetClientOfUserId(pack.ReadCell());
+	int CurrentWeapon = EntRefToEntIndex(pack.ReadCell());
+	WeaponID weaponid = pack.ReadCell();
+	float reloadtime = pack.ReadCell();
 	int clip;
 	
 	if ( reloadtime != g_hClientReload_Time[client] || //裝彈時間被刷新
-	CurrentWeapon == -1 || //CurrentWeapon drop
-	!IsValidEntity(CurrentWeapon) || 
-	client == 0 || //client disconnected
-	!IsClientInGame(client) ||
-	!IsPlayerAlive(client) ||
-	GetClientTeam(client)!=2 ||
-	!HasEntProp(CurrentWeapon, Prop_Send, "m_bInReload") ||
-	GetEntProp(CurrentWeapon, Prop_Send, "m_bInReload") == 0 || //reload interrupted
-	(clip = GetWeaponClip(CurrentWeapon)) == WeaponMaxClip[weaponid] //CurrentWeapon complete reload finished
+		!IsValidAliveSurvivor(client) || //client wrong
+		CurrentWeapon == INVALID_ENT_REFERENCE || //weapon entity wrong
+		HasEntProp(CurrentWeapon, Prop_Send, "m_bInReload") == false || GetEntProp(CurrentWeapon, Prop_Send, "m_bInReload") == 0 || //reload interrupted
+		(clip = GetWeaponClip(CurrentWeapon)) >= WeaponMaxClip[weaponid] //CurrentWeapon complete reload finished
 	)
 	{
-		return Plugin_Handled;
+		return;
 	}
 	
-	if (clip < WeaponMaxClip[weaponid])
+	switch(weaponid)
 	{
-		switch(weaponid)
+		case ID_SMG,ID_RIFLE,ID_HUNTING_RIFLE,ID_SMG_SILENCED,ID_SMG_MP5,
+		ID_AK47,ID_RIFLE_DESERT,ID_AWP,ID_GRENADE,ID_SCOUT,ID_SG552,
+		ID_SNIPER_MILITARY:
 		{
-			case ID_SMG,ID_RIFLE,ID_HUNTING_RIFLE,ID_SMG_SILENCED,ID_SMG_MP5,
-			ID_AK47,ID_RIFLE_DESERT,ID_AWP,ID_GRENADE,ID_SCOUT,ID_SG552,
-			ID_SNIPER_MILITARY:
+			#if DEBUG
+				PrintToChatAll("CurrentWeapon reload clip completed");
+			#endif
+		
+			int ammo = GetWeaponAmmo(client, WeaponAmmoOffest[weaponid]);
+			if( (ammo - (WeaponMaxClip[weaponid] - clip)) <= 0)
 			{
-				#if DEBUG
-					PrintToChatAll("CurrentWeapon reload clip completed");
-				#endif
-			
-				int ammo = GetWeaponAmmo(client, WeaponAmmoOffest[weaponid]);
-				if( (ammo - (WeaponMaxClip[weaponid] - clip)) <= 0)
-				{
-					clip = clip + ammo;
-					ammo = 0;
-				}
-				else
-				{
-					ammo = ammo - (WeaponMaxClip[weaponid] - clip);
-					clip = WeaponMaxClip[weaponid];
-				}
-				SetWeaponAmmo(client,WeaponAmmoOffest[weaponid],ammo);
-				SetWeaponClip(CurrentWeapon,clip);
+				clip = clip + ammo;
+				ammo = 0;
 			}
-			case ID_PISTOL,ID_DUAL_PISTOL,ID_MAGNUM:
+			else
 			{
-				#if DEBUG
-					PrintToChatAll("Pistol reload clip completed");
-				#endif
-				SetWeaponClip(CurrentWeapon,WeaponMaxClip[weaponid]);
+				ammo = ammo - (WeaponMaxClip[weaponid] - clip);
+				clip = WeaponMaxClip[weaponid];
 			}
-			default:
-			{
-				return Plugin_Handled;
-			}
+			SetWeaponAmmo(client,WeaponAmmoOffest[weaponid],ammo);
+			SetWeaponClip(CurrentWeapon,clip);
+		}
+		case ID_PISTOL,ID_DUAL_PISTOL,ID_MAGNUM:
+		{
+			#if DEBUG
+				PrintToChatAll("Pistol reload clip completed");
+			#endif
+			SetWeaponClip(CurrentWeapon,WeaponMaxClip[weaponid]);
+		}
+		default:
+		{
+			return;
 		}
 	}
-	return Plugin_Handled;
 }
-stock int GetWeaponAmmo(int client, int offest)
+
+int GetWeaponAmmo(int client, int offest)
 {
     return GetEntData(client, ammoOffset+(offest*4));
 } 
 
-stock int GetWeaponClip(int weapon)
+int GetWeaponClip(int weapon)
 {
     return GetEntProp(weapon, Prop_Send, "m_iClip1");
 } 
 
-stock void SetWeaponAmmo(int client, int offest, int ammo)
+void SetWeaponAmmo(int client, int offest, int ammo)
 {
     SetEntData(client, ammoOffset+(offest*4), ammo);
 } 
-stock void SetWeaponClip(int weapon, int clip)
+void SetWeaponClip(int weapon, int clip)
 {
 	SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
 } 
 
-stock bool IsIncapacitated(int client)
+bool IsIncapacitated(int client)
 {
 	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isIncapacitated"));
 }
 
-stock WeaponID GetWeaponID(int weapon,const char[] weapon_name)
+WeaponID GetWeaponID(int weapon,const char[] weapon_name)
 {
-	if(StrEqual(weapon_name,"weapon_pistol",false))
+	if(strcmp(weapon_name,"weapon_pistol",false) == 0)
 	{
 		if( GetEntProp(weapon, Prop_Send, "m_isDualWielding") > 0) //dual pistol
 		{
@@ -476,7 +438,7 @@ stock WeaponID GetWeaponID(int weapon,const char[] weapon_name)
 	
 	for(WeaponID i = ID_NONE; i < ID_WEAPON_MAX ; ++i)
 	{
-		if(StrEqual(weapon_name,Weapon_Name[i],false))
+		if(strcmp(weapon_name,Weapon_Name[i],false) == 0)
 			return i;
 	}
 	return ID_NONE;
@@ -494,7 +456,7 @@ public void ConVarChange_MaxClipChanged(ConVar convar, const char[] oldValue, co
 
 void GetCvars()
 {
-	g_EnableReloadClipCvar  = hEnableReloadClipCvar.BoolValue;
+	g_bEnable  = hEnable.BoolValue;
 	g_EnableClipRecoverCvar = hEnableClipRecoverCvar.BoolValue;
 	g_SmgTimeCvar 			= hSmgTimeCvar.FloatValue;
 	g_RifleTimeCvar 		= hRifleTimeCvar.FloatValue;
@@ -583,4 +545,19 @@ public void SetWeaponMaxClip()
 	WeaponMaxClip[ID_AWP] = hAWPClipCvar.IntValue;
 	WeaponMaxClip[ID_SCOUT] = hScoutClipCvar.IntValue;
 	//WeaponMaxClip[ID_SPASSHOTGUN] = 10;
+}
+
+int InUseClient(int entity)
+{
+	int client = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	if (IsValidAliveSurvivor(client)) return client;
+
+	return -1;
+}
+
+bool IsValidAliveSurvivor(int client) 
+{
+    if ( 1 <= client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client)) 
+		return true;      
+    return false; 
 }
