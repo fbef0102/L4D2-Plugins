@@ -55,7 +55,7 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 	{"explosive_ammo",	"高爆子彈"},
 	{"ammo","補給彈藥"}
 
--10 items that Tank/Witch drops-
+-9 items that Tank/Witch drops-
 	{"rifle_m60", "M60機關槍"},
 	{"first_aid_kit","治療包"},
 	{"defibrillator","電擊器"},
@@ -64,13 +64,15 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 	{"health_100", "生命值+100"},
 	{"vomitjar", "膽汁"},
 	{"grenade_launcher","榴彈發射器"},
-	{"fireworkcrate","煙火盒"},
 	{"ammo","補給彈藥"},
 
 -Require-
 To unlock all melee weapons in all campaigns, you MUST use the [Mission and Weapons - Info Editor]("https://forums.alliedmods.net/showthread.php?t=310586") plugin which supersedes the extension.
 
 -ChangeLog-
+v2.5
+-Remove rotation, and some static models
+
 v2.3
 -add Gnome.
 
