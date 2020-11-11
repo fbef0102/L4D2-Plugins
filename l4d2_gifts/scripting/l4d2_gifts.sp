@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION		"2.3"
+#define PLUGIN_VERSION		"2.5"
 
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -28,7 +28,7 @@
 #define TYPE_SPECIAL		2
 #define TYPE_SPECIAL2		1
 #define MAX_SPECIALITEMS	53
-#define MAX_SPECIALITEMS2	10
+#define MAX_SPECIALITEMS2	9
 
 #define TEAM_SURVIVOR		2
 #define TEAM_INFECTED		3
@@ -48,9 +48,6 @@
 #define AURA_RED 			"255 0 0"
 #define AURA_ORANGE 		"254 100 46"
 #define AURA_YELLOW 		"255 255 0"
-
-#define SND_REWARD1			"level/loud/climber.wav"
-#define SND_REWARD2			"level/gnomeftw.wav"
 
 #define	MAX_WEAPONS2		29
 
@@ -160,7 +157,6 @@ static char weapons_name2[MAX_SPECIALITEMS2][2][50] =
 	{"health_100", "生命值+100"},
 	{"vomitjar", "膽汁"},
 	{"grenade_launcher","榴彈發射器"},
-	{"fireworkcrate","煙火盒"},
 	{"ammo","補給彈藥"},
 };
 
@@ -198,19 +194,18 @@ char g_sTypeModel[MAX_GIFTS][10];
 char g_sTypeGift[MAX_GIFTS][10];
 float g_fScale[MAX_GIFTS];
 
-int g_GifLife[2000];
-char g_sGifType[2000][10];
-int g_GifEntIndex[2000];
-float g_GiftMov[2000];
+int g_GifLife[2040];
+char g_sGifType[2040][10];
+int g_GifEntIndex[2040];
 
 bool bGiftEnable;
-int iGiftLife;
+float fGiftLife;
 int iGiftChance;
 int iGiftChance2;
 int iGiftMaxMap;
 int iGiftMaxRound;
 int iGiftMaxIncapCount;
-bool g_RoundEnd, g_bAnnounce;
+bool g_bAnnounce;
 
 int gifts_collected_map;
 int gifts_collected_round;
@@ -219,6 +214,11 @@ char sPath_gifts[PLATFORM_MAX_PATH];
 int g_iCountGifts;
 int g_iOffset_Incapacitated;        // Used to check if tank is dying
 int ammoOffset;	
+
+
+#define SND_REWARD1			"level/loud/climber.wav"
+#define SND_REWARD2			"level/gnomeftw.wav"
+
 
 public Plugin myinfo = 
 {
@@ -366,7 +366,7 @@ void GetCvars()
 {
 	//Values of cvars
 	bGiftEnable = cvar_gift_enable.BoolValue;
-	iGiftLife = cvar_gift_life.IntValue;
+	fGiftLife = cvar_gift_life.FloatValue;
 	iGiftChance = cvar_gift_chance.IntValue;
 	iGiftChance2 = cvar_gift_chance2.IntValue;
 	iGiftMaxMap = cvar_gift_maxcollectMap.IntValue;
@@ -511,8 +511,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 {
 	if (!bGiftEnable) 
 		return;
-	
-	g_RoundEnd = false;
+
 	gifts_collected_round = 0;
 	
 	for (int i = 1; i <= MaxClients; i++)
@@ -534,7 +533,6 @@ public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	if (!bGiftEnable) 
 		return;
 	
-	g_RoundEnd = true;
 	gifts_collected_round = 0;
 }
 
@@ -549,8 +547,8 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	if (iGiftMaxMap != 0 && gifts_collected_map > iGiftMaxMap)
 		return;
 	
-	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
-	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	
 	if (attacker != victim && IsValidClient(victim) && GetClientTeam(victim) == 3)
 	{
@@ -575,8 +573,8 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 
 public Action OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
-   //int attacker = GetClientOfUserId(GetEventInt(event, "userid"));
-	int witch = GetEventInt(event, "witchid");
+   //int attacker = GetClientOfUserId(event.GetInt("userid"));
+	int witch = event.GetInt("witchid");
 	if (GetRandomInt(1, 100) < iGiftChance2)
 	{
 		DropGift(witch, "special2");
@@ -611,7 +609,7 @@ void NotifyGift(int client, int type, int gift = -1)
 			else
 				GiveWeapon(client, weapons_name[index][0]);
 		}
-		if(g_bAnnounce) Client_PrintToChatAll(false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name[index][1]);
+		if(g_bAnnounce) PrintCenterTextAll("%t", "Spawn Gift Special Not Points", client, weapons_name[index][1]);
 		else Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name[index][1]);
 		PlaySound(client,SND_REWARD2);
 		AddCollect(client, type);
@@ -641,7 +639,7 @@ void NotifyGift(int client, int type, int gift = -1)
 				GiveWeapon(client, weapons_name2[index][0]);
 		}
 
-		if(g_bAnnounce) Client_PrintToChatAll(false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name2[index][1]);
+		if(g_bAnnounce) PrintCenterTextAll("%t", "Spawn Gift Special Not Points", client, weapons_name2[index][1]);
 		else Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name2[index][1]);
 		PlaySound(client,SND_REWARD1);
 		AddCollect(client, type);
@@ -768,16 +766,16 @@ int DropGift(int client, char[] type = "special")
 		}
 		g_GifLife[gift] = 0;
 		g_GifEntIndex[gift] = EntIndexToEntRef(gift);
-		CreateTimer(1.0, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		CreateTimer(1.0, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(fGiftLife, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(1.5, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	return gift;
 }
 public Action ColdDown( Handle timer, any ref)
 {
-	int gift = EntRefToEntIndex(ref);
-	if (IsValidEntity(gift))
+	int gift;
+	if (ref && (gift = EntRefToEntIndex(ref)) != INVALID_ENT_REFERENCE)
 	{
 		SDKHook(gift, SDKHook_Touch, OnTouch);
 	}
@@ -825,7 +823,7 @@ public void OnTouch(int gift, int other)
 				AddHP = 200;
 			}
 			SetEntityHealth(other, CurrentHealth + AddHP);
-			if(g_bAnnounce) Client_PrintToChatAll(false, "%s %t", TAG_GIFT, "Infected Got Gift", other, AddHP);
+			if(g_bAnnounce) PrintCenterTextAll("%t", "Infected Got Gift", other, AddHP);
 			else Client_PrintToChat(other, false, "%s %t", TAG_GIFT, "Infected Got Gift", other, AddHP);
 			PlaySound(other,SND_REWARD2);
 			SDKUnhook(gift, SDKHook_Touch, OnTouch);
@@ -862,50 +860,9 @@ int Infected_Admitted(int client)
 
 public Action Timer_GiftLife( Handle timer, any ref)
 {
-	int gift = EntRefToEntIndex(ref);
-	if (IsValidEntity(gift))
+	if ( ref && EntRefToEntIndex(ref) != INVALID_ENT_REFERENCE)
 	{
-		g_GifLife[gift] += 1;
-		if( g_RoundEnd || g_GifLife[gift] > iGiftLife)
-		{
-			g_GifLife[gift] = 0;
-			AcceptEntityInput(gift, "kill");
-			return Plugin_Stop;
-		}
-		g_GiftMov[gift] = 0.0;
-		CreateTimer(0.1, Timer_RotationGift, ref, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		
-		return Plugin_Continue;
-	}
-	
-	return Plugin_Stop;
-}
-
-public Action Timer_RotationGift( Handle timer, any ref)
-{
-	int gift = EntRefToEntIndex(ref);
-	if (IsValidEntity(gift))
-	{
-		g_GiftMov[gift] += 0.1;
-		if( g_RoundEnd || g_GiftMov[gift] >= 1.0)
-		{
-			g_GiftMov[gift] = 0.0;
-			return Plugin_Stop;
-		}
-		RotateAdvance(gift, 15.0, 1);
-		return Plugin_Continue;
-	}
-	return Plugin_Stop;
-}
-
-void RotateAdvance(int index, float value, int axis)
-{
-	if (IsValidEntity(index))
-	{
-		float rotate_[3];
-		GetEntPropVector(index, Prop_Data, "m_angRotation", rotate_);
-		rotate_[axis] += value;
-		TeleportEntity( index, NULL_VECTOR, rotate_, NULL_VECTOR);
+		AcceptEntityInput(ref, "kill");
 	}
 }
 
