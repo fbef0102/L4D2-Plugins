@@ -30,7 +30,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>drop_secondary</b>: Survivor players will drop their secondary weapon (including melee) when they die
 * <b>show_mic</b>: Voice Announce in centr text + create hat to Show Who is speaking.
 # Scripting Compiler
-* [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6497 scripting
+* [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6499 scripting
 # Others
 * <b>[L4D1-Competitive-Plugins](https://github.com/fbef0102/L4D1-Competitive-Plugins)</b>: L4D1 Competitive enhancement
 * <b>[L4D1_2-Plugins](https://github.com/fbef0102/L4D1_2-Plugins)</b>: L4D1/2 general purpose and freaky-fun plugins.
