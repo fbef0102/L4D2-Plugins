@@ -1,5 +1,9 @@
 When a Tank punches a Hittable it adds a Glow to the hittable which all infected players can see.
-this video shows how it works: https://www.youtube.com/watch?v=UZDF6dbagxU&feature=youtu.be
++
+Stop tank props from fading whilst the tank is alive
+
+-Video-
+https://www.youtube.com/watch?v=UZDF6dbagxU&feature=youtu.be
 
 -ChangLog-
 v1.8
