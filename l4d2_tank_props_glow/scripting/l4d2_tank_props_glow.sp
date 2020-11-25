@@ -20,7 +20,7 @@ public Plugin myinfo = {
     name        = "L4D2 Tank Hittable Glow",
     author      = "Harry Potter",
     version     = "1.8",
-    description = "When a Tank punches a Hittable it adds a Glow to the hittable which all infected players can see."
+    description = "Stop tank props from fading whilst the tank is alive + add Hittable Glow."
 };
 
 public void OnPluginStart() {
