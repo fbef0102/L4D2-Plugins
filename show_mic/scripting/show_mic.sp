@@ -16,6 +16,7 @@ bool g_bExternalCvar[MAXPLAYERS+1];		// If thirdperson view was detected (thirdp
 bool g_bExternalState[MAXPLAYERS+1];	// If thirdperson view was detected
 static char SpeakingPlayers[512];
 ConVar hSV_Alltalk;
+ConVar hSV_VoiceEnable;
 int iSV_Alltalk;
 
 public Plugin myinfo = 
@@ -23,7 +24,7 @@ public Plugin myinfo =
 	name = "[L4D2] Voice Announce + Show MIC Hat.",
 	author = "SupermenCJ & Harry Potter ",
 	description = "Voice Announce in centr text + create hat to Show Who is speaking.",
-	version = "1.2",
+	version = "1.3",
 	url = "https://steamcommunity.com/id/fbef0102/"
 }
 
@@ -46,7 +47,8 @@ public void OnPluginStart()
 	LoadTranslations("show_mic.phrases");
 	
 	hSV_Alltalk = FindConVar("sv_alltalk");
-	
+	hSV_VoiceEnable = FindConVar("sv_voiceenable");
+
 	GetCvars();
 	hSV_Alltalk.AddChangeHook(ConVarChanged_Cvars);
 	
@@ -83,6 +85,8 @@ public void OnClientSpeakingStart(int client)
 	if (BaseComm_IsClientMuted(client)) return;
 
 	if (GetClientListeningFlags(client) == 1) return;
+
+	if(hSV_VoiceEnable.BoolValue == false) return;
 	
 	CreateHat(client);
 	ClientSpeakingTime[client] = true;
