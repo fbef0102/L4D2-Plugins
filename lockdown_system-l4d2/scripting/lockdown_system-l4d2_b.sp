@@ -6,7 +6,7 @@
 #include <sdkhooks>
 #include <glow>
 #include <left4dhooks>
-#define PLUGIN_VERSION "3.4"
+#define PLUGIN_VERSION "3.5"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -71,14 +71,14 @@ public void OnPluginStart()
 	lsHint = CreateConVar(	"lockdown_system-l4d2_spam_hint", "1", "0=Off. 1=Display a message showing who opened or closed the saferoom door.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsGetInLimit = CreateConVar( "lockdown_system-l4d2_outside_slay_duration", "60", "After saferoom door is opened, slay players who are not inside saferoom in seconds. (0=off)", FCVAR_NOTIFY, true, 0.0);
 	lsDoorOpeningTeleport = CreateConVar( "lockdown_system-l4d2_teleport", "1", "0=Off. 1=Teleport common, special infected, and witch if they touch the door inside saferoom when door is opening. (prevent spawning and be stuck inside the saferoom, only works if Lockdown Type is 1)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	lsDoorOpeningTankInterval = CreateConVar( "lockdown_system-l4d2_opening_tank_interval", "30", "Time Interval to spawn a tank when door is opening (0=off)", FCVAR_NOTIFY, true, 0.0);
+	lsDoorOpeningTankInterval = CreateConVar( "lockdown_system-l4d2_opening_tank_interval", "50", "Time Interval to spawn a tank when door is opening (0=off)", FCVAR_NOTIFY, true, 0.0);
 	lsDoorBotDisable = CreateConVar( "lockdown_system-l4d2_spam_bot_disable", "1", "If 1, prevent AI survivor from opening and closing the door.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsMapOff = CreateConVar("lockdown_system-l4d2_map_off",	"c10m3_ranchhouse,l4d_reverse_hos03_sewers,l4d2_stadium4_city2,l4d_fairview10_church,l4d2_wanli01",	"Turn off the plugin in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
 	lsPreventDoorSpamDuration = CreateConVar("lockdown_system-l4d2_prevent_spam_duration", "3.0", "How many seconds to lock after opening and closing the saferoom door.", FCVAR_NOTIFY, true, 0.0);
 	lsDoorLockColor = CreateConVar(	"lockdown_system-l4d2_lock_glow_color",	"255 0 0",	"The default glow color for saferoom door when lock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorUnlockColor = CreateConVar( "lockdown_system-l4d2_unlock_glow_color",	"200 200 200",	"The default glow color for saferoom door when unlock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorGlowRange = CreateConVar( "lockdown_system-l4d2_glow_range", "550", "The default value for saferoom door glow range.", FCVAR_NOTIFY, true, 0.0);
-	
+
 	GetCvars();
 	lsAnnounce.AddChangeHook(OnLSCVarsChanged);
 	lsAntiFarmDuration.AddChangeHook(OnLSCVarsChanged);
@@ -188,6 +188,7 @@ public void OnMapStart()
 		g_bValidMap = false;
 	}
 
+
 	if (g_bValidMap)
 	{
 		PrecacheSound("doors/latchlocked2.wav", true);
@@ -199,6 +200,7 @@ public void OnMapStart()
 		{
 			PrecacheModel(MODEL_TANK, true);
 		}
+
 	}
 }
 
@@ -495,16 +497,17 @@ public Action LockdownOpening(Handle timer, any entity)
 			EmitSoundToAll("level/highscore.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 			if(bAnnounce) PrintCenterTextAll("安全門已開啟!! 大家趕快進去!!");
 			if(blsHint) PrintToChatAll("\x01[\x05TS\x01]\x04 <\x05%s\x04>\x01 打開了 安全室大門!", sKeyMan);
-			
 			CreateTimer(5.0, LaunchTankDemolition, TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(5.0, LaunchSlayTimer, entity, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		return Plugin_Stop;
 	}
 	
-	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 	PrintCenterTextAll("[LOCKDOWN] 開門倒數 %d 秒!", iSystemTime);
-	iSystemTime -= 1;
+
+	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);	
+
+	iSystemTime --;
 
 	if(iDoorOpeningTankInterval > 0 && _iDoorOpeningTankInterval >= iDoorOpeningTankInterval)
 	{
@@ -558,8 +561,8 @@ public Action AntiPussy(Handle timer, any entity)
 	
 	if(iSystemTime <= 0)
 	{
-		AcceptEntityInput(entity, "Close");
-		AcceptEntityInput(entity, "ForceClosed");
+		//AcceptEntityInput(entity, "Close");
+		//AcceptEntityInput(entity, "ForceClosed");
 
 		if(bAnnounce) PrintToChatAll("\x01[\x05TS\x01]\x05 室外區域的玩家將\x04處以死刑\x01!");
 		
