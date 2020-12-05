@@ -6,7 +6,7 @@
 #include <sdkhooks>
 #include <glow>
 #include <left4dhooks>
-#define PLUGIN_VERSION "3.5"
+#define PLUGIN_VERSION "3.6"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -504,8 +504,8 @@ public Action LockdownOpening(Handle timer, any entity)
 	}
 	
 	PrintCenterTextAll("[LOCKDOWN] 開門倒數 %d 秒!", iSystemTime);
-
 	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);	
+
 
 	iSystemTime --;
 
@@ -839,7 +839,20 @@ void CreateTankBot()
 			DispatchSpawn(newtankbot);
 			ActivateEntity(newtankbot);
 			TeleportEntity(newtankbot, vecPos, NULL_VECTOR, NULL_VECTOR); //移動到相同位置
+
+			CreateTimer(3.0, AttackOnTank, GetClientUserId(newtankbot), TIMER_FLAG_NO_MAPCHANGE);
 		}
+	}
+}
+
+public Action AttackOnTank(Handle timer, int tank)
+{
+	tank = GetClientOfUserId(tank);
+	if(tank && IsClientInGame(tank))
+	{
+		SetEntProp(tank, Prop_Send, "m_zombieState", 1);
+		SetEntProp(tank, Prop_Send, "m_hasVisibleThreats", 1);
+		DealDamage(tank, 0,  GetSurvivor(), DMG_BULLET, "weapon_smg");
 	}
 }
 
@@ -1030,4 +1043,39 @@ void GetColor(int[] array, char[] sTemp)
 	array[0] = StringToInt(sColors[0]);
 	array[1] = StringToInt(sColors[1]);
 	array[2] = StringToInt(sColors[2]);
+}
+
+public int GetSurvivor() {
+	for( int i = 1; i <= MaxClients; i++ ) {
+		if( IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i) ) {
+		    return i;
+		}
+	}
+
+	return 0;
+}
+
+void DealDamage(int victim, int damage, int attacker = 0, int dmg_type = DMG_GENERIC, char[] weapon = "") {
+	if(victim>0 && IsValidEdict(victim) && IsClientInGame(victim) && IsPlayerAlive(victim)) {
+		char dmg_str[16];
+		IntToString(damage,dmg_str,16);
+		char dmg_type_str[32];
+		IntToString(dmg_type,dmg_type_str,32);
+		int pointHurt=CreateEntityByName("point_hurt");
+		if (pointHurt) {
+			DispatchKeyValue(victim,"targetname","war3_hurtme");
+			DispatchKeyValue(pointHurt,"DamageTarget","war3_hurtme");
+			DispatchKeyValue(pointHurt,"Damage",dmg_str);
+			DispatchKeyValue(pointHurt,"DamageType",dmg_type_str);
+			
+			if(!StrEqual(weapon,"")) {
+				DispatchKeyValue(pointHurt,"classname",weapon);
+			}
+			DispatchSpawn(pointHurt);
+			AcceptEntityInput(pointHurt,"Hurt",(attacker>0)?attacker:-1);
+			DispatchKeyValue(pointHurt,"classname","point_hurt");
+			DispatchKeyValue(victim,"targetname","war3_donthurtme");
+			RemoveEdict(pointHurt);
+		}
+	}
 }
