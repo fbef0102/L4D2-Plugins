@@ -391,7 +391,7 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 						
 						if (hAntiFarmTime == null)
 						{
-							hAntiFarmTime = CreateTimer(float(iAntiFarmDuration) + 1.0, EndAntiFarm,_,TIMER_FLAG_NO_MAPCHANGE);
+							hAntiFarmTime = CreateTimer(float(iAntiFarmDuration) + 1.0, EndAntiFarm);
 						}
 						CreateTimer(1.0, CheckAntiFarm, used, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 						SDKHook(used, SDKHook_Touch, OnTouch);
