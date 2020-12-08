@@ -6,7 +6,7 @@
 #include <l4d2_changelevel>
 #include <left4dhooks>
 
-#define Version "1.8"
+#define Version "2.0"
 #define MAX_ARRAY_LINE 50
 #define MAX_MAPNAME_LEN 64
 #define MAX_CREC_LEN 2
@@ -88,8 +88,6 @@ public void OnPluginStart()
 	cvarAnnounce.AddChangeHook(ConVarChanged_Cvars);
 
 	AutoExecConfig(true, "sm_l4d_mapchanger");
-
-	PluginInitialization();
 }
 public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newValue)
 {
@@ -110,8 +108,11 @@ public void ConVarGameMode(ConVar cvar, const char[] sOldValue, const char[] sin
 {
 	h_GameMode.GetString(GameName, sizeof(GameName));
 }
+
+bool g_bMapStarted;
 public void OnMapStart()
 {
+	g_bMapStarted = true;
 	AutoExecConfig(true, "sm_l4d_mapchanger");
 	
 	CoopRoundEndCounter = 0;
@@ -119,6 +120,16 @@ public void OnMapStart()
 	RoundEndBlock= false;
 
 	PluginInitialization();
+}
+
+public void OnConfigsExecuted()
+{
+	if(g_bMapStarted) PluginInitialization();
+}
+
+public void OnMapEnd()
+{
+	g_bMapStarted = false;
 }
 
 public void OnClientPutInServer(int client)
