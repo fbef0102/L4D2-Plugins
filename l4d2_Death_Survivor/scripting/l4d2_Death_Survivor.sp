@@ -1,12 +1,13 @@
 #pragma semicolon 1
+#pragma newdecls required //強制1.7以後的新語法
 #include <sourcemod>
 #include <sdkhooks>
 #include <sdktools>
-#include <colors>
+#include <multicolors>
+#include <left4dhooks>
 #define DEBUG 0
 
-
-#define Timer_KeepPlayerDeath_Seconds 1.0
+#define Timer_KeepPlayerDeath_Seconds 1.5
 
 //survivor
 #define L4D_TEAM_SURVIVOR 2
@@ -29,58 +30,50 @@ ConVar hEnable;
 bool g_bEnable;
 
 //value
-bool bDeath_Model[MODEL_MAX];
-char sModel_Name[MODEL_MAX][PLATFORM_MAX_PATH];		
-static bool b_LeftSaveRoom;
-							
-public Plugin:myinfo = 
+bool bDeath_Model[view_as<int>(MODEL_MAX)];
+char sModel_Name[view_as<int>(MODEL_MAX)][PLATFORM_MAX_PATH];			
+		
+public Plugin myinfo = 
 {
 	name = "L4D2 death survivor",
 	author = "Harry Potter",
-	description = "If a player die as a survivor, this model survior bot keep death until map change or server shutdown",
-	version = "1.2",
-	url = "Harry Potter myself,you bitch shit"
+	description = "If a player die as a survivor, this model character(Nick/Ellis/Bill/Zoey...) keep death until map change or server shutdown",
+	version = "1.3",
+	url = "Harry Potter myself, you bitch shit"
 };
 
-public void OnPluginStart()
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
 {
-	if(!IsL4D2Game())
-		SetFailState("Use this Left 4 Dead 2 only.");
-		
-	hEnable	= CreateConVar("l4d2_enable_death_survivor", "1", 	"enable this plugin?[1-Enable,0-Disable]" , FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bEnable  = GetConVarBool(hEnable);
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+	
+	return APLRes_Success; 
+}
+
+public void OnPluginStart()
+{	
+	hEnable	= CreateConVar("l4d2_enable_death_survivor", "1", 	"Enable this plugin?[1-Enable,0-Disable]" , FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bEnable = hEnable.BoolValue;
 	HookConVarChange(hEnable, ConVarChange_hEnable);
 	
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_bot_replace", Event_OnBotSwap);
 	HookEvent("bot_player_replace", Event_OnBotSwap);
-	HookEvent("round_start", Event_RoundStart);
 	
 	SetCharacterName();
-}
-
-void SetCharacterName()
-{
-	b_LeftSaveRoom = false;
-	sModel_Name[MODEL_NICK] = "models/survivors/survivor_gambler.mdl";
-	sModel_Name[MODEL_ROCHELLE] = "models/survivors/survivor_producer.mdl";
-	sModel_Name[MODEL_COACH] = "models/survivors/survivor_coach.mdl";
-	sModel_Name[MODEL_ELLIS] = "models/survivors/survivor_mechanic.mdl";
-	sModel_Name[MODEL_BILL] = "models/survivors/survivor_namvet.mdl";
-	sModel_Name[MODEL_ZOEY] = "models/survivors/survivor_teenangst.mdl";
-	sModel_Name[MODEL_FRANCIS] = "models/survivors/survivor_biker.mdl";
-	sModel_Name[MODEL_LOUIS] = "models/survivors/survivor_manager.mdl";
 	
-	for(ModelID i = MODEL_NICK ; i < MODEL_MAX ; ++i)
-	{
-		bDeath_Model[i] = false;
-	}
+	AutoExecConfig(true, "l4d2_Death_Survivor");
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
-	if(IsNewMission())
+	if(L4D_IsFirstMapInScenario())
 	{
 		for(ModelID i = MODEL_NICK ; i < MODEL_MAX ; ++i)
 		{
@@ -89,70 +82,13 @@ public OnMapStart()
 	}
 }
 
-public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	b_LeftSaveRoom = false;
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	
-	CreateTimer(1.0, PlayerLeftStart, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action PlayerLeftStart(Handle Timer)
-{
-	if (LeftStartArea() || b_LeftSaveRoom) // We don't care who left, just that at least one did
-	{	
-		#if DEBUG
-			PrintToChatAll("Player has Left SaveRoom");
-		#endif
-		if (!b_LeftSaveRoom)
-		{
-			b_LeftSaveRoom = true;
-		}
-		return Plugin_Stop;
-	}
-	
-	return Plugin_Continue;
-}
-
-public OnRoundIsLive()
-{
-	if(g_bEnable == false) return;
-	
-	#if DEBUG
-		PrintToChatAll("OnRoundIsLive");
-	#endif	
-	
-	if (!b_LeftSaveRoom)
-	{
-		b_LeftSaveRoom = true;
-	}
-	
-	for (int client = 1; client <= MaxClients; client++)
-	{
-		if (IsClientSurvivorIndex(client)&&IsPlayerAlive(client))
-		{
-			CreateTimer(Timer_KeepPlayerDeath_Seconds,Timer_KeepPlayerDeath,client,TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-		}
-	}
-}
-
-public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!IsClientSurvivorIndex(client)||
-		g_bEnable == false || //disable this plugin
-		b_LeftSaveRoom == false)
-		return Plugin_Continue;
-
-	CreateTimer(0.5,Timer_CheckPlayerDeath,client,TIMER_FLAG_NO_MAPCHANGE);
-	
-	return Plugin_Continue;
-}
-
-public Action Timer_CheckPlayerDeath(Handle timer,int client)
-{
-	if (!IsClientSurvivorIndex(client)||
-		IsPlayerAlive(client))
-		return Plugin_Continue;
+	if (!IsClientSurvivorIndex(client) ||
+		g_bEnable == false)
+		return;
 		
 	char sModelName[PLATFORM_MAX_PATH];
 	GetClientModel(client, sModelName, sizeof(sModelName));
@@ -162,30 +98,17 @@ public Action Timer_CheckPlayerDeath(Handle timer,int client)
 	
 	ModelID modelId = GetModelID(sModelName);
 	bDeath_Model[modelId] = true;
-	
-	return Plugin_Continue;
 }
 
-public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!IsClientSurvivorIndex(client)||
-		g_bEnable == false || //disable this plugin
-		b_LeftSaveRoom == false)
-		return Plugin_Continue;
-		
-	#if DEBUG
-		PrintToChatAll("Event_PlayerSpawn: %N",client);
-	#endif	
-	
-	CreateTimer(Timer_KeepPlayerDeath_Seconds,Timer_KeepPlayerDeath,client,TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	
-	return Plugin_Continue;
+	CreateTimer(Timer_KeepPlayerDeath_Seconds,Timer_KeepPlayerDeath, event.GetInt("userid"), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action Timer_KeepPlayerDeath(Handle timer,int client)
+public Action Timer_KeepPlayerDeath(Handle timer, int client)
 {
-	if(!IsClientSurvivorIndex(client)) return Plugin_Stop;
+	client = GetClientOfUserId(client);
+	if(!IsClientSurvivorIndex(client) || g_bEnable == false) return Plugin_Stop;
 	
 	if(IsPlayerAlive(client))
 	{
@@ -198,7 +121,7 @@ public Action Timer_KeepPlayerDeath(Handle timer,int client)
 		if(bDeath_Model[modelId] == true)
 		{
 			ForcePlayerSuicide(client);
-			//CPrintToChat(client,"[{olive}水仙摸魚{default}] {green}Surprise Dead, Mother Fucker!");
+			CPrintToChat(client,"[{olive}摸魚{default}] {green}Surprise Dead, Mother Fucker!");
 		}
 		else
 		{
@@ -213,38 +136,37 @@ public Action Timer_KeepPlayerDeath(Handle timer,int client)
 	return Plugin_Continue;
 }
 
-public Action Event_OnBotSwap(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnBotSwap(Event event, const char[] name, bool dontBroadcast)
 {
-	int bot = GetClientOfUserId(GetEventInt(event, "bot"));
-	int player = GetClientOfUserId(GetEventInt(event, "player"));
-	int client;
+	int bot = GetClientOfUserId(event.GetInt("bot"));
+	int player = GetClientOfUserId(event.GetInt("player"));
 	
 	if (!IsClientSurvivorIndex(bot)||
 		!IsClientSurvivorIndex(player)||
-		g_bEnable == false || //disable this plugin
-		b_LeftSaveRoom == false)
+		g_bEnable == false)
 		return Plugin_Continue;
 		
-	char sModelName[PLATFORM_MAX_PATH];
-	
+	int client;
 	if (StrEqual(name, "player_bot_replace")) //When a bot replaces a player (i.e. player switches to spectate or infected)
 	{
-		GetClientModel(bot, sModelName, sizeof(sModelName));
 		#if DEBUG
+			char sModelName[PLATFORM_MAX_PATH];
+			GetClientModel(bot, sModelName, sizeof(sModelName));
 			PrintToChatAll("When a bot replaces a player: %N - sModelName: %s",bot,sModelName);
 		#endif
 		client = bot;
 	}
 	else // When a player replaces a bot (i.e. player joins survivors team)
 	{
-		GetClientModel(player, sModelName, sizeof(sModelName));
 		#if DEBUG
+			char sModelName[PLATFORM_MAX_PATH];
+			GetClientModel(player, sModelName, sizeof(sModelName));
 			PrintToChatAll("player joins survivors team: %N - sModelName: %s",player,sModelName);
 		#endif
 		client = player;
 	}
 		
-	CreateTimer(Timer_KeepPlayerDeath_Seconds,Timer_KeepPlayerDeath,client,TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(Timer_KeepPlayerDeath_Seconds,Timer_KeepPlayerDeath, GetClientUserId(client),TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 	
 	return Plugin_Continue;
 }
@@ -253,60 +175,35 @@ stock ModelID GetModelID(const char[] model_name)
 {
 	for(ModelID i = MODEL_NICK ; i < MODEL_MAX ; ++i)
 	{
-		if(StrEqual(model_name,sModel_Name[i],false))
+		if(strcmp(model_name,sModel_Name[i],false) == 0)
 			return i;
 	}
 	return ModelID:MODEL_NONE;
 }
 
-stock bool IsClientSurvivorIndex(client)
+bool IsClientSurvivorIndex(int client)
 {
 	return (client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == L4D_TEAM_SURVIVOR);
 }
 
-stock bool IsNewMission()
+public void ConVarChange_hEnable(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	decl String:sMap[64];
-	GetCurrentMap(sMap, 64);
-	return StrContains(sMap, "m1_") != -1;
+	g_bEnable = hEnable.BoolValue;
 }
 
-stock bool IsL4D2Game()
+void SetCharacterName()
 {
-	decl String:sGameFolder[32];
-	GetGameFolderName(sGameFolder, 32);
-	return StrEqual(sGameFolder, "left4dead2");
-}
-
-bool LeftStartArea()
-{
-	int ent = -1, maxents = GetMaxEntities();
-	for (int i = MaxClients+1; i <= maxents; i++)
-	{
-		if (IsValidEntity(i))
-		{
-			decl String:netclass[64];
-			GetEntityNetClass(i, netclass, sizeof(netclass));
-			
-			if (StrEqual(netclass, "CTerrorPlayerResource"))
-			{
-				ent = i;
-				break;
-			}
-		}
-	}
+	sModel_Name[MODEL_NICK] 	= "models/survivors/survivor_gambler.mdl";
+	sModel_Name[MODEL_ROCHELLE] = "models/survivors/survivor_producer.mdl";
+	sModel_Name[MODEL_COACH] 	= "models/survivors/survivor_coach.mdl";
+	sModel_Name[MODEL_ELLIS] 	= "models/survivors/survivor_mechanic.mdl";
+	sModel_Name[MODEL_BILL] 	= "models/survivors/survivor_namvet.mdl";
+	sModel_Name[MODEL_ZOEY] 	= "models/survivors/survivor_teenangst.mdl";
+	sModel_Name[MODEL_FRANCIS] 	= "models/survivors/survivor_biker.mdl";
+	sModel_Name[MODEL_LOUIS] 	= "models/survivors/survivor_manager.mdl";
 	
-	if (ent > -1)
+	for(ModelID i = MODEL_NICK ; i < MODEL_MAX ; ++i)
 	{
-		if (GetEntProp(ent, Prop_Send, "m_hasAnySurvivorLeftSafeArea"))
-		{
-			return true;
-		}
+		bDeath_Model[i] = false;
 	}
-	return false;
-}
-
-public void ConVarChange_hEnable(Handle convar, const char[] oldValue, const char[] newValue)
-{
-	g_bEnable  = GetConVarBool(hEnable);
 }
