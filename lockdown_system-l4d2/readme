@@ -1,11 +1,12 @@
 Locks Saferoom Door Until Someone Opens It.
 
 -Changelog-
-v3.6
+v3.7
 -Remake Code
 -Add more covars
 -Update L4D2 "The Last Stand" gamedata
--Signature fix for December 1, 2020 update.
+-Signature fix for December 1, 2020 update. (Credit to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849)
+-Signature fix for December 8, 2020 update. (Credit to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849)
 -Add more convars
 -improve code
 -Fixed "lockdown_system-l4d2_spam_bot_disable" not working

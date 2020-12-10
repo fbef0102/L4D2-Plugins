@@ -1,3 +1,7 @@
+/*	The Last Stand Gamedate signature fix
+*	(Thanks to Shadowysn's work, [L4D1/2] Direct Infected Spawn (Limit-Bypass), https://forums.alliedmods.net/showthread.php?t=320849)
+*	(Stupid IDIOT TLS team, pushing unuseful updates no one really cares or asks for. Come on! Value)
+*/
 
 #pragma semicolon 1
 #pragma newdecls required //強制1.7以後的新語法
@@ -6,7 +10,7 @@
 #include <sdkhooks>
 #include <glow>
 #include <left4dhooks>
-#define PLUGIN_VERSION "3.6"
+#define PLUGIN_VERSION "3.7"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -48,6 +52,7 @@ public int Native_Is_End_SafeRoom_Door_Open(Handle plugin, int numParams)
 {
 	return bLDFinished;
 }
+
 
 public Plugin myinfo = 
 {
@@ -505,7 +510,6 @@ public Action LockdownOpening(Handle timer, any entity)
 	
 	PrintCenterTextAll("[LOCKDOWN] 開門倒數 %d 秒!", iSystemTime);
 	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);	
-
 
 	iSystemTime --;
 

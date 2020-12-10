@@ -1,9 +1,14 @@
+/*	Gamedate signature fix
+*	(Thanks to Shadowysn's work, [L4D1/2] Direct Infected Spawn (Limit-Bypass), https://forums.alliedmods.net/showthread.php?t=320849)
+*	(Stupid IDIOT TLS team, pushing unuseful updates no one really care ore asks for. Come on! Value)
+*/
+
 #pragma semicolon 1
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.7"
+#define PLUGIN_VERSION "1.8"
 
 enum GameModeStatus
 {
