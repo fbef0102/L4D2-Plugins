@@ -22,7 +22,7 @@ ConVar ChDelayCOOPFinal = null;
 ConVar cvarAnnounce = null;
 ConVar h_GameMode;
 
-char GameName[16];
+int iGameMode;
 char FMC_FileSettings[128];
 char current_map[64];
 char announce_map[64];
@@ -70,15 +70,15 @@ public void OnPluginStart()
 	HookEvent("mission_lost", Event_MissionLost);
 	
 	DefM = CreateConVar("sm_l4d_fmc_def", "c2m1_highway", "Mission for change by default.", FCVAR_NOTIFY);
-	CheckRoundCounterCoop = CreateConVar("sm_l4d_fmc_crec_coop_map", "3", "Quantity of events survivors wipe out before force of changelevel on non-final maps in coop (0=off)", FCVAR_NOTIFY, true, 0.0);
-	CheckRoundCounterCoopFinal = CreateConVar("sm_l4d_fmc_crec_coop_final", "3", "Quantity of events survivors wipe out before force of changelevel on final maps in coop (0=off)", FCVAR_NOTIFY, true, 0.0);
+	CheckRoundCounterCoop = CreateConVar("sm_l4d_fmc_crec_coop_map", "3", "Quantity of events survivors wipe out before force of changelevel on non-final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
+	CheckRoundCounterCoopFinal = CreateConVar("sm_l4d_fmc_crec_coop_final", "3", "Quantity of events survivors wipe out before force of changelevel on final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
 	ChDelayVS = CreateConVar("sm_l4d_fmc_chdelayvs", "1.0", "After final map finishes, delay before force of changelevel in versus. (0=off)", FCVAR_NOTIFY, true, 0.0);
-	ChDelayCOOPFinal = CreateConVar("sm_l4d_fmc_ChDelayCOOP_final", "10.0", "After final rescue vehicle leaving, delay before force of changelevel in coop. (0=off)", FCVAR_NOTIFY, true, 0.0);
+	ChDelayCOOPFinal = CreateConVar("sm_l4d_fmc_ChDelayCOOP_final", "10.0", "After final rescue vehicle leaving, delay before force of changelevel in coop/realism. (0=off)", FCVAR_NOTIFY, true, 0.0);
 	cvarAnnounce = CreateConVar("sm_l4d_fmc_announce", "1", "Enables next mission and how many chances left to advertise to players.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	h_GameMode = FindConVar("mp_gamemode");
 
 	GetCvars();
-	h_GameMode = FindConVar("mp_gamemode");
-	h_GameMode.GetString(GameName, sizeof(GameName));
+	GameModeCheck();
 	h_GameMode.AddChangeHook(ConVarGameMode);
 	DefM.AddChangeHook(ConVarChanged_Cvars);
 	CheckRoundCounterCoop.AddChangeHook(ConVarChanged_Cvars);
@@ -106,7 +106,7 @@ void GetCvars()
 
 public void ConVarGameMode(ConVar cvar, const char[] sOldValue, const char[] sintValue)
 {
-	h_GameMode.GetString(GameName, sizeof(GameName));
+	GameModeCheck();
 }
 
 bool g_bMapStarted;
@@ -141,7 +141,7 @@ public void OnClientPutInServer(int client)
 
 public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
-	if(StrEqual(GameName,"coop"))
+	if(iGameMode == 1)
 	{
 		int left;
 		if(L4D_IsMissionFinalMap())
@@ -176,7 +176,7 @@ public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		CreateTimer(0.5, TimerRoundEndBlock);
 	}
 
-	if( ChDelayVSValue > 0 && StrEqual(GameName,"versus") && StrEqual(next_mission_force, "none") != true && RoundEndCounter >= 4)
+	if( ChDelayVSValue > 0 && iGameMode == 2 && StrEqual(next_mission_force, "none") != true && RoundEndCounter >= 4)
 	{
 		CreateTimer(ChDelayVSValue, TimerChDelayVS);
 		RoundEndCounter = 0;
@@ -186,13 +186,13 @@ public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 
 public Action Event_FinalWin(Event event, const char[] name, bool dontBroadcast) 
 {
-	if(ChDelayCOOPFinalValue > 0 && StrEqual(GameName,"coop") && StrEqual(next_mission_force, "none") != true)
+	if(ChDelayCOOPFinalValue > 0 && iGameMode == 1 && StrEqual(next_mission_force, "none") != true)
 		CreateTimer(ChDelayCOOPFinalValue, TimerChDelayCOOPFinal);
 }
 
 public Action Event_MissionLost(Event event, const char[] name, bool dontBroadcast) 
 {
-	if(StrEqual(GameName,"coop"))
+	if(iGameMode == 1)
 	{
 		CoopRoundEndCounter += 1;
 		if(L4D_IsMissionFinalMap())
@@ -312,4 +312,18 @@ void PluginInitialization()
 			GetEntPropString(ent, Prop_Data, "m_mapName", sNextStageMapName, sizeof(sNextStageMapName)); // Get Prop Name
 		//LogMessage("sm_l4d_mapchanger: Next stage: %s", sNextStageMapName);
 	}
+}
+
+void GameModeCheck()
+{
+	static char GameName[16];
+	h_GameMode.GetString(GameName, sizeof(GameName));
+	if (StrEqual(GameName, "survival", false))
+		iGameMode = 3;
+	else if (StrEqual(GameName, "versus", false) || StrEqual(GameName, "teamversus", false) || StrEqual(GameName, "scavenge", false) || StrEqual(GameName, "teamscavenge", false) || StrEqual(GameName, "mutation12", false) || StrEqual(GameName, "mutation13", false) || StrEqual(GameName, "mutation15", false) || StrEqual(GameName, "mutation11", false))
+		iGameMode = 2;
+	else if (StrEqual(GameName, "coop", false) || StrEqual(GameName, "realism", false) || StrEqual(GameName, "mutation3", false) || StrEqual(GameName, "mutation9", false) || StrEqual(GameName, "mutation1", false) || StrEqual(GameName, "mutation7", false) || StrEqual(GameName, "mutation10", false) || StrEqual(GameName, "mutation2", false) || StrEqual(GameName, "mutation4", false) || StrEqual(GameName, "mutation5", false) || StrEqual(GameName, "mutation14", false))
+		iGameMode = 1;
+	else
+		iGameMode = 1;
 }
