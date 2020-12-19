@@ -2,14 +2,35 @@
 {
 	"left4dead2"
 	{
+		"Addresses"
+		{
+			"NextBotCreatePlayerBot.jumptable"
+			{
+				"windows"
+				{
+					"signature"	"CTerrorPlayer::ReplaceWithBot.jumptable"
+					"offset"	"7"
+				}
+			}
+		}
 		"Signatures"
 		{
+			"CTerrorPlayer::ReplaceWithBot.jumptable"
+			{
+				"library"	"server"
+				// Switch jump with a bunch of cases matching...
+				// PUSH rel32
+				// CALL rel32
+				// JUMP rel8
+				// There are acutally 2 matches of this in the windows binary, 
+				// but they appear to be the same functionality--so it doesn't matter which we get.
+				/* FF 24 85 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? EB ? 68 ? ? ? ? E8 ? ? ? ? EB ? 68 ? ? ? ? E8 ? ? ? ? EB ? 68 ? ? ? ? E8 ? ? ? ? EB ? 68 ? ? ? ? E8 ? ? ? ? EB ? 68 ? ? ? ? E8 ? ? ? ? EB ? 68 ? ? ? ? E8 */
+				"windows"	"\xFF\x24\x85\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xEB\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xEB\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xEB\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xEB\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xEB\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xEB\x2A\x68\x2A\x2A\x2A\x2A\xE8"
+			}
 			"NextBotCreatePlayerBot<Tank>"
 			{
-				/*Found By Shadowysn*/
 				"library"	"server"
 				"linux"	"@_Z22NextBotCreatePlayerBotI4TankEPT_PKc"
-				"windows"	"\x55\x8B\x2A\x83\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\x2A\x89\x2A\x2A\x56\x57\x8B\x2A\x2A\x68\xF0"
 				"mac"		"@_Z22NextBotCreatePlayerBotI4TankEPT_PKc"
 			}
 		}
