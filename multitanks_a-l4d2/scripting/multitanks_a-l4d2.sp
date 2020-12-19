@@ -1,6 +1,6 @@
-/*	Gamedate signature fix
+/*	The Last Stand Gamedate signature fix
 *	(Thanks to Shadowysn's work, [L4D1/2] Direct Infected Spawn (Limit-Bypass), https://forums.alliedmods.net/showthread.php?t=320849)
-*	(Stupid IDIOT TLS team, pushing unuseful updates no one really care ore asks for. Come on! Value)
+*	(Stupid IDIOT TLS team, pushing unuseful updates no one really cares or asks for. Come on! Value)
 */
 
 #pragma semicolon 1
@@ -8,7 +8,8 @@
 #include <sdktools>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.8"
+#define PLUGIN_VERSION "1.9"
+#define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
 
 enum GameModeStatus
 {
@@ -75,22 +76,7 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	Handle hGameConf = LoadGameConfigFile("multitanks_a");
-	if( hGameConf != null )
-	{
-		StartPrepSDKCall(SDKCall_Static);
-		if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, "NextBotCreatePlayerBot<Tank>"))
-			SetFailState("Unable to find NextBotCreatePlayerBot<Tank> signature in gamedata file.");
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
-		hCreateTank = EndPrepSDKCall();
-		if (hCreateTank == null)
-			SetFailState("Cannot initialize NextBotCreatePlayerBot<Tank> SDKCall, signature is broken.") ;
-	}
-	else
-	{
-		SetFailState("Unable to find l4dinfectedbots.txt gamedata file.");
-	}
+	GetGameData();
 
 	hGameMode = FindConVar("mp_gamemode");
 	hGameMode.AddChangeHook(OnMTCVarsChanged);
@@ -274,7 +260,7 @@ public void OnPluginStart()
 		}
 	}
 	
-	AutoExecConfig(true, "multitanks");
+	AutoExecConfig(true, "multitanks_a");
 	
 	HookEvent("round_start", OnRoundEvents);
 	HookEvent("round_end", OnRoundEvents);
@@ -851,3 +837,99 @@ bool IsPlayerBurning(int client)
 	return (fBurning > 0.0) ? true : false;
 }
 
+Handle hGameConf;
+void GetGameData()
+{
+	hGameConf = LoadGameConfigFile("multitanks_a");
+	if( hGameConf != null )
+	{
+		PrepSDKCall();
+	}
+	else
+	{
+		SetFailState("Unable to find multitanks_a.txt gamedata file.");
+	}
+	delete hGameConf;
+}
+
+void PrepSDKCall()
+{
+	//find create bot signature
+	Address replaceWithBot = GameConfGetAddress(hGameConf, "NextBotCreatePlayerBot.jumptable");
+	if (replaceWithBot != Address_Null && LoadFromAddress(replaceWithBot, NumberType_Int8) == 0x68) {
+		// We're on L4D2 and linux
+		PrepWindowsCreateBotCalls(replaceWithBot);
+	}
+	else
+	{
+		PrepCreateTankBotCalls();
+	}
+}
+
+void LoadStringFromAdddress(Address addr, char[] buffer, int maxlength) {
+	int i = 0;
+	while(i < maxlength) {
+		char val = LoadFromAddress(addr + view_as<Address>(i), NumberType_Int8);
+		if(val == 0) {
+			buffer[i] = 0;
+			break;
+		}
+		buffer[i] = val;
+		i++;
+	}
+	buffer[maxlength - 1] = 0;
+}
+
+Handle PrepCreateBotCallFromAddress(Handle hSiFuncTrie, const char[] siName) {
+	Address addr;
+	StartPrepSDKCall(SDKCall_Static);
+	if (!GetTrieValue(hSiFuncTrie, siName, addr) || !PrepSDKCall_SetAddress(addr))
+	{
+		SetFailState("Unable to find NextBotCreatePlayer<%s> address in memory.", siName);
+		return null;
+	}
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	return EndPrepSDKCall();	
+}
+
+void PrepWindowsCreateBotCalls(Address jumpTableAddr) {
+	Handle hInfectedFuncs = CreateTrie();
+	// We have the address of the jump table, starting at the first PUSH instruction of the
+	// PUSH mem32 (5 bytes)
+	// CALL rel32 (5 bytes)
+	// JUMP rel8 (2 bytes)
+	// repeated pattern.
+	
+	// Each push is pushing the address of a string onto the stack. Let's grab these strings to identify each case.
+	// "Hunter" / "Smoker" / etc.
+	for(int i = 0; i < 7; i++) {
+		// 12 bytes in PUSH32, CALL32, JMP8.
+		Address caseBase = jumpTableAddr + view_as<Address>(i * 12);
+		Address siStringAddr = view_as<Address>(LoadFromAddress(caseBase + view_as<Address>(1), NumberType_Int32));
+		static char siName[32];
+		LoadStringFromAdddress(siStringAddr, siName, sizeof(siName));
+
+		Address funcRefAddr = caseBase + view_as<Address>(6); // 2nd byte of call, 5+1 byte offset.
+		int funcRelOffset = LoadFromAddress(funcRefAddr, NumberType_Int32);
+		Address callOffsetBase = caseBase + view_as<Address>(10); // first byte of next instruction after the CALL instruction
+		Address nextBotCreatePlayerBotTAddr = callOffsetBase + view_as<Address>(funcRelOffset);
+		PrintToServer("Found NextBotCreatePlayerBot<%s>() @ %08x", siName, nextBotCreatePlayerBotTAddr);
+		SetTrieValue(hInfectedFuncs, siName, nextBotCreatePlayerBotTAddr);
+	}
+
+	hCreateTank = PrepCreateBotCallFromAddress(hInfectedFuncs, "Tank");
+	if (hCreateTank == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateTank); return; }
+}
+
+void PrepCreateTankBotCalls() {
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateTank))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateTank); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateTank = EndPrepSDKCall();
+	if (hCreateTank == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateTank); return; }
+}
