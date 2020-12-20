@@ -54,6 +54,7 @@ public int Native_Is_End_SafeRoom_Door_Open(Handle plugin, int numParams)
 	return bLDFinished;
 }
 
+
 public Plugin myinfo = 
 {
 	name = "[L4D2] Lockdown System",
@@ -460,7 +461,7 @@ public Action CheckAntiFarm(Handle timer, any entity)
 
 public Action EndAntiFarm(Handle timer)
 {
-	delete hAntiFarmTime;
+	hAntiFarmTime = null;
 }
 
 public Action LockdownOpening(Handle timer, any entity)
@@ -497,6 +498,7 @@ public Action LockdownOpening(Handle timer, any entity)
 	
 	PrintCenterTextAll("[LOCKDOWN] 開門倒數 %d 秒!", iSystemTime);
 	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);	
+
 
 	iSystemTime --;
 
@@ -1148,7 +1150,7 @@ void PrepWindowsCreateBotCalls(Address jumpTableAddr) {
 		int funcRelOffset = LoadFromAddress(funcRefAddr, NumberType_Int32);
 		Address callOffsetBase = caseBase + view_as<Address>(10); // first byte of next instruction after the CALL instruction
 		Address nextBotCreatePlayerBotTAddr = callOffsetBase + view_as<Address>(funcRelOffset);
-		PrintToServer("Found NextBotCreatePlayerBot<%s>() @ %08x", siName, nextBotCreatePlayerBotTAddr);
+		//PrintToServer("Found NextBotCreatePlayerBot<%s>() @ %08x", siName, nextBotCreatePlayerBotTAddr);
 		SetTrieValue(hInfectedFuncs, siName, nextBotCreatePlayerBotTAddr);
 	}
 
