@@ -86,7 +86,6 @@ public void OnClientSpeakingStart(int client)
 		|| GetClientListeningFlags(client) == 1
 		|| hSV_VoiceEnable.BoolValue == false)
 	{
-		ClientSpeakingTime[client] = false;
 		return;
 	}
 
@@ -94,6 +93,17 @@ public void OnClientSpeakingStart(int client)
 	ClientSpeakingTime[client] = true;
 	
 	return;
+}
+
+public void OnClientSpeaking(int client)
+{
+	if (BaseComm_IsClientMuted(client) 
+		|| GetClientListeningFlags(client) == 1
+		|| hSV_VoiceEnable.BoolValue == false)
+	{
+		RemoveHat(client);
+		ClientSpeakingTime[client] = false;
+	}
 }
 
 public void OnClientSpeakingEnd(int client)
