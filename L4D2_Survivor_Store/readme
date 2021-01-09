@@ -204,3 +204,7 @@ static char specialMenu[][][] =
 	{"Kill Witches", 	"Kill Witches", 				"4500"},
 	{"Slay Infected", 	"Slay Infected Attacker", 		"5000"},
 };
+
+-How to set player maximum money-
+in scripting\L4D2_Survivor_Store.sp line 31
+#define MAX_MONEY            32000 
