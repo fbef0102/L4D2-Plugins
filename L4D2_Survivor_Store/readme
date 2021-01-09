@@ -15,6 +15,7 @@ v3.0
 -Add Special items
 -You can earn points by killing survivors as an infected.
 -You can earn points by helping each other as a survivor.
+-Save player's money with Cookies, it means that money can be saved to database across client connections, map changes and even server restarts.
 
 v1.0
 -original Post: https://forums.alliedmods.net/showthread.php?t=322108
