@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2020/12/26)
+>All plugins in here only apply to L4D2 (last edited:2021/1/9)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -30,6 +30,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>drop_secondary</b>: Survivor players will drop their secondary weapon (including melee) when they die
 * <b>show_mic</b>: Voice Announce in centr text + create hat to Show Who is speaking.
 * <b>multitanks_a-l4d2</b>: An improved version of the MultiTanks plugin originally created by Red Alex.
+* <b>L4D2_Survivor_Store</b>: Killing zombies and infected to earn points, use !buy to purchase weapons and items.
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6499 scripting
 # Others
