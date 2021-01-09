@@ -108,9 +108,6 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 #define MODEL_COLA			"models/w_models/weapons/w_cola.mdl"
 #define MODEL_GNOME			"models/props_junk/gnome.mdl"
 
-#define BUY_Sound1 "resistance/items/gunpickup2.mp3"
-#define BUY_Sound2 "resistance/items/ammopickup2.mp3"
-
 static char weaponsMenu[][][] = 
 {
 	{"pistol",			"Pistol", 			"100"},
@@ -420,9 +417,6 @@ public void OnMapStart()
 	if(g_bColaMap) PrecacheModel(MODEL_COLA, true);
 
 	PrecacheModel(MODEL_GASCAN, true);
-
-	PrecacheSound(BUY_Sound1);
-	PrecacheSound(BUY_Sound2);
 }
 
 public void ConVarChanged_Allow(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -1389,7 +1383,6 @@ public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, 
 							g_iCanJump[param1]++;
 							PrintToTeam(param1, L4D_TEAM_SURVIVORS, specialMenu[index][1], true);
 							g_iCredits[param1] -= itemMoney;
-							PlaySound(param1, BUY_Sound2);
 						}
 					}
 					else if (strcmp(specialMenu[index][0], "Infinite Ammo") == 0)
@@ -1404,7 +1397,6 @@ public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, 
 							PrintToTeam(param1, L4D_TEAM_SURVIVORS, specialMenu[index][1], true);
 							g_iCredits[param1] -= itemMoney;
 							CreateTimer(g_fInfiniteAmmoTime, Timer_NoInfiniteAmmo, param1, TIMER_FLAG_NO_MAPCHANGE);
-							PlaySound(param1, BUY_Sound2);
 						}
 					}
 					else if (strcmp(specialMenu[index][0], "Fire Infeceted") == 0)
@@ -1425,7 +1417,6 @@ public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, 
 							ForcePlayerSuicide(infectedattacker);
 							g_iCredits[param1] -= itemMoney;
 							PrintToTeam(param1, 0, specialMenu[index][1], true);
-							PlaySound(param1, BUY_Sound2);
 						}
 						else
 						{
@@ -1553,8 +1544,6 @@ stock void CreateFires(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
-	
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void GiveFunction(int client, char[] name, char[] displayName)
@@ -1565,8 +1554,6 @@ stock void GiveFunction(int client, char[] name, char[] displayName)
 	SetCommandFlags("give", flagsgive);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
-	
-	PlaySound(client, BUY_Sound1);
 }
 
 stock void GiveUpgrade(int client, char[] name, char[] displayName)
@@ -1579,8 +1566,6 @@ stock void GiveUpgrade(int client, char[] name, char[] displayName)
 	SetCommandFlags("upgrade_add", flags);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
-
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void GiveClientAmmo(int client, int iSlot0, char[] displayName)
@@ -1599,8 +1584,6 @@ stock void GiveClientAmmo(int client, int iSlot0, char[] displayName)
 	}
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
-
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void GiveClientHealth(int client, int iHealthAdd, char[] displayName, bool bPrint = true)
@@ -1623,8 +1606,6 @@ stock void GiveClientHealth(int client, int iHealthAdd, char[] displayName, bool
 	}
 
 	if(bPrint) PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
-
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void KillAllCommonInfected(int client, char[] displayName)
@@ -1642,7 +1623,6 @@ stock void KillAllCommonInfected(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, 0, displayName, true);
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void KillAllWitches(int client, char[] displayName)
@@ -1657,7 +1637,6 @@ stock void KillAllWitches(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, 0, displayName, true);
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void FireAllInfected(int client, char[] displayName)
@@ -1669,7 +1648,6 @@ stock void FireAllInfected(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, 0, displayName, true);
-	PlaySound(client, BUY_Sound2);
 }
 
 stock void HealthAllSurvivors(int client, char[] displayName)
@@ -1891,7 +1869,6 @@ bool TeleportToNearestTeammate (int client, char[] displayName)
 	TeleportEntity( client, targetOrigin, NULL_VECTOR, NULL_VECTOR);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName, true);
-	PlaySound(client, BUY_Sound2);
 
 	return true;
 }
