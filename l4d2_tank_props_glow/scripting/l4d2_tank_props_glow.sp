@@ -17,10 +17,10 @@ int iTankClient = -1;
 bool tankSpawned;
 
 public Plugin myinfo = {
-    name        = "L4D2 Tank Hittable Glow",
-    author      = "Harry Potter",
-    version     = "1.8",
-    description = "Stop tank props from fading whilst the tank is alive + add Hittable Glow."
+	name        = "L4D2 Tank Hittable Glow",
+	author      = "Harry Potter, Sir",
+	version     = "1.9",
+	description = "Stop tank props from fading whilst the tank is alive + add Hittable Glow."
 };
 
 public void OnPluginStart() {
@@ -208,15 +208,22 @@ bool IsTankProp(int iEntity ) {
     
     GetEdictClassname(iEntity, className, sizeof(className));
     if ( strcmp(className, "prop_physics") == 0 ) {
-        if ( GetEntProp(iEntity, Prop_Send, "m_hasTankGlow", 1) ) {
-            return true;
+		if (GetEntProp(iEntity, Prop_Send, "m_hasTankGlow", 1)) 
+		{
+			char sModel[64];
+			GetEntPropString(iEntity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
+			if (StrEqual("models/props/cs_assault/forklift.mdl", sModel))
+			{
+				return false;
+			}
+			return true;
         }
 
-        static char m_ModelName[PLATFORM_MAX_PATH];
-        GetEntPropString(iEntity, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
-        if ( StrContains(m_ModelName, "atlas_break_ball") ) {
+		static char m_ModelName[PLATFORM_MAX_PATH];
+		GetEntPropString(iEntity, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
+		if (StrContains(m_ModelName, "atlas_break_ball") != -1) {
             return true;
-        }
+		}
 
     }
     else if ( strcmp(className, "prop_car_alarm") ==0 ) {
@@ -393,10 +400,15 @@ void PropSpawned(int entity)
 	{
 		static char m_ModelName[PLATFORM_MAX_PATH];
 		GetEntPropString(entity, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
-		//PrintToChatAll("PropSpawned %d - %s", entity, m_ModelName);
-		if ( StrContains(m_ModelName, "atlas_break_ball") ) {
-			SDKHook(entity, SDKHook_OnTakeDamagePost, PropDamaged);
+		if (StrContains(m_ModelName, "atlas_break_ball") != -1 || StrContains(m_ModelName, "forklift_brokenlift.mdl") != -1) 
+		{
 			PushArrayCell(hTankProps, entity);
+			PushArrayCell(hTankPropsHit, entity);			
+			CreateTankPropGlow(entity);
+		}
+		else if (StrContains(m_ModelName, "forklift_brokenfork.mdl") != -1)
+		{
+			AcceptEntityInput(entity, "Kill");
 		}
 	}
 }
