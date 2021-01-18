@@ -1,4 +1,4 @@
-Fixes upgrade packs pickup bug when using survivor model change
+Fixes upgrade packs pickup bug when there are 5+ survivors
 
 -ChangeLog-
 v1.4
