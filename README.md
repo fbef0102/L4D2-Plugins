@@ -24,7 +24,8 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d2_Death_Survivor</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>l4d2_change_m1</b>: If all Survivors die, change level to the current map m1 (coop only)
 * <b>l4d2_spectating_cheat</b>: A spectator who watching the survivor at first person view can now see the infected model glows though the wall
-* <b>lfd_both_fixUpgradeP* <b>lockdown_system-l4d2_b</b>: Locks Saferoom Door Until Someone Opens It.
+* <b>lfd_both_fixUpgradePack</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
+* <b>lockdown_system-l4d2_b</b>: Locks Saferoom Door Until Someone Opens It.
 * <b>clear_dead_body</b>: Remove Dead Body Entity
 * <b>antisaferoomdooropen</b>: First Saferoom door anti open in l4d2ack</b>: Fixes upgrade packs pickup bug when using survivor model change
 * <b>drop_secondary</b>: Survivor players will drop their secondary weapon (including melee) when they die
