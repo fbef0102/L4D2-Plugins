@@ -1,0 +1,50 @@
+"Phrases"
+{
+	"Finale Tries Left"
+	{
+		"en"			"{default}[{olive}TS{default}]{default} {green}%d {default}rounds left until the next {lightgreen}campaign{default}."
+		"es"			"{default}[{olive}TS{default}]{default} Quedan {green}%d {default}rondas para seguir a la siguiente {lightgreen}campaña{default}."
+		"zho"			"{default}[{olive}TS{default}]{default} 還剩下 {green}%d {default}次機會挑戰 {lightgreen}最後關卡{default}."
+		"chi"			"{default}[{olive}TS{default}]{default} 还剩余 {green}%d {default}次机会挑战 {lightgreen}最终关卡{default}."
+	}
+	"Finale 1 Try Left"
+	{
+		"en"			"Next Campaign{default}: {blue}%s{default}."
+		"es"			"Queda 1 ronda. Siguiente campaña{default}: {blue}%s{default}."
+		"zho"			"最後一次機會. 下一張圖{default}: {blue}%s{default}."
+		"chi"			"最后机会. 下一张图{default}: {blue}%s{default}."
+	}
+
+	"Tries Left"
+	{
+		"en"			"{default}[{olive}TS{default}]{default} {green}%d {default}rounds left in this {lightgreen}map{default}."
+		"es"			"{default}[{olive}TS{default}]{default} Quedan {green}%d {default}rondas para este {lightgreen}map{default}."
+		"zho"			"{default}[{olive}TS{default}]{default} 還剩下 {green}%d {default}次機會挑戰 {lightgreen}本關卡{default}."
+		"chi"			"{default}[{olive}TS{default}]{default} 还剩余 {green}%d {default}次机会挑战 {lightgreen}本关卡{default}."
+	}
+
+	"Force Pass Campaign No Tries Left"
+	{
+		"en"			"{default}[{olive}TS{default}]{default} You couldn't pass this campaign in {green}%d {default}rounds, switching to the {lightgreen}next campaign{default}."
+		"es"			"{default}[{olive}TS{default}]{default} No pudo pasar la campaña en {green}%d {default}rondas，cambiando a la {blue}siguiente campaña{default}."
+		"zho"			"{default}[{olive}TS{default}]{default} 滅團失敗已達 {green}%d {default}次，正在切換{blue}下一張地圖{default}."
+		"chi"			"{default}[{olive}TS{default}]{default} 团灭次数已达 {green}%d {default}次，正在更换{blue}下一张地图{default}."
+	}
+
+	"Force Pass Map No Tries Left"
+	{
+		"en"			"{default}[{olive}TS{default}]{default} You couldn't pass this map in {green}%d {default}rounds, switching to the {lightgreen}next map{default}."
+		"es"			"{default}[{olive}TS{default}]{default} No pudo pasar este mapa en {green}%d {default}rondas，cambiando al {blue}siguiente mapa{default}."
+		"zho"			"{default}[{olive}TS{default}]{default} 滅團失敗已達 {green}%d {default}次，正在切換{lightgreen}下一關卡{default}."
+		"chi"			"{default}[{olive}TS{default}]{default} 团灭次数已达 {green}%d {default}次，正在更换{lightgreen}下一关卡{default}."
+	}
+
+	"Announce Map"
+	{
+		"en"			"{default}[{olive}TS{default}]{default} Next Campaign{default}: {blue}%s{default}."
+		"es"			"{default}[{olive}TS{default}]{default} Siguiente campaña{default}: {blue}%s{default}."
+		"zho"			"{default}[{olive}TS{default}]{default} 下一張圖 Next Map{default}: {blue}%s{default}."
+		"chi"			"{default}[{olive}TS{default}]{default} 下一张图 Next Map{default}: {blue}%s{default}."
+	}
+
+}

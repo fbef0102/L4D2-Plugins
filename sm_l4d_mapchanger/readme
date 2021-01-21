@@ -1,8 +1,9 @@
 Force change to next mission when current mission(final stage) end.
 
 -ChangeLog-
-v2.0
+v2.1
 -Remake Code
+-Translation Support
 -Support L4D2 coop/versus/realism mode
 -Support normal stage and final stage
 
@@ -24,10 +25,10 @@ sm_l4d_fmc_announce "1"
 // Delay before versus mission change (float in sec).
 sm_l4d_fmc_chdelayvs "1.0"
 
-// Quantity of events survivors wipe out before force of changelevel on final maps in coop/realism (0=off)
+// Quantity of rounds (tries) events survivors wipe out before force of changelevel on final maps in coop/realism (0=off)
 sm_l4d_fmc_crec_coop_final "2"
 
-// Quantity of events survivors wipe out before force of changelevel on non-final maps in coop/realism (0=off)
+// Quantity of rounds (tries) events survivors wipe out before force of changelevel on non-final maps in coop/realism (0=off)
 sm_l4d_fmc_crec_coop_map "2"
 
 // Mission for change by default.

@@ -6,7 +6,7 @@
 #include <l4d2_changelevel>
 #include <left4dhooks>
 
-#define Version "2.0"
+#define Version "2.1"
 #define MAX_ARRAY_LINE 50
 #define MAX_MAPNAME_LEN 64
 #define MAX_CREC_LEN 2
@@ -41,7 +41,7 @@ Handle hKVSettings = null;
 public Plugin myinfo = 
 {
 	name = "L4D2 Force Mission Changer",
-	author = "Dionys, Harry",
+	author = "Dionys, Harry, Jeremy Villanueva",
 	description = "Force change to next mission when current mission end.",
 	version = Version,
 	url = "https://steamcommunity.com/id/fbef0102/"
@@ -62,6 +62,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+	LoadTranslations("sm_l4d_mapchanger.phrases");
+
 	hKVSettings=CreateKeyValues("ForceMissionChangerSettings");
 
 	HookEvent("round_start", Event_RoundStart);
@@ -70,8 +72,8 @@ public void OnPluginStart()
 	HookEvent("mission_lost", Event_MissionLost);
 	
 	DefM = CreateConVar("sm_l4d_fmc_def", "c2m1_highway", "Mission for change by default.", FCVAR_NOTIFY);
-	CheckRoundCounterCoop = CreateConVar("sm_l4d_fmc_crec_coop_map", "3", "Quantity of events survivors wipe out before force of changelevel on non-final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
-	CheckRoundCounterCoopFinal = CreateConVar("sm_l4d_fmc_crec_coop_final", "3", "Quantity of events survivors wipe out before force of changelevel on final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
+	CheckRoundCounterCoop = CreateConVar("sm_l4d_fmc_crec_coop_map", "3", "Quantity of rounds (tries) events survivors wipe out before force of changelevel on non-final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
+	CheckRoundCounterCoopFinal = CreateConVar("sm_l4d_fmc_crec_coop_final", "3", "Quantity of rounds (tries) events survivors wipe out before force of changelevel on final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
 	ChDelayVS = CreateConVar("sm_l4d_fmc_chdelayvs", "1.0", "After final map finishes, delay before force of changelevel in versus. (0=off)", FCVAR_NOTIFY, true, 0.0);
 	ChDelayCOOPFinal = CreateConVar("sm_l4d_fmc_ChDelayCOOP_final", "10.0", "After final rescue vehicle leaving, delay before force of changelevel in coop/realism. (0=off)", FCVAR_NOTIFY, true, 0.0);
 	cvarAnnounce = CreateConVar("sm_l4d_fmc_announce", "1", "Enables next mission and how many chances left to advertise to players.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -148,11 +150,11 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 		{
 			if(CheckRoundCounterCoopFinalValue > 0 && CoopRoundEndCounter > 0) 
 			{
-				left = CheckRoundCounterCoopFinalValue-CoopRoundEndCounter;
-				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("{default}[{olive}TS{default}]{default} 還剩下 {green}%d {default}次機會挑戰 {lightgreen}最後關卡{default}.", left);
+				left = CheckRoundCounterCoopFinalValue-CoopRoundEndCounter;//Intentos - Intentos Realizados
+				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("%t","Finale Tries Left",left);
 				if(left == 1)
 				{
-					if(cvarAnnounceValue) CPrintToChatAll("下一張圖 Next Map{default}: {blue}%s{default}.", announce_map);
+					if(cvarAnnounceValue) CPrintToChatAll("%t","Finale 1 Try Left",announce_map);
 				}
 			}
 		}
@@ -161,7 +163,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 			if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter > 0) 
 			{
 				left = CheckRoundCounterCoopValue - CoopRoundEndCounter;
-				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("{default}[{olive}TS{default}]{default} 還剩下 {green}%d {default}次機會挑戰 {lightgreen}本關卡{default}.", left);
+				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("Tries Left", left);
 			}
 		}
 	}
@@ -194,12 +196,12 @@ public Action Event_MissionLost(Event event, const char[] name, bool dontBroadca
 {
 	if(iGameMode == 1)
 	{
-		CoopRoundEndCounter += 1;
+		CoopRoundEndCounter += 1;//Intentos Realizados +1
 		if(L4D_IsMissionFinalMap())
 		{
 			if(StrEqual(next_mission_force, "none") != true && CheckRoundCounterCoopFinalValue > 0 && CoopRoundEndCounter >= CheckRoundCounterCoopFinalValue)
 			{
-				CPrintToChatAll("{default}[{olive}TS{default}]{default} 滅團失敗已達 {green}%d {default}次，正在切換{blue}下一張地圖{default}.", CheckRoundCounterCoopFinalValue);
+				CPrintToChatAll("%t","Force Pass Campaign No Tries Left", CheckRoundCounterCoopFinalValue);
 				CreateTimer(NEXTLEVEL_Seconds, TimerChDelayCOOPFinal);
 			}
 		}
@@ -207,7 +209,7 @@ public Action Event_MissionLost(Event event, const char[] name, bool dontBroadca
 		{
 			if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter >= CheckRoundCounterCoopValue)
 			{
-				CPrintToChatAll("{default}[{olive}TS{default}]{default} 滅團失敗已達 {green}%d {default}次，正在切換{lightgreen}下一關卡{default}.", CheckRoundCounterCoopValue);
+				CPrintToChatAll("%t","Force Pass Map No Tries Left", CheckRoundCounterCoopValue);
 				CreateTimer(NEXTLEVEL_Seconds, TimerChDelayCOOPMap);
 			}		
 		}
@@ -220,7 +222,7 @@ public Action TimerAnnounce(Handle timer, any client)
 	{
 		if (L4D_IsMissionFinalMap())
 		{
-			CPrintToChat(client, "{default}[{olive}TS{default}]{default} 下一張圖 Next Map{default}: {blue}%s{default}.", announce_map);
+			CPrintToChat(client, "%t","Announce Map", announce_map);
 		}
 	}
 }
@@ -275,7 +277,7 @@ void PluginInitialization()
 	KvRewind(hKVSettings);
 	if(KvJumpToKey(hKVSettings, current_map))
 	{
-		KvGetString(hKVSettings, "next mission map", next_mission_force, 64, next_mission_def);
+		KvGetString(hKVSettings, "next mission map", next_mission_force, 64, next_mission_def);//Force Next Campaign,Def Next Map
 		//LogMessage("next_mission map: %s",next_mission_force);
 		KvGetString(hKVSettings, "next mission name", force_mission_name, 64, "none");
 		//LogMessage("next mission name: %s",force_mission_name);
