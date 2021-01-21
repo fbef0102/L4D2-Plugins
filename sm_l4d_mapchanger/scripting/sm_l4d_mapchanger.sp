@@ -163,7 +163,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 			if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter > 0) 
 			{
 				left = CheckRoundCounterCoopValue - CoopRoundEndCounter;
-				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("Tries Left", left);
+				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("%t","Tries Left", left);
 			}
 		}
 	}
