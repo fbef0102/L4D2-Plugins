@@ -116,7 +116,7 @@ sm_shop_zombiekilled "1"
 "sm_lookbank [name]"
 
 **Adm gives money (ADMFLAG_BAN)
-"sm_givemoney <name>"
+"sm_givemoney <name> <money>"
 
 **Adm removes all money (ADMFLAG_BAN)
 "sm_clearmoney <name>"
