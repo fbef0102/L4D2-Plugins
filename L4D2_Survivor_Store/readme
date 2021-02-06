@@ -82,8 +82,8 @@ sm_shop_stage_complete "400"
 // If 1, decrease money if survivor friendly fire each other.
 sm_shop_survivor_TK_enable "1"
 
-// Numbers of real survivor player require to active this plugin.
-sm_shop_survivor_player_require "4"
+// Numbers of real survivor and infected player require to active this plugin.
+sm_shop_player_require "4"
 
 // Giving one dollar money for hurting tank per X hp
 sm_shop_tank_hurt "40"
