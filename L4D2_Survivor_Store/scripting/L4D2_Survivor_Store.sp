@@ -11,7 +11,7 @@ public Plugin myinfo =
 	name = "L4D2 Survivor Buy Shop", 
 	author = "Killing zombies and infected to earn points, Buy Shop", 
 	description ="Shop by HarryPoter", 
-	version = "3.0", 
+	version = "3.1", 
 	url = "https://steamcommunity.com/id/HarryPotter_TW/"
 }
 #define L4D_TEAM_SPECTATOR		1
@@ -32,12 +32,12 @@ public Plugin myinfo =
 #define MODEL_GASCAN			"models/props_junk/gascan001a.mdl"
 
 ConVar g_BoomerKilled,g_ChargerKilled,g_SmokerKilled,g_HunterKilled,g_JockeyKilled,g_SpitterKilled,
-	g_WitchKilled,g_ZombieKilled, g_DecayDecay, g_MaxIncapCount, g_SurvivorRequired,
+	g_WitchKilled,g_ZombieKilled, g_DecayDecay, g_MaxIncapCount, g_PlayerRequired,
 	g_hHealTeammate, g_hDefiSave, g_hHelpTeammate, g_hTankHurt,  g_hIncapSurvivor, g_hKillSurvivor,
 	g_hCookiesCachedEnable, g_hTKSurvivorEnable, g_hGascanMapOff, g_hColaMapOff, g_hMaxJumpLimit,
 	g_hInfiniteAmmoTime, g_hStageComplete, g_hFinalMissionComplete, g_hWipeOutSurvivor;
 int g_iBoomerKilled, g_iChargerKilled, g_iSmokerKilled, g_iHunterKilled, g_iJockeyKilled, g_iSpitterKilled,
-	g_iWitchKilled, g_iZombieKilled, g_iMaxIncapCount, g_iSurvivorRequired, g_iHealTeammate,
+	g_iWitchKilled, g_iZombieKilled, g_iMaxIncapCount, g_iPlayerRequired, g_iHealTeammate,
 	g_iDefiSave, g_iHelpTeammate, g_iTankHurt, g_iIncapSurvivor, g_iKillSurvivor, g_iMaxJumpLimit,
 	g_iStageComplete, g_iFinalMissionComplete, g_iWipeOutSurvivor;
 float g_fInfiniteAmmoTime;
@@ -287,7 +287,7 @@ public void OnPluginStart()
 	//*****************//
 	//  S E T T I N G S //
 	//****************//
-	g_SurvivorRequired = CreateConVar("sm_shop_survivor_player_require", "4", "Numbers of real survivor player require to active this plugin.", FCVAR_NOTIFY, true, 1.0);
+	g_PlayerRequired = CreateConVar("sm_shop_player_require", "4", "Numbers of real survivor and infected player require to active this plugin.", FCVAR_NOTIFY, true, 1.0);
 	g_hCookiesCachedEnable = CreateConVar("sm_shop_CookiesCached_enable", "1", "If 1, use CookiesCached to save player money. Otherwise, the moeny will not be saved if player leaves the server.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_BoomerKilled = CreateConVar("sm_shop_boomkilled", "10", "Giving money for killing a boomer", FCVAR_NOTIFY, true, 1.0);
 	g_ChargerKilled = CreateConVar("sm_shop_chargerkilled", "30", "Giving money for killing a charger", FCVAR_NOTIFY, true, 1.0);
@@ -316,7 +316,7 @@ public void OnPluginStart()
 	g_DecayDecay = FindConVar("pain_pills_decay_rate");
 
 	GetCvars();
-	g_SurvivorRequired.AddChangeHook(ConVarChanged_Allow);
+	g_PlayerRequired.AddChangeHook(ConVarChanged_Allow);
 	g_BoomerKilled.AddChangeHook(ConVarChanged_Cvars);
 	g_ChargerKilled.AddChangeHook(ConVarChanged_Cvars);
 	g_SmokerKilled.AddChangeHook(ConVarChanged_Cvars);
@@ -422,7 +422,7 @@ public void OnMapStart()
 public void ConVarChanged_Allow(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	GetCvars();
-	CheckSurvivors();
+	CheckPlayers();
 }
 
 public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -432,7 +432,7 @@ public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char
 
 void GetCvars()
 {
-	g_iSurvivorRequired = g_SurvivorRequired.IntValue;
+	g_iPlayerRequired = g_PlayerRequired.IntValue;
 	g_iBoomerKilled = g_BoomerKilled.IntValue;
 	g_iChargerKilled = g_ChargerKilled.IntValue;
 	g_iSmokerKilled = g_SmokerKilled.IntValue;
@@ -460,7 +460,7 @@ void GetCvars()
 public Action BuyShopCommand(int client, int args)
 {
 	if(g_bEnable == false) {
-		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iSurvivorRequired);
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
 		return Plugin_Handled;
 	}
 
@@ -492,7 +492,7 @@ public Action BuyShopCommand(int client, int args)
 public Action PayCommand(int client, int args)
 {
 	if(g_bEnable == false) {
-		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iSurvivorRequired);
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
 		return Plugin_Handled;
 	}
 
@@ -561,7 +561,7 @@ public Action PayCommand(int client, int args)
 public Action CheckBankCommand(int client, int args)
 {
 	if(g_bEnable == false) {
-		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iSurvivorRequired);
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
 		return Plugin_Handled;
 	}
 
@@ -609,7 +609,7 @@ public Action CheckBankCommand(int client, int args)
 public Action GiveMoneyCommand(int client, int args)
 {
 	if(g_bEnable == false) {
-		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iSurvivorRequired);
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
 		return Plugin_Handled;
 	}
 
@@ -661,7 +661,7 @@ public Action GiveMoneyCommand(int client, int args)
 public Action ClearMoneyCommand(int client, int args)
 {
 	if(g_bEnable == false) {
-		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iSurvivorRequired);
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
 		return Plugin_Handled;
 	}
 	
@@ -877,7 +877,7 @@ public Action PlayerChangeTeamCheck(Handle timer,int userid)
 	int client = GetClientOfUserId(userid);
 	if (client && IsClientInGame(client) && !IsFakeClient(client))
 	{
-		CheckSurvivors();
+		CheckPlayers();
 	}
 }
 
@@ -1735,22 +1735,17 @@ void SetClientHealth(int client, float fHealth)
 	}
 }
 
-void CheckSurvivors()
+void CheckPlayers()
 {
 	int count = 0;
 	for( int i = 1; i <= MaxClients; i++ )
 	{
-		if(IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == L4D_TEAM_SURVIVORS)
+		if(IsClientInGame(i) && !IsFakeClient(i) && (GetClientTeam(i) == L4D_TEAM_SURVIVORS || GetClientTeam(i) == L4D_TEAM_INFECTED))
 			count++;
 	}
 
-	if(count >= g_iSurvivorRequired) g_bEnable = true;
+	if(count >= g_iPlayerRequired) g_bEnable = true;
 	else g_bEnable = false;
-}
-
-void PlaySound(int client,char[] sSoundName)
-{
-	EmitSoundToAll(sSoundName, client, SNDCHAN_AUTO, SNDLEVEL_AIRCRAFT, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 }
 
 void PrintToTeam (int client, int team, char[] displayName, bool bSpecial = false)
