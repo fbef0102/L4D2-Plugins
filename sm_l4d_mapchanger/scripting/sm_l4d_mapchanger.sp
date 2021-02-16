@@ -3,10 +3,10 @@
 #include <sourcemod>
 #include <sdktools>
 #include <multicolors>
-#include <l4d2_changelevel>
+//#include <l4d2_changelevel>
 #include <left4dhooks>
 
-#define Version "2.1"
+#define Version "2.2"
 #define MAX_ARRAY_LINE 50
 #define MAX_MAPNAME_LEN 64
 #define MAX_CREC_LEN 2
@@ -234,17 +234,20 @@ public Action TimerRoundEndBlock(Handle timer)
 
 public Action TimerChDelayVS(Handle timer)
 {
-	L4D2_ChangeLevel(next_mission_force);
+	ServerCommand("changelevel %s", next_mission_force);
+	//L4D2_ChangeLevel(next_mission_force);
 }
 
 public Action TimerChDelayCOOPFinal(Handle timer)
 {
-	L4D2_ChangeLevel(next_mission_force);
+	ServerCommand("changelevel %s", next_mission_force);
+	//L4D2_ChangeLevel(next_mission_force);
 }
 
 public Action TimerChDelayCOOPMap(Handle timer)
 {
-	L4D2_ChangeLevel(sNextStageMapName);
+	ServerCommand("changelevel %s", sNextStageMapName);
+	//L4D2_ChangeLevel(sNextStageMapName);
 }
 
 void ClearKV(Handle kvhandle)
