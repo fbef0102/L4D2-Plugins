@@ -1,7 +1,7 @@
 Force change to next mission when current mission(final stage) end.
 
 -ChangeLog-
-v2.1
+v2.2
 -Remake Code
 -Translation Support
 -Support L4D2 coop/versus/realism mode
@@ -12,7 +12,6 @@ v1.4
 
 -Require-
 1. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?t=321696
-2. Proper Changelevel [Left 4 Fix]: https://forums.alliedmods.net/showthread.php?t=319156
 
 -ConVar-
 cfg\sourcemod\sm_l4d_mapchanger.cfg
