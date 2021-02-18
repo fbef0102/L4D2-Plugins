@@ -1,20 +1,16 @@
 Locks Saferoom Door Until Someone Opens It.
 
 -Changelog-
-v3.8
-- ProdigySim's method for indirectly getting signatures added, created the whole code for indirectly getting signatures so the plugin can now withstand most updates to L4D2!
-(Thanks to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849 and ProdigySim: https://github.com/ProdigySim/DirectInfectedSpawn)
-
-v3.7
+v3.9
 -Remake Code
+-ProdigySim's method for indirectly getting signatures added, created the whole code for indirectly getting signatures so the plugin can now withstand most updates to L4D2!
+(Thanks to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849 and ProdigySim: https://github.com/ProdigySim/DirectInfectedSpawn)
 -Add more covars
 -Update L4D2 "The Last Stand" gamedata
--Signature fix for December 1, 2020 update. (Credit to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849)
--Signature fix for December 8, 2020 update. (Credit to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849)
--Add more convars
 -improve code
 -Fixed "lockdown_system-l4d2_spam_bot_disable" not working
 -Fixed not workng in L4D2 "The Last Stand" Map
+-Fixed plugin not working in versus
 
 v1.7
 -Original Post: https://forums.alliedmods.net/showthread.php?t=281305
