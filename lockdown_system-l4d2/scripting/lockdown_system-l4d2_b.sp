@@ -10,7 +10,7 @@
 #include <sdkhooks>
 #include <glow>
 #include <left4dhooks>
-#define PLUGIN_VERSION "3.8"
+#define PLUGIN_VERSION "3.9"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -257,6 +257,8 @@ public Action Timer_SpawnTank(Handle timer)
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
+	if (bRoundEnd) return;
+
 	bRoundEnd = true;
 
 	if (g_bValidMap == false)

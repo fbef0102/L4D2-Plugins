@@ -6,7 +6,7 @@
 //#include <l4d2_changelevel>
 #include <left4dhooks>
 
-#define Version "2.2"
+#define Version "2.3"
 #define MAX_ARRAY_LINE 50
 #define MAX_MAPNAME_LEN 64
 #define MAX_CREC_LEN 2
@@ -178,7 +178,7 @@ public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		CreateTimer(0.5, TimerRoundEndBlock);
 	}
 
-	if( ChDelayVSValue > 0 && iGameMode == 2 && StrEqual(next_mission_force, "none") != true && RoundEndCounter >= 4)
+	if( ChDelayVSValue > 0 && iGameMode == 2 && StrEqual(next_mission_force, "none") != true && RoundEndCounter >= 4 && L4D_IsMissionFinalMap())
 	{
 		CreateTimer(ChDelayVSValue, TimerChDelayVS);
 		RoundEndCounter = 0;
@@ -303,7 +303,7 @@ void PluginInitialization()
 		next_mission_force = next_mission_def;
 	}
 
-	if(L4D_IsMissionFinalMap() == false)
+	if(L4D_IsMissionFinalMap() == false && iGameMode == 1)
 	{
 		int ent = FindEntityByClassname(-1, "info_changelevel");
 		if(ent == -1)
