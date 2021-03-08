@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name = "[L4D2] Remove Dead Body Entity",
 	author = "Harry Potter",
 	description = "As the name says, you dumb shit.",
-	version = "1.0",
+	version = "1.1",
 	url = "https://steamcommunity.com/id/TIGER_x_DRAGON/"
 }
 
@@ -44,11 +44,35 @@ void GetCvars()
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-	if(bCvarAllow && StrEqual(classname , "survivor_death_model"))
+	if (!IsValidEntityIndex(entity))
+		return;
+
+	if(bCvarAllow)
 	{
-		//PrintToChatAll("%d Entity dead body , %f", entity,fClearTime);
-		CreateTimer(fClearTime,Timer_KickDeadBody, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+		switch (classname[0])
+		{
+			case 's':
+			{
+				if (strcmp(classname , "survivor_death_model") == 0)
+				{
+					RequestFrame (OnNextFrame, EntIndexToEntRef(entity));
+				}
+			}
+		}
 	}
+}
+
+public void OnNextFrame(int entityRef)
+{
+	if(!bCvarAllow) return;
+
+	int entity = EntRefToEntIndex(entityRef);
+
+	if (entity == INVALID_ENT_REFERENCE)
+		return;
+
+	//PrintToChatAll("%d Entity dead body , %f", entity,fClearTime);
+	CreateTimer(fClearTime,Timer_KickDeadBody, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action Timer_KickDeadBody(Handle timer, int ref)
@@ -59,4 +83,10 @@ public Action Timer_KickDeadBody(Handle timer, int ref)
 		AcceptEntityInput(ref, "kill"); //remove dead boddy entity
 	}
 	return Plugin_Continue;
+}
+
+
+bool IsValidEntityIndex(int entity)
+{
+    return (MaxClients+1 <= entity <= GetMaxEntities());
 }
