@@ -733,12 +733,19 @@
 		"zho"	"倖存通關最後關卡，獎勵 {green}{1}{default} 元"
 		"chi"	"生还通关最后关卡，奖励 {green}{1}{default} 元"
 	}
-	"Wipe Out Survivors"
+	"Wipe Out Survivors (Infected)"
 	{
 		"#format"		"{1:d}"
 		"en"	"You wipe out survivors, get {green}{1}{default} points!"
 		"zho"	"滅團倖存者，獎勵 {green}{1}{default} 元"
 		"chi"	"灭团生还者，奖励 {green}{1}{default} 元"
+	}
+	"Wipe Out Survivors (Survivor)"
+	{
+		"#format"		"{1:d}"
+		"en"	"Your team has been wiped out, reduce {green}{1}{default} points!"
+		"zho"	"隊伍已滅團，扣款 {green}{1}{default} 元"
+		"chi"	"队伍已滅團，扣款 {green}{1}{default} 元"
 	}
 }
 
