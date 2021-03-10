@@ -32,6 +32,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>show_mic</b>: Voice Announce in centr text + create hat to Show Who is speaking.
 * <b>multitanks_a-l4d2</b>: An improved version of the MultiTanks plugin originally created by Red Alex.
 * <b>L4D2_Survivor_Store</b>: Killing zombies and infected to earn points, use !buy to purchase weapons and items.
+* <b>l4d2_spawn_props</b>: Let admins spawn any kind of objects and saved to cfg
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6499 scripting
 # Others
