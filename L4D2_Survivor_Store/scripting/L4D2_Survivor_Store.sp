@@ -11,7 +11,7 @@ public Plugin myinfo =
 	name = "L4D2 Survivor Buy Shop", 
 	author = "Killing zombies and infected to earn points, Buy Shop", 
 	description ="Shop by HarryPoter", 
-	version = "3.1", 
+	version = "3.2", 
 	url = "https://steamcommunity.com/id/HarryPotter_TW/"
 }
 #define L4D_TEAM_SPECTATOR		1
@@ -107,6 +107,9 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 
 #define MODEL_COLA			"models/w_models/weapons/w_cola.mdl"
 #define MODEL_GNOME			"models/props_junk/gnome.mdl"
+
+#define BUY_Sound1 "ui/gift_pickup.wav"
+#define BUY_Sound2 "ui/gift_drop.wav"
 
 static char weaponsMenu[][][] = 
 {
@@ -417,6 +420,9 @@ public void OnMapStart()
 	if(g_bColaMap) PrecacheModel(MODEL_COLA, true);
 
 	PrecacheModel(MODEL_GASCAN, true);
+
+	PrecacheSound(BUY_Sound1);
+	PrecacheSound(BUY_Sound2);
 }
 
 public void ConVarChanged_Allow(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -709,6 +715,7 @@ public void OnClientCookiesCached(int client)
 
 public void OnClientDisconnect(int client)
 {
+	CheckPlayers();
 	if(g_bCookiesCachedEnable == true && !IsFakeClient(client))
 	{
 		char sMoney[11];
@@ -875,7 +882,7 @@ public void evtPlayerTeam(Event event, const char[] name, bool dontBroadcast)
 public Action PlayerChangeTeamCheck(Handle timer,int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if (client && IsClientInGame(client) && !IsFakeClient(client))
+	if (client && IsClientInGame(client))
 	{
 		CheckPlayers();
 	}
@@ -994,10 +1001,19 @@ public void Event_MissionLost(Event event, const char[] name, bool dontBroadcast
 
 	for( int i = 1; i <= MaxClients; i++ ) 
 	{
-		if(IsClientInGame(i) && GetClientTeam(i) == L4D_TEAM_INFECTED)
+		if(IsClientInGame(i))
 		{
-			CPrintToChat(i, "[{olive}TS{default}] %T", "Wipe Out Survivors", i, g_iWipeOutSurvivor);
-			g_iCredits[i] += g_iWipeOutSurvivor;
+			if(GetClientTeam(i) == L4D_TEAM_INFECTED)
+			{
+				CPrintToChat(i, "[{olive}TS{default}] %T", "Wipe Out Survivors (Infected)", i, g_iWipeOutSurvivor);
+				g_iCredits[i] += g_iWipeOutSurvivor;
+			}
+			else if(GetClientTeam(i) == L4D_TEAM_SURVIVORS)
+			{
+				CPrintToChat(i, "[{olive}TS{default}] %T", "Wipe Out Survivors (Survivor)", i, g_iWipeOutSurvivor);
+				g_iCredits[i] -= g_iWipeOutSurvivor;
+				if(g_iCredits[i] < 0) g_iCredits[i] = 0;	
+			}
 		}
 	}
 }
@@ -1383,6 +1399,7 @@ public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, 
 							g_iCanJump[param1]++;
 							PrintToTeam(param1, L4D_TEAM_SURVIVORS, specialMenu[index][1], true);
 							g_iCredits[param1] -= itemMoney;
+							PlaySound(param1, BUY_Sound2);
 						}
 					}
 					else if (strcmp(specialMenu[index][0], "Infinite Ammo") == 0)
@@ -1397,6 +1414,7 @@ public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, 
 							PrintToTeam(param1, L4D_TEAM_SURVIVORS, specialMenu[index][1], true);
 							g_iCredits[param1] -= itemMoney;
 							CreateTimer(g_fInfiniteAmmoTime, Timer_NoInfiniteAmmo, param1, TIMER_FLAG_NO_MAPCHANGE);
+							PlaySound(param1, BUY_Sound2);
 						}
 					}
 					else if (strcmp(specialMenu[index][0], "Fire Infeceted") == 0)
@@ -1417,6 +1435,7 @@ public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, 
 							ForcePlayerSuicide(infectedattacker);
 							g_iCredits[param1] -= itemMoney;
 							PrintToTeam(param1, 0, specialMenu[index][1], true);
+							PlaySound(param1, BUY_Sound2);
 						}
 						else
 						{
@@ -1544,6 +1563,8 @@ stock void CreateFires(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
+	
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void GiveFunction(int client, char[] name, char[] displayName)
@@ -1554,6 +1575,8 @@ stock void GiveFunction(int client, char[] name, char[] displayName)
 	SetCommandFlags("give", flagsgive);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
+	
+	PlaySound(client, BUY_Sound1);
 }
 
 stock void GiveUpgrade(int client, char[] name, char[] displayName)
@@ -1566,6 +1589,8 @@ stock void GiveUpgrade(int client, char[] name, char[] displayName)
 	SetCommandFlags("upgrade_add", flags);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
+
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void GiveClientAmmo(int client, int iSlot0, char[] displayName)
@@ -1584,6 +1609,8 @@ stock void GiveClientAmmo(int client, int iSlot0, char[] displayName)
 	}
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
+
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void GiveClientHealth(int client, int iHealthAdd, char[] displayName, bool bPrint = true)
@@ -1606,6 +1633,8 @@ stock void GiveClientHealth(int client, int iHealthAdd, char[] displayName, bool
 	}
 
 	if(bPrint) PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName);
+
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void KillAllCommonInfected(int client, char[] displayName)
@@ -1623,6 +1652,7 @@ stock void KillAllCommonInfected(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, 0, displayName, true);
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void KillAllWitches(int client, char[] displayName)
@@ -1637,6 +1667,7 @@ stock void KillAllWitches(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, 0, displayName, true);
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void FireAllInfected(int client, char[] displayName)
@@ -1648,6 +1679,7 @@ stock void FireAllInfected(int client, char[] displayName)
 	}
 
 	PrintToTeam(client, 0, displayName, true);
+	PlaySound(client, BUY_Sound2);
 }
 
 stock void HealthAllSurvivors(int client, char[] displayName)
@@ -1746,6 +1778,11 @@ void CheckPlayers()
 
 	if(count >= g_iPlayerRequired) g_bEnable = true;
 	else g_bEnable = false;
+}
+
+void PlaySound(int client,char[] sSoundName)
+{
+	EmitSoundToAll(sSoundName, client, SNDCHAN_AUTO, SNDLEVEL_AIRCRAFT, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 }
 
 void PrintToTeam (int client, int team, char[] displayName, bool bSpecial = false)
@@ -1864,6 +1901,7 @@ bool TeleportToNearestTeammate (int client, char[] displayName)
 	TeleportEntity( client, targetOrigin, NULL_VECTOR, NULL_VECTOR);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName, true);
+	PlaySound(client, BUY_Sound2);
 
 	return true;
 }
