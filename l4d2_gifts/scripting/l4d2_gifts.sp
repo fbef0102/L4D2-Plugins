@@ -51,6 +51,8 @@
 
 #define	MAX_WEAPONS2		29
 
+#define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
+
 ConVar cvar_gift_enable, cvar_gift_life, cvar_gift_chance, cvar_gift_chance2, cvar_gift_maxcollectMap,
 	cvar_gift_maxcollectRound, cvar_gift_Announce, cvar_gift_DecayDecay, cvar_gift_MaxIncapCount;
 
@@ -121,7 +123,7 @@ static char weapons_name[MAX_SPECIALITEMS][2][50] =
 	{"rifle_desert","三連發步槍"},
 	{"shotgun_spas","戰鬥霰彈槍"},
 	{"autoshotgun", "連發霰彈槍"},
-	{"hunting_rifle", "狙擊槍"},
+	{"hunting_rifle", "獵槍"},
 	{"sniper_military", "軍用狙擊槍"},
 	{"sniper_scout", "SCOUT狙擊槍"},
 	{"sniper_awp", "AWP"},
@@ -144,12 +146,12 @@ static char weapons_name[MAX_SPECIALITEMS][2][50] =
 	{"laser_sight",	"雷射裝置"},
 	{"incendiary_ammo",	"火焰子彈"},
 	{"explosive_ammo",	"高爆子彈"},
-	{"ammo","補給彈藥"}
+	{"ammo","彈藥補給"}
 };
 
 static char weapons_name2[MAX_SPECIALITEMS2][2][50] = 
 {
-	{"rifle_m60", "M60機關槍"},
+	{"rifle_m60", "殲滅者 M60"},
 	{"first_aid_kit","治療包"},
 	{"defibrillator","電擊器"},
 	{"pain_pills", "止痛藥丸"},
@@ -164,22 +166,22 @@ static char weapons_name2[MAX_SPECIALITEMS2][2][50] =
 static char weapon_ammo[][][] =
 {
 	{"weapon_smg",		 				"5", 	"300"},
-	{"weapon_pumpshotgun",				"7", 	"35"},
-	{"weapon_rifle",					"3", 	"200"},
-	{"weapon_autoshotgun",				"8", 	"50"},
+	{"weapon_pumpshotgun",				"7", 	"40"},
+	{"weapon_rifle",					"3", 	"250"},
+	{"weapon_autoshotgun",				"8", 	"60"},
 	{"weapon_hunting_rifle",			"9", 	"100"},
 	{"weapon_smg_silenced",				"5", 	"300"},
 	{"weapon_smg_mp5", 	 				"5", 	"300"},
-	{"weapon_shotgun_chrome",	 		"7", 	"35"},
-	{"weapon_rifle_ak47",  				"3",	"200"},
-	{"weapon_rifle_desert",				"3", 	"200"},
-	{"weapon_sniper_military",			"10", 	"100"},
-	{"weapon_grenade_launcher", 	 	"17", 	"20"},
-	{"weapon_rifle_sg552",	 			"3", 	"200"},
+	{"weapon_shotgun_chrome",	 		"7", 	"40"},
+	{"weapon_rifle_ak47",  				"3",	"250"},
+	{"weapon_rifle_desert",				"3", 	"250"},
+	{"weapon_sniper_military",			"10", 	"120"},
+	{"weapon_grenade_launcher", 	 	"17", 	"15"},
+	{"weapon_rifle_sg552",	 			"3", 	"250"},
 	{"weapon_rifle_m60",  				"6",	"150"},
-	{"weapon_sniper_awp", 	 			"10", 	"80"},
-	{"weapon_sniper_scout",	 			"10", 	"80"},
-	{"weapon_shotgun_spas",  			"8",	"50"}
+	{"weapon_sniper_awp", 	 			"10", 	"100"},
+	{"weapon_sniper_scout",	 			"10", 	"100"},
+	{"weapon_shotgun_spas",  			"8",	"60"}
 };
 
 int CurrentPointsForMap[MAXPLAYERS+1];
@@ -215,10 +217,9 @@ int g_iCountGifts;
 int g_iOffset_Incapacitated;        // Used to check if tank is dying
 int ammoOffset;	
 
-
-#define SND_REWARD1			"level/loud/climber.wav"
-#define SND_REWARD2			"level/gnomeftw.wav"
-
+native bool Is_End_SafeRoom_Door_Open();
+#define SND_REWARD1			"level/gnomeftw.wav"
+#define SND_REWARD2			"level/loud/climber.wav"
 
 public Plugin myinfo = 
 {
@@ -541,6 +542,9 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	if (!bGiftEnable)
 		return;
 
+	if(Is_End_SafeRoom_Door_Open())
+		return;
+
 	if (iGiftMaxRound != 0 && gifts_collected_round > iGiftMaxRound)
 		return;
 	
@@ -573,7 +577,13 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 
 public Action OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
-   //int attacker = GetClientOfUserId(event.GetInt("userid"));
+	if (!bGiftEnable)
+		return;
+
+	if(Is_End_SafeRoom_Door_Open())
+		return;	
+
+	//int attacker = GetClientOfUserId(event.GetInt("userid"));
 	int witch = event.GetInt("witchid");
 	if (GetRandomInt(1, 100) < iGiftChance2)
 	{
@@ -609,7 +619,7 @@ void NotifyGift(int client, int type, int gift = -1)
 			else
 				GiveWeapon(client, weapons_name[index][0]);
 		}
-		if(g_bAnnounce) PrintCenterTextAll("%t", "Spawn Gift Special Not Points", client, weapons_name[index][1]);
+		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name[index][1]);
 		else Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name[index][1]);
 		PlaySound(client,SND_REWARD2);
 		AddCollect(client, type);
@@ -639,7 +649,7 @@ void NotifyGift(int client, int type, int gift = -1)
 				GiveWeapon(client, weapons_name2[index][0]);
 		}
 
-		if(g_bAnnounce) PrintCenterTextAll("%t", "Spawn Gift Special Not Points", client, weapons_name2[index][1]);
+		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name2[index][1]);
 		else Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name2[index][1]);
 		PlaySound(client,SND_REWARD1);
 		AddCollect(client, type);
@@ -691,7 +701,7 @@ int DropGift(int client, char[] type = "special")
 		gift = CreateEntityByName("prop_dynamic_override");
 	}
 	
-	if(gift != -1)
+	if( CheckIfEntityMax(gift) )
 	{
 		DispatchKeyValue(gift, "model", g_sModel[random]);
 		
@@ -988,4 +998,23 @@ void SetClientHealth(int client, float fHealth)
 		SetEntPropFloat( client, Prop_Send, "m_healthBuffer", fHealth < 0.0 ? 0.0 : fHealth );
 		SetEntPropFloat( client, Prop_Send, "m_healthBufferTime", GetGameTime() );
 	}
+}
+
+bool CheckIfEntityMax(int entity)
+{
+	if(entity == -1) return false;
+
+	if(	entity > ENTITY_SAFE_LIMIT)
+	{
+		AcceptEntityInput(entity, "Kill");
+		return false;
+	}
+	return true;
+}
+
+void PrintCenterToTeam (int team, int client, char[] displayMessage)
+{
+	for (int i = 1; i <= MaxClients; i++)
+		if(IsClientInGame(i) && (GetClientTeam(i) == team || GetClientTeam(i) == TEAM_SPECTATOR))
+			PrintCenterText(i, "%t", "Spawn Gift Special Not Points", client, displayMessage);
 }
