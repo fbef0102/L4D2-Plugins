@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name = "[L4D2] Voice Announce + Show MIC Hat.",
 	author = "SupermenCJ & Harry Potter ",
 	description = "Voice Announce in centr text + create hat to Show Who is speaking.",
-	version = "1.4",
+	version = "1.5",
 	url = "https://steamcommunity.com/id/fbef0102/"
 }
 
@@ -82,6 +82,8 @@ public void OnMapStart()
 
 public void OnClientSpeakingStart(int client)
 {
+	if (!IsClientInGame(client)) return;
+
 	if (BaseComm_IsClientMuted(client) 
 		|| GetClientListeningFlags(client) == 1
 		|| hSV_VoiceEnable.BoolValue == false)
@@ -97,6 +99,8 @@ public void OnClientSpeakingStart(int client)
 
 public void OnClientSpeaking(int client)
 {
+	if (!IsClientInGame(client)) return;
+
 	if (BaseComm_IsClientMuted(client) 
 		|| GetClientListeningFlags(client) == 1
 		|| hSV_VoiceEnable.BoolValue == false)
