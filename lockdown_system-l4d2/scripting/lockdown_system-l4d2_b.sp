@@ -10,7 +10,8 @@
 #include <sdkhooks>
 #include <glow>
 #include <left4dhooks>
-#define PLUGIN_VERSION "3.9"
+#include <multicolors>
+#define PLUGIN_VERSION "4.0"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -54,7 +55,6 @@ public int Native_Is_End_SafeRoom_Door_Open(Handle plugin, int numParams)
 	return bLDFinished;
 }
 
-
 public Plugin myinfo = 
 {
 	name = "[L4D2] Lockdown System",
@@ -66,6 +66,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+	LoadTranslations("lockdown_system-l4d2_b.phrases");
+
 	lsAnnounce = CreateConVar("lockdown_system-l4d2_announce", "1", "If 1, Enable saferoom door status Announcements", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsAntiFarmDuration = CreateConVar("lockdown_system-l4d2_anti-farm_duration", "50", "Duration Of Anti-Farm", FCVAR_NOTIFY, true, 0.0);
 	lsDuration = CreateConVar("lockdown_system-l4d2_duration", "100", "Duration Of Lockdown", FCVAR_NOTIFY, true, 0.0);
@@ -347,8 +349,8 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 							GetClientAbsOrigin(i, clientOrigin);
 							if (GetVectorDistance(clientOrigin, doorOrigin, true) > 850 * 850)
 							{
-								PrintHintText(user, "[TS] 所有倖存者必須集合才能打開安全門！");
-								PrintCenterTextAll("[TS] 所有倖存者必須集合才能打開安全門！");
+								PrintHintText(user, "[TS] %T", "All survivors must assemble", user);
+								PrintCenterTextAll("[TS] %t", "All survivors must assemble");
 								return Plugin_Continue;
 							}
 						}
@@ -376,7 +378,7 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 						bAntiFarmInit = true;
 						iSystemTime = iAntiFarmDuration;
 						
-						PrintHintText(user, "[TS] Tank還活著，請先殺了Tank！");
+						PrintHintText(user, "[TS] %T", "Tank is still alive", user);
 						EmitSoundToAll("doors/latchlocked2.wav", used, SNDCHAN_AUTO);
 
 						GetClientAbsOrigin(user, fFirstUserOrigin);
@@ -455,7 +457,7 @@ public Action CheckAntiFarm(Handle timer, any entity)
 		return Plugin_Stop;
 	}
 	
-	PrintCenterTextAll("[ANTI-FARM] Tank還活著，請先殺了Tank！\n否則等待 %d 秒!", iSystemTime);
+	PrintCenterTextAll("[ANTI-FARM] %t", "Tank is still alive, or wait", iSystemTime);
 	iSystemTime -= 1;
 	
 	return Plugin_Continue;
@@ -490,15 +492,15 @@ public Action LockdownOpening(Handle timer, any entity)
 			}
 			
 			EmitSoundToAll("level/highscore.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
-			if(bAnnounce) PrintCenterTextAll("安全門已開啟!! 大家趕快進去!!");
-			if(blsHint) PrintToChatAll("\x01[\x05TS\x01]\x04 <\x05%s\x04>\x01 打開了 安全室大門!", sKeyMan);
+			if(bAnnounce) PrintCenterTextAll("%t","Door is opened! GET IN!!");
+			if(blsHint) CPrintToChatAll("{default}[{olive}TS{default}]{green} <{olive}%s{green}>{default} %t", sKeyMan, "open the door already");
 			CreateTimer(5.0, LaunchTankDemolition, TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(5.0, LaunchSlayTimer, entity, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		return Plugin_Stop;
 	}
 	
-	PrintCenterTextAll("[LOCKDOWN] 開門倒數 %d 秒!", iSystemTime);
+	PrintCenterTextAll("[LOCKDOWN] %t", "Lockdown in seconds", iSystemTime);
 	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);	
 
 
@@ -537,7 +539,7 @@ public Action LaunchTankDemolition(Handle timer)
 	ExecuteSpawn(true, 4);
 	if (bAnnounce)
 	{
-		PrintToChatAll("\x01[\x05TS\x01]\x01 \x04Tank \x01大軍壓境!!");
+		CPrintToChatAll("{default}[{olive}TS{default}] %t","Tanks are coming");
 	}
 }
 
@@ -552,14 +554,14 @@ public Action AntiPussy(Handle timer, any entity)
 	if(bRoundEnd) return Plugin_Stop;
 	
 	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
-	PrintCenterTextAll("[LOCKDOWN] 安全室門外死亡倒數 %d 秒!", iSystemTime);
+	PrintCenterTextAll("[LOCKDOWN] %t", "Slay in seconds", iSystemTime);
 	
 	if(iSystemTime <= 0)
 	{
 		//AcceptEntityInput(entity, "Close");
 		//AcceptEntityInput(entity, "ForceClosed");
 
-		if(bAnnounce) PrintToChatAll("\x01[\x05TS\x01]\x05 室外區域的玩家將\x04處以死刑\x01!");
+		if(bAnnounce) CPrintToChatAll("{default}[{olive}TS{default}] %t","Outside Slay");
 		
 		CreateTimer(2.5, _AntiPussy, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 		return Plugin_Stop;
@@ -579,8 +581,7 @@ public Action _AntiPussy(Handle timer)
 		{
 			ForcePlayerSuicide(i);
 			if(bAnnounce) {
-				PrintHintText(i, "[TS] 你位於安全門外，處以死刑！！");
-				//PrintToChatAll("\x01[\x05TS\x01]\x04 <\x05%N\x04>\x01 位於安全室門外，已被處死!", i);
+				PrintHintText(i, "[TS] %T", "You have been executed for outside the saferoom!", i);
 			}
 		}
 	}
@@ -915,8 +916,8 @@ void DoorPrint(Event event, bool open)
 		int client = GetClientOfUserId(event.GetInt("userid"));
 		if( client && IsClientInGame(client) && GetClientTeam(client) == 2)
 		{
-			if(open) PrintToChatAll("\x01[\x05TS\x01]\x04 ---\x05%N\x04---\x01 打開 安全門!", client);
-			else PrintToChatAll("\x01[\x05TS\x01]\x04 ---\x05%N\x04---\x01 關閉 安全門!", client);
+			if(open) CPrintToChatAll("{default}[{olive}TS{default}]{green} ---{olive}%N{green}---{default} %t", client, "someone opens the door");
+			else CPrintToChatAll("{default}[{olive}TS{default}]{green} ---{olive}%N{green}---{default} %t", client, "someone closes the door");
 		}
 	}
 }
