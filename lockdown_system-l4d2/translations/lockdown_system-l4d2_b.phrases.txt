@@ -53,7 +53,7 @@
 	}
 	"Outside Slay"
 	{
-		"en"			"{olive}Players outside the saferoom have been{green}executed{default}!"
+		"en"			"{olive}Players outside the saferoom will be{green}executed{default}!"
 		"zho"			"{olive}室外區域的玩家將{green}處以死刑{default}!"
 		"chi"			"{olive}室外区域的玩家将{green}处以死刑{default}!"
 	}
