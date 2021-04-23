@@ -8,6 +8,9 @@ idea from CS:GO Quickswitch Reloading: https://www.youtube.com/watch?v=VfdfbWhVP
 videoshowcase: https://youtu.be/Ur0uNQTZhbU
 
 -Changelog-
+v 2.1 (2021-4-24)
+- fixed DataPack memory leak issue
+
 v 2.0 (2020-11-10)
 - replace OnPlayerRunCmd with SDKHook_Reload, better safe and improve code.
 
