@@ -434,7 +434,9 @@ models/props_industrial/pumpvertical01.mdl TAG- 排廢水處理機
 models/props_industrial/sluicegate.mdl TAG- 排水閘門 - c8m2
 models/lighthouse/props/junkyard_big_pipe.mdl TAG- 地下道大型排水管
 models/props_canal/canal_bars004.mdl TAG- 地下道的排水孔
-models/props_docks/dock_broken01a_256.mdl TAG- 碼頭的木橋 - 大型 - c10m5
+models/props_swamp/boardwalk_128.mdl TAG- 碼頭木橋 - 沼澤 - 128單位
+models/props_swamp/boardwalk_256.mdl TAG- 碼頭木橋 - 沼澤 - 256單位
+models/props_docks/dock_broken01a_256.mdl TAG- 碼頭木橋 - 大型 - c10m5
 models/props_vehicles/bridgecollapse_part01.mdl TAG- 木橋 - c12m3 (穿透)
 models/lighthouse/props/wooden_bridge_a.mdl TAG- 木橋 - 基座
 models/lighthouse/props/wooden_bridge_c.mdl TAG- 木橋 - c14m1
@@ -620,6 +622,7 @@ models/props_exteriors/stairs_house_01.mdl TAG- 房子裡的樓梯 - 18階
 models/lighthouse/props/wooden_steps_a.mdl TAG- 中空木階 - 4階
 models/lighthouse/props/wooden_steps_b.mdl TAG- 中空木階 - 5階
 models/lighthouse/props/wooden_bridge_b.mdl TAG- 木橋樓梯 - 4階
+models/props_exteriors/concrete_plant01_stairs_platform.mdl TAG- 樓梯平台 - 12階
 models/props/cs_office/shelves_metal1.mdl TAG- 貨架 - 擺放 a
 models/props/cs_office/shelves_metal2.mdl TAG- 貨架 - 擺放 b
 models/props_industrial/warehouse_shelf001.mdl TAG- 貨堆 1
