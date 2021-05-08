@@ -325,6 +325,9 @@ models/props_urban/gate_wall001_64.mdl TAG- 市區牆 - 64 單位
 models/props_urban/gate_wall001_128.mdl TAG- 市區牆 - 128 單位
 models/props_urban/gate_wall001_256.mdl TAG- 市區牆 - 256 單位
 models/props_urban/gate_wall002_128.mdl TAG- 市區柵欄牆 - 128 單位
+models/props_urban/wood_fence001_64.mdl TAG- 市區木製圍牆 - 64 單位
+models/props_urban/wood_fence001_128.mdl TAG- 市區木製圍牆 - 128 單位
+models/props_urban/wood_fence001_256.mdl TAG- 市區木製圍牆 - 256 單位
 models/props_urban/gate_wall003_32.mdl TAG- 遮蔽柵欄牆 - 32 單位
 models/props_urban/gate_wall003_64.mdl TAG- 遮蔽柵欄牆 - 64 單位
 models/props_urban/gate_wall003_128.mdl TAG- 遮蔽柵欄牆 - 128 單位
