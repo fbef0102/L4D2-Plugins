@@ -34,7 +34,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d2_spawn_props</b>: Let admins spawn any kind of objects and saved to cfg
 * <b>l4d2_gun_damage_modify</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
 # Scripting Compiler
-* [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6499 scripting
+* [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
 * <b>[L4D1-Competitive-Plugins](https://github.com/fbef0102/L4D1-Competitive-Plugins)</b>: L4D1 Competitive enhancement
 * <b>[L4D1_2-Plugins](https://github.com/fbef0102/L4D1_2-Plugins)</b>: L4D1/2 general purpose and freaky-fun plugins.
