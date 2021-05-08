@@ -27,7 +27,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>lfd_both_fixUpgradePack</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
 * <b>lockdown_system-l4d2_b</b>: Locks Saferoom Door Until Someone Opens It.
 * <b>clear_dead_body</b>: Remove Dead Body Entity
-* <b>antisaferoomdooropen</b>: First Saferoom door anti open in l4d2ack</b>: Fixes upgrade packs pickup bug when using survivor model change
 * <b>drop_secondary</b>: Survivor players will drop their secondary weapon (including melee) when they die
 * <b>show_mic</b>: Voice Announce in centr text + create hat to Show Who is speaking.
 * <b>multitanks_a-l4d2</b>: An improved version of the MultiTanks plugin originally created by Red Alex.
