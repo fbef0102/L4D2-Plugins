@@ -25,7 +25,7 @@ Copyright 2020 Harry Potter
 // Define constants
 #define PLUGIN_NAME					"All4Dead"
 #define PLUGIN_TAG					"[A4D]"
-#define PLUGIN_VERSION				"3.3"
+#define PLUGIN_VERSION				"3.4"
 #define MENU_DISPLAY_TIME		15
 
 // Include necessary files
@@ -110,6 +110,31 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 #define MODEL_COLA			"models/w_models/weapons/w_cola.mdl"
 #define MODEL_GNOME			"models/props_junk/gnome.mdl"
 
+// Infected models
+#define MODEL_SMOKER "models/infected/smoker.mdl"
+#define MODEL_BOOMER "models/infected/boomer.mdl"
+#define MODEL_HUNTER "models/infected/hunter.mdl"
+#define MODEL_SPITTER "models/infected/spitter.mdl"
+#define MODEL_JOCKEY "models/infected/jockey.mdl"
+#define MODEL_CHARGER "models/infected/charger.mdl"
+#define MODEL_TANK "models/infected/hulk.mdl"
+
+// Signature call
+static Handle hCreateSmoker = null;
+#define NAME_CreateSmoker "NextBotCreatePlayerBot<Smoker>"
+static Handle hCreateBoomer = null;
+#define NAME_CreateBoomer "NextBotCreatePlayerBot<Boomer>"
+static Handle hCreateHunter = null;
+#define NAME_CreateHunter "NextBotCreatePlayerBot<Hunter>"
+static Handle hCreateSpitter = null;
+#define NAME_CreateSpitter "NextBotCreatePlayerBot<Spitter>"
+static Handle hCreateJockey = null;
+#define NAME_CreateJockey "NextBotCreatePlayerBot<Jockey>"
+static Handle hCreateCharger = null;
+#define NAME_CreateCharger "NextBotCreatePlayerBot<Charger>"
+static Handle hCreateTank = null;
+#define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
+
 /// Metadata for the mod - used by SourceMod
 public Plugin myinfo = {
 	name = PLUGIN_NAME,
@@ -118,8 +143,24 @@ public Plugin myinfo = {
 	version = PLUGIN_VERSION,
 	url = "https://github.com/fbef0102/L4D2-Plugins/tree/master/all4dead2"
 };
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+	
+	return APLRes_Success; 
+}
+
 /// Create plugin Convars, register all our commands and hook any events we need. View the generated all4dead.cfg file for a list of generated Convars.
 public void OnPluginStart() {
+	GetGameData();
+
 	director_force_tank = FindConVar("director_force_tank");
 	director_force_witch = FindConVar("director_force_witch");
 	director_panic_forever = FindConVar("director_panic_forever");
@@ -172,6 +213,14 @@ public void OnMapStart() {
 	PrecacheModel("models/infected/common_male_jimmy.mdl", true);
 	PrecacheModel("models/infected/common_male_fallen_survivor.mdl", true);
 	
+	PrecacheModel(MODEL_SMOKER);
+	PrecacheModel(MODEL_BOOMER);
+	PrecacheModel(MODEL_HUNTER);
+	PrecacheModel(MODEL_SPITTER);
+	PrecacheModel(MODEL_JOCKEY);
+	PrecacheModel(MODEL_CHARGER);
+	PrecacheModel(MODEL_TANK);
+
 	int max = MAX_WEAPONS2;
 	for( int i = 0; i < max; i++ )
 	{
@@ -376,23 +425,23 @@ public int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, 
 				else
 					Do_EnableAutoPlacement(cindex, true);
 			case 1:
-				Do_SpawnInfected(cindex, "tank", false);
+				Do_SpawnInfected(cindex, "tank");
 			case 2:
 				Do_SpawnWitch(cindex, automatic_placement);
 			case 3:
-				Do_SpawnInfected(cindex, "boomer", false);
+				Do_SpawnInfected(cindex, "boomer");
 			case 4:
-				Do_SpawnInfected(cindex, "hunter", false);
+				Do_SpawnInfected(cindex, "hunter");
 			case 5:
-				Do_SpawnInfected(cindex, "smoker", false);
+				Do_SpawnInfected(cindex, "smoker");
 			case 6:
-				Do_SpawnInfected(cindex, "spitter", false);
+				Do_SpawnInfected(cindex, "spitter");
 			case 7:
-				Do_SpawnInfected(cindex, "jockey", false);
+				Do_SpawnInfected(cindex, "jockey");
 			case 8:
-				Do_SpawnInfected(cindex, "charger", false);
+				Do_SpawnInfected(cindex, "charger");
 			case 9:
-				Do_SpawnInfected(cindex, "mob", false);
+				Do_SpawnInfected_Old(cindex, "mob", false);
 		}
 		g_iSpecialInfectedMenuPosition[cindex] = menu.Selection;
 		// If none of the above matches show the menu again
@@ -465,12 +514,25 @@ public int Menu_SpawnUInfectedHandler(Menu menu, MenuAction action, int cindex, 
 
 /// Sourcemod Action for the SpawnInfected command.
 public Action Command_SpawnInfected(int client, int args) { 
+	if (client == 0)
+	{
+		PrintToServer("[TS] This Command cannot be used by server.");
+		return Plugin_Handled;
+	}
+
 	if (args < 1) {
 		ReplyToCommand(client, "Usage: a4d_spawn_infected <infected_type> (does not work for uncommon infected, use a4d_spawn_uinfected instead)"); 
 	} else {
 		char type[16];
 		GetCmdArg(1, type, sizeof(type));
-		Do_SpawnInfected(client, type, false);
+		if (strcmp(type, "zombie") == 0)
+			Do_SpawnInfected_Old(client, "zombie", true);
+		else if(strcmp(type, "mob") == 0)
+			Do_SpawnInfected_Old(client, "mob", false);
+		else if(strcmp(type, "witch") == 0)
+			Do_SpawnWitch(client, automatic_placement);
+		else
+			Do_SpawnInfected(client, type);
 	}
 	return Plugin_Handled;
 }
@@ -509,7 +571,142 @@ public Action Command_SpawnUInfected(int client, int args) {
  * 	the action is the console.
  * </remarks>
 */
-void Do_SpawnInfected(int client, const char[] type, bool spawning_uncommon) {
+void Do_SpawnInfected(int client, const char[] type) {
+	if(client == 0)
+	{
+		return;
+	}
+	
+	if(RealFreePlayersOnInfected())
+	{
+		Do_SpawnInfected_Old(client, type, false);
+		return;
+	}
+
+	int zombieclass;
+	if (strcmp(type, "tank") == 0)
+		zombieclass = 8;
+	else if (strcmp(type, "smoker") == 0)
+		zombieclass = 1;
+	else if (strcmp(type, "boomer") == 0)
+		zombieclass = 2;
+	else if (strcmp(type, "hunter") == 0)
+		zombieclass = 3;
+	else if (strcmp(type, "spitter") == 0)
+		zombieclass = 4;
+	else if (strcmp(type, "jockey") == 0)
+		zombieclass = 5;
+	else if (strcmp(type, "charger") == 0)
+		zombieclass = 6;
+
+	float vPos[3], vAng[3] = {0.0, 0.0, 0.0};
+	if (automatic_placement == true)
+	{
+		if(L4D_GetRandomPZSpawnPosition(L4D_GetHighestFlowSurvivor(), zombieclass, 5, vPos) == false)
+		{
+			PrintToServer("[TS] Couldn't find a valid spawn position for S.I. in 5 tries");
+			return;
+		}
+	}
+	else
+	{
+		if( !SetTeleportEndPoint(client, vPos, vAng) ) {
+			PrintToChat(client, "[TS] Can not spawn, please try again.");
+			return;
+		}
+	}
+
+	bool bSpawnSuccessful = false;
+	int bot = 0;
+	switch(zombieclass)
+	{
+		case 1:
+		{
+			bot = SDKCall(hCreateSmoker, "Smoker Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_SMOKER);
+				bSpawnSuccessful = true;
+			}	
+		}
+		case 2:
+		{
+			bot = SDKCall(hCreateBoomer, "Boomer Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_BOOMER);
+				bSpawnSuccessful = true;
+			}		
+		}
+		case 3:
+		{
+			bot = SDKCall(hCreateHunter, "Hunter Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_HUNTER);
+				bSpawnSuccessful = true;
+			}	
+		}
+		case 4:
+		{
+			bot = SDKCall(hCreateSpitter, "Spitter Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_SPITTER);
+				bSpawnSuccessful = true;
+			}	
+		}
+		case 5:
+		{
+			bot = SDKCall(hCreateJockey, "Jockey Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_JOCKEY);
+				bSpawnSuccessful = true;
+			}		
+		}
+		case 6:
+		{
+			bot = SDKCall(hCreateCharger, "Charger Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_CHARGER);
+				bSpawnSuccessful = true;
+			}		
+		}
+		case 8:
+		{
+			bot = SDKCall(hCreateTank, "Tank Bot");
+			if (IsValidClient(bot))
+			{
+				SetEntityModel(bot, MODEL_TANK);
+				bSpawnSuccessful = true;
+			}	
+		}		
+	}
+
+	if (bSpawnSuccessful)
+	{
+		ChangeClientTeam(bot, 3);
+		SetEntProp(bot, Prop_Send, "m_usSolidFlags", 16);
+		SetEntProp(bot, Prop_Send, "movetype", 2);
+		SetEntProp(bot, Prop_Send, "deadflag", 0);
+		SetEntProp(bot, Prop_Send, "m_lifeState", 0);
+		SetEntProp(bot, Prop_Send, "m_iObserverMode", 0);
+		SetEntProp(bot, Prop_Send, "m_iPlayerState", 0);
+		SetEntProp(bot, Prop_Send, "m_zombieState", 0);
+		DispatchSpawn(bot);
+		ActivateEntity(bot);
+		TeleportEntity(bot, vPos, NULL_VECTOR, NULL_VECTOR); //移動到相同位置
+
+		char feedback[64];
+		Format(feedback, sizeof(feedback), "A %s has been spawned", type);
+		NotifyPlayers(client, feedback);
+		LogAction(client, -1, "[NOTICE]: (%L) has spawned a %s", client, type);
+	}
+}
+
+void Do_SpawnInfected_Old(int client, const char[] type, bool spawning_uncommon ) {
 
 	char arguments[16];
 	char feedback[64];
@@ -588,7 +785,7 @@ void Do_SpawnUncommonInfected(int client, int type) {
 			Format(model, sizeof(model), "models/infected/common_male_fallen_survivor.mdl");
 	}
 	change_zombie_model_to = model;
-	Do_SpawnInfected(client, "zombie", true);
+	Do_SpawnInfected_Old(client, "zombie", true);
 }
 /// Sourcemod Action for the Do_EnableAutoPlacement command.
 public Action Command_EnableAutoPlacement(int client, int args) {
@@ -1076,20 +1273,7 @@ public Action Command_ForceTank(int client, int args) {
 		Do_ForceTank(client, true);
 	return Plugin_Handled;
 }
-/**
- * <summary>
- * 	Forces the AI Director to spawn tanks at the nearest available opportunity.
- * </summary>
- * <remarks>
- * 	If you are only intending this to ensure one tank is spawned make sure
- * 	spawn_bosses_continuously is false.
- * </remarks>
- * <seealso>
- * 	Do_SpawnBossesContinuously
- * 	Do_SpawnInfected
- * 	Event_BossSpawn
- * </seealso>
-*/
+
 void Do_ForceTank(int client, bool value) {
 	StripAndChangeServerConVarBool(client, director_force_tank, value);
 	if (value == true)
@@ -1111,20 +1295,7 @@ public Action Command_ForceWitch(int client, int args) {
 		Do_ForceWitch(client, true);
 	return Plugin_Handled;
 }
-/**
- * <summary>
- * 	Forces the AI Director to spawn witches at the nearest available opportunity.
- * </summary>
- * <remarks>
- * 	If you are only intending this to ensure one witch is spawned make sure
- * 	spawn_bosses_continuously is false.
- * </remarks>
- * <seealso>
- * 	Do_SpawnBossesContinuously
- * 	Do_SpawnInfected
- * 	Event_BossSpawn
- * </seealso>
-*/
+
 void Do_ForceWitch(int client, bool value) {
 	StripAndChangeServerConVarBool(client, director_force_witch, value);
 	if (value == true)
@@ -1465,4 +1636,203 @@ float GetAngleBetweenVectors(const float vector1[3], const float vector2[3], con
 		degree *= -1.0;
 
 	return degree;
+}
+
+bool RealFreePlayersOnInfected ()
+{
+	for (int i=1;i<=MaxClients;i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 3 && (IsPlayerGhost(i) || !IsPlayerAlive(i)))
+				return true;
+	}
+	return false;
+}
+
+bool IsPlayerGhost (int client)
+{
+	if (GetEntProp(client, Prop_Send, "m_isGhost"))
+		return true;
+	return false;
+}
+
+Handle hGameConf;
+void GetGameData()
+{
+	hGameConf = LoadGameConfigFile("all4dead2");
+	if( hGameConf != null )
+	{
+		PrepSDKCall();
+	}
+	else
+	{
+		SetFailState("Unable to find all4dead2.txt gamedata file.");
+	}
+	delete hGameConf;
+}
+
+void PrepSDKCall()
+{
+	//find create bot signature
+	Address replaceWithBot = GameConfGetAddress(hGameConf, "NextBotCreatePlayerBot.jumptable");
+	if (replaceWithBot != Address_Null && LoadFromAddress(replaceWithBot, NumberType_Int8) == 0x68) {
+		// We're on L4D2 and linux
+		PrepWindowsCreateBotCalls(replaceWithBot);
+	}
+	else
+	{
+		PrepL4D2CreateBotCalls();
+	}
+}
+
+void LoadStringFromAdddress(Address addr, char[] buffer, int maxlength) {
+	int i = 0;
+	while(i < maxlength) {
+		char val = LoadFromAddress(addr + view_as<Address>(i), NumberType_Int8);
+		if(val == 0) {
+			buffer[i] = 0;
+			break;
+		}
+		buffer[i] = val;
+		i++;
+	}
+	buffer[maxlength - 1] = 0;
+}
+
+Handle PrepCreateBotCallFromAddress(Handle hSiFuncTrie, const char[] siName) {
+	Address addr;
+	StartPrepSDKCall(SDKCall_Static);
+	if (!GetTrieValue(hSiFuncTrie, siName, addr) || !PrepSDKCall_SetAddress(addr))
+	{
+		SetFailState("Unable to find NextBotCreatePlayer<%s> address in memory.", siName);
+		return null;
+	}
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	return EndPrepSDKCall();	
+}
+
+void PrepWindowsCreateBotCalls(Address jumpTableAddr) {
+	Handle hInfectedFuncs = CreateTrie();
+	// We have the address of the jump table, starting at the first PUSH instruction of the
+	// PUSH mem32 (5 bytes)
+	// CALL rel32 (5 bytes)
+	// JUMP rel8 (2 bytes)
+	// repeated pattern.
+	
+	// Each push is pushing the address of a string onto the stack. Let's grab these strings to identify each case.
+	// "Hunter" / "Smoker" / etc.
+	for(int i = 0; i < 7; i++) {
+		// 12 bytes in PUSH32, CALL32, JMP8.
+		Address caseBase = jumpTableAddr + view_as<Address>(i * 12);
+		Address siStringAddr = view_as<Address>(LoadFromAddress(caseBase + view_as<Address>(1), NumberType_Int32));
+		static char siName[32];
+		LoadStringFromAdddress(siStringAddr, siName, sizeof(siName));
+
+		Address funcRefAddr = caseBase + view_as<Address>(6); // 2nd byte of call, 5+1 byte offset.
+		int funcRelOffset = LoadFromAddress(funcRefAddr, NumberType_Int32);
+		Address callOffsetBase = caseBase + view_as<Address>(10); // first byte of next instruction after the CALL instruction
+		Address nextBotCreatePlayerBotTAddr = callOffsetBase + view_as<Address>(funcRelOffset);
+		//PrintToServer("Found NextBotCreatePlayerBot<%s>() @ %08x", siName, nextBotCreatePlayerBotTAddr);
+		SetTrieValue(hInfectedFuncs, siName, nextBotCreatePlayerBotTAddr);
+	}
+
+	hCreateSmoker = PrepCreateBotCallFromAddress(hInfectedFuncs, "Smoker");
+	if (hCreateSmoker == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateSmoker); return; }
+
+	hCreateBoomer = PrepCreateBotCallFromAddress(hInfectedFuncs, "Boomer");
+	if (hCreateBoomer == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateBoomer); return; }
+
+	hCreateHunter = PrepCreateBotCallFromAddress(hInfectedFuncs, "Hunter");
+	if (hCreateHunter == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateHunter); return; }
+
+	hCreateTank = PrepCreateBotCallFromAddress(hInfectedFuncs, "Tank");
+	if (hCreateTank == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateTank); return; }
+	
+	hCreateSpitter = PrepCreateBotCallFromAddress(hInfectedFuncs, "Spitter");
+	if (hCreateSpitter == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateSpitter); return; }
+	
+	hCreateJockey = PrepCreateBotCallFromAddress(hInfectedFuncs, "Jockey");
+	if (hCreateJockey == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateJockey); return; }
+
+	hCreateCharger = PrepCreateBotCallFromAddress(hInfectedFuncs, "Charger");
+	if (hCreateCharger == null)
+	{ SetFailState("Cannot initialize %s SDKCall, address lookup failed.", NAME_CreateCharger); return; }
+}
+
+void PrepL4D2CreateBotCalls() {
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateSpitter))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateSpitter); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateSpitter = EndPrepSDKCall();
+	if (hCreateSpitter == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateSpitter); return; }
+	
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateJockey))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateJockey); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateJockey = EndPrepSDKCall();
+	if (hCreateJockey == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateJockey); return; }
+	
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateCharger))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateCharger); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateCharger = EndPrepSDKCall();
+	if (hCreateCharger == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateCharger); return; }
+
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateSmoker))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateSmoker); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateSmoker = EndPrepSDKCall();
+	if (hCreateSmoker == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateSmoker); return; }
+	
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateBoomer))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateBoomer); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateBoomer = EndPrepSDKCall();
+	if (hCreateBoomer == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateBoomer); return; }
+	
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateHunter))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateHunter); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateHunter = EndPrepSDKCall();
+	if (hCreateHunter == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateHunter); return; }
+	
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, NAME_CreateTank))
+	{ SetFailState("Unable to find %s signature in gamedata file.", NAME_CreateTank); return; }
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+	hCreateTank = EndPrepSDKCall();
+	if (hCreateTank == null)
+	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateTank); return; }
+}
+
+bool IsValidClient(int client)
+{
+	if (client <= 0 || client > MaxClients) return false;
+	if (!IsClientInGame(client)) return false;
+	return true;
 }
