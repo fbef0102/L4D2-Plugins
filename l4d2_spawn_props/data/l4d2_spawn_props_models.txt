@@ -14,6 +14,7 @@ models/props_vehicles/boat_ski.mdl TAG- 滑水艇
 models/props_urban/boat002.mdl TAG- 小船
 models/lostcoast/props_wasteland/boat_wooden01a_static.mdl TAG- 伐木舟 a
 models/lostcoast/props_wasteland/boat_wooden03a_static.mdl TAG- 伐木舟 b
+models/props_vehicles/boat_trailer20ft.mdl TAG- 只有骨架的船
 models/props_vehicles/bus01.mdl TAG- 巴士 1
 models/props_vehicles/bus01_2.mdl TAG- 巴士 01_2
 models/props_waterfront/tour_bus.mdl TAG- 明星巴士 - c6
@@ -285,6 +286,11 @@ models/props_interiors/bed_houseboat.mdl TAG- 床 - 船屋
 models/props_interiors/bed_motel.mdl TAG- 床 - 飯店
 models/props_interiors/baby_crib.mdl TAG- 嬰兒床
 models/props_interiors/kids_bed.mdl TAG- 單人床
+models/props/cs_militia/militiawindow02_breakable_chunk_01.mdl TAG- 木屋破損窗戶 1
+models/props/cs_militia/militiawindow02_breakable_chunk_02.mdl TAG- 木屋破損窗戶 2
+models/props/cs_militia/militiawindow02_breakable_chunk_03.mdl TAG- 木屋破損窗戶 3
+models/props/cs_militia/militiawindow02_breakable_chunk_04.mdl TAG- 木屋破損窗戶 4
+models/props/cs_militia/militiawindow02_breakable.mdl TAG- 木屋完整窗戶
 models/props_interiors/table_picnic.mdl TAG- 野餐桌 (可打破)
 models/props_interiors/table_picnic_break01.mdl TAG- 野餐桌 - 破碎 1
 models/props_interiors/table_picnic_break02.mdl TAG- 野餐桌 - 破碎 2
@@ -317,7 +323,11 @@ models/props_street/police_barricade3.mdl TAG- 鐵框路障 - 六層
 models/props_street/police_barricade_368in.mdl TAG- 鐵框路障 - 八層
 models/props_street/police_barricade_496in.mdl TAG- 鐵框路障 - 十層
 models/props_street/police_barricade4.mdl TAG- 鐵框路障 - 十二層
+models/lostcoast/props_wasteland/gate01a.mdl TAG- 鐵圍欄門 a
+models/lostcoast/props_wasteland/gate01b.mdl TAG- 鐵圍欄門 b
 models/props_doors/roll-up_door_full.mdl TAG- 鐵捲門 - 完全體
+models/props_mill/elevator01_cagedoor02.mdl TAG- 電梯伸縮門 - c4m2（穿透）
+models/props_street/barricade_door_01.mdl TAG- 軍事機關门 - c9m1
 models/props_urban/fence_768_collapsed.mdl TAG- 已倒的遮蔽物圍欄 - c4m5
 models/props_urban/fence_cover001_128.mdl TAG- 遮蔽物圍欄 - 128 單位
 models/props_urban/fence_cover001_256.mdl TAG- 遮蔽物圍欄 - 256 單位
@@ -405,9 +415,9 @@ models/props_wasteland/rockcliff_cluster03a_river.mdl TAG- 巨大岩壁 e
 models/props_street/trafficlight01.mdl TAG- 交通路燈 - 大型
 models/props_c17/lamppost03a_on.mdl TAG- 路燈 - 開燈
 models/props_c17/lamppost03a_off.mdl TAG- 路燈 - 關燈
-models/props_misc/fairground_tent_closed.mdl TAG- 帳篷
 models/props_exteriors/guardshack.mdl TAG- 警衛室
 models/props_unique/ticketbooth.mdl TAG- 售票口
+models/props_mill/elevator01_cage.mdl TAG- 升降電梯 - c4m2
 models/lighthouse/diesel_pump.mdl TAG- 柴油泵
 models/props_rooftop/train_signalbox_01.mdl TAG- 火車信號箱
 models/props_rooftop/vent_large1.mdl TAG- 通風管電壓箱
@@ -430,6 +440,9 @@ models/props_mall/mall_escalator.mdl TAG- 電扶梯 - 商場
 models/props_mall/mall_kiosk.mdl TAG- 商場亭 A
 models/props_mall/mall_kioskb.mdl TAG- 商場亭 B
 models/props_mall/mall_kioskc.mdl TAG- 商場亭 C
+models/props_mill/pipeset32d_128a.mdl TAG- 大型管道 - 128單位
+models/props_mill/pipeset32d_256a.mdl TAG- 大型管道 - 256單位
+models/props_mill/pipeset32d_512a.mdl TAG- 大型管道 - 512單位
 models/props_wasteland/prison_pipes002a.mdl TAG- 大量水管線
 models/props_unique/greenhouse_pipewall.mdl TAG- 大型管線 1
 models/props_unique/greenhouseboiler_all.mdl TAG- 大型管線 2
@@ -453,14 +466,23 @@ models/props_equipment/scaffolding_norails.mdl TAG- 機場建築鷹架 b
 models/props_lighting/lights_industrialcluster01a.mdl TAG- 機場照明燈 - 沒亮
 models/props_misc/fire_exit_crushed.mdl TAG- 撞壞的逃生梯 + 瓦礫碎泥土石 - c8m1 (穿透)
 models/lighthouse/b_waterwheel01.mdl TAG- 水車 - 灌溉工具
-models/lighthouse/waterwheelengine_01.mdl TAG- 水車引擎 a
-models/lighthouse/waterwheelengine_02.mdl TAG- 水車引擎 b
+models/lighthouse/waterwheelengine_01.mdl TAG- 水車引擎 1
+models/lighthouse/waterwheelengine_02.mdl TAG- 水車引擎 2
 models/lighthouse/junkyard_crane_arm.mdl TAG- 垃圾場起重機 - 臂
 models/lighthouse/junkyard_crane_base.mdl TAG- 垃圾場起重機 - 基底
 models/lighthouse/junkyard_crane_magnet.mdl TAG- 垃圾場起重機 - 磁鐵 (穿透)
 models/lighthouse/props/estuary_bridge_arch_big.mdl TAG- 大型河口橋拱
 models/lighthouse/props/estuary_bridge_arch_small.mdl TAG- 小型河口橋拱
 models/lighthouse/props/estuary_bridge_corrug.mdl TAG- 河口橋拱瓦楞天花板
+models/lighthouse/props/wheelhouse_dock.mdl TAG- 操舵室木製地板
+models/props_fairgrounds/kiddyland_ridestructure_closed.mdl TAG- 關閉的遊樂園騎馬棚
+models/props_misc/fairground_tent_closed.mdl TAG- 遊樂園帳篷
+models/lighthouse/props/estuary_bridge_beams.mdl TAG- 河口橋拱梁
+models/lighthouse/props/wheelhouse_ceiling01.mdl TAG- 操舵室木製天花板骨架 a
+models/lighthouse/props/wheelhouse_ceiling02.mdl TAG- 操舵室木製天花板骨架 b
+models/lighthouse/props/ceiling_metal_beams.mdl TAG- 天花板金屬梁
+models/props_unique/airport_greenhouse.mdl TAG- 機場第一關卡的巨大溫室骨架
+models/props_fairgrounds/slide.mdl TAG- 遊樂園滑梯
 models/props_cemetery/grave_01.mdl TAG- 墓碑 1 (可打破)
 models/props_cemetery/grave_02.mdl TAG- 墓碑 2 (可打破)
 models/props_cemetery/grave_03.mdl TAG- 墓碑 3 (可打破)
@@ -514,6 +536,7 @@ models/props_fairgrounds/mic_stand.mdl TAG- 麥克風
 models/props_urban/ashtray_stand001.mdl TAG- 煙灰桶
 models/props_fairgrounds/fairgrounds_banner02.mdl TAG- 露天廣場旗幟
 models/props_junk/wheelbarrow01a_static.mdl TAG- 手推獨輪車 (固態)
+models/props/cs_assault/handtruck.mdl TAG- 手推車
 models/props_interiors/sawhorse.mdl TAG- 鋸木架
 models/props_c17/hospital_surgerytable01.mdl TAG- 手術台
 models/props_urban/gas_meter.mdl TAG- 瓦斯表
@@ -582,9 +605,7 @@ models/props_fairgrounds/snake.mdl TAG- 玩具蛇
 models/props_fairgrounds/elephant.mdl TAG- 大象玩具 - 坐著
 models/props_interiors/teddy_bear.mdl TAG- 泰迪熊
 models/lighthouse/book_roku.mdl TAG- 書本 - 塗鴉
-models/lighthouse/candle.mdl TAG- 蠟燭
-models/lighthouse/glass_design01a.mdl TAG- 透明玻璃 a
-models/lighthouse/glass_design01b.mdl TAG- 透明玻璃 b
+models/lighthouse/candle.mdl TAG- 蠟燭 
 models/lighthouse/mate/mate_sanclemente.mdl TAG- 茶葉碗
 models/lighthouse/mate/mate_termo.mdl TAG- 茶葉水瓶
 models/lighthouse/mate/mate_yerba.mdl TAG- 茶葉包
@@ -605,16 +626,9 @@ models/props_vehicles/carparts_axel01a_static.mdl TAG- 汽車零件 - 斧 (固�
 models/props_vehicles/carparts_door01a_static.mdl TAG- 汽車零件 - 車門 (固態)
 models/props_vehicles/carparts_tire01a_static.mdl TAG- 汽車零件 - 空心輪胎 (固態) 
 models/props_vehicles/carparts_wheel01a_static.mdl TAG- 汽車零件 - 實心輪胎 (固態)
-models/props/cs_assault/handtruck.mdl TAG- 手推車
-models/lighthouse/props/estuary_bridge_beams.mdl TAG- 河口橋拱梁
-models/lighthouse/props/wheelhouse_ceiling01.mdl TAG- 操舵室天花板 a
-models/lighthouse/props/wheelhouse_ceiling02.mdl TAG- 操舵室天花板 b
-models/lighthouse/props/wheelhouse_dock.mdl TAG- 操舵室木製地板
 models/lighthouse/props/wheelhouse_window_bars.mdl TAG- 操舵室窗戶
 models/lighthouse/props/brick_broken_wall_debris.mdl TAG- 散落磚頭
-models/lighthouse/props/ceiling_metal_beams.mdl TAG- 天花板金屬梁
-models/props_unique/airport_greenhouse.mdl TAG- 機場第一關卡的巨大溫室骨架
-models/props_vehicles/boat_trailer20ft.mdl TAG- 只有骨架的船
+models/props_signs/sign_truckstop_01_lettera.mdl TAG- 霓虹燈字母A（穿透）
 //Category Misc 雜項類
 models/props_exteriors/wood_stairs_swamp.mdl TAG- 沼澤木製樓梯 - 5階
 models/props_exteriors/wood_stairs_120_swamp.mdl TAG- 沼澤木製樓梯 - 15階
@@ -698,8 +712,9 @@ models/props_interiors/sheetrock_leaning.mdl TAG- 長型鐵板 - 推疊
 models/props_equipment/tablegreenhouse01.mdl TAG- 長型鐵板架 - c11m1
 models/props_swamp/ferry.mdl TAG- 搭建鐵皮屋
 models/props_unique/airport/atlas_break_ball.mdl TAG- 地球模型
-models/props_fairgrounds/slide.mdl TAG- 遊樂園滑梯
-models/props_fairgrounds/kiddyland_ridestructure_closed.mdl TAG- 關閉的遊樂園騎馬棚
+models/lighthouse/props/camp_tent.mdl TAG- 露營帳篷
+models/lighthouse/glass_design01a.mdl TAG- 透明玻璃
+models/lighthouse/glass_design01b.mdl TAG- 透明玻璃 - 較寬
 models/props_fortifications/fortification_indoor_01.mdl TAG- 行李推疊堡壘
 models/props_fortifications/sandbags_line2.mdl TAG- 建築沙袋 - 6層
 models/props_fortifications/sandbags_corner3.mdl TAG- 建築沙袋 - 4層 - 弧型
@@ -713,5 +728,7 @@ models/deadbodies/dead_female_civilian_02.mdl TAG- 死去平民 - 坐著
 models/deadbodies/dead_female_civilian_draped_01.mdl TAG- 死去平民 - 已蓋上布 a
 models/deadbodies/dead_female_civilian_draped_02.mdl TAG- 死去平民 - 已蓋上布 b
 models/deadbodies/dead_male_torso_01.mdl TAG- 死去平民 - 一半屍體
-models/deadbodies/dead_pilot.mdl TAG- 飛行員屍體
+models/deadbodies/dead_pilot.mdl TAG- 飛行員屍體 - 躺著
+models/deadbodies/dead_military_male01.mdl TAG- 軍人屍體 - 站立 (穿透)
+models/deadbodies/dead_male_suit_01.mdl TAG- 男西裝屍體 - 站立 (穿透)
 models/infected/hulk_l4d1.mdl TAG- Tank模型 - L4D1 (穿透)
