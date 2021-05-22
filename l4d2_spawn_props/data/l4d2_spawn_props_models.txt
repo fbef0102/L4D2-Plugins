@@ -286,11 +286,13 @@ models/props_interiors/bed_houseboat.mdl TAG- 床 - 船屋
 models/props_interiors/bed_motel.mdl TAG- 床 - 飯店
 models/props_interiors/baby_crib.mdl TAG- 嬰兒床
 models/props_interiors/kids_bed.mdl TAG- 單人床
-models/props/cs_militia/militiawindow02_breakable_chunk_01.mdl TAG- 木屋破損窗戶 1
-models/props/cs_militia/militiawindow02_breakable_chunk_02.mdl TAG- 木屋破損窗戶 2
-models/props/cs_militia/militiawindow02_breakable_chunk_03.mdl TAG- 木屋破損窗戶 3
-models/props/cs_militia/militiawindow02_breakable_chunk_04.mdl TAG- 木屋破損窗戶 4
-models/props/cs_militia/militiawindow02_breakable.mdl TAG- 木屋完整窗戶
+models/props_windows/window_industrial.mdl TAG- 玻璃網格窗戶 (可打破)
+models/props/cs_militia/militiawindow02_breakable_chunk_01.mdl TAG- 木屋破損窗戶 1 (可打破)
+models/props/cs_militia/militiawindow02_breakable_chunk_02.mdl TAG- 木屋破損窗戶 2 (可打破)
+models/props/cs_militia/militiawindow02_breakable_chunk_03.mdl TAG- 木屋破損窗戶 3 (可打破)
+models/props/cs_militia/militiawindow02_breakable_chunk_04.mdl TAG- 木屋破損窗戶 4 (可打破)
+models/props/cs_militia/militiawindow02_breakable.mdl TAG- 木屋完整窗戶 (可打破)
+models/props_vents/ventbreakable01.mdl TAG- 通風管氣窗口 (可打破)
 models/props_interiors/table_picnic.mdl TAG- 野餐桌 (可打破)
 models/props_interiors/table_picnic_break01.mdl TAG- 野餐桌 - 破碎 1
 models/props_interiors/table_picnic_break02.mdl TAG- 野餐桌 - 破碎 2
@@ -366,6 +368,8 @@ models/props_update/whitebrick_128.mdl TAG- 白磚牆 - 128 單位
 models/props_update/whitebrick_256.mdl TAG- 白磚牆 - 256 單位
 models/props_update/wood_128.mdl TAG- 木製牆壁 - 128 單位
 models/props_update/wood_256.mdl TAG- 木製牆壁 - 256 單位
+models/props_interiors/concretepillar01.mdl TAG- 地下室水泥鋼筋 (Tank可打斷)
+models/props_interiors/concretepiller01_dm01.mdl TAG- 地下室水泥鋼筋 - 斷裂
 models/props_interiors/constructionwalls02checkpoint.mdl TAG- 建築鋼柱牆 - 有洞
 models/props_interiors/constructionwalls03.mdl TAG- 建築鋼柱牆 - 4根
 models/props_cemetery/crypts_wall.mdl TAG- 加厚的大石牆 - 公墓
@@ -425,6 +429,8 @@ models/props_unique/generator_short.mdl TAG- 發電機 - 渦輪
 models/props_c17/substation_circuitbreaker03.mdl TAG- 發電廠 - 斷路器
 models/props_c17/substation_transformer01a.mdl TAG- 發電廠 - 變壓器
 models/props_c17/substation_transformer01b.mdl TAG- 發電廠 - 變壓器測邊
+models/props_unique/generator.mdl TAG- 大型發電機 a - c8m2
+models/props_unique/generator01.mdl TAG- 大型發電機 b - c8m2
 models/props_wasteland/coolingtank01.mdl TAG- 冷卻水塔 - 橢圓
 models/props_wasteland/coolingtank02.mdl TAG- 冷卻水塔 - 長圓
 models/props_street/watertower01.mdl TAG- 水塔 - 大型
@@ -468,6 +474,7 @@ models/props_misc/fire_exit_crushed.mdl TAG- 撞壞的逃生梯 + 瓦礫碎泥�
 models/lighthouse/b_waterwheel01.mdl TAG- 水車 - 灌溉工具
 models/lighthouse/waterwheelengine_01.mdl TAG- 水車引擎 1
 models/lighthouse/waterwheelengine_02.mdl TAG- 水車引擎 2
+models/props_industrial/dumpsterconstruction01.mdl TAG- 垃圾箱建築工程 - c11m2
 models/lighthouse/junkyard_crane_arm.mdl TAG- 垃圾場起重機 - 臂
 models/lighthouse/junkyard_crane_base.mdl TAG- 垃圾場起重機 - 基底
 models/lighthouse/junkyard_crane_magnet.mdl TAG- 垃圾場起重機 - 磁鐵 (穿透)
@@ -483,6 +490,7 @@ models/lighthouse/props/wheelhouse_ceiling02.mdl TAG- 操舵室木製天花板�
 models/lighthouse/props/ceiling_metal_beams.mdl TAG- 天花板金屬梁
 models/props_unique/airport_greenhouse.mdl TAG- 機場第一關卡的巨大溫室骨架
 models/props_fairgrounds/slide.mdl TAG- 遊樂園滑梯
+models/props_unique/airport/atlas.mdl TAG- 大力士雕像拿著地球模型
 models/props_cemetery/grave_01.mdl TAG- 墓碑 1 (可打破)
 models/props_cemetery/grave_02.mdl TAG- 墓碑 2 (可打破)
 models/props_cemetery/grave_03.mdl TAG- 墓碑 3 (可打破)
@@ -704,8 +712,9 @@ models/props_misc/military_sign01.mdl TAG- 軍事標誌 a
 models/props_misc/military_sign01_2.mdl TAG- 軍事標誌 b
 models/props_misc/military_sign02.mdl TAG- 軍事標誌 c
 models/props_mall/mall_directory.mdl TAG- 指示牌 - 商場地圖
-models/props_signs/burgersign_beacon.mdl TAG- 廣告牌 - Burger TANK (穿透)
-models/props_signs/raisedbillboard.mdl TAG- 超大廣告牌 - Burger TANK
+models/props_signs/burgersign_beacon.mdl TAG- 超大廣告牌 a - Burger TANK - 沒亮 (穿透)
+models/props_signs/burgersign.mdl TAG- 超大廣告牌 a - Burger TANK - 發亮 (穿透)
+models/props_signs/raisedbillboard.mdl TAG- 超大廣告牌 b - Burger TANK
 models/props_fairgrounds/entrance_sign.mdl TAG- 超大標誌 - 遊樂園入口
 models/props_fortifications/police_barrier001_128_reference.mdl TAG- 警察護欄告示
 models/props_interiors/sheetrock_leaning.mdl TAG- 長型鐵板 - 推疊
