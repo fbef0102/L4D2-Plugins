@@ -8,7 +8,7 @@
 #include <sdktools>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.9"
+#define PLUGIN_VERSION "2.0"
 #define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
 
 enum GameModeStatus
@@ -602,7 +602,7 @@ public Action SpawnMoreTank(Handle timer)
 {
 	if (!bMTOn || !bRoundBegan || bRoundFinished)
 	{
-		return Plugin_Stop;
+		return Plugin_Continue;
 	}
 	
 	int iCommandExecuter = 0;
@@ -615,7 +615,12 @@ public Action SpawnMoreTank(Handle timer)
 		}
 	}
 	
-	if(iCommandExecuter == 0) return Plugin_Stop;
+	if(iCommandExecuter == 0) return Plugin_Continue;
+
+	if(RealFreePlayersOnInfected()) {
+		CheatCommand(iCommandExecuter, "z_spawn_old", "tank auto");
+		return Plugin_Continue;
+	}
 	
 	float vecPos[3];
 	if(L4D_GetRandomPZSpawnPosition(iCommandExecuter,8,5,vecPos) == true)
@@ -638,7 +643,7 @@ public Action SpawnMoreTank(Handle timer)
 		}
 	}
 	
-	return Plugin_Stop;
+	return Plugin_Continue;
 }
 
 public Action CheckFrustration(Handle timer, any userid)
@@ -914,7 +919,7 @@ void PrepWindowsCreateBotCalls(Address jumpTableAddr) {
 		int funcRelOffset = LoadFromAddress(funcRefAddr, NumberType_Int32);
 		Address callOffsetBase = caseBase + view_as<Address>(10); // first byte of next instruction after the CALL instruction
 		Address nextBotCreatePlayerBotTAddr = callOffsetBase + view_as<Address>(funcRelOffset);
-		PrintToServer("Found NextBotCreatePlayerBot<%s>() @ %08x", siName, nextBotCreatePlayerBotTAddr);
+		//PrintToServer("Found NextBotCreatePlayerBot<%s>() @ %08x", siName, nextBotCreatePlayerBotTAddr);
 		SetTrieValue(hInfectedFuncs, siName, nextBotCreatePlayerBotTAddr);
 	}
 
@@ -932,4 +937,31 @@ void PrepCreateTankBotCalls() {
 	hCreateTank = EndPrepSDKCall();
 	if (hCreateTank == null)
 	{ SetFailState("Cannot initialize %s SDKCall, signature is broken.", NAME_CreateTank); return; }
+}
+
+bool RealFreePlayersOnInfected ()
+{
+	for (int i=1;i<=MaxClients;i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 3 && (IsPlayerGhost(i) || !IsPlayerAlive(i)))
+			return true;
+	}
+	return false;
+}
+
+stock void CheatCommand(int client,  char[] command, char[] arguments = "")
+{
+	int userFlags = GetUserFlagBits(client);
+	SetUserFlagBits(client, ADMFLAG_ROOT);
+	int flags = GetCommandFlags(command);
+	SetCommandFlags(command, flags & ~FCVAR_CHEAT);
+	FakeClientCommand(client, "%s %s", command, arguments);
+	SetCommandFlags(command, flags);
+	SetUserFlagBits(client, userFlags);
+}
+
+stock bool IsPlayerGhost(int client)
+{
+	if (GetEntProp(client, Prop_Send, "m_isGhost", 1)) return true;
+	return false;
 }
