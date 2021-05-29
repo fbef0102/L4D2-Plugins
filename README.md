@@ -33,7 +33,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>L4D2_Survivor_Store</b>: Killing zombies and infected to earn points, use !buy to purchase weapons and items.
 * <b>l4d2_spawn_props</b>: Let admins spawn any kind of objects and saved to cfg
 * <b>l4d2_gun_damage_modify</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
-* <b>l4d2_powerups_rush</b>: When a client pops an adrenaline (or pills), various actions are perform faster (reload, melee swings, firing rates)
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
