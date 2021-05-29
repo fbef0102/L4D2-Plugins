@@ -4,6 +4,7 @@ When a client pops an adrenaline (or pills), various actions are perform faster 
 v2.1.2
 -Remke code
 -Fixed error
+-Fixed Memory leak
 
 v2.0.1
 -original Post: https://forums.alliedmods.net/showthread.php?t=127513
