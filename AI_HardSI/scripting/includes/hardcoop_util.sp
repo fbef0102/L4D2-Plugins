@@ -449,11 +449,7 @@ stock void CheatCommand( char[] commandName, char[] argument1 = "",  char[] argu
 		    FakeClientCommand(commandDummy, "%s %s %s", commandName, argument1, argument2);
 		    SetCommandFlags(commandName, originalCommandFlags);
 		    SetUserFlagBits(commandDummy, originalUserFlags);            
-		} else {
-			char pluginName[128];
-			GetPluginFilename( INVALID_HANDLE, pluginName, sizeof(pluginName) );        
-			LogError( "%s could not find or create a client through which to execute cheat command %s", pluginName, commandName );
-		}   
+		}
     }
 }
 
