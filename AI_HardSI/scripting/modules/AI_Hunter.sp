@@ -99,6 +99,8 @@ public Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, floa
 		float hunterPos[3];
 		GetClientAbsOrigin(hunter, hunterPos);		
 		int iSurvivorsProximity = GetSurvivorProximity(hunterPos);
+		if (iSurvivorsProximity == -1) return Plugin_Continue;
+		
 		bool bHasLOS = view_as<bool>(GetEntProp(hunter, Prop_Send, "m_hasVisibleThreats")); // Line of sight to survivors		
 		// Start fast pouncing if close enough to survivors
 		if( bHasLOS ) {

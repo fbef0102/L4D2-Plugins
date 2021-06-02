@@ -45,6 +45,8 @@ public Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float v
 		float tankPos[3];
 		GetClientAbsOrigin(tank, tankPos);
 		int iSurvivorsProximity = GetSurvivorProximity(tankPos);
+		if (iSurvivorsProximity == -1) return Plugin_Continue;
+		
 		bool bHasSight = view_as<bool>(GetEntProp(tank, Prop_Send, "m_hasVisibleThreats")); //Line of sight to survivors
 		
 		// Near survivors
