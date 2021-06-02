@@ -42,6 +42,8 @@ public Action Jockey_OnPlayerRunCmd(int jockey, int &buttons, int &impulse, floa
 	float jockeyPos[3];
 	GetClientAbsOrigin(jockey, jockeyPos);
 	int iSurvivorsProximity = GetSurvivorProximity(jockeyPos);
+	if (iSurvivorsProximity == -1) return Plugin_Continue;
+	
 	bool bHasLOS = view_as<bool>(GetEntProp(jockey, Prop_Send, "m_hasVisibleThreats")); // line of sight to any survivor
 	
 	// Start hopping if within range	

@@ -214,6 +214,7 @@ stock bool IsIncapacitated(int client) {
 stock int GetClosestSurvivor( float referencePos[3], int excludeSurvivor = -1 ) {
 	float survivorPos[3];
 	int closestSurvivor = GetRandomSurvivor();	
+	if (closestSurvivor == -1) return -1;
 	GetClientAbsOrigin( closestSurvivor, survivorPos );
 	int iClosestAbsDisplacement = RoundToNearest( GetVectorDistance(referencePos, survivorPos) );
 	for (int client = 1; client < MaxClients; client++) {
@@ -254,6 +255,8 @@ stock int GetSurvivorProximity( const float rp[3], int specificSurvivor = -1 ) {
 		targetSurvivor = GetClosestSurvivor( referencePos );
 	}
 	
+	if (targetSurvivor == -1) return -1;
+
 	GetEntPropVector( targetSurvivor, Prop_Send, "m_vecOrigin", targetSurvivorPos );
 	return RoundToNearest( GetVectorDistance(referencePos, targetSurvivorPos) );
 }
@@ -268,6 +271,7 @@ stock int GetRandomSurvivor() {
 		    numSurvivors++;
 		}
 	}
+	if (numSurvivors == 0) return -1;
 	return survivors[GetRandomInt(0, numSurvivors - 1)];
 }
 

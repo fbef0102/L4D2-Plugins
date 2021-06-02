@@ -42,6 +42,8 @@ public Action Charger_OnPlayerRunCmd(int charger, int &buttons, int &impulse, fl
 	GetClientAbsOrigin(charger, chargerPos);
 	int target = GetClientAimTarget(charger);	
 	int iSurvivorProximity = GetSurvivorProximity(chargerPos, target); // invalid(=-1) target will cause GetSurvivorProximity() to return distance to closest survivor
+	if (iSurvivorProximity == -1) return Plugin_Continue;	
+	
 	int chargerHealth = GetEntProp(charger, Prop_Send, "m_iHealth");
 	if( chargerHealth > hCvarHealthThresholdCharger.IntValue && iSurvivorProximity > hCvarChargeProximity.IntValue ) {	
 		if( !bShouldCharge[charger] ) { 				
@@ -68,7 +70,8 @@ void Charger_OnCharge(int charger) {
 		float chargerPos[3];
 		GetClientAbsOrigin(charger, chargerPos);
 		int newTarget = GetClosestSurvivor(chargerPos, aimTarget);	// try and find another closeby survivor
-		if( newTarget != -1 && GetSurvivorProximity(chargerPos, newTarget) <= hCvarChargeProximity.IntValue ) {
+		int distance = GetSurvivorProximity(chargerPos, newTarget);
+		if( newTarget != -1 && distance != -1 && distance <= hCvarChargeProximity.IntValue ) {
 			aimTarget = newTarget; // might be the same survivor if there were no other survivors within configured charge proximity
 			
 			#if DEBUG_CHARGER_TARGET	
@@ -76,10 +79,8 @@ void Charger_OnCharge(int charger) {
 				GetClientName(newTarget, targetName, sizeof(targetName));
 				PrintToChatAll("Charger forced to charge survivor %s", targetName);
 			#endif
-		
+			ChargePrediction(charger, aimTarget);
 		}
-		
-		ChargePrediction(charger, aimTarget);
 	}
 }
 
