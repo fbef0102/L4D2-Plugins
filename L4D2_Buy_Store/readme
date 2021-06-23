@@ -6,12 +6,13 @@ Killing zombies and infected to earn points, use !buy to purchase weapons and it
 3. [[INC] Multi Colors](https://forums.alliedmods.net/showthread.php?t=247770)
 
 -ChangeLog-
-v3.2
+v3.5
 -Remke code
 -Translation Support
 -Add The last stand two melee
 -Unlock All weapons including M60, Grenade_Launcher, and CSS weapons
 -Unlock All items including cola, gnome and fireworkcrate
+-Add Infected Shop
 -Add Special items
 -You can earn points by killing survivors as an infected.
 -You can earn points by helping each other as a survivor.
@@ -21,7 +22,7 @@ v1.0
 -original Post: https://forums.alliedmods.net/showthread.php?t=322108
 
 -Convars-
-cfg\sourcemod\L4D2_Survivor_Store.cfg
+cfg\sourcemod\L4D2_Buy_Store.cfg
 // If 1, use CookiesCached to save player money. Otherwise, the moeny will not be saved if player leaves the server.
 sm_shop_CookiesCached_enable "1"
 
@@ -55,20 +56,38 @@ sm_shop_help_teammate_save "30"
 // Giving money for killing a hunter
 sm_shop_hunterkilled "20"
 
+// Cold Down Time in seconds an infected player can not buy again after he buys item. (0=off).
+sm_shop_infected_cooltime_block "20.0"
+
+// If 1, Enable shop for infected.
+sm_shop_infected_enable "1"
+
 // Giving money for incapacitating a survivor. (No Hanging from legde)
 sm_shop_infected_survivor_incap "30"
 
 // Giving money for killing a survivor.
 sm_shop_infected_survivor_killed "100"
 
+// Tank limit on the field before infected can buy a tank. (0=Can't buy Tank)
+sm_shop_infected_tank_limit "1"
+
 // Giving money for killing a jockey
 sm_shop_jockeykilled "25"
+
+// Numbers of real survivor and infected player require to active this plugin.
+sm_shop_player_require "4"
 
 // Giving money for killing a smoker
 sm_shop_smokerkilled "20"
 
-// How long could infinite ammo stay for special item.
-sm_shop_special_infinite_ammo_time "15.0"
+// How long could Dead-Eyes state last for special item.
+sm_shop_special_dead_eyes_time "60"
+
+// How long could Immune Everything last for infected special item.
+sm_shop_special_immune_everything_time "8"
+
+// How long could infinite ammo state last for special item.
+sm_shop_special_infinite_ammo_time "15"
 
 // Max Air Jump Limit for special item.
 sm_shop_special_max_jump_limit "3"
@@ -81,9 +100,6 @@ sm_shop_stage_complete "400"
 
 // If 1, decrease money if survivor friendly fire each other.
 sm_shop_survivor_TK_enable "1"
-
-// Numbers of real survivor and infected player require to active this plugin.
-sm_shop_player_require "4"
 
 // Giving one dollar money for hurting tank per X hp
 sm_shop_tank_hurt "40"
@@ -105,8 +121,12 @@ sm_shop_zombiekilled "1"
 "sm_skills"
 "sm_money"
 "sm_purchase"
+"itempointshelp"
+"sm_market"
+"sm_usepoint"
+"sm_usepoints"
 
-**donate money to another player
+**donate money to another player (Or use "Points Transfer" in shop menu )
 "sm_pay <name> <money>"
 "sm_donate <name> <money>"
 	
@@ -114,6 +134,7 @@ sm_shop_zombiekilled "1"
 "sm_inspectbank [name]"
 "sm_checkbank [name]"
 "sm_lookbank [name]"
+"sm_allbank [name]"
 
 **Adm gives money (ADMFLAG_BAN)
 "sm_givemoney <name> <money>"
@@ -123,7 +144,8 @@ sm_shop_zombiekilled "1"
 "sm_deductmoney <name>"
 
 -How to set the item money-
-in scripting\L4D2_Survivor_Store.sp line 114~194
+in scripting\L4D2_Buy_Store.sp line 131~231
+[code]
 static char weaponsMenu[][][] = 
 {
 	{"pistol",			"Pistol", 			"100"},
@@ -143,26 +165,26 @@ static char weaponsMenu[][][] =
 	{"sniper_military", "Military Sniper", 	"450"},
 	{"sniper_scout", 	"SCOUT", 			"500"},
 	{"sniper_awp", 		"AWP",				"600"},
-	{"grenade_launcher","Grenade Launcher",	"1000"},
-	{"rifle_m60", 		"M60 Machine Gun", 	"1000"}
+	{"rifle_m60", 		"M60 Machine Gun", 	"1000"},
+	{"grenade_launcher","Grenade Launcher",	"1000"}
 };
 
 static char meleeMenu[][][] = 
 {
-	{"chainsaw",		"Chainsaw", 		"350"},
-	{"baseball_bat",	"Baseball Bat", 	"300"},
-	{"cricket_bat", 	"Cricket Bat", 		"300"},
-	{"crowbar", 		"Crowbar", 			"300"},
-	{"electric_guitar", "Electric Guitar", 	"300"},
-	{"fireaxe", 		"Fire Axe", 		"300"},
-	{"frying_pan", 		"Frying Pan", 		"300"},
-	{"katana", 			"Katana", 			"300"},
-	{"machete", 		"Machete", 			"300"},
-	{"tonfa", 			"Tonfa", 			"300"},
-	{"golfclub", 		"Golf Club", 		"300"},
-	{"knife", 			"Knife", 			"300"},
-	{"pitchfork", 		"Pitchfork", 		"300"},
-	{"shovel", 			"Shovel", 			"300"}
+	{"chainsaw",		"Chainsaw", 		"300"},
+	{"baseball_bat",	"Baseball Bat", 	"250"},
+	{"cricket_bat", 	"Cricket Bat", 		"250"},
+	{"crowbar", 		"Crowbar", 			"250"},
+	{"electric_guitar", "Electric Guitar", 	"250"},
+	{"fireaxe", 		"Fire Axe", 		"250"},
+	{"frying_pan", 		"Frying Pan", 		"250"},
+	{"katana", 			"Katana", 			"250"},
+	{"machete", 		"Machete", 			"250"},
+	{"tonfa", 			"Tonfa", 			"250"},
+	{"golfclub", 		"Golf Club", 		"250"},
+	{"knife", 			"Knife", 			"250"},
+	{"pitchfork", 		"Pitchfork", 		"250"},
+	{"shovel", 			"Shovel", 			"250"}
 };
 
 static char medicThrowableMenu[][][] =
@@ -189,23 +211,46 @@ static char otherMenu[][][] =
 	{"oxygentank",	 					"Oxygen Tank", 			"80"},
 	{"fireworkcrate",					"Firework Crate", 		"300"},
 	{"gascan",  						"Gascan",				"1000"},
-	{"gnome",							"Gnome", 				"1500"},
-	{"cola_bottles",  					"Cola Bottles",			"1500"}
+	{"cola_bottles",  					"Cola Bottles",			"1500"},
+	{"gnome",							"Gnome", 				"2000"},
 };
 
 static char specialMenu[][][] =
 {
-	{"Fire", 			"Fire Yourself", 				"1000"},
-	{"Teleport", 		"Teleport to teammate", 		"1500"},
-	{"Kill Commons", 	"Kill Commons", 				"2000"},
-	{"Infinite Ammo",	"Infinite Ammo", 				"2500"},
-	{"Heal Survivors",	"Heal Survivors", 				"3000"},
-	{"Jump+1", 			"Jump+1", 						"3500"},
-	{"Fire Infeceted", 	"All Infected Gets On Fire", 	"4000"},
-	{"Kill Witches", 	"Kill Witches", 				"4500"},
-	{"Slay Infected", 	"Slay Infected Attacker", 		"5000"},
+	{"Fire", 			"Fire Yourself", 				"500"},
+	{"Fire Infeceted", 	"All Infected Gets On Fire", 	"750"},
+	{"Teleport", 		"Teleport to teammate", 		"1000"},
+	{"Infinite Ammo",	"Infinite Ammo", 				"1250"},
+	{"Kill Commons", 	"Kill Commons", 				"1500"},
+	{"Kill Witches", 	"Kill Witches", 				"1750"},
+	{"Dead Eyes",		"Dead-Eyes", 					"2000"},
+	{"Jump+1", 			"Jump+1", 						"2250"},
+	{"Heal Survivors",	"Heal Survivors", 				"2500"},
+	{"Slay Infected", 	"Slay Infected Attacker", 		"3000"},
 };
 
+static char infectedSpawnMenu[][][] =
+{
+	{"Suicide",		"Suicide", 			"0"},
+	{"Smoker",		"Smoker", 			"350"},
+	{"Boomer",		"Boomer", 			"150"},
+	{"Hunter",		"Hunter", 			"200"},
+	{"Spitter",		"Spitter", 			"350"},
+	{"Jockey",		"Jockey", 			"250"},
+	{"Charger",		"Charger", 			"300"},
+	{"Tank",		"Tank", 			"3000"}
+};
+
+static char infectedSpecialMenu[][][] =
+{
+	{"Health",		"Full Health", 				"500"},
+	{"Teleport",	"Teleport to survivor", 	"1250"},
+	{"Immune",		"Immune Everything", 		"1300"}
+};
+[/code]
+
 -How to set player maximum money-
-in scripting\L4D2_Survivor_Store.sp line 31
-#define MAX_MONEY            32000 
+in scripting\L4D2_Buy_Store.sp line 32
+[code]
+#define MAX_MONEY            16000
+[/code]
