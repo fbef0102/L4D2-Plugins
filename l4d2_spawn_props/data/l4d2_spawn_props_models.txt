@@ -508,6 +508,8 @@ models/props_unique/subwaytracks01_f.mdl TAG- 鐵軌 f
 models/props_unique/subwaytracks01_g.mdl TAG- 鐵軌 g
 models/props_unique/subwaytracks01_h.mdl TAG- 鐵軌 h
 //Category Decorative 裝飾類
+models/props_unique/spawn_apartment/coffeeammo.mdl TAG- 彈藥推 (L4D model)
+models/props/terror/ammo_stack.mdl TAG- 彈藥推 (L4D2 model)
 models/props_fairgrounds/arcadegame01.mdl TAG- 遊樂園的遊戲機
 models/props_fairgrounds/front_speaker.mdl TAG- 音樂會楊聲器
 models/props_interiors/dryer.mdl TAG- 烘乾機
