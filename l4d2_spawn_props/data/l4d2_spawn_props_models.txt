@@ -510,6 +510,53 @@ models/props_unique/subwaytracks01_h.mdl TAG- 鐵軌 h
 //Category Decorative 裝飾類
 models/props_unique/spawn_apartment/coffeeammo.mdl TAG- 彈藥推 (L4D model)
 models/props/terror/ammo_stack.mdl TAG- 彈藥推 (L4D2 model)
+models/props/de_prodigy/ammo_can_02.mdl TAG- 彈藥箱模型
+models/w_models/weapons/w_pistol_B.mdl TAG- 手槍模型
+models/w_models/weapons/w_smg_uzi.mdl TAG- Uzi機槍模型
+models/w_models/weapons/w_shotgun.mdl TAG- 木製散彈槍模型
+models/w_models/weapons/w_rifle_m16a2.mdl TAG- M16步槍模型
+models/w_models/weapons/w_autoshot_m4super.mdl TAG- 自動連發散彈槍模型
+models/w_models/weapons/w_sniper_mini14.mdl TAG- 獵槍模型
+models/w_models/weapons/w_eq_Medkit.mdl TAG- 治療包模型
+models/w_models/weapons/w_eq_painpills.mdl TAG- 止痛藥丸模型
+models/w_models/weapons/w_eq_pipebomb.mdl TAG- 土製炸彈模型
+models/w_models/weapons/w_eq_molotov.mdl TAG- 火焰瓶模型
+models/props_junk/gascan001a.mdl TAG- 汽油桶模型
+models/props_equipment/oxygentank01.mdl TAG- 氧氣罐模型
+models/props_junk/propanecanister001a.mdl TAG- 瓦斯桶模型
+models/w_models/weapons/w_desert_eagle.mdl TAG- 沙漠之鷹模型
+models/w_models/weapons/w_smg_a.mdl TAG- 消音機槍模型
+models/w_models/weapons/w_pumpshotgun_A.mdl TAG- 鐵製散彈槍模型
+models/w_models/weapons/w_shotgun_spas.mdl TAG- 戰鬥連發散彈槍模型
+models/w_models/weapons/w_sniper_military.mdl TAG- 軍用狙擊槍模型
+models/w_models/weapons/w_desert_rifle.mdl TAG- 三連發步槍模型
+models/w_models/weapons/w_rifle_ak47.mdl TAG- AK47步槍模型
+models/w_models/weapons/w_smg_mp5.mdl TAG- MP5衝鋒槍模型
+models/w_models/weapons/w_sniper_scout.mdl TAG- SCOUT狙擊槍模型
+models/w_models/weapons/w_sniper_awp.mdl TAG- AWP狙擊槍模型
+models/w_models/weapons/w_rifle_sg552.mdl TAG- SG552步槍模型
+models/w_models/weapons/w_m60.mdl TAG- M60機關槍模型
+models/w_models/weapons/w_grenade_launcher.mdl TAG- 榴彈發射器模型
+models/w_models/weapons/w_eq_defibrillator.mdl TAG- 電擊器模型
+models/w_models/weapons/w_eq_adrenaline.mdl TAG- 腎上腺素模型
+models/w_models/weapons/w_eq_bile_flask.mdl TAG- 膽汁瓶模型
+models/weapons/melee/w_cricket_bat.mdl TAG- 板球拍模型
+models/weapons/melee/w_crowbar.mdl TAG- 鐵撬模型
+models/weapons/melee/w_electric_guitar.mdl TAG- 電吉他模型
+models/weapons/melee/w_katana.mdl TAG- 武士刀模型
+models/weapons/melee/w_machete.mdl TAG- 開山刀模型
+models/weapons/melee/w_tonfa.mdl TAG- 警棍模型
+models/weapons/melee/w_frying_pan.mdl TAG- 平底鍋模型
+models/weapons/melee/w_fireaxe.mdl TAG- 斧頭模型
+models/weapons/melee/w_bat.mdl TAG- 球棒模型
+models/weapons/melee/w_golfclub.mdl TAG- 高爾夫球桿模型
+models/w_models/weapons/w_knife_t.mdl TAG- 小刀模型
+models/weapons/melee/w_pitchfork.mdl TAG- 草叉模型
+models/weapons/melee/w_shovel.mdl TAG- 鐵鏟模型
+models/weapons/melee/w_chainsaw.mdl TAG- 電鋸模型
+models/w_models/weapons/w_eq_explosive_ammopack.mdl TAG- 高爆彈模型
+models/w_models/weapons/w_eq_incendiary_ammopack.mdl TAG- 火焰包模型
+models/props_junk/explosive_box001.mdl TAG- 煙火盒模型
 models/props_fairgrounds/arcadegame01.mdl TAG- 遊樂園的遊戲機
 models/props_fairgrounds/front_speaker.mdl TAG- 音樂會楊聲器
 models/props_interiors/dryer.mdl TAG- 烘乾機
@@ -742,4 +789,7 @@ models/deadbodies/dead_male_torso_01.mdl TAG- 死去平民 - 一半屍體
 models/deadbodies/dead_pilot.mdl TAG- 飛行員屍體 - 躺著
 models/deadbodies/dead_military_male01.mdl TAG- 軍人屍體 - 站立 (穿透)
 models/deadbodies/dead_male_suit_01.mdl TAG- 男西裝屍體 - 站立 (穿透)
+models/infected/hulk.mdl TAG- Tank模型 (穿透)
 models/infected/hulk_l4d1.mdl TAG- Tank模型 - L4D1 (穿透)
+models/infected/witch.mdl TAG- Witch模型 (穿透)
+models/infected/witch_bride.mdl TAG- Witch模型 - 新娘裝 (穿透)
