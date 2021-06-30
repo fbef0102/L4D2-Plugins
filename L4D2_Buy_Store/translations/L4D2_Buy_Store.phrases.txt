@@ -85,17 +85,15 @@
 	"Not enough players"
 	{
 		"#format"		"{1:d}"
-		"en"	"Shop system has been close! Not enough {1} survivor players!"
-		"zho"	"商店功能已關閉! 倖存者玩家人數不夠 {1} 人!"
-		"chi"	"商店功能已关闭! 生还者玩家人数不够 {1} 人!"
-		"es"	"¡El sistema de la tienda ha estado cerca! No hay suficientes {1} jugadores supervivientes!"
+		"en"	"Shop system has been close! Not enough {1} players in game!"
+		"zho"	"商店功能已關閉! 倖存者與特感玩家人數不夠 {1} 人!"
+		"chi"	"商店功能已关闭! 生还者与特感玩家人数不够 {1} 人!"
 	}
-	"Only for survivors"
+	"Spectators can not buy"
 	{
-		"en"	"Only survivor can purchase items!"
-		"zho"	"只能倖存者購物商店! 讓玩家去弄吃瓜，讓人類去拚經濟!"
-		"chi"	"只能生还者购物商店!"
-		"es"	"¡Solo el sobreviviente puede comprar artículos!"
+		"en"	"Spectators can not purchase items!"
+		"zho"	"旁觀者不能購物商店! 讓玩家去弄吃瓜，讓人類去拚經濟!"
+		"chi"	"旁观者不能购物商店!"
 	}
 	"Death can't buy"
 	{
@@ -864,6 +862,250 @@
 		"en"	"Your team has been wiped out, reduce {green}{1}{default} points!"
 		"zho"	"隊伍已滅團，扣款 {green}{1}{default} 元"
 		"chi"	"队伍已滅團，扣款 {green}{1}{default} 元"
+	}
+	"Dead-Eyes"
+	{
+		"en"	"Aura all Infected (short time)"
+		"zho"	"心靈透視 (短暫時間)"
+		"chi"	"心灵透视 (短暂时间)"
+	}
+	"Someone Already Buy"
+	{
+		"en"	"Someone already bought this item, wait until time run out"
+		"zho"	"有人已購買此商品，請等待時間結束"
+		"chi"	"有人已购买此商品，请等待时间结束"
+	}
+	"Dead-Eyes Effect"
+	{
+		"#format"		"{1:d}"
+		"en"	"Survivors can now see all Infected and common within {green}{1} {default}seconds"
+		"zho"	"倖存者 {green}{1} {default}秒內能看到特感與殭屍"
+		"chi"	"生还者 {green}{1} {default}秒內能看到特感与丧尸"
+	}
+	"Dead-Eyes Effect Time Out"
+	{
+		"en"	"Dead Eyes Effect Time Out!"
+		"zho"	"心靈透視 效果已結束!"
+		"chi"	"心灵透视 效果已结束!"
+	}
+	"transferMenu"
+	{
+		"en"	"Points Transfer"
+		"zho"	"金錢轉移"
+		"chi"	"金钱转移"
+	}
+	"Transfer Player Menu Title"
+	{
+		"#format"		"{1:d}"
+		"en"	"Points Transfer, choose player: (Balance: {1} points)."
+		"zho"	"金錢轉移，選擇玩家: (剩餘金額: {1} 元)"
+		"chi"	"金钱转移，选择玩家: (剩余金额: {1} 元)"
+	}
+	"Transfer Point Menu Title"
+	{
+		"#format"		"{1:d}"
+		"en"	"Points Transfer, choose points: (Balance: {1} points)."
+		"zho"	"金錢轉移，選擇金額: (剩餘金額: {1} 元)"
+		"chi"	"金钱转移，选择金額: (剩余金额: {1} 元)"
+	}
+	"There are no any players at this moment."
+	{
+		"en"	"There are no any other players at this moment."
+		"zho"	"目前沒有其他玩家"
+		"chi"	"目前没有其他玩家"
+	}
+	"The chosen player is not in server now! Choose again!"
+	{
+		"en"	"The chosen player is not in server now! Choose again!"
+		"zho"	"選擇的玩家目前不在伺服器! 請重新選擇!"
+		"chi"	"选择的玩家目前不在服务器! 请重新选择!"
+	}
+	"Failed! Points balance is not enough to transfer."
+	{
+		"en"	"Failed! Points balance is not enough to transfer!"
+		"zho"	"失敗! 沒有足夠的金錢轉移!"
+		"chi"	"失敗! 没有足够的金钱转移!"
+	}
+	"Transfer point to player"
+	{
+		"#format"		"{1:d}"
+		"en"	"You transferred {green}{1}{default} points to {olive}%N{default}."
+		"zho"	"你轉移了 {green}{1}{default} 元給 {olive}%N{default}."
+		"chi"	"你转移了 {green}{1}{default} 元给 {olive}%N{default}."
+	}
+	"Player transfer point to you"
+	{
+		"#format"		"{1:d}"
+		"en"	"{olive}%N{default} transferred {green}{1}{default} points to you."
+		"zho"	"{olive}%N{default} 轉移了 {green}{1}{default} 元給你."
+		"chi"	"{olive}%N{default} 转移了 {green}{1}{default} 元给你."
+	}
+	"Infected Shop is disabled"
+	{
+		"en"	"Infected Shop is disabled"
+		"zho"	"特感商店目前不開放!"
+		"chi"	"特感商店目前不开放!"
+	}
+	"Infected Menu Title"
+	{
+		"#format"		"{1:d}"
+		"en"	"Infected Shop List (Balance: {1} points)."
+		"zho"	"特感商店列表 (剩餘金額: {1} 元)"
+		"chi"	"特感商店列表 (剩余金额: {1} 元)"
+	}
+	"InfectedInstruction"
+	{
+		"en"	"Get points by doing damage to survivors."
+		"zho"	"對倖存者造成傷害能獲得金錢!"
+		"chi"	"对生还者造成伤害能获得金钱!"
+	}
+	"InfectedSpawnMenu"
+	{
+		"en"	"Infected Spawn"
+		"zho"	"生成特感"
+		"chi"	"生成特感"
+	}
+	"InfectedSpecialMenu"
+	{
+		"en"	"Infected Specials"
+		"zho"	"特感特殊商品"
+		"chi"	"特感特殊商品"
+	}
+	"Infected Spawn Menu Title"
+	{
+		"#format"		"{1:d}"
+		"en"	"Infected Spawn List (Balance: {1} points)."
+		"zho"	"生成特感列表 (存款: {1} 元)"
+		"chi"	"生成特感列表 (存款: {1} 元)"
+	}
+	"Infected Specials Menu Title"
+	{
+		"#format"		"{1:d}"
+		"en"	"Infected Specials List (Balance: {1} points)."
+		"zho"	"特感特殊商品列表 (存款: {1} 元)"
+		"chi"	"特感特殊商品列表 (存款: {1} 元)"
+	}
+	"You are not in infected team"
+	{
+		"en"	"You are not in infected team"
+		"zho"	"你不在特感隊伍裡"
+		"chi"	"你不在特感队伍里"
+	}
+	"Dead Infected First"
+	{
+		"en"	"You are not a {red}dead infected{default}!"
+		"zho"	"只有{red}死掉的感染者{default}才能購買!"
+		"chi"	"只有{red}死掉的感染者{default}才能购买!"
+	}
+	"Alive Infected First"
+	{
+		"en"	"You are not an {red}alive infected{default}!"
+		"zho"	"只有{red}活著的感染者{default}才能購買!"
+		"chi"	"只有{red}活着的感染者{default}才能购买!"
+	}
+	"Alive Infected Except Tank First"
+	{
+		"en"	"You must be an {red}alive infected (Not Tank){default}!"
+		"zho"	"只有{red}活著的感染者(Tank除外){default}才能購買!"
+		"chi"	"只有{red}活着的感染者(坦克除外){default}才能购买!"
+	}
+	"Can not Spawn Infected"
+	{
+		"en"	"Can not Spawn Infected at this moment!"
+		"zho"	"此時此刻無法生成特感!"
+		"chi"	"此时此刻无法生成特感!"
+	}
+	"Can not buy so quickly"
+	{
+		"#format"		"{1:.0f}"
+		"en"	"Can not buy so quickly! Wait at least {green}{1}{default} seconds."
+		"zho"	"特感購買冷卻時間 {green}{1}{default} 秒未到!"
+		"chi"	"特感购买冷却时间 {green}{1}{default} 秒未到!"
+	}
+	"Tank Limit Reached"
+	{
+		"en"	"Tank limit reached on the field!"
+		"zho"	"場上的Tank數量已達上限!"
+		"chi"	"场上的Tank数量已达上限!"
+	}
+	"Suicide"
+	{
+		"en"	"Suicide"
+		"zho"	"自殺"
+		"chi"	"自杀"
+	}
+	"Smoker"
+	{
+		"en"	"Smoker"
+		"zho"	"Smoker"
+		"chi"	"舌头"
+	}
+	"Boomer"
+	{
+		"en"	"Boomer"
+		"zho"	"Boomer"
+		"chi"	"胖子"
+	}
+	"Hunter"
+	{
+		"en"	"Hunter"
+		"zho"	"Hunter"
+		"chi"	"猎人"
+	}
+	"Spitter"
+	{
+		"en"	"Spitter"
+		"zho"	"Spitter"
+		"chi"	"口水"
+	}
+	"Jockey"
+	{
+		"en"	"Jockey"
+		"zho"	"Jockey"
+		"chi"	"猴子"
+	}
+	"Charger"
+	{
+		"en"	"Charger"
+		"zho"	"Charger"
+		"chi"	"牛"
+	}
+	"Tank"
+	{
+		"en"	"Tank"
+		"zho"	"Tank"
+		"chi"	"坦克"
+	}
+	"Full Health"
+	{
+		"en"	"Give full health"
+		"zho"	"滿血復活"
+		"chi"	"满血复活"
+	}
+	"Immune Everything"
+	{
+		"en"	"Immune Everything (short time)"
+		"zho"	"免疫一切傷害 (短暫時間)"
+		"chi"	"免疫一切伤害 (短暂时间)"
+	}
+	"Immune Everything Now"
+	{
+		"#format"		"{1:d}"
+		"en"	"You are Now Immune All Damage within {green}{1}{default} seconds"
+		"zho"	"你現在 {green}{1}{default} 秒內免疫一切傷害"
+		"chi"	"你现在 {green}{1}{default} 秒内免疫一切伤害"
+	}
+	"Immune Everything Timer"
+	{
+		"en"	"Immune Everything timer is out"
+		"zho"	"免疫一切傷害 狀態已結束"
+		"chi"	"免疫一切伤害 状态已结束"
+	}
+	"Teleport to survivor"
+	{
+		"en"	"Teleport to the nearest survivor"
+		"zho"	"傳送到最近的倖存者身旁"
+		"chi"	"传送到最近的生还者身旁"
 	}
 }
 
