@@ -67,6 +67,7 @@ bool bFinaleEscapeStarted = false, g_bDeadEyeEffect = false;
 int g_iModelIndex[MAXPLAYERS+1];			// Player Model entity reference
 int g_iTransferSelectPlayer[MAXPLAYERS+1]; //玩家選擇轉移金錢的對象
 float g_fInfectedBuyTime[MAXPLAYERS+1];
+int g_iLightIndex[MAXPLAYERS+1]; //無敵狀態的光輝
 
 enum EMenuType
 {
@@ -148,7 +149,7 @@ static char weaponsMenu[][][] =
 	{"sniper_scout", 	"SCOUT", 			"500"},
 	{"sniper_awp", 		"AWP",				"600"},
 	{"rifle_m60", 		"M60 Machine Gun", 	"1000"},
-	{"grenade_launcher","Grenade Launcher",	"1000"}
+	{"grenade_launcher","Grenade Launcher",	"1500"}
 };
 
 static char meleeMenu[][][] = 
@@ -203,9 +204,9 @@ static char specialMenu[][][] =
 	{"Fire Infeceted", 	"All Infected Gets On Fire", 	"750"},
 	{"Teleport", 		"Teleport to teammate", 		"1000"},
 	{"Infinite Ammo",	"Infinite Ammo", 				"1250"},
-	{"Kill Commons", 	"Kill Commons", 				"1500"},
-	{"Kill Witches", 	"Kill Witches", 				"1750"},
-	{"Dead Eyes",		"Dead-Eyes", 					"2000"},
+	{"Dead Eyes",		"Dead-Eyes", 					"1500"},
+	{"Kill Commons", 	"Kill Commons", 				"1750"},
+	{"Kill Witches", 	"Kill Witches", 				"2000"},
 	{"Jump+1", 			"Jump+1", 						"2250"},
 	{"Heal Survivors",	"Heal Survivors", 				"2500"},
 	{"Slay Infected", 	"Slay Infected Attacker", 		"3000"},
@@ -215,9 +216,9 @@ static char infectedSpawnMenu[][][] =
 {
 	{"Suicide",		"Suicide", 			"0"},
 	{"Smoker",		"Smoker", 			"350"},
-	{"Boomer",		"Boomer", 			"150"},
-	{"Hunter",		"Hunter", 			"200"},
-	{"Spitter",		"Spitter", 			"350"},
+	{"Boomer",		"Boomer", 			"200"},
+	{"Hunter",		"Hunter", 			"150"},
+	{"Spitter",		"Spitter", 			"400"},
 	{"Jockey",		"Jockey", 			"250"},
 	{"Charger",		"Charger", 			"300"},
 	{"Tank",		"Tank", 			"3000"}
@@ -226,8 +227,8 @@ static char infectedSpawnMenu[][][] =
 static char infectedSpecialMenu[][][] =
 {
 	{"Health",		"Full Health", 				"500"},
-	{"Teleport",	"Teleport to survivor", 	"1250"},
-	{"Immune",		"Immune Everything", 		"1300"}
+	{"Teleport",	"Teleport to survivor", 	"1000"},
+	{"Immune",		"Immune Everything", 		"1250"}
 };
 
 static int g_iTransferPointList[] = 
@@ -372,7 +373,7 @@ public void OnPluginStart()
 	g_hWipeOutSurvivor =	CreateConVar("sm_shop_final_mission_lost", "300",	"Giving money to each infected player for wiping out survivors.", FCVAR_NOTIFY, true, 1.0);
 	g_hDeadEyeTime  =	CreateConVar("sm_shop_special_dead_eyes_time",	"60",	"How long could Dead-Eyes state last for special item.", FCVAR_NOTIFY, true, 1.0);
 	g_hInfectedShopEnable =	CreateConVar("sm_shop_infected_enable", "1",	"If 1, Enable shop for infected.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hInfectedShopColdDown =	CreateConVar("sm_shop_infected_cooltime_block", "20.0",	"Cold Down Time in seconds an infected player can not buy again after he buys item. (0=off).", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedShopColdDown =	CreateConVar("sm_shop_infected_cooltime_block", "30.0",	"Cold Down Time in seconds an infected player can not buy again after he buys item. (0=off).", FCVAR_NOTIFY, true, 0.0);
 	g_hImmuneDamageTime =	CreateConVar("sm_shop_special_immune_everything_time",	"8",	"How long could Immune Everything last for infected special item.", FCVAR_NOTIFY, true, 1.0);
 	g_hInfectedShopTankLimit =	CreateConVar("sm_shop_infected_tank_limit",	"1",	"Tank limit on the field before infected can buy a tank. (0=Can't buy Tank)", FCVAR_NOTIFY, true, 0.0);
 
@@ -433,6 +434,8 @@ public void OnPluginEnd()
 
 	for( int i = 1; i <= MaxClients; i++ ) {
 		g_iCredits[i] = 0;
+		RemoveInfectedModelGlow(i);
+		DeleteLight(i);
 	}
 }
 
@@ -848,6 +851,7 @@ public void OnClientDisconnect(int client)
 	g_iCanJump[client] = 0;
 	InfiniteAmmo[client] = false;
 	InfectedImmuneDamage[client] = false;
+	DeleteLight(client);
 } 
 
 //event
@@ -972,6 +976,11 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(g_bCookiesCachedEnable) SaveAllMoney();
+
+	for( int i = 1; i <= MaxClients; i++ )
+	{
+		DeleteLight(i);
+	}
 }
 
 public Action OnFinaleStart_Event(Event event, const char[] name, bool dontBroadcast) 
@@ -1010,6 +1019,7 @@ public void evtPlayerTeam(Event event, const char[] name, bool dontBroadcast)
 
 	int client = GetClientOfUserId(userid);
 	RemoveInfectedModelGlow(client);
+	DeleteLight(client);
 }
 
 public Action PlayerChangeTeamCheck(Handle timer,int userid)
@@ -1058,6 +1068,7 @@ public void player_death(Event event, const char[] name, bool dontBroadcast)
 	if(victim && IsClientInGame(victim) && GetClientTeam(victim) == L4D_TEAM_INFECTED)
 	{
 		RemoveInfectedModelGlow(victim);
+		DeleteLight(victim);
 	}
 
 	if( g_bEnable && victim && IsClientInGame(victim) && GetClientTeam(victim) == L4D_TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_TANK)
@@ -1752,13 +1763,15 @@ public int Infected_Spawn_Menu_Handle(Menu mmenu, MenuAction action, int param1,
 					return;
 				}
 
-				InfectedSpawnFunction(param1, infectedSpawnMenu[index][0], infectedSpawnMenu[index][1]);
+				InfectedSpawnFunction(param1, infectedSpawnMenu[index][0]);
 				if (!IsPlayerAlive(param1)) //fail to spawn
 				{
 					CPrintToChat(param1, "%T", "Can not Spawn Infected", param1);
 					return;
 				}
 		
+				PrintToTeam(param1, L4D_TEAM_INFECTED, infectedSpawnMenu[index][1]);
+				PlaySound(param1, BUY_Sound1);
 				g_iCredits[param1] -= itemMoney;
 				g_fInfectedBuyTime[param1] = GetEngineTime() + g_fInfectedShopColdDown;
 			}
@@ -1807,8 +1820,11 @@ public int Infected_Specials_Menu_Handle(Menu mmenu, MenuAction action, int para
 						}
 						else if (strcmp(infectedSpecialMenu[index][0], "Immune") == 0)
 						{
+							if(InfectedImmuneDamage[param1]) return;
+							
 							InfectedImmuneDamage[param1] = true;
 							SetGodframedGlow(param1);
+							TurnFlashlightOn(param1);
 							CreateTimer(float(g_iImmuneDamageTime), Timer_NoImmuneDamage, param1, TIMER_FLAG_NO_MAPCHANGE);
 							CPrintToChat(param1, "%T", "Immune Everything Now", param1, g_iImmuneDamageTime);
 							PrintToTeam(param1, L4D_TEAM_INFECTED, infectedSpecialMenu[index][1], true);
@@ -2730,7 +2746,7 @@ void PlaySound(int client, char[] sSoundName)
 	EmitSoundToAll(sSoundName, client, SNDCHAN_AUTO, SNDLEVEL_AIRCRAFT, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 }
 
-stock void InfectedSpawnFunction(int client, char[] infected_name, char[] displayName)
+stock void InfectedSpawnFunction(int client, char[] infected_name)
 {
 	bool resetGhost[MAXPLAYERS+1];
 	bool resetLife[MAXPLAYERS+1];
@@ -2770,9 +2786,6 @@ stock void InfectedSpawnFunction(int client, char[] infected_name, char[] displa
 		if (resetLife[i] == true)
 			SetLifeState(i, true);
 	}
-
-	PrintToTeam(client, L4D_TEAM_INFECTED, displayName);
-	PlaySound(client, BUY_Sound1);
 }
 
 void SetGhostStatus (int client, bool ghost)
@@ -2821,6 +2834,7 @@ public Action Timer_NoImmuneDamage(Handle timer, int client)
 	if(IsClientInGame(client))
 	{
 		PrintToChat(client, "%T", "Immune Everything Timer",client);
+		DeleteLight(client);
 		ResetGlow(client);
 	}
 }
@@ -2840,19 +2854,6 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	}
 	
 	return Plugin_Continue;
-}
-
-void ResetGlow(int client) {
-	if(IsPlayerAlive(client))
-	{
-		SetEntityRenderMode(client, view_as<RenderMode>(0));
-		SetEntityRenderColor(client, 255,255,255,255);
-	}
-}
-
-void SetGodframedGlow(client) {	
-	SetEntityRenderMode(client, view_as<RenderMode>(3) );
-	SetEntityRenderColor(client, 255, 0, 0, 180);
 }
 
 int CountTankInServer()
@@ -2927,4 +2928,79 @@ public Action L4D2_OnEntityShoved(int client, int entity, int weapon, float vecD
 	}
 
 	return Plugin_Continue;
+}
+
+void TurnFlashlightOn(int client)
+{
+	if (!IsClientInGame(client)) return;
+	if (GetClientTeam(client) != L4D_TEAM_INFECTED) return;
+	if (!IsPlayerAlive(client)) return;
+	if (IsFakeClient(client)) return;
+
+	DeleteLight(client);
+
+	// Declares
+	int entity;
+	float vOrigin[3], vAngles[3];
+
+	// Position light
+	vOrigin = view_as<float>(  { 0.5, -1.5, 50.0 });
+	vAngles = view_as<float>(  { -45.0, -45.0, 90.0 });
+
+	// Light_Dynamic
+	entity = MakeLightDynamic(vOrigin, vAngles, client);
+	if(entity == -1) return;
+	g_iLightIndex[client] = EntIndexToEntRef(entity);
+}
+
+void DeleteLight(int client)
+{
+	int entity = g_iLightIndex[client];
+	g_iLightIndex[client] = 0;
+	DeleteEntity(entity);
+}
+
+void DeleteEntity(int entity)
+{
+	if( IsValidEntRef(entity) )
+		AcceptEntityInput(entity, "Kill");
+}
+
+int MakeLightDynamic(const float vOrigin[3], const float vAngles[3], int client)
+{
+	int entity = CreateEntityByName("light_dynamic");
+	if( entity == -1)
+	{
+		return -1;
+	}
+
+	char sTemp[16];
+	Format(sTemp, sizeof(sTemp), "155 0 255 155");
+	DispatchKeyValue(entity, "_light", sTemp);
+	DispatchKeyValue(entity, "brightness", "1");
+	DispatchKeyValueFloat(entity, "spotlight_radius", 0.0);
+	DispatchKeyValueFloat(entity, "distance", 450.0);
+	DispatchKeyValue(entity, "style", "0");
+	DispatchSpawn(entity);
+	AcceptEntityInput(entity, "TurnOn");
+
+	// Attach to infected
+	SetVariantString("!activator");
+	AcceptEntityInput(entity, "SetParent", client);
+
+	TeleportEntity(entity, vOrigin, vAngles, NULL_VECTOR);
+	return entity;
+}
+
+void ResetGlow(int client) {
+	if(IsPlayerAlive(client))
+	{
+		SetEntityRenderMode(client, view_as<RenderMode>(0));
+		SetEntityRenderColor(client, 255,255,255,255);
+	}
+}
+
+void SetGodframedGlow(client) {	
+	SetEntityRenderMode(client, view_as<RenderMode>(3) );
+	SetEntityRenderColor(client, 155, 0, 255, 180);
 }
