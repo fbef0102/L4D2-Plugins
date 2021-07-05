@@ -50,8 +50,6 @@ l4d2_explosive_cars_trace "25"
 l4d2_explosive_cars_trace_interval "0.4"
 
 // On which maps should the plugin disable itself? (Example: c5m3_cemetery,c5m5_bridge,cmdd_custom)
-// -
-// Default: "c1m4_atrium,c5m5_bridge,c14m2_lighthouse"
 l4d2_explosive_cars_unload "c1m4_atrium,c5m5_bridge,c14m2_lighthouse"
 
 -Command-
