@@ -24,6 +24,7 @@ static const char DAMAGE_BLACK_SMOKE[] = 	"smoke_burning_engine_01";
 static const char DAMAGE_FIRE_SMALL[] = 	"burning_engine_01";
 static const char DAMAGE_FIRE_HUGE[] = 	"fire_window_hotel2";
 static const char FIRE_SOUND[] = 			"ambient/fire/fire_med_loop1.wav";
+static bool   g_bConfigLoaded;
 
 bool g_bLowWreck[ARRAY_SIZE+1] = false;
 bool g_bMidWreck[ARRAY_SIZE+1] = false;
@@ -35,6 +36,7 @@ int g_iEntityDamage[ARRAY_SIZE+1] = 0;
 int g_iParticle[ARRAY_SIZE+1] = -1;
 bool g_bDisabled = false;
 int g_iPlayerSpawn, g_iRoundStart;
+
 
 ConVar g_cvarMaxHealth;
 ConVar g_cvarRadius;
@@ -116,10 +118,6 @@ public void OnMapStart()
 		LogMessage("[Unload] Plugin disabled for this map");
 		g_bDisabled = true;
 	}
-	if(!IsModelPrecached("sprites/muzzleflash4.vmt"))
-	{
-		PrecacheModel("sprites/muzzleflash4.vmt");
-	}
 
 	if(g_bDisabled == false)
 	{
@@ -131,12 +129,16 @@ public void OnMapStart()
 		PrecacheParticle(DAMAGE_BLACK_SMOKE);
 		PrecacheParticle(DAMAGE_FIRE_SMALL);
 		PrecacheParticle(DAMAGE_FIRE_HUGE);
+		PrecacheModel("sprites/muzzleflash4.vmt");
+		PrecacheModel("models/props_vehicles/cara_82hatchback_wrecked.mdl");
+		PrecacheModel("models/props_vehicles/cara_95sedan_wrecked.mdl");
 	}
 }
 
 public void OnMapEnd()
 {
 	ResetPlugin();
+	g_bConfigLoaded = false;
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -160,10 +162,17 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 
 public Action TimerStart(Handle timer)
 {
+	g_bConfigLoaded = true;
 	ResetPlugin();
 
 	if(g_bDisabled) return;
 
+	FindMapCars();
+}
+
+//Thanks to AtomicStryker
+void FindMapCars()
+{
 	for(int i = 1; i <= ARRAY_SIZE; i++)
 	{
 		g_iEntityDamage[i] = 0;
@@ -175,44 +184,37 @@ public Action TimerStart(Handle timer)
 		g_bExploded[i] = false;
 		g_iParticle[i] = -1;
 	}
-	FindMapCars();
-}
 
-//Thanks to AtomicStryker
-void FindMapCars()
-{
 	int maxEnts = GetMaxEntities();
 	char classname[128], model[256];
 
 	for (int i = MaxClients; i < maxEnts; i++)
 	{
-		if (!IsValidEdict(i)) continue;
+		if (!IsValidEdict(i)||!IsValidEntity(i)) continue;
+		if (g_bHooked[i]) continue;
 
 		GetEdictClassname(i, classname, sizeof(classname));
 		GetEntPropString(i, Prop_Data, "m_ModelName", model, sizeof(model));
 
 		if(strcmp(classname, "prop_physics")  == 0 || strcmp(classname, "prop_physics_override") == 0)
 		{
-			if(StrContains(model, "vehicle", false) != -1 && !g_bHooked[i])
+			if(StrContains(model, "vehicle", false) != -1)
 			{
 				g_bHooked[i] = true;
 				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-				DebugPrintToAll("Activated Explosive Car Damage Hook on entity %i, class %s", i, classname);
 			}
 			else if (strcmp(model, "models/props/cs_assault/forklift.mdl", false) == 0 || strcmp(model, "models/props_fairgrounds/bumpercar.mdl", false) == 0)
 			{
 				g_bHooked[i] = true;
 				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-				DebugPrintToAll("Activated Explosive Car Damage Hook on entity %i, class %s", i, classname);
 			}
 		}
 		else if(strcmp(classname, "prop_car_alarm") == 0)
 		{
-			if(StrContains(model, "vehicle", false) != -1 && !g_bHooked[i])
+			if(StrContains(model, "vehicle", false) != -1)
 			{
 				g_bHooked[i] = true;
 				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-				DebugPrintToAll("Activated Explosive Car Damage Hook on entity %i, class %s", i, classname);
 			}
 		}
 	}
@@ -225,46 +227,76 @@ public void OnEntityDestroyed(int entity)
 	if(entity > 0 && entity <= ARRAY_SIZE)
 	{
 		g_bHooked[entity] = false;
+		g_iEntityDamage[entity] = 0;
+		g_bLowWreck[entity] = false;
+		g_bMidWreck[entity] = false;
+		g_bHighWreck[entity] = false;
+		g_bCritWreck[entity] = false;
+		g_bHooked[entity] = false;
+		g_bExploded[entity] = false;
+		g_iParticle[entity] = -1;
 	}
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-	if(g_bDisabled) return;
+	if(g_bDisabled) 
+		return;
+
+	if (!g_bConfigLoaded)
+		return;
 
 	if (!IsValidEntityIndex(entity))
 		return;
 
-	if(strcmp(classname, "prop_physics") == 0 || strcmp(classname, "prop_physics_override") == 0 && !g_bHooked[entity])
-	{
-		CreateTimer(0.1, timerCheckHook, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
-	}
-	if(strcmp(classname, "prop_car_alarm") == 0 && !g_bHooked[entity])
-	{
-		SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-		g_bHooked[entity] = true;
-		DebugPrintToAll("Activated Explosive Car Damage Hook on entity %i, class %s", entity, classname);
-	}
+	RequestFrame(OnNextFrame, EntIndexToEntRef(entity));
 }
 
-public Action timerCheckHook(Handle timer, any entityRef)
+public void OnNextFrame(int entityRef)
 {
-	if(g_bDisabled) return;
+	if(g_bDisabled) 
+		return;
 
 	int entity = EntRefToEntIndex(entityRef);
 
 	if (entity == INVALID_ENT_REFERENCE)
 		return;
 
-	if(IsValidEntity(entity))
+	if (g_bHooked[entity])
+		return;
+
+	char classname[15];
+	GetEntityClassname(entity, classname, sizeof(classname));
+	char model[256];
+	if(strcmp(classname, "prop_physics") == 0 || strcmp(classname, "prop_physics_override") == 0)
 	{
-		char model[256];
 		GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
 		if(StrContains(model, "vehicle", false) != -1)
 		{
 			SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 			g_bHooked[entity] = true;
+			g_iEntityDamage[entity] = 0;
+			g_bLowWreck[entity] = false;
+			g_bMidWreck[entity] = false;
+			g_bHighWreck[entity] = false;
+			g_bCritWreck[entity] = false;
+			g_bHooked[entity] = false;
+			g_bExploded[entity] = false;
+			g_iParticle[entity] = -1;
 		}
+	}
+	else if(strcmp(classname, "prop_car_alarm") == 0)
+	{
+		SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+		g_bHooked[entity] = true;
+		g_iEntityDamage[entity] = 0;
+		g_bLowWreck[entity] = false;
+		g_bMidWreck[entity] = false;
+		g_bHighWreck[entity] = false;
+		g_bCritWreck[entity] = false;
+		g_bHooked[entity] = false;
+		g_bExploded[entity] = false;
+		g_iParticle[entity] = -1;
 	}
 }
 
@@ -282,34 +314,40 @@ public void OnTakeDamagePost(int victim, int attacker, int inflictor, float dama
 
 		int MaxDamageHandle = g_cvarMaxHealth.IntValue / 5;
 
-		//PrintToChatAll("%d - attackerClass: %s - inflictorClass: %s, %.1f damage", attacker, attackerClass, inflictorClass, damage);
-		if(strcmp(attackerClass, "env_explosion") == 0 && !g_cvarExplosionDmg)
+		//PrintToChatAll("%d - attackerClass: %s - inflictorClass: %s, %.1f damage", victim, attackerClass, inflictorClass, damage);
+		if(strcmp(attackerClass, "player")  == 0)
 		{
-			damage = 2000.0;
-		}
-		else if (strcmp(attackerClass, "player", false)  == 0 && (strcmp(inflictorClass, "pipe_bomb_projectile", false) == 0 || strcmp(inflictorClass, "grenade_launcher_projectile", false) == 0))
-		{
-			damage = 2000.0;
-		}
-		else if (strcmp(attackerClass, "player", false)  == 0 && (strcmp(inflictorClass, "inferno", false)  == 0 || strcmp(inflictorClass, "fire_cracker_blast", false) == 0))
-		{
-			damage = 100.0;
-		}
-		else if((strcmp(attackerClass, "player") == 0 && attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker) && GetClientTeam(attacker) == 3) && g_cvarInfected.BoolValue == false)
-		{
-			damage = 0.0;
-		}
-		else if(strcmp(attackerClass, "tank_rock") == 0|| strcmp(attackerClass, "weapon_tank_claw") == 0)
-		{
-			if(g_cvarInfected.BoolValue == false)
+			if(strcmp(inflictorClass, "weapon_chainsaw") == 0 || strcmp(inflictorClass, "weapon_melee") == 0)
+			{
+				damage = 5.0;
+			}
+			else if(strcmp(inflictorClass, "tank_rock") == 0|| strcmp(inflictorClass, "weapon_tank_claw") == 0)
+			{
+				float tank_damage = g_cvarTankDamage.FloatValue;
+				if(tank_damage > 0.0)
+				{
+					damage = tank_damage;
+				}
+			}
+			if(attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker) && GetClientTeam(attacker) == 3 && g_cvarInfected.BoolValue == false)
 			{
 				damage = 0.0;
 			}
-			float tank_damage = g_cvarTankDamage.FloatValue;
-			if(tank_damage > 0.0)
-			{
-				damage = tank_damage;
-			}
+		}
+		if( strcmp(inflictorClass, "env_explosion") == 0 || strcmp(inflictorClass, "env_physexplosion") == 0) //explode dmg by another car
+		{
+			if(g_cvarExplosionDmg.BoolValue == false)
+				damage = 0.0;
+			else 
+				damage = 3000.0;
+		}
+		else if (strcmp(inflictorClass, "pipe_bomb_projectile") == 0 || strcmp(inflictorClass, "grenade_launcher_projectile") == 0)
+		{
+			damage = 3000.0;
+		}
+		else if (strcmp(inflictorClass, "inferno")  == 0 || strcmp(inflictorClass, "fire_cracker_blast") == 0)
+		{
+			damage = 100.0;
 		}
 
 		g_iEntityDamage[victim] += RoundToFloor(damage);
@@ -359,18 +397,10 @@ stock void EditCar(int car)
 	GetEntPropString(car, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
 	if(strcmp(sModel, "models/props_vehicles/cara_82hatchback.mdl") == 0)
 	{
-		if(!IsModelPrecached("models/props_vehicles/cara_82hatchback_wrecked.mdl"))
-		{
-			PrecacheModel("models/props_vehicles/cara_82hatchback_wrecked.mdl");
-		}
 		SetEntityModel(car, "models/props_vehicles/cara_82hatchback_wrecked.mdl");
 	}
 	else if(strcmp(sModel, "models/props_vehicles/cara_95sedan.mdl") == 0)
 	{
-		if(!IsModelPrecached("models/props_vehicles/cara_95sedan_wrecked.mdl"))
-		{
-			PrecacheModel("models/props_vehicles/cara_95sedan_wrecked.mdl");
-		}
 		SetEntityModel(car, "models/props_vehicles/cara_95sedan_wrecked.mdl");
 	}
 }
@@ -680,41 +710,6 @@ void PanicEvent()
 		AcceptEntityInput(Director, "Kill");
 	}
 }
-
-void DebugPrintToAll(const char[] format, any ...)
-{
-	#if (TEST_DEBUG || TEST_DEBUG_LOG)
-	char buffer[256];
-
-	VFormat(buffer, sizeof(buffer), format, 2);
-
-	#if TEST_DEBUG
-	PrintToChatAll("[EC] %s", buffer);
-	PrintToConsole(0, "[EC] %s", buffer);
-	#endif
-
-	LogMessage("%s", buffer);
-	#else
-	//suppress "format" never used warning
-	if(format[0]) return;
-	else return;
-	#endif
-}
-
-#if 0
-//Stops a sound from all channels - Unused right now
-void StopSoundPerm(int client, char[] sound)
-{
-	StopSound(client, SNDCHAN_AUTO, sound);
-	StopSound(client, SNDCHAN_WEAPON, sound);
-	StopSound(client, SNDCHAN_VOICE, sound);
-	StopSound(client, SNDCHAN_ITEM, sound);
-	StopSound(client, SNDCHAN_BODY, sound);
-	StopSound(client, SNDCHAN_STREAM, sound);
-	StopSound(client, SNDCHAN_VOICE_BASE, sound);
-	StopSound(client, SNDCHAN_USER_BASE, sound);
-}
-#endif
 
 bool IsValidEntityIndex(int entity)
 {
