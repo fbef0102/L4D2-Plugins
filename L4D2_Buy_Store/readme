@@ -22,7 +22,7 @@ v3.5
 v1.0
 -original Post: https://forums.alliedmods.net/showthread.php?t=322108
 
--Convars-
+-ConVar-
 cfg\sourcemod\L4D2_Buy_Store.cfg
 // If 1, use CookiesCached to save player money. Otherwise, the moeny will not be saved if player leaves the server.
 sm_shop_CookiesCached_enable "1"

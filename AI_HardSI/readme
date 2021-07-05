@@ -7,7 +7,7 @@ v1.2
 
 -ConVar-
 cfg/sourcemod/AI_HardSI.cfg
-/ If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
+// If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
 ai_aim_offset_sensitivity_charger "20"
 
 // If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
