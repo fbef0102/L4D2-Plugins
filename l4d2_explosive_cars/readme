@@ -11,6 +11,9 @@ v1.6
 -Fixed damage dealt to car
 -Safely create entity and safely remove entity
 
+v1.0.4
+Original Post: https://forums.alliedmods.net/showthread.php?p=1304463
+
 -ConVar-
 cfg/sourcemod/l4d2_explosive_cars.cfg
 // Time to wait before removing the exploded car in case it blockes the way. (0: Don't remove)
