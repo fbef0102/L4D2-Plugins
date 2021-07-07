@@ -217,7 +217,6 @@ int g_iCountGifts;
 int g_iOffset_Incapacitated;        // Used to check if tank is dying
 int ammoOffset;	
 
-native bool Is_End_SafeRoom_Door_Open();
 #define SND_REWARD1			"level/gnomeftw.wav"
 #define SND_REWARD2			"level/loud/climber.wav"
 
@@ -542,9 +541,6 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	if (!bGiftEnable)
 		return;
 
-	if(Is_End_SafeRoom_Door_Open())
-		return;
-
 	if (iGiftMaxRound != 0 && gifts_collected_round > iGiftMaxRound)
 		return;
 	
@@ -579,9 +575,6 @@ public Action OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!bGiftEnable)
 		return;
-
-	if(Is_End_SafeRoom_Door_Open())
-		return;	
 
 	//int attacker = GetClientOfUserId(event.GetInt("userid"));
 	int witch = event.GetInt("witchid");
