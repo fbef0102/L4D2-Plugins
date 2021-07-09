@@ -604,7 +604,7 @@ void Do_SpawnInfected(int client, const char[] type) {
 	{
 		if(L4D_GetRandomPZSpawnPosition(L4D_GetHighestFlowSurvivor(), zombieclass, 5, vPos) == false)
 		{
-			PrintToServer("[TS] Couldn't find a valid spawn position for S.I. in 5 tries");
+			PrintToChat(client, "[TS] Couldn't find a valid spawn position for S.I. in 5 tries");
 			return;
 		}
 	}
@@ -746,7 +746,7 @@ void Do_SpawnWitch(const int client, const bool bAutoSpawn)
 {
 	float vPos[3], vAng[3] = {0.0, 0.0, 0.0};
 	if (bAutoSpawn) {
-		if(L4D_GetRandomPZSpawnPosition(client,7,ZOMBIESPAWN_Attempts,vPos) == false) {
+		if(L4D_GetRandomPZSpawnPosition(L4D_GetHighestFlowSurvivor(),7,ZOMBIESPAWN_Attempts,vPos) == false) {
 			PrintToChat(client, "[TS] Can't spawn witch in %d tries at this moment.", ZOMBIESPAWN_Attempts);
 			return;
 		}
