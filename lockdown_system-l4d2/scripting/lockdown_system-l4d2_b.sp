@@ -11,7 +11,7 @@
 #include <glow>
 #include <left4dhooks>
 #include <multicolors>
-#define PLUGIN_VERSION "4.0"
+#define PLUGIN_VERSION "4.1"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -20,6 +20,7 @@
 #define MODEL_SAFEROOM_DOOR_2 "models/props_doors/checkpoint_door_-02.mdl"
 #define MODEL_SAFEROOM_DOOR_3 "models/lighthouse/checkpoint_door_lighthouse02.mdl"
 #define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
+#define Resistance_Server 1
 
 ConVar lsAnnounce, lsAntiFarmDuration, lsDuration, lsMobs, lsTankDemolitionBefore, lsTankDemolitionAfter,
 	lsType, lsNearByAllSurvivor, lsHint, lsGetInLimit, lsDoorOpeningTeleport, lsDoorOpeningTankInterval,
@@ -36,6 +37,11 @@ bool bSpawnTank, bRoundEnd;
 char sKeyMan[128], sLastName[2048][128];
 Handle hAntiFarmTime = null, hLockdownTime = null;
 static Handle hCreateTank = null;
+
+#if Resistance_Server
+	ConVar lsMapTwoTanks;
+	bool g_bMapTwoTanks;
+#endif
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -78,7 +84,7 @@ public void OnPluginStart()
 	lsNearByAllSurvivor = CreateConVar("lockdown_system-l4d2_all_survivors_near_saferoom", "1", "If 1, all survivors must assemble near the saferoom door before open.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsHint = CreateConVar(	"lockdown_system-l4d2_spam_hint", "1", "0=Off. 1=Display a message showing who opened or closed the saferoom door.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsGetInLimit = CreateConVar( "lockdown_system-l4d2_outside_slay_duration", "60", "After saferoom door is opened, slay players who are not inside saferoom in seconds. (0=off)", FCVAR_NOTIFY, true, 0.0);
-	lsDoorOpeningTeleport = CreateConVar( "lockdown_system-l4d2_teleport", "1", "0=Off. 1=Teleport common, special infected, and witch if they touch the door inside saferoom when door is opening. (prevent spawning and be stuck inside the saferoom, only works if Lockdown Type is 1)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	lsDoorOpeningTeleport = CreateConVar( "lockdown_system-l4d2_teleport", "1", "0=Off. 1=Teleport common, special infected, and witch if they touch the door inside saferoom when door is opening. (prevent spawning and be stuck inside the saferoom, only works if Lockdown Type is 2)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsDoorOpeningTankInterval = CreateConVar( "lockdown_system-l4d2_opening_tank_interval", "50", "Time Interval to spawn a tank when door is opening (0=off)", FCVAR_NOTIFY, true, 0.0);
 	lsDoorBotDisable = CreateConVar( "lockdown_system-l4d2_spam_bot_disable", "1", "If 1, prevent AI survivor from opening and closing the door.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	lsMapOff = CreateConVar("lockdown_system-l4d2_map_off",	"c10m3_ranchhouse,l4d_reverse_hos03_sewers,l4d2_stadium4_city2,l4d_fairview10_church,l4d2_wanli01",	"Turn off the plugin in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
@@ -86,6 +92,9 @@ public void OnPluginStart()
 	lsDoorLockColor = CreateConVar(	"lockdown_system-l4d2_lock_glow_color",	"255 0 0",	"The default glow color for saferoom door when lock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorUnlockColor = CreateConVar( "lockdown_system-l4d2_unlock_glow_color",	"200 200 200",	"The default glow color for saferoom door when unlock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorGlowRange = CreateConVar( "lockdown_system-l4d2_glow_range", "550", "The default value for saferoom door glow range.", FCVAR_NOTIFY, true, 0.0);
+#if Resistance_Server
+	lsMapTwoTanks = CreateConVar("lockdown_system-l4d2_map_two_Tank",	"c1m3_mall",	"Two tanks during opening door in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
+#endif
 
 	GetCvars();
 	lsAnnounce.AddChangeHook(OnLSCVarsChanged);
@@ -104,7 +113,7 @@ public void OnPluginStart()
 	lsDoorLockColor.AddChangeHook(OnLSCVarsChanged);
 	lsDoorUnlockColor.AddChangeHook(OnLSCVarsChanged);
 	lsDoorGlowRange.AddChangeHook(OnLSCVarsChanged);
-	
+
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("player_spawn", Event_PlayerSpawn,	EventHookMode_PostNoCopy);
 	HookEvent("round_end", Event_RoundEnd);
@@ -177,6 +186,25 @@ public void OnMapStart()
 			}
 		}
 	}
+
+#if Resistance_Server
+	g_bMapTwoTanks = false;
+	lsMapTwoTanks.GetString(sCvar, sizeof(sCvar));
+	if( sCvar[0] != '\0' )
+	{
+		if( strcmp(sCvar, "0") == 0 )
+		{
+			g_bMapTwoTanks = true;
+		} else {
+			Format(sCvar, sizeof(sCvar), ",%s,", sCvar);
+
+			if( StrContains(sCvar, sMap, false) != -1 )
+			{
+				g_bMapTwoTanks = true;
+			}
+		}
+	}
+#endif
 
 	if(L4D_IsMissionFinalMap())
 	{
@@ -360,7 +388,15 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 
 				if(bTankDemolitionBefore && !bSpawnTank) 
 				{
+#if Resistance_Server
+					if(g_bMapTwoTanks)
+						ExecuteSpawn(true , 2);
+					else
+						ExecuteSpawn(true , 1);
+#else	
 					ExecuteSpawn(true , 1);
+#endif
+
 					bSpawnTank = true;
 				}
 				
@@ -390,7 +426,7 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 						{
 							hAntiFarmTime = CreateTimer(float(iAntiFarmDuration) + 1.0, EndAntiFarm);
 						}
-						CreateTimer(1.0, CheckAntiFarm, used, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+						CreateTimer(1.0, CheckAntiFarm, EntIndexToEntRef(used), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 						SDKHook(used, SDKHook_Touch, OnTouch);
 					}
 				}
@@ -420,7 +456,7 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 							hLockdownTime = CreateTimer(float(iDuration) + 1.0, EndLockdown);
 						}
 
-						CreateTimer(1.0, LockdownOpening, used, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+						CreateTimer(1.0, LockdownOpening, EntIndexToEntRef(used), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 						SDKHook(used, SDKHook_Touch, OnTouch);
 					}
 				}
@@ -433,6 +469,12 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 
 public Action CheckAntiFarm(Handle timer, any entity)
 {
+	if (!entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE)
+	{
+		delete hAntiFarmTime;
+		return Plugin_Stop;
+	}
+
 	if (GetTankCount() < 1 || hAntiFarmTime == null)
 	{
 		delete hAntiFarmTime;
@@ -452,7 +494,7 @@ public Action CheckAntiFarm(Handle timer, any entity)
 				hLockdownTime = CreateTimer(float(iDuration) + 1.0, EndLockdown);
 			}
 			iSystemTime = iDuration;
-			CreateTimer(1.0, LockdownOpening, entity, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(1.0, LockdownOpening, EntIndexToEntRef(entity), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 		}
 		return Plugin_Stop;
 	}
@@ -470,6 +512,11 @@ public Action EndAntiFarm(Handle timer)
 
 public Action LockdownOpening(Handle timer, any entity)
 {
+	if (!entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE)
+	{
+		return Plugin_Stop;
+	}
+
 	if (hLockdownTime == null)
 	{
 		if (!bLDFinished)
@@ -495,7 +542,7 @@ public Action LockdownOpening(Handle timer, any entity)
 			if(bAnnounce) PrintCenterTextAll("%t","Door is opened! GET IN!!");
 			if(blsHint) CPrintToChatAll("{default}[{olive}TS{default}]{green} <{olive}%s{green}>{default} %t", sKeyMan, "open the door already");
 			CreateTimer(5.0, LaunchTankDemolition, TIMER_FLAG_NO_MAPCHANGE);
-			CreateTimer(5.0, LaunchSlayTimer, entity, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(5.0, LaunchSlayTimer, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
 		}
 		return Plugin_Stop;
 	}
@@ -509,6 +556,13 @@ public Action LockdownOpening(Handle timer, any entity)
 	if(iDoorOpeningTankInterval > 0 && _iDoorOpeningTankInterval >= iDoorOpeningTankInterval)
 	{
 		CreateTimer(0.1, Timer_SpawnTank, _,TIMER_FLAG_NO_MAPCHANGE);
+#if Resistance_Server
+		if(g_bMapTwoTanks)
+		{
+			CreateTimer(0.2, Timer_SpawnTank, _,TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.3, Timer_SpawnTank, _,TIMER_FLAG_NO_MAPCHANGE);
+		}
+#endif
 		_iDoorOpeningTankInterval = 0;
 	}
 	_iDoorOpeningTankInterval++;
@@ -545,13 +599,16 @@ public Action LaunchTankDemolition(Handle timer)
 
 public Action LaunchSlayTimer(Handle timer, any entity)
 {
-	iSystemTime = iGetInLimit;
-	if(iSystemTime > 0) CreateTimer(1.0, AntiPussy, entity, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	if (!entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE)
+	{
+		iSystemTime = iGetInLimit;
+		if(iSystemTime > 0) CreateTimer(1.0, AntiPussy, EntIndexToEntRef(entity), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	}
 }
 
 public Action AntiPussy(Handle timer, any entity)
 {
-	if(bRoundEnd) return Plugin_Stop;
+	if (bRoundEnd || !entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE) return Plugin_Stop;
 	
 	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 	PrintCenterTextAll("[LOCKDOWN] %t", "Slay in seconds", iSystemTime);
