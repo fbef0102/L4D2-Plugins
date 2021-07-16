@@ -208,7 +208,7 @@ bool IsTankProp(int iEntity ) {
     
     GetEdictClassname(iEntity, className, sizeof(className));
     if ( strcmp(className, "prop_physics") == 0 ) {
-		if (GetEntProp(iEntity, Prop_Send, "m_hasTankGlow", 1)) 
+		if (HasEntProp(iEntity, Prop_Send, "m_hasTankGlow") && GetEntProp(iEntity, Prop_Send, "m_hasTankGlow", 1)) 
 		{
 			char sModel[64];
 			GetEntPropString(iEntity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
