@@ -255,3 +255,9 @@ in scripting\L4D2_Buy_Store.sp line 32
 [code]
 #define MAX_MONEY            16000
 [/code]
+
+-Updating translation-
+* English by HarryPotter
+* Traditional Chinese by HarryPotter
+* Simplified Chinese by Target
+* Spanish by gamer_kanelita
