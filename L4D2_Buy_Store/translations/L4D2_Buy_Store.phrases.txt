@@ -1137,7 +1137,7 @@
 		"en"	"Immune Everything timer is out"
 		"zho"	"免疫一切傷害 狀態已結束"
 		"chi"	"免疫一切伤害 状态已结束"
-		"es"	"El temporizador de "Immune a todo" está agotado"
+		"es"	"El temporizador de 'Immune a todo' está agotado"
 	}
 	"Teleport to survivor"
 	{
