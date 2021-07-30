@@ -1,0 +1,16 @@
+When using 'Look' in vocalize menu, print corresponding item to chat area.
+
+-ChangeLog-
+v1.1
+-Add all gun weapons, melee weapons and items.
+
+v0.1
+-Original Post: https://forums.alliedmods.net/showthread.php?t=333669
+
+-Convars-
+cfg\sourcemod\l4d2_item_hint.cfg
+// Cold Down Time in seconds a player can use 'Look' item chat again.
+l4d2_item_hint_cooldown_time "2.5"
+
+-Commands-
+None
