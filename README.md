@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2021/7/21)
+>All plugins in here only apply to L4D2 (last edited:2021/7/31)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -36,6 +36,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d2_melee_swing</b>: Adjustable melee swing rate for each melee weapon.
 * <b>AI_HardSI</b>: Improves the AI behaviour of special infected
 * <b>l4d2_explosive_cars</b>: Cars explode after they take some damage
+* <b>l4d2_item_hint</b>: When using 'Look' in vocalize menu, print corresponding item to chat area.
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
