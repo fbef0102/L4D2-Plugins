@@ -11,7 +11,7 @@
 #include <glow>
 #include <left4dhooks>
 #include <multicolors>
-#define PLUGIN_VERSION "4.1"
+#define PLUGIN_VERSION "4.2"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -541,8 +541,8 @@ public Action LockdownOpening(Handle timer, any entity)
 			EmitSoundToAll("level/highscore.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 			if(bAnnounce) PrintCenterTextAll("%t","Door is opened! GET IN!!");
 			if(blsHint) CPrintToChatAll("{default}[{olive}TS{default}]{green} <{olive}%s{green}>{default} %t", sKeyMan, "open the door already");
-			CreateTimer(5.0, LaunchTankDemolition, TIMER_FLAG_NO_MAPCHANGE);
-			CreateTimer(5.0, LaunchSlayTimer, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(5.0, LaunchTankDemolition, _, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(5.0, LaunchSlayTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		return Plugin_Stop;
 	}
@@ -597,26 +597,23 @@ public Action LaunchTankDemolition(Handle timer)
 	}
 }
 
-public Action LaunchSlayTimer(Handle timer, any entity)
+public Action LaunchSlayTimer(Handle timer)
 {
-	if (!entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE)
-	{
-		iSystemTime = iGetInLimit;
-		if(iSystemTime > 0) CreateTimer(1.0, AntiPussy, EntIndexToEntRef(entity), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	}
+	iSystemTime = iGetInLimit;
+	if(iSystemTime > 0) CreateTimer(1.0, AntiPussy, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action AntiPussy(Handle timer, any entity)
+public Action AntiPussy(Handle timer)
 {
-	if (bRoundEnd || !entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE) return Plugin_Stop;
+	if (bRoundEnd) return Plugin_Stop;
 	
-	EmitSoundToAll("ambient/alarms/klaxon1.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+	if (IsValidEnt(iCheckpointDoor)) EmitSoundToAll("ambient/alarms/klaxon1.wav", iCheckpointDoor, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 	PrintCenterTextAll("[LOCKDOWN] %t", "Slay in seconds", iSystemTime);
 	
 	if(iSystemTime <= 0)
 	{
-		//AcceptEntityInput(entity, "Close");
-		//AcceptEntityInput(entity, "ForceClosed");
+		//AcceptEntityInput(iCheckpointDoor, "Close");
+		//AcceptEntityInput(iCheckpointDoor, "ForceClosed");
 
 		if(bAnnounce) CPrintToChatAll("{default}[{olive}TS{default}] %t","Outside Slay");
 		
