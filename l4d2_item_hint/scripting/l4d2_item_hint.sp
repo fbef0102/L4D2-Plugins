@@ -55,6 +55,10 @@ static const char g_sItems[][][] =
 	{"models/props_equipment/oxygentank01.mdl", "Oxygen Tank!"},
 	{"models/props_junk/gnome.mdl", "Gnome!"},
 	{"models/w_models/weapons/w_cola.mdl", "Cola!"},
+	{"models/w_models/weapons/50cal.mdl", ".50 Cal Machine Gun here!"},
+	{"models/w_models/weapons/w_minigun.mdl", "Minigun here!"},
+	{"models/props/terror/exploding_ammo.mdl", "Explosive Ammo!"},
+	{"models/props/terror/incendiary_ammo.mdl", "Incendiary Ammo!"},
 };
 
 float fCoolDownTime[MAXPLAYERS+1];
@@ -64,7 +68,7 @@ public Plugin myinfo =
 	name = "L4D2 Item hint",
 	author = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area.",
-	version = "1.1",
+	version = "1.2",
 	url = ""
 };
 
@@ -169,7 +173,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 								}
 							}
 							
-							if (StrContains(sEntModelName, "melee") != -1) //melee weapon
+							if (StrContains(sEntModelName, "/melee/") != -1) //melee weapon
 							{
 								PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: Melee!", client);
 								fCoolDownTime[client] = GetEngineTime() + CoolDown.FloatValue;
