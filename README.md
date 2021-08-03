@@ -5,10 +5,10 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
 If you want any modify or request, free to use or pay me money to do it.
 # Require
 * [Sourcemod 1.10](https://www.sourcemod.net/downloads.php?branch=1.10-dev) (or newer)
-* [Metamod 1.10](https://www.sourcemm.net/downloads.php?branch=1.10-dev) (or newer)
+* [Metamod 1.11](https://www.sourcemm.net/downloads.php?branch=1.11-dev) (or newer)
 * [L4DToolZ](https://github.com/Accelerator74/l4dtoolz/releases)
 * [Left 4 DHooks Direct](https://forums.alliedmods.net/showthread.php?p=2684862)
-* [2.2.0-detours](https://forums.alliedmods.net/showpost.php?p=2588686&postcount=589) (or newer)
+* [2.2.0-detours17](https://forums.alliedmods.net/showpost.php?p=2588686&postcount=589) (or newer)
 * [[INC] Multi Colors](https://forums.alliedmods.net/showthread.php?t=247770)
 
 # Plugins
