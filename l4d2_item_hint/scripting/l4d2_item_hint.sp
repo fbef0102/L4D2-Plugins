@@ -59,6 +59,19 @@ static const char g_sItems[][][] =
 	{"models/w_models/weapons/w_minigun.mdl", "Minigun here!"},
 	{"models/props/terror/exploding_ammo.mdl", "Explosive Ammo!"},
 	{"models/props/terror/incendiary_ammo.mdl", "Incendiary Ammo!"},
+    {"models/w_models/weapons/w_knife_t.mdl", "Knife!"},
+    {"models/weapons/melee/w_bat.mdl", "Baseball Bat!"},
+    {"models/weapons/melee/w_cricket_bat.mdl", "Cricket Bat!"},
+    {"models/weapons/melee/w_crowbar.mdl", "Crowbar!"},
+    {"models/weapons/melee/w_electric_guitar.mdl", "Electric Guitar!"},
+    {"models/weapons/melee/w_fireaxe.mdl", "Fireaxe!"},
+    {"models/weapons/melee/w_frying_pan.mdl", "Frying Pan!"},
+    {"models/weapons/melee/w_katana.mdl", "Katana!"},
+    {"models/weapons/melee/w_machete.mdl", "Machete!"},
+    {"models/weapons/melee/w_tonfa.mdl", "Nightstick!"},
+    {"models/weapons/melee/w_golfclub.mdl", "Golf Club!"},
+    {"models/weapons/melee/w_pitchfork.mdl", "Pitckfork!"},
+    {"models/weapons/melee/w_shovel.mdl", "Shovel!"}
 };
 
 float fCoolDownTime[MAXPLAYERS+1];
@@ -68,7 +81,7 @@ public Plugin myinfo =
 	name = "L4D2 Item hint",
 	author = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area.",
-	version = "1.2",
+	version = "1.3",
 	url = ""
 };
 
@@ -173,7 +186,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 								}
 							}
 							
-							if (StrContains(sEntModelName, "/melee/") != -1) //melee weapon
+							if (StrContains(sEntModelName, "/melee/") != -1) //custom melee weapon
 							{
 								PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: Melee!", client);
 								fCoolDownTime[client] = GetEngineTime() + CoolDown.FloatValue;
