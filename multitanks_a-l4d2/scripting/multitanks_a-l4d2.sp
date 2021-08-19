@@ -8,7 +8,7 @@
 #include <sdktools>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "2.0"
+#define PLUGIN_VERSION "2.1"
 #define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
 
 enum GameModeStatus
@@ -37,19 +37,19 @@ char sLabels[5][] =
 
 GameModeStatus gmsBase;
 MapStatus msBase;
-int iMaxZombies, iFrustration[MAXPLAYERS+1], iMTHealthCoop[5], iMTHealthVersus[5], iMTHealthSurvival,
-	iMTHealthScavenge, iMTCountCoop[5], iMTCountVersus[5], iMTCountSurvival, iMTCountScavenge,
-	iFinaleWave, iTankHP, iTankCount, iMaxTankCount;
+int iFrustration[MAXPLAYERS+1], iTSHealthCoop[5], iTSHealthVersus[5], iTSHealthSurvival,
+	iTSHealthScavenge, iTSCountCoop[5], iTSCountVersus[5], iTSCountSurvival, iTSCountScavenge,
+	iFinaleWave, iTankHP, iMaxTankCount;
 
-bool bRoundBegan, bRoundFinished, bFrustrated[MAXPLAYERS+1], bIsTank[MAXPLAYERS+1], bMTOn, bMTAnnounce,
-	bMTSameSpawn[3], bMTDisplay, bFirstSpawned;
+bool bRoundBegan, bRoundFinished, bIsTank[MAXPLAYERS+1], bTSOn, bTSAnnounce,
+	bTSDisplay;
 
-float fTankPos[3], fMTSpawnDelay[2];
-ConVar hMTOn, hMTHealthCoop[5], hMTHealthVersus[5], hMTHealthSurvival, hMTHealthScavenge, hMTCountCoop[5],
-	hMTCountVersus[5], hMTCountSurvival, hMTCountScavenge, hMTAnnounce, hMTSameSpawn[3], hMTSpawnDelay[2],
-	hMTDisplay, hGameMode;
+float fTSSpawnDelay[2];
+ConVar hTSOn, hTSHealthCoop[5], hTSHealthVersus[5], hTSHealthSurvival, hTSHealthScavenge, hTSCountCoop[5],
+	hTSCountVersus[5], hTSCountSurvival, hTSCountScavenge, hTSAnnounce, hTSSpawnDelay[2],
+	hTSDisplay, hGameMode;
 
-Panel pMTList;
+Panel pTSList;
 static Handle hCreateTank;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -61,7 +61,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		return APLRes_Success;
 	}
 	
-	strcopy(error, err_max, "[MT] Plugin Supports L4D2 Only!");
+	strcopy(error, err_max, "[TS] Plugin Supports L4D2 Only!");
 	return APLRes_SilentFailure;
 }
 
@@ -79,38 +79,35 @@ public void OnPluginStart()
 	GetGameData();
 
 	hGameMode = FindConVar("mp_gamemode");
-	hGameMode.AddChangeHook(OnMTCVarsChanged);
+	hGameMode.AddChangeHook(OnTSCVarsChanged);
 	
 	gmsBase = GetGameModeInfo();
+
+	CreateConVar("multitanks_version", PLUGIN_VERSION, "MultiTanks Version.", FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
+	hTSOn = CreateConVar("multitanks_on", "1", "Enable/Disable Plugin.", FCVAR_NOTIFY|FCVAR_SPONLY);
+	hTSHealthSurvival = CreateConVar("multitanks_health_survival", "10000", "Health Of Tanks (Survival), 0=off.", FCVAR_NOTIFY|FCVAR_SPONLY);
+	hTSCountSurvival = CreateConVar("multitanks_count_survival", "2", "Total Count Of Tanks (Survival)", FCVAR_NOTIFY|FCVAR_SPONLY);
+	hTSHealthScavenge = CreateConVar("multitanks_health_scavenge", "10000", "Health Of Tanks (Scavenge), 0=off.", FCVAR_NOTIFY|FCVAR_SPONLY);
+	hTSCountScavenge = CreateConVar("multitanks_count_scavenge", "2", "Total Count Of Tanks (Scavenge)", FCVAR_NOTIFY|FCVAR_SPONLY);
+	hTSAnnounce = CreateConVar("multitanks_announce", "0", "Enable/Disable Announcements when tank spawns.", FCVAR_NOTIFY|FCVAR_SPONLY);
+	hTSDisplay = CreateConVar("multitanks_display", "0", "Enable/Disable Tank HUD Display", FCVAR_NOTIFY|FCVAR_SPONLY);
 	
-	iMaxZombies = (FindConVar("super_versus_version") != null) ? FindConVar("super_versus_infected_limit").IntValue : FindConVar("z_max_player_zombies").IntValue;
-	FindConVar("super_versus_version") != null ? FindConVar("super_versus_infected_limit").AddChangeHook(OnMTCVarsChanged) : FindConVar("z_max_player_zombies").AddChangeHook(OnMTCVarsChanged);
+	iTSHealthSurvival = hTSHealthSurvival.IntValue;
+	iTSCountSurvival = hTSCountSurvival.IntValue;
+	iTSHealthScavenge = hTSHealthScavenge.IntValue;
+	iTSCountScavenge = hTSCountScavenge.IntValue;
 	
-	CreateConVar("multitanks_version", PLUGIN_VERSION, "MultiTanks Version", FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
-	hMTOn = CreateConVar("multitanks_on", "1", "Enable/Disable Plugin", FCVAR_NOTIFY|FCVAR_SPONLY);
-	hMTHealthSurvival = CreateConVar("multitanks_health_survival", "17500", "Health Of Tanks (Survival)", FCVAR_NOTIFY|FCVAR_SPONLY);
-	hMTCountSurvival = CreateConVar("multitanks_count_survival", "2", "Total Count Of Tanks (Survival)", FCVAR_NOTIFY|FCVAR_SPONLY);
-	hMTHealthScavenge = CreateConVar("multitanks_health_scavenge", "17500", "Health Of Tanks (Scavenge)", FCVAR_NOTIFY|FCVAR_SPONLY);
-	hMTCountScavenge = CreateConVar("multitanks_count_scavenge", "2", "Total Count Of Tanks (Scavenge)", FCVAR_NOTIFY|FCVAR_SPONLY);
-	hMTAnnounce = CreateConVar("multitanks_announce", "1", "Enable/Disable Announcements", FCVAR_NOTIFY|FCVAR_SPONLY);
-	hMTDisplay = CreateConVar("multitanks_display", "0", "Enable/Disable HUD Display", FCVAR_NOTIFY|FCVAR_SPONLY);
+	bTSOn = hTSOn.BoolValue;
+	bTSAnnounce = hTSAnnounce.BoolValue;
+	bTSDisplay = hTSDisplay.BoolValue;
 	
-	iMTHealthSurvival = hMTHealthSurvival.IntValue;
-	iMTCountSurvival = hMTCountSurvival.IntValue;
-	iMTHealthScavenge = hMTHealthScavenge.IntValue;
-	iMTCountScavenge = hMTCountScavenge.IntValue;
-	
-	bMTOn = hMTOn.BoolValue;
-	bMTAnnounce = hMTAnnounce.BoolValue;
-	bMTDisplay = hMTDisplay.BoolValue;
-	
-	hMTOn.AddChangeHook(OnMTCVarsChanged);
-	hMTHealthSurvival.AddChangeHook(OnMTCVarsChanged);
-	hMTCountSurvival.AddChangeHook(OnMTCVarsChanged);
-	hMTHealthScavenge.AddChangeHook(OnMTCVarsChanged);
-	hMTCountScavenge.AddChangeHook(OnMTCVarsChanged);
-	hMTAnnounce.AddChangeHook(OnMTCVarsChanged);
-	hMTDisplay.AddChangeHook(OnMTCVarsChanged);
+	hTSOn.AddChangeHook(OnTSCVarsChanged);
+	hTSHealthSurvival.AddChangeHook(OnTSCVarsChanged);
+	hTSCountSurvival.AddChangeHook(OnTSCVarsChanged);
+	hTSHealthScavenge.AddChangeHook(OnTSCVarsChanged);
+	hTSCountScavenge.AddChangeHook(OnTSCVarsChanged);
+	hTSAnnounce.AddChangeHook(OnTSCVarsChanged);
+	hTSDisplay.AddChangeHook(OnTSCVarsChanged);
 	
 	char sDescriptions[3][128];
 	for (int i = 0; i < 2; i++)
@@ -132,9 +129,9 @@ public void OnPluginStart()
 			}
 		}
 		
-		hMTSpawnDelay[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
-		fMTSpawnDelay[i] = hMTSpawnDelay[i].FloatValue;
-		hMTSpawnDelay[i].AddChangeHook(OnMTCVarsChanged);
+		hTSSpawnDelay[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
+		fTSSpawnDelay[i] = hTSSpawnDelay[i].FloatValue;
+		hTSSpawnDelay[i].AddChangeHook(OnTSCVarsChanged);
 	}
 	
 	for (int i = 0; i < 5; i++)
@@ -146,32 +143,32 @@ public void OnPluginStart()
 		{
 			case 0:
 			{
-				strcopy(sDescriptions[1], 128, "17500");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Regular Maps");
+				strcopy(sDescriptions[1], 128, "0");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Regular Maps, 0=off.");
 			}
 			case 1:
 			{
-				strcopy(sDescriptions[1], 128, "20000");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Maps");
+				strcopy(sDescriptions[1], 128, "0");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Maps, 0=off.");
 			}
 			case 2:
 			{
-				strcopy(sDescriptions[1], 128, "25000");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In First Wave Finales");
+				strcopy(sDescriptions[1], 128, "0");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In First Wave Finales, 0=off.");
 			}
 			case 3:
 			{
-				strcopy(sDescriptions[1], 128, "27500");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Second Wave Finales");
+				strcopy(sDescriptions[1], 128, "0");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Second Wave Finales, 0=off.");
 			}
 			case 4:
 			{
-				strcopy(sDescriptions[1], 128, "22500");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Escapes");
+				strcopy(sDescriptions[1], 128, "0");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Escapes, 0=off.");
 			}
 		}
 		
-		hMTHealthCoop[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
+		hTSHealthCoop[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
 		
 		Format(sDescriptions[0], 128, "multitanks_count_coop_%s", sLabels[i]);
 		strcopy(sDescriptions[1], 128, "1");
@@ -184,45 +181,45 @@ public void OnPluginStart()
 			case 4: strcopy(sDescriptions[2], 128, "Total Count Of Tanks In Finale Escapes");
 		}
 		
-		hMTCountCoop[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
+		hTSCountCoop[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
 		
-		iMTHealthCoop[i] = hMTHealthCoop[i].IntValue;
-		iMTCountCoop[i] = hMTCountCoop[i].IntValue;
+		iTSHealthCoop[i] = hTSHealthCoop[i].IntValue;
+		iTSCountCoop[i] = hTSCountCoop[i].IntValue;
 		
-		hMTHealthCoop[i].AddChangeHook(OnMTCVarsChanged);
-		hMTCountCoop[i].AddChangeHook(OnMTCVarsChanged);
+		hTSHealthCoop[i].AddChangeHook(OnTSCVarsChanged);
+		hTSCountCoop[i].AddChangeHook(OnTSCVarsChanged);
 		
 		Format(sDescriptions[0], 128, "multitanks_health_versus_%s", sLabels[i]);
 		switch (i)
 		{
 			case 0:
 			{
-				strcopy(sDescriptions[1], 128, "15000");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Regular Maps (Versus)");
+				strcopy(sDescriptions[1], 128, "8000");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Regular Maps (Versus), 0=off.");
 			}
 			case 1:
 			{
-				strcopy(sDescriptions[1], 128, "17500");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Maps (Versus)");
+				strcopy(sDescriptions[1], 128, "10000");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Maps (Versus), 0=off.");
 			}
 			case 2:
 			{
-				strcopy(sDescriptions[1], 128, "22500");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In First Wave Finales (Versus)");
+				strcopy(sDescriptions[1], 128, "12500");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In First Wave Finales (Versus), 0=off.");
 			}
 			case 3:
 			{
-				strcopy(sDescriptions[1], 128, "25000");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Second Wave Finales (Versus)");
+				strcopy(sDescriptions[1], 128, "15000");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Second Wave Finales (Versus), 0=off.");
 			}
 			case 4:
 			{
 				strcopy(sDescriptions[1], 128, "20000");
-				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Escapes (Versus)");
+				strcopy(sDescriptions[2], 128, "Health Of Tanks In Finale Escapes (Versus), 0=off.");
 			}
 		}
 		
-		hMTHealthVersus[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
+		hTSHealthVersus[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
 		
 		Format(sDescriptions[0], 128, "multitanks_count_versus_%s", sLabels[i]);
 		strcopy(sDescriptions[1], 128, "2");
@@ -235,29 +232,14 @@ public void OnPluginStart()
 			case 4: strcopy(sDescriptions[2], 128, "Total Count Of Tanks In Finale Escapes (Versus)");
 		}
 		
-		hMTCountVersus[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
+		hTSCountVersus[i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
 		
-		iMTHealthVersus[i] = hMTHealthVersus[i].IntValue;
-		iMTCountVersus[i] = hMTCountVersus[i].IntValue;
+		iTSHealthVersus[i] = hTSHealthVersus[i].IntValue;
+		iTSCountVersus[i] = hTSCountVersus[i].IntValue;
 		
-		hMTHealthVersus[i].AddChangeHook(OnMTCVarsChanged);
-		hMTCountVersus[i].AddChangeHook(OnMTCVarsChanged);
+		hTSHealthVersus[i].AddChangeHook(OnTSCVarsChanged);
+		hTSCountVersus[i].AddChangeHook(OnTSCVarsChanged);
 		
-		if (i == 0 || i == 1 || i == 4)
-		{
-			Format(sDescriptions[0], 128, "multitanks_same_spawn_%s", sLabels[i]);
-			strcopy(sDescriptions[1], 128, "0");
-			switch (i)
-			{
-				case 0: strcopy(sDescriptions[2], 128, "Enable/Disable Same Spawn Of Tanks In Regular Maps");
-				case 1: strcopy(sDescriptions[2], 128, "Enable/Disable Same Spawn Of Tanks In Finale Maps");
-				case 4: strcopy(sDescriptions[2], 128, "Enable/Disable Same Spawn Of Tanks In Finale Escapes");
-			}
-			
-			hMTSameSpawn[(i == 4) ? i - 2 : i] = CreateConVar(sDescriptions[0], sDescriptions[1], sDescriptions[2], FCVAR_NOTIFY|FCVAR_SPONLY);
-			bMTSameSpawn[(i == 4) ? i - 2 : i] = hMTSameSpawn[(i == 4) ? i - 2 : i].BoolValue;
-			hMTSameSpawn[(i == 4) ? i - 2 : i].AddChangeHook(OnMTCVarsChanged);
-		}
 	}
 	
 	AutoExecConfig(true, "multitanks_a");
@@ -269,75 +251,63 @@ public void OnPluginStart()
 	HookEvent("finale_escape_start", OnFinaleEvents);
 	HookEvent("finale_vehicle_leaving", OnFinaleEvents);
 	
-	HookEvent("tank_frustrated", OnTankFrustrated);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("tank_spawn", OnTankSpawn);
 }
 
-public void OnMTCVarsChanged(ConVar cvar, const char[] sOldValue, const char[] sNewValue)
+public void OnTSCVarsChanged(ConVar cvar, const char[] sOldValue, const char[] sNewValue)
 {
-	bMTOn = hMTOn.BoolValue;
-	bMTAnnounce = hMTAnnounce.BoolValue;
-	bMTDisplay = hMTDisplay.BoolValue;
+	bTSOn = hTSOn.BoolValue;
+	bTSAnnounce = hTSAnnounce.BoolValue;
+	bTSDisplay = hTSDisplay.BoolValue;
 	
 	for (int i = 0; i < 5; i++)
 	{
-		if (i == 0 || i == 1 || i == 4)
-		{
-			bMTSameSpawn[(i != 4) ? i : i - 2] = hMTSameSpawn[(i != 4) ? i : i - 2].BoolValue;
-		}
 		
-		iMTHealthCoop[i] = hMTHealthCoop[i].IntValue;
-		iMTCountCoop[i] = hMTCountCoop[i].IntValue;
+		iTSHealthCoop[i] = hTSHealthCoop[i].IntValue;
+		iTSCountCoop[i] = hTSCountCoop[i].IntValue;
 		
-		iMTHealthVersus[i] = hMTHealthVersus[i].IntValue;
-		iMTCountVersus[i] = hMTCountVersus[i].IntValue;
+		iTSHealthVersus[i] = hTSHealthVersus[i].IntValue;
+		iTSCountVersus[i] = hTSCountVersus[i].IntValue;
 	}
 	
-	iMaxZombies = (FindConVar("super_versus_version") != null) ? FindConVar("super_versus_infected_limit").IntValue : FindConVar("z_max_player_zombies").IntValue;
-	
-	iMTHealthSurvival = hMTHealthSurvival.IntValue;
-	iMTCountSurvival = hMTCountSurvival.IntValue;
-	iMTHealthScavenge = hMTHealthScavenge.IntValue;
-	iMTCountScavenge = hMTCountScavenge.IntValue;
+	iTSHealthSurvival = hTSHealthSurvival.IntValue;
+	iTSCountSurvival = hTSCountSurvival.IntValue;
+	iTSHealthScavenge = hTSHealthScavenge.IntValue;
+	iTSCountScavenge = hTSCountScavenge.IntValue;
 	
 	for (int i = 0; i < 2; i++)
 	{
-		fMTSpawnDelay[i] = hMTSpawnDelay[i].FloatValue;
+		fTSSpawnDelay[i] = hTSSpawnDelay[i].FloatValue;
 	}
-	if (bMTOn)
+	if (bTSOn)
 	{
 		gmsBase = GetGameModeInfo();
-		LaunchMTParameters();
+		LaunchTSParameters();
 	}
 }
 
 public void OnPluginEnd()
 {
-	hMTOn.RemoveChangeHook(OnMTCVarsChanged);
-	hMTHealthSurvival.RemoveChangeHook(OnMTCVarsChanged);
-	hMTCountSurvival.RemoveChangeHook(OnMTCVarsChanged);
-	hMTHealthScavenge.RemoveChangeHook(OnMTCVarsChanged);
-	hMTCountScavenge.RemoveChangeHook(OnMTCVarsChanged);
-	hMTAnnounce.RemoveChangeHook(OnMTCVarsChanged);
-	hMTDisplay.RemoveChangeHook(OnMTCVarsChanged);
+	hTSOn.RemoveChangeHook(OnTSCVarsChanged);
+	hTSHealthSurvival.RemoveChangeHook(OnTSCVarsChanged);
+	hTSCountSurvival.RemoveChangeHook(OnTSCVarsChanged);
+	hTSHealthScavenge.RemoveChangeHook(OnTSCVarsChanged);
+	hTSCountScavenge.RemoveChangeHook(OnTSCVarsChanged);
+	hTSAnnounce.RemoveChangeHook(OnTSCVarsChanged);
+	hTSDisplay.RemoveChangeHook(OnTSCVarsChanged);
 	for (int i = 0; i < 2; i++)
 	{
-		hMTSpawnDelay[i].RemoveChangeHook(OnMTCVarsChanged);
+		hTSSpawnDelay[i].RemoveChangeHook(OnTSCVarsChanged);
 	}
 	
 	for (int i = 0; i < 5; i++)
 	{
-		hMTHealthCoop[i].RemoveChangeHook(OnMTCVarsChanged);
-		hMTCountCoop[i].RemoveChangeHook(OnMTCVarsChanged);
+		hTSHealthCoop[i].RemoveChangeHook(OnTSCVarsChanged);
+		hTSCountCoop[i].RemoveChangeHook(OnTSCVarsChanged);
 		
-		hMTHealthVersus[i].RemoveChangeHook(OnMTCVarsChanged);
-		hMTCountVersus[i].RemoveChangeHook(OnMTCVarsChanged);
-		
-		if (i == 0 || i == 1 || i == 4)
-		{
-			hMTSameSpawn[(i == 4) ? i - 2 : i].RemoveChangeHook(OnMTCVarsChanged);
-		}
+		hTSHealthVersus[i].RemoveChangeHook(OnTSCVarsChanged);
+		hTSCountVersus[i].RemoveChangeHook(OnTSCVarsChanged);
 	}
 	
 	UnhookEvent("round_start", OnRoundEvents);
@@ -347,14 +317,13 @@ public void OnPluginEnd()
 	UnhookEvent("finale_escape_start", OnFinaleEvents);
 	UnhookEvent("finale_vehicle_leaving", OnFinaleEvents);
 	
-	UnhookEvent("tank_frustrated", OnTankFrustrated);
 	UnhookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	UnhookEvent("tank_spawn", OnTankSpawn);
 }
 
 public void OnRoundEvents(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!bMTOn)
+	if (!bTSOn)
 	{
 		return;
 	}
@@ -373,12 +342,9 @@ public void OnRoundEvents(Event event, const char[] name, bool dontBroadcast)
 		
 		msBase = MS_ROUNDEND;
 	}
-	LaunchMTParameters();
+	LaunchTSParameters();
 	
-	iTankCount = 0;
 	iFinaleWave = 0;
-	
-	bFirstSpawned = false;
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -387,14 +353,13 @@ public void OnRoundEvents(Event event, const char[] name, bool dontBroadcast)
 			iFrustration[i] = 0;
 			
 			bIsTank[i] = false;
-			bFrustrated[i] = false;
 		}
 	}
 }
 
 public void OnFinaleEvents(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!bMTOn)
+	if (!bTSOn)
 	{
 		return;
 	}
@@ -416,39 +381,12 @@ public void OnFinaleEvents(Event event, const char[] name, bool dontBroadcast)
 	{
 		msBase = MS_LEAVING;
 	}
-	LaunchMTParameters();
-}
-
-public void OnTankFrustrated(Event event, const char[] name, bool dontBroadcast)
-{
-	if (!bMTOn)
-	{
-		return;
-	}
-	
-	int tank = GetClientOfUserId(event.GetInt("userid"));
-	if (!IsTank(tank))
-	{
-		return;
-	}
-	
-	bFrustrated[tank] = true;
-	
-	if (bMTAnnounce)
-	{
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (IsClientInGame(i) && GetClientTeam(i) == 3 && !IsFakeClient(i))
-			{
-				PrintToChat(i, "\x04[MT]\x01 %N Lost Control!", tank);
-			}
-		}
-	}
+	LaunchTSParameters();
 }
 
 public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!bMTOn)
+	if (!bTSOn)
 	{
 		return Plugin_Continue;
 	}
@@ -459,27 +397,29 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 	}
 	
-	if (iTankCount > 0)
-	{
-		iTankCount -= 1;
-		if (iTankCount <= 0)
-		{
-			bFirstSpawned = false;
-		}
-	}
-	
-	if (bFrustrated[died])
-	{
-		bFrustrated[died] = false;
-	}
 	bIsTank[died] = false;
 	
 	return Plugin_Continue;
 }
 
+public void OnClientDisconnect(int client)
+{
+	if (!bTSOn)
+	{
+		return;
+	}
+	
+	if (!IsTank(client))
+	{
+		return;
+	}
+	
+	bIsTank[client] = false;
+}
+
 public void OnTankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!bMTOn)
+	if (!bTSOn)
 	{
 		return;
 	}
@@ -494,82 +434,43 @@ public void OnTankSpawn(Event event, const char[] name, bool dontBroadcast)
 	{
 		bIsTank[tank] = true;
 		
-		if (!bFirstSpawned && msBase == MS_FINALE)
+		if (msBase == MS_FINALE)
 		{
-			bFirstSpawned = true;
-			
 			iFinaleWave += 1;
-			LaunchMTParameters();
+			LaunchTSParameters();
 		}
 		
-		SetEntProp(tank, Prop_Send, "m_iHealth", iTankHP, 1);
-		SetEntProp(tank, Prop_Send, "m_iMaxHealth", iTankHP, 1);
-		
-		if ((msBase == MS_ESCAPE) ? bMTSameSpawn[2] : ((msBase != MS_FINALE) ? bMTSameSpawn[1] : bMTSameSpawn[0]))
+		if (iTankHP > 0)
 		{
-			if (iTankCount <= 0)
+			SetEntProp(tank, Prop_Send, "m_iHealth", iTankHP, 1);
+			SetEntProp(tank, Prop_Send, "m_iMaxHealth", iTankHP, 1);
+		}
+		
+		if (GetTankCount() < iMaxTankCount)
+		{
+			CreateTimer((msBase != MS_ESCAPE) ? fTSSpawnDelay[0] : fTSSpawnDelay[1], SpawnMoreTank);
+		}
+
+		if (bTSAnnounce && msBase != MS_ROUNDEND)
+		{
+			if (IsFakeClient(tank))
 			{
-				GetEntPropVector(tank, Prop_Send, "m_vecOrigin", fTankPos);
+				PrintToChatAll("\x01[\x05TS\x01] New Tank Spawning (\x04%i\x01 HP) [AI]", GetEntProp(tank, Prop_Send, "m_iHealth"));
 			}
 			else
 			{
-				TeleportEntity(tank, fTankPos, NULL_VECTOR, NULL_VECTOR);
-			}
-		}
-		
-		iTankCount += 1;
-		if (iTankCount < iMaxTankCount)
-		{
-			ChangeInfectedLimits(iMaxZombies + iMaxTankCount);
-			CreateTimer((msBase != MS_ESCAPE) ? fMTSpawnDelay[0] : fMTSpawnDelay[1], SpawnMoreTank);
-		}
-		else
-		{
-			ChangeInfectedLimits(iMaxZombies);
-		}
-		
-		if (bMTAnnounce && msBase != MS_ROUNDEND)
-		{
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsClientInGame(i) && !IsFakeClient(i))
-				{
-					if (GetClientTeam(i) == 3)
-					{
-						if (IsFakeClient(tank))
-						{
-							PrintToChat(i, "\x04[MT]\x01 New Tank Spawning (%i HP) [AI]", iTankHP);
-						}
-						else
-						{
-							PrintToChat(i, "\x04[MT]\x01 New Tank Spawning (%i HP) [%N]", iTankHP, tank);
-						}
-					}
-					else
-					{
-						PrintToChat(i, "\x04[MT]\x01 New Tank Spawning (%i HP)", iTankHP);
-					}
-				}
+				PrintToChatAll("\x01[\x05TS\x01] New Tank Spawning (\x04%i\x01 HP) [\04%N\01]", GetEntProp(tank, Prop_Send, "m_iHealth"), tank);
 			}
 		}
 	}
 	else
 	{
-		if (bFrustrated[tank])
-		{
-			bFrustrated[tank] = false;
-		}
-		SetEntProp(tank, Prop_Send, "m_iMaxHealth", iTankHP, 1);
+		if (iTankHP > 0) SetEntProp(tank, Prop_Send, "m_iMaxHealth", iTankHP, 1);
 	}
 	
-	if (!IsFakeClient(tank))
+	if (bTSDisplay)
 	{
-		CreateTimer(10.0, CheckFrustration, GetClientUserId(tank));
-	}
-	
-	if (bMTDisplay)
-	{
-		pMTList = new Panel();
+		pTSList = new Panel();
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && GetClientTeam(i) == 3 && GetEntProp(i, Prop_Send, "m_zombieClass") == 8 && IsPlayerAlive(i) && !GetEntProp(i, Prop_Send, "m_isIncapacitated", 1))
@@ -583,7 +484,7 @@ public void OnTankSpawn(Event event, const char[] name, bool dontBroadcast)
 				{
 					Format(sText, sizeof(sText), "%N: %i HP, Control: %i％", i, GetEntProp(i, Prop_Send, "m_iHealth"), 100 - GetEntProp(i, Prop_Send, "m_frustration"));
 				}
-				pMTList.DrawText(sText);
+				pTSList.DrawText(sText);
 			}
 		}
 		
@@ -591,16 +492,16 @@ public void OnTankSpawn(Event event, const char[] name, bool dontBroadcast)
 		{
 			if (IsClientInGame(i) && GetClientTeam(i) != 2 && !IsFakeClient(i))
 			{
-				pMTList.Send(i, MTListHandler, 1);
+				pTSList.Send(i, TSListHandler, 1);
 			}
 		}
-		delete pMTList;
+		delete pTSList;
 	}
 }
 
 public Action SpawnMoreTank(Handle timer)
 {
-	if (!bMTOn || !bRoundBegan || bRoundFinished)
+	if (!bTSOn || !bRoundBegan || bRoundFinished)
 	{
 		return Plugin_Continue;
 	}
@@ -646,53 +547,13 @@ public Action SpawnMoreTank(Handle timer)
 	return Plugin_Continue;
 }
 
-public Action CheckFrustration(Handle timer, any userid)
-{
-	int client = GetClientOfUserId(userid);
-	if (!IsTank(client) || !IsPlayerAlive(client) || IsFakeClient(client))
-	{
-		return Plugin_Stop;
-	}
-	
-	int iFrustrationProgress = GetEntProp(client, Prop_Send, "m_frustration");
-	if (iFrustrationProgress >= 95)
-	{
-		if (!IsPlayerBurning(client))
-		{
-			iFrustration[client] += 1;
-			if (iFrustration[client] < 2)
-			{
-				SetEntProp(client, Prop_Send, "m_frustration", 0);
-				CreateTimer(0.1, CheckFrustration, GetClientUserId(client));
-				
-				for (int i = 1; i <= MaxClients; i++)
-				{	
-					if (IsClientInGame(i) && GetClientTeam(i) == 3 && !IsFakeClient(i))
-					{
-						PrintToChat(i, "\x04[MT]\x01 %N Lost First Tank Control!", client);
-					}
-				}
-			}
-		}
-		else
-		{
-			CreateTimer(0.1, CheckFrustration, GetClientUserId(client));
-		}
-	}
-	else
-	{
-		CreateTimer(0.1 + (95 - iFrustrationProgress) * 0.1, CheckFrustration, GetClientUserId(client));
-	}
-	return Plugin_Stop;
-}
-
-public int MTListHandler(Menu menu, MenuAction action, int param1, int param2)
+public int TSListHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		if (bMTDisplay)
+		if (bTSDisplay)
 		{
-			pMTList = new Panel();
+			pTSList = new Panel();
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsClientInGame(i) && GetClientTeam(i) == 3 && GetEntProp(i, Prop_Send, "m_zombieClass") == 8 && IsPlayerAlive(i) && !GetEntProp(i, Prop_Send, "m_isIncapacitated", 1))
@@ -706,7 +567,7 @@ public int MTListHandler(Menu menu, MenuAction action, int param1, int param2)
 					{
 						Format(sText, sizeof(sText), "%N: %i HP, Control: %i％", i, GetEntProp(i, Prop_Send, "m_iHealth"), 100 - GetEntProp(i, Prop_Send, "m_frustration"));
 					}
-					pMTList.DrawText(sText);
+					pTSList.DrawText(sText);
 				}
 			}
 			
@@ -714,10 +575,10 @@ public int MTListHandler(Menu menu, MenuAction action, int param1, int param2)
 			{
 				if (IsClientInGame(i) && GetClientTeam(i) != 2 && !IsFakeClient(i))
 				{
-					pMTList.Send(i, MTListHandler, 1);
+					pTSList.Send(i, TSListHandler, 1);
 				}
 			}
-			delete pMTList;
+			delete pTSList;
 		}
 	}
 }
@@ -748,7 +609,7 @@ GameModeStatus GetGameModeInfo()
 	}
 }
 
-void LaunchMTParameters()
+void LaunchTSParameters()
 {
 	switch (gmsBase)
 	{
@@ -758,18 +619,18 @@ void LaunchMTParameters()
 			{
 				case MS_REGULAR:
 				{
-					iTankHP = (L4D_IsMissionFinalMap()) ? iMTHealthCoop[1] : iMTHealthCoop[0];
-					iMaxTankCount = (L4D_IsMissionFinalMap()) ? iMTCountCoop[1] : iMTCountCoop[0];
+					iTankHP = (L4D_IsMissionFinalMap()) ? iTSHealthCoop[1] : iTSHealthCoop[0];
+					iMaxTankCount = (L4D_IsMissionFinalMap()) ? iTSCountCoop[1] : iTSCountCoop[0];
 				}
 				case MS_FINALE:
 				{
-					iTankHP = (iFinaleWave == 2) ? iMTHealthCoop[3] : iMTHealthCoop[2];
-					iMaxTankCount = (iFinaleWave == 2) ? iMTCountCoop[3] : iMTCountCoop[2];
+					iTankHP = (iFinaleWave > 1) ? iTSHealthCoop[3] : iTSHealthCoop[2];
+					iMaxTankCount = (iFinaleWave > 1) ? iTSCountCoop[3] : iTSCountCoop[2];
 				}
 				case MS_ESCAPE:
 				{
-					iTankHP = iMTHealthCoop[4];
-					iMaxTankCount = iMTCountCoop[4];
+					iTankHP = iTSHealthCoop[4];
+					iMaxTankCount = iTSCountCoop[4];
 				}
 				case MS_LEAVING: iMaxTankCount = 0;
 				case MS_ROUNDEND: iMaxTankCount = 0;
@@ -781,18 +642,18 @@ void LaunchMTParameters()
 			{
 				case MS_REGULAR:
 				{
-					iTankHP = (L4D_IsMissionFinalMap()) ? iMTHealthVersus[1] : iMTHealthVersus[0]; 	
-					iMaxTankCount = (L4D_IsMissionFinalMap()) ? iMTCountVersus[1] : iMTCountVersus[0];
+					iTankHP = (L4D_IsMissionFinalMap()) ? iTSHealthVersus[1] : iTSHealthVersus[0]; 	
+					iMaxTankCount = (L4D_IsMissionFinalMap()) ? iTSCountVersus[1] : iTSCountVersus[0];
 				}
 				case MS_FINALE:
 				{
-					iTankHP = (iFinaleWave == 2) ? iMTHealthVersus[3] : iMTHealthVersus[2];
-					iMaxTankCount = (iFinaleWave == 2) ? iMTCountVersus[3] : iMTCountVersus[2];
+					iTankHP = (iFinaleWave > 1) ? iTSHealthVersus[3] : iTSHealthVersus[2];
+					iMaxTankCount = (iFinaleWave > 1) ? iTSCountVersus[3] : iTSCountVersus[2];
 				}
 				case MS_ESCAPE:
 				{
-					iTankHP = iMTHealthVersus[4];
-					iMaxTankCount = iMTCountVersus[4];
+					iTankHP = iTSHealthVersus[4];
+					iMaxTankCount = iTSCountVersus[4];
 				}
 				case MS_LEAVING: iMaxTankCount = 0;
 				case MS_ROUNDEND: iMaxTankCount = 0;
@@ -800,34 +661,19 @@ void LaunchMTParameters()
 		}
 		case GMS_SURVIVAL: 
 		{
-			iTankHP = iMTHealthSurvival;
-			iMaxTankCount = iMTCountSurvival;
+			iTankHP = iTSHealthSurvival;
+			iMaxTankCount = iTSCountSurvival;
 		}
 		case GMS_SCAVENGE: 
 		{
-			iTankHP = iMTHealthScavenge;
-			iMaxTankCount = iMTCountScavenge;
+			iTankHP = iTSHealthScavenge;
+			iMaxTankCount = iTSCountScavenge;
 		}
 		case GMS_UNKNOWN: 
 		{
-			iTankHP = 12500;
+			iTankHP = 0;
 			iMaxTankCount = 1;
 		}
-	}
-}
-
-void ChangeInfectedLimits(int iValue)
-{
-	if (FindConVar("super_versus_version") == null)
-	{
-		FindConVar("z_max_player_zombies").SetInt(iValue, true, false);
-	}
-	else
-	{
-		int iFlags = FindConVar("super_versus_infected_limit").Flags;
-		FindConVar("super_versus_infected_limit").Flags = iFlags & ~FCVAR_NOTIFY;
-		FindConVar("super_versus_infected_limit").SetInt(iValue);
-		FindConVar("super_versus_infected_limit").Flags = iFlags;
 	}
 }
 
@@ -964,4 +810,17 @@ stock bool IsPlayerGhost(int client)
 {
 	if (GetEntProp(client, Prop_Send, "m_isGhost", 1)) return true;
 	return false;
+}
+
+int GetTankCount()
+{
+	int tanks = 0;
+	for (int i=1;i<=MaxClients;i++)
+	{
+		if (IsClientInGame(i) && GetClientTeam(i) == 3 && GetEntProp(i, Prop_Send, "m_zombieClass") == 8 && IsPlayerAlive(i))
+		{
+			tanks++;	
+		}
+	}
+	return tanks;
 }
