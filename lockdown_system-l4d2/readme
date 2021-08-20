@@ -47,7 +47,10 @@ lockdown_system-l4d2_map_off "c10m3_ranchhouse,l4d_reverse_hos03_sewers,l4d2_sta
 lockdown_system-l4d2_mobs "5"
 
 // Time Interval to spawn a tank when door is opening (0=off)
-lockdown_system-l4d2_opening_tank_interval "30"
+lockdown_system-l4d2_opening_tank_interval "50"
+
+// Two tanks during opening door in these maps, separate by commas (no spaces). (0=All maps, Empty = none).
+lockdown_system-l4d2_map_two_Tank "c1m3_mall"
 
 // After saferoom door is opened, slay players who are not inside saferoom in seconds. (0=off)
 lockdown_system-l4d2_outside_slay_duration "60"
