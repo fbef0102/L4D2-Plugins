@@ -70,7 +70,7 @@ lockdown_system-l4d2_tank_demolition_after "1"
 // If 1, Enable Tank Demolition, server will spawn tank before door open 
 lockdown_system-l4d2_tank_demolition_before "1"
 
-// 0=Off. 1=Teleport common, special infected, and witch if they touch the door inside saferoom when door is opening. (prevent spawning and be stuck inside the saferoom, only works if Lockdown Type is 1)
+// 0=Off. 1=Teleport common, special infected, and witch if they touch the door inside saferoom when door is opening. (prevent spawning and be stuck inside the saferoom, only works if Lockdown Type is 2)
 lockdown_system-l4d2_teleport "1"
 
 // Lockdown Type: 0=Random, 1=Improved (opening slowly), 2=Default
