@@ -6,10 +6,8 @@ Stop tank props from fading whilst the tank is alive
 https://www.youtube.com/watch?v=UZDF6dbagxU&feature=youtu.be
 
 -ChangLog-
-v1.9
--Thanks to Sir
--Remake Code
--Fade Tank Prop once Tank is dead
+v2.0
+-AlliedModder Post: https://forums.alliedmods.net/showthread.php?t=312447
 
 -ConVar-
 left4dead2\cfg\sourcemod\l4d2_tank_props_glow.cfg
