@@ -19,7 +19,7 @@ bool tankSpawned;
 public Plugin myinfo = {
 	name        = "L4D2 Tank Hittable Glow",
 	author      = "Harry Potter, Sir",
-	version     = "1.9",
+	version     = "2.0",
 	description = "Stop tank props from fading whilst the tank is alive + add Hittable Glow."
 };
 
@@ -40,6 +40,17 @@ public void OnPluginStart() {
 	AutoExecConfig(true, "l4d2_tank_props_glow");
 
 	PluginEnable();
+}
+
+public void OnPluginEnd()
+{
+	PluginDisable();
+}
+
+public void OnMapEnd()
+{
+	ClearArray(hTankProps);
+	ClearArray(hTankPropsHit);
 }
 
 void PluginEnable() {
@@ -81,8 +92,8 @@ void PluginDisable() {
 	}
 	tankSpawned = false;
 
-	CloseHandle(hTankProps);
-	CloseHandle(hTankPropsHit);
+	delete hTankProps;
+	delete hTankPropsHit;
 }
 
 public Action TankPropRoundReset( Handle event, const char[] name, bool dontBroadcast ) {
@@ -119,7 +130,7 @@ public Action TankPropTankKilled( Handle event, const char[] name, bool dontBroa
         return;
     }
 	
-    CreateTimer(0.5, TankDeadCheck);
+    CreateTimer(0.5, TankDeadCheck, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action TankDeadCheck( Handle timer ) {
