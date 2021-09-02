@@ -5,7 +5,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "1.0"
+#define PLUGIN_VERSION "1.1"
 #define DEBUG 0
 
 public Plugin myinfo = 
@@ -102,15 +102,9 @@ public void OnPluginStart()
 	}
 }
 
-public void OnPluginEnd()
-{
-	ResetPlugin();
-}
-
 bool g_bIsLoading;
 public void OnMapEnd()
 {
-	ResetPlugin();
 	g_bIsLoading = true;
 }
 
@@ -150,14 +144,20 @@ void IsAllowed()
 
 	if( g_bCvarAllow == false && bCvarAllow == true )
 	{
-		CreateTimer(0.1, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
 		g_bCvarAllow = true;
 		HookEvents();
+
+		g_bIsLoading = false;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			melee_speed[i] = 0.0;
+			g_iMAEntid[i] = 0;
+			g_flMANextTime[i] = 0.0;
+		}
 	}
 
 	else if( g_bCvarAllow == true && bCvarAllow == false )
 	{
-		ResetPlugin();
 		g_bCvarAllow = false;
 		UnhookEvents();
 	}
@@ -169,11 +169,6 @@ void IsAllowed()
 void HookEvents()
 {
 	HookEvent("round_start",  Event_RoundStart,	 EventHookMode_PostNoCopy);
-	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_PostNoCopy);
-	HookEvent("round_end",				Event_RoundEnd,		EventHookMode_PostNoCopy);
-	HookEvent("map_transition", 		Event_RoundEnd,		EventHookMode_PostNoCopy); //戰役過關到下一關的時候 (沒有觸發round_end)
-	HookEvent("mission_lost", 			Event_RoundEnd,		EventHookMode_PostNoCopy); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
-	HookEvent("finale_vehicle_leaving", Event_RoundEnd,		EventHookMode_PostNoCopy); //救援載具離開之時  (沒有觸發round_end)
 	HookEvent("weapon_fire", Event_WeaponFire);
 	HookEvent("player_team", evtPlayerTeam);
 }
@@ -181,11 +176,6 @@ void HookEvents()
 void UnhookEvents()
 {
 	UnhookEvent("round_start",	Event_RoundStart,	EventHookMode_PostNoCopy);
-	UnhookEvent("player_spawn", Event_PlayerSpawn,	EventHookMode_PostNoCopy);
-	UnhookEvent("round_end",				Event_RoundEnd,		EventHookMode_PostNoCopy);
-	UnhookEvent("map_transition", 			Event_RoundEnd,		EventHookMode_PostNoCopy); //戰役過關到下一關的時候 (沒有觸發round_end)
-	UnhookEvent("mission_lost", 			Event_RoundEnd,		EventHookMode_PostNoCopy); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
-	UnhookEvent("finale_vehicle_leaving", 	Event_RoundEnd,		EventHookMode_PostNoCopy); //救援載具離開之時  (沒有觸發round_end)
 	UnhookEvent("weapon_fire", Event_WeaponFire);
 	UnhookEvent("player_team", evtPlayerTeam);
 }
@@ -199,37 +189,15 @@ public Action evtPlayerTeam(Event event, const char[] name, bool dontBroadcast)
 	g_flMANextTime[client] = 0.0;
 }
 
-int g_iRoundStart, g_iPlayerSpawn;
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
-		CreateTimer(0.5, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
-	g_iRoundStart = 1;
-}
-
-public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
-{
-	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
-		CreateTimer(0.5, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
-	g_iPlayerSpawn = 1;
-}
-
-public Action tmrStart(Handle timer)
-{
 	g_bIsLoading = false;
-	ResetPlugin();
-
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		melee_speed[i] = 0.0;
 		g_iMAEntid[i] = 0;
 		g_flMANextTime[i] = 0.0;
 	}
-}
-
-public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
-{
-	ResetPlugin();
 }
 
 public void OnClientPutInServer(int client)
@@ -242,9 +210,7 @@ public void OnClientPutInServer(int client)
 
 public void OnGameFrame()
 {
-	//If frames aren't being processed, don't bother.
-	//Otherwise we get LAG or even disconnects on map changes, etc...
-	if (g_bCvarAllow == false || IsServerProcessing()==false || g_bIsLoading == true)
+	if (g_bCvarAllow == false || g_bIsLoading == true || IsServerProcessing() == false)
 	{
 		return;
 	}
@@ -256,41 +222,39 @@ public void OnGameFrame()
 
 
 int index;
-int iCid;
 int iEntid;
 float flNextTime_calc;
 float flNextTime_ret;
 float flGameTime;
-
 void Melee_OnGameFrame()
 {
 	flGameTime = GetGameTime();
 	
-	for (iCid=1; iCid<=MaxClients; iCid++)
+	for (int i=1; i<=MaxClients; i++)
 	{
-		if(!IsClientInGame(iCid)) continue;
-		if(!IsPlayerAlive(iCid)) continue;
-		if(GetClientTeam(iCid) != TEAM_SURVIVORS) continue;
-		if(IsPlayerIncap(iCid)) continue;
+		if(!IsClientInGame(i)) continue;
+		if(!IsPlayerAlive(i)) continue;
+		if(GetClientTeam(i) != TEAM_SURVIVORS) continue;
+		if(IsPlayerIncap(i)) continue;
 		
-		iEntid = GetEntDataEnt2(iCid, g_ActiveWeaponOffset);
-		if (iEntid == -1 || g_iMAEntid[iCid] == 0) continue;
+		iEntid = GetEntDataEnt2(i, g_ActiveWeaponOffset);
+		if (iEntid == -1 || g_iMAEntid[i] == 0) continue;
 
 		flNextTime_ret = GetEntDataFloat(iEntid, g_iNextPAttO);
 		
-		if (g_iMAEntid[iCid] == iEntid)
+		if (g_iMAEntid[i] == iEntid)
 		{
-			if(g_flMANextTime[iCid]>=flNextTime_ret || melee_speed[iCid] < 0.2)
+			if(g_flMANextTime[i]>=flNextTime_ret || melee_speed[i] < 0.2)
 			{
 				continue;
 			}
 			else
 			{
 				#if DEBUG
-					PrintToChatAll("OnGameFrame() %N - addspeed: %f", iCid, melee_speed[iCid]);
+					PrintToChatAll("OnGameFrame() %N - addspeed: %f", i, melee_speed[i]);
 				#endif
-				flNextTime_calc = flGameTime + melee_speed[iCid];
-				g_flMANextTime[iCid] = flNextTime_calc;
+				flNextTime_calc = flGameTime + melee_speed[i];
+				g_flMANextTime[i] = flNextTime_calc;
 				SetEntDataFloat(iEntid, g_iNextPAttO, flNextTime_calc, true);
 				continue;	
 			}
@@ -306,7 +270,7 @@ public Action Event_WeaponFire(Event event, const char[] name, bool dontBroadcas
 		int iWeapon = GetEntDataEnt2(client, g_ActiveWeaponOffset);
 		if (iWeapon == -1 || iWeapon == g_iMAEntid[client]) return;
 
-		char sBuffer[64];
+		char sBuffer[8];
 		event.GetString("weapon", sBuffer, sizeof(sBuffer));
 		if (strcmp(sBuffer, "melee") == 0)
 		{
@@ -327,13 +291,13 @@ public Action Event_WeaponFire(Event event, const char[] name, bool dontBroadcas
 				}
 				
 				g_iMAEntid[client]=iWeapon;
-				g_flMANextTime[iCid]= GetEntDataFloat(iWeapon, g_iNextPAttO);
+				g_flMANextTime[i]= GetEntDataFloat(iWeapon, g_iNextPAttO);
 			}
 		}
 		else 
 		{
 			//if no, then store in known-non-melee var
-			g_iMAEntid[iCid] = 0;
+			g_iMAEntid[i] = 0;
 		}
 	}
 }
@@ -342,7 +306,7 @@ public void OnWeaponSwitched(int client, int weapon)
 {
 	if (GetClientTeam(client) == TEAM_SURVIVORS && weapon > 0 && IsValidEntity(weapon))
 	{
-		char sBuffer[32];
+		char sBuffer[16];
 		GetEntityClassname(weapon, sBuffer, sizeof(sBuffer));
 		if (strcmp(sBuffer, "weapon_melee") == 0)
 		{
@@ -357,11 +321,4 @@ bool IsPlayerIncap(int client)
 		return true;
 
 	return false;
-}
-
-//function
-void ResetPlugin()
-{
-	g_iRoundStart = 0;
-	g_iPlayerSpawn = 0;
 }
