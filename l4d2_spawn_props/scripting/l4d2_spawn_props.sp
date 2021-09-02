@@ -5,7 +5,7 @@
 #pragma newdecls required
 #define DEBUG 0
 
-#define GETVERSION "3.3"
+#define GETVERSION "3.4"
 #define ARRAY_SIZE 5000
 #define MAX_PATHS 20
 
@@ -98,6 +98,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {	
+	LoadTranslations("l4d2_spawn_props.phrases");
+	
 	CreateConVar("l4d2_spawn_props_version", GETVERSION, "Version of the Plugin", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY); //Version
 	g_cvarPhysics 		= CreateConVar("l4d2_spawn_props_physics", 				"1", "Enable the Physics Objects in the menu");
 	g_cvarDynamic 		= CreateConVar("l4d2_spawn_props_dynamic",				"1", "Enable the Dynamic (Non-solid) Objects in the menu");
@@ -109,7 +111,7 @@ public void OnPluginStart()
 	g_cvarDecorative 	= CreateConVar("l4d2_spawn_props_category_decorative",	"1", "Enable the Decorative category");
 	g_cvarMisc 			= CreateConVar("l4d2_spawn_props_category_misc", 		"1", "Enable the Misc category");
 	g_cvarLog 			= CreateConVar("l4d2_spawn_props_log_actions", 			"0", "Log if an admin spawns an object?");
-	g_cvarAutoload 		= CreateConVar("l4d2_spawn_props_autoload", 				"0", "Enable the plugin to auto load the cache?");
+	g_cvarAutoload 		= CreateConVar("l4d2_spawn_props_autoload", 			"0", "Enable the plugin to auto load the cache?");
 	g_cvarAutoloadType 	= CreateConVar("l4d2_spawn_props_autoload_different", 	"1", "Should the paths be different for the teams or not?");
 	
 	RegAdminCmd("sm_spawnprop", CmdSpawnProp, DESIRED_ADM_FLAGS, "Spawns an object with the given information");
@@ -415,11 +417,11 @@ public int Category_Handler(TopMenu topmenu, TopMenuAction action, TopMenuObject
 {
 	if(action == TopMenuAction_DisplayTitle)
 	{
-		Format(buffer, maxlength, "選擇一項任務:");
+		Format(buffer, maxlength, Translate(param, "%t", "Select a task:"));
 	}
 	else if(action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "生成物件");
+		Format(buffer, maxlength, Translate(param, "%t", "Spawn Objects"));
 	}
 }
 /*
@@ -432,7 +434,7 @@ public void AdminMenu_Delete(TopMenu topmenu, TopMenuAction action, TopMenuObjec
 {
 	if(action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "刪除物件");
+		Format(buffer, maxlength, Translate(param, "%t", "Delete Object"));
 	}
 	else if(action == TopMenuAction_SelectOption)
 	{
@@ -443,10 +445,10 @@ public void AdminMenu_Delete(TopMenu topmenu, TopMenuAction action, TopMenuObjec
 Menu BuildDeleteMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Delete);
-	menu.SetTitle("選擇刪除任務");
-	menu.AddItem("sm_spdeleteall", "刪除所有生成過的物件");
-	menu.AddItem("sm_spdeletelook", "刪除眼前的物件(準心指向)");
-	menu.AddItem("sm_spdeletelast", "刪除上一個生成的物件");
+	menu.SetTitle("%T", "Select the delete task", client);
+	menu.AddItem("sm_spdeleteall", Translate(client, "%t", "Delete All Objects"));
+	menu.AddItem("sm_spdeletelook", Translate(client, "%t", "Delete Looking Object"));
+	menu.AddItem("sm_spdeletelast", Translate(client, "%t", "Delete Last Object"));
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
@@ -455,9 +457,9 @@ Menu BuildDeleteMenu(int client)
 Menu BuildDeleteAllAskMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_DA_Ask);
-	menu.SetTitle("確定刪除所有生成過的物件?");	
-	menu.AddItem("sm_spyes", "是");
-	menu.AddItem("sm_spno", "不要");
+	menu.SetTitle("%T", "Are you sure(Delete All)?", client);	
+	menu.AddItem("sm_spyes", Translate(client, "%t",  "Yes"));
+	menu.AddItem("sm_spno", Translate(client, "%t", "No"));
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -473,11 +475,11 @@ public int MenuHandler_DA_Ask(Menu menu, MenuAction action, int param1, int para
 			if(strcmp(menucmd, "sm_spyes")== 0)
 			{
 				DeleteAllProps();
-				PrintToChat(param1, "[SM] 成功地刪除了所有生成過的地圖物件");
+				PrintToChat(param1, "[SM] %T", "Successfully deleted all spawned objects", param1);
 			}
 			else
 			{
-				PrintToChat(param1, "[SM] 取消");
+				PrintToChat(param1, "[SM] %T", "Canceled", param1);
 			}
 			BuildDeleteMenu(param1);
 		}
@@ -506,7 +508,7 @@ public int MenuHandler_Delete(Menu menu, MenuAction action, int param1, int para
 			if(strcmp(menucmd, "sm_spdeleteall")== 0)
 			{
 				BuildDeleteAllAskMenu(param1);
-				PrintToChat(param1, "[SM] 你確定要刪除所有生成過的物件?");
+				PrintToChat(param1, "[SM] %T", "delete all the spawned objects?", param1);
 			}
 			else if(strcmp(menucmd, "sm_spdeletelook")== 0)
 			{
@@ -543,7 +545,7 @@ public void AdminMenu_Edit(TopMenu topmenu, TopMenuAction action, TopMenuObject 
 {
 	if(action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "編輯物件");
+		Format(buffer, maxlength, Translate(param, "%t", "Edit Object"));
 	}
 	else if(action == TopMenuAction_SelectOption)
 	{
@@ -561,7 +563,7 @@ public void AdminMenu_Spawn(TopMenu topmenu, TopMenuAction action, TopMenuObject
 {
 	if(action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "生成物件");
+		Format(buffer, maxlength, Translate(param, "%t", "Spawn Objects"));
 	}
 	else if(action == TopMenuAction_SelectOption)
 	{
@@ -572,22 +574,22 @@ public void AdminMenu_Spawn(TopMenu topmenu, TopMenuAction action, TopMenuObject
 Menu BuildSpawnMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Spawn);
-	menu.SetTitle("選擇一個生成方式");
+	menu.SetTitle("%T", "Select the spawn method", client);
 	
 	if(g_cvarPhysics.BoolValue)
 	{
-		menu.AddItem("sm_spawnpc", "生成動態物件在準心位置上");
-		menu.AddItem("sm_spawnpo", "生成動態物件在目前位置上");
+		menu.AddItem("sm_spawnpc", Translate(client, "%t", "Spawn Physics On Cursor"));
+		menu.AddItem("sm_spawnpo", Translate(client, "%t", "Spawn Physics On Origin"));
 	}
 	if(g_cvarDynamic.BoolValue)
 	{
-		menu.AddItem("sm_spawndc", "生成穿透物件在準心位置上");
-		menu.AddItem("sm_spawndo", "生成穿透物件在目前位置上");
+		menu.AddItem("sm_spawndc", Translate(client, "%t", "Spawn Non-solid On Cursor"));
+		menu.AddItem("sm_spawndo", Translate(client, "%t", "Spawn Non-solid On Origin"));
 	}
 	if(g_cvarStatic.BoolValue)
 	{
-		menu.AddItem("sm_spawnsc", "生成固定物件在準心位置上");
-		menu.AddItem("sm_spawnso", "生成固定物件在目前位置上");
+		menu.AddItem("sm_spawnsc", Translate(client, "%t", "Spawn Solid On Cursor"));
+		menu.AddItem("sm_spawnso", Translate(client, "%t", "Spawn Solid On Origin"));
 	}
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
@@ -651,7 +653,7 @@ public void AdminMenu_Save(TopMenu topmenu, TopMenuAction action, TopMenuObject 
 {
 	if(action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "儲存物件");
+		Format(buffer, maxlength, Translate(param, "%t", "Save Objects"));
 	}
 	else if(action == TopMenuAction_SelectOption)
 	{
@@ -662,10 +664,10 @@ public void AdminMenu_Save(TopMenu topmenu, TopMenuAction action, TopMenuObject 
 Menu BuildSaveMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Save);
-	menu.SetTitle("選擇儲存方式");
-	menu.AddItem("sm_spsavestripper", "儲存於 Stripper File (推薦)");
-	menu.AddItem("sm_spsaverouting", "儲存於 Routing File (複雜)");
-	menu.AddItem("sm_spsaveplugin", "儲存於 Spawn Objects File (暫存)");
+	menu.SetTitle("%T", "Select The Save Method", client);
+	menu.AddItem("sm_spsavestripper", Translate(client, "%t", "Save Stripper File"));
+	menu.AddItem("sm_spsaverouting", Translate(client, "%t", "Save Routing File"));
+	menu.AddItem("sm_spsaveplugin", Translate(client, "%t", "Save Spawn Objects File"));
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
@@ -674,10 +676,10 @@ Menu BuildSaveMenu(int client)
 Menu BuildRoutingMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_PathDiff);
-	menu.SetTitle("選擇路徑難度");
-	menu.AddItem("sm_speasy", "簡單路徑");
-	menu.AddItem("sm_spmedium", "中等路徑");
-	menu.AddItem("sm_sphard", "困難路徑");
+	menu.SetTitle("%T", "Select Path Difficulty", client);
+	menu.AddItem("sm_speasy", Translate(client, "%t", "Easy Path"));
+	menu.AddItem("sm_spmedium", Translate(client, "%t", "Medium Path"));
+	menu.AddItem("sm_sphard", Translate(client, "%t", "Hard Path"));
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
@@ -765,21 +767,21 @@ public void AdminMenu_Load(TopMenu topmenu, TopMenuAction action, TopMenuObject 
 {
 	if(action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "載入物件");
+		Format(buffer, maxlength, Translate(param, "%t", "Load Objects"));
 	}
 	else if(action == TopMenuAction_SelectOption)
 	{
 		BuildLoadAskMenu(param);
-		PrintToChat(param, "[SM] 你確定從暫存檔案裡載入物件?");
+		PrintToChat(param, "[SM] %T", "load the map data cache?", param);
 	}
 }
 
 Menu BuildLoadAskMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Load_Ask);
-	menu.SetTitle("你確定?");
-	menu.AddItem("sm_spyes", "是就是");
-	menu.AddItem("sm_spno", "不是就不是");
+	menu.SetTitle("%T", "Are you sure?", client);
+	menu.AddItem("sm_spyes", Translate(client, "%t", "Yes"));
+	menu.AddItem("sm_spno", Translate(client, "%t", "No"));
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -787,7 +789,7 @@ Menu BuildLoadAskMenu(int client)
 Menu BuildLoadPropsMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Load_Props);
-	menu.SetTitle("選擇地圖編號");
+	menu.SetTitle("%T", "Choose a map number please", client);
 	char buffer[16];
 	char buffer2[16];
 	for(int i=1; i <= MAX_PATHS; i++)
@@ -841,7 +843,7 @@ public int MenuHandler_Load_Ask(Menu menu, MenuAction action, int param1, int pa
 			}
 			else
 			{
-				PrintToChat(param1, "[SM] 取消");
+				PrintToChat(param1, "[SM] %T", "Canceled", param1);
 			}
 		}
 		case MenuAction_Cancel:
@@ -901,27 +903,27 @@ Menu CheckSecondaryMenuCategories(Menu menu, int client)
 {	
 	if(g_cvarVehicles.BoolValue)
 	{
-		menu.AddItem("vehicles", "載具類");
+		menu.AddItem("vehicles", Translate(client, "%t", "Vehicles"));
 	}
 	if(g_cvarFoliage.BoolValue)
 	{
-		menu.AddItem("foliage", "植物類");
+		menu.AddItem("foliage", Translate(client, "%t", "Foliage"));
 	}
 	if(g_cvarInterior.BoolValue)
 	{
-		menu.AddItem("interior", "室內類");
+		menu.AddItem("interior", Translate(client, "%t", "Interior"));
 	}
 	if(g_cvarExterior.BoolValue)
 	{
-		menu.AddItem("exterior", "室外類");
+		menu.AddItem("exterior", Translate(client, "%t", "Exterior"));
 	}
 	if(g_cvarDecorative.BoolValue)
 	{
-		menu.AddItem("decorative", "裝飾類");
+		menu.AddItem("decorative", Translate(client, "%t", "Decorative"));
 	}
 	if(g_cvarMisc.BoolValue)
 	{
-		menu.AddItem("misc", "雜項類");
+		menu.AddItem("misc", Translate(client, "%t", "Misc"));
 	}
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
@@ -931,9 +933,9 @@ Menu CheckSecondaryMenuCategories(Menu menu, int client)
 Menu BuildEditPropMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_EditProp);
-	menu.SetTitle("選擇動作:");
-	menu.AddItem("rotate", "旋轉");
-	menu.AddItem("move", "移動");
+	menu.SetTitle("%T", "Select an action:", client);
+	menu.AddItem("rotate", Translate(client, "%t", "Rotate"));
+	menu.AddItem("move", Translate(client, "%t", "Move"));
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
@@ -1263,7 +1265,7 @@ Menu DisplayVehiclesMenu(int client)
 	g_iSubCategory[client] =  1;
 	Menu menu = new Menu(MenuHandler_DoAction);
 	SetFileCategory(menu, client);
-	menu.SetTitle("載具類");
+	menu.SetTitle("%T", "Vehicles", client);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iVehiclesMenuPosition[client], MENU_TIME_FOREVER);
@@ -1274,7 +1276,7 @@ Menu DisplayFoliageMenu(int client)
 	g_iSubCategory[client] =  2;
 	Menu menu = new Menu(MenuHandler_DoAction);
 	SetFileCategory(menu, client);
-	menu.SetTitle("植物類");
+	menu.SetTitle("%T", "Foliage", client);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iFoliageMenuPosition[client], MENU_TIME_FOREVER);
@@ -1285,7 +1287,7 @@ Menu DisplayInteriorMenu(int client)
 	g_iSubCategory[client] =  3;
 	Menu menu = new Menu(MenuHandler_DoAction);
 	SetFileCategory(menu, client);
-	menu.SetTitle("室內類");
+	menu.SetTitle("%T", "Interior", client);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iInteriorMenuPosition[client], MENU_TIME_FOREVER);
@@ -1296,7 +1298,7 @@ Menu DisplayExteriorMenu(int client)
 	g_iSubCategory[client] =  4;
 	Menu menu = new Menu(MenuHandler_DoAction);
 	SetFileCategory(menu, client);
-	menu.SetTitle("室外類");
+	menu.SetTitle("%T", "Exterior", client);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iExteriorMenuPosition[client], MENU_TIME_FOREVER);
@@ -1307,7 +1309,7 @@ Menu DisplayDecorativeMenu(int client)
 	g_iSubCategory[client] =  5;
 	Menu menu = new Menu(MenuHandler_DoAction);
 	SetFileCategory(menu, client);
-	menu.SetTitle("裝飾類");
+	menu.SetTitle("%T", "Decorative", client);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iDecorMenuPosition[client], MENU_TIME_FOREVER);
@@ -1318,7 +1320,7 @@ Menu DisplayMiscMenu(int client)
 	g_iSubCategory[client] =  6;
 	Menu menu = new Menu(MenuHandler_DoAction);
 	SetFileCategory(menu, client);
-	menu.SetTitle("雜項類");
+	menu.SetTitle("%T", "Misc", client);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iMiscMenuPosition[client], MENU_TIME_FOREVER);
@@ -1335,12 +1337,12 @@ Menu SetFileCategory(Menu menu, int client)
 	int len;
 	if(!FileExists(FileName))
 	{
-		SetFailState("找不到 data/l4d2_spawn_props_models.txt 檔案");
+		SetFailState("Unable to find the l4d2_spawn_props_models.txt file");
 	}
 	file = OpenFile(FileName, "r");
 	if(file == null)
 	{
-		SetFailState("開啟檔案發生錯誤");
+		SetFailState("Error opening the models file");
 	}
 	g_iFileCategory[client] = 0;
 	while(file.ReadLine(buffer, sizeof(buffer)))
@@ -1408,34 +1410,35 @@ Menu DisplayRotateMenu(int client)
 {
 	g_iMoveCategory[client] = 1;
 	Menu menu = new Menu(MenuHandler_PropPosition);
-	menu.AddItem("rotate1x", "選轉 1 度 (X 軸)");
-	menu.AddItem("rotate-1x", "退回 1 度 (X 軸)");
-	menu.AddItem("rotate10x", "選轉 10 度 (X 軸)");
-	menu.AddItem("rotate-10x", "退回 10 度 (X 軸)");
-	menu.AddItem("rotate15x", "選轉 15 度 (X 軸)");
-	menu.AddItem("rotate-15x", "退回 15 度 (X 軸)");
-	menu.AddItem("rotate45x", "選轉 45 度 (X 軸)");
-	menu.AddItem("rotate90x", "選轉 90 度 (X 軸)");
-	menu.AddItem("rotate180x", "選轉 180 度 (X 軸)");
-	menu.AddItem("rotate1y", "選轉 1 度 (Y 軸)");
-	menu.AddItem("rotate-1y", "退回 1 度 (Y 軸)");
-	menu.AddItem("rotate10y", "選轉 10 度 (Y 軸)");
-	menu.AddItem("rotate-10y", "退回 10 度 (Y 軸)");
-	menu.AddItem("rotate15y", "選轉 15 度 (Y 軸)");
-	menu.AddItem("rotate-15y", "退回 15 度 (Y 軸)");
-	menu.AddItem("rotate45y", "選轉 45 度 (Y 軸)");
-	menu.AddItem("rotate90y", "選轉 90 度 (Y 軸)");
-	menu.AddItem("rotate180y", "選轉 180 度 (Y 軸)");
-	menu.AddItem("rotate1z", "選轉 1 度 (Z 軸)");
-	menu.AddItem("rotate-1z", "退回 1 度 (Z 軸)");
-	menu.AddItem("rotate10z", "選轉 10 度 (Z 軸)");
-	menu.AddItem("rotate-10z", "退回 10 度 (Z 軸)");
-	menu.AddItem("rotate15z", "選轉 15 度 (Z 軸)");
-	menu.AddItem("rotate-15z", "退回 15 度 (Z 軸)");
-	menu.AddItem("rotate45z", "選轉 45 度 (Z 軸)");
-	menu.AddItem("rotate90z", "選轉 90 度 (Z 軸)");
-	menu.AddItem("rotate180z", "選轉 180 度 (Z 軸)");
-	menu.SetTitle("旋轉物件");
+	menu.SetTitle("%T", "Rotate", client);
+	menu.AddItem("rotate1x", Translate(client, "%t", "Rotate 1 degree (X axys)"));
+	menu.AddItem("rotate-1x", Translate(client, "%t", "Back 1 degree (X axys)"));
+	menu.AddItem("rotate10x", Translate(client, "%t", "Rotate 10 degree (X axys)"));
+	menu.AddItem("rotate-10x", Translate(client, "%t", "Back 10 degree (X axys)"));
+	menu.AddItem("rotate15x", Translate(client, "%t", "Rotate 15 degree (X axys)"));
+	menu.AddItem("rotate-15x", Translate(client, "%t", "Back 15 degree (X axys)"));
+	menu.AddItem("rotate45x", Translate(client, "%t", "Rotate 45 degree (X axys)"));
+	menu.AddItem("rotate90x", Translate(client, "%t", "Rotate 90 degree (X axys)"));
+	menu.AddItem("rotate180x", Translate(client, "%t", "Rotate 180 degree (X axys)"));
+	menu.AddItem("rotate1y", Translate(client, "%t", "Rotate 1 degree (Y axys)"));
+	menu.AddItem("rotate-1y", Translate(client, "%t", "Back 1 degree (Y axys)"));
+	menu.AddItem("rotate10y", Translate(client, "%t", "Rotate 10 degree (Y axys)"));
+	menu.AddItem("rotate-10y", Translate(client, "%t", "Back 10 degree (Y axys)"));
+	menu.AddItem("rotate15y", Translate(client, "%t", "Rotate 15 degree (Y axys)"));
+	menu.AddItem("rotate-15y", Translate(client, "%t", "Back 15 degree (Y axys)"));
+	menu.AddItem("rotate45y", Translate(client, "%t", "Rotate 45 degree (Y axys)"));
+	menu.AddItem("rotate90y", Translate(client, "%t", "Rotate 90 degree (Y axys)"));
+	menu.AddItem("rotate180y", Translate(client, "%t", "Rotate 180 degree (Y axys)"));
+	menu.AddItem("rotate1z", Translate(client, "%t", "Rotate 1 degree (Z axys)"));
+	menu.AddItem("rotate-1z", Translate(client, "%t", "Back 1 degree (Z axys)"));
+	menu.AddItem("rotate10z", Translate(client, "%t", "Rotate 10 degree (Z axys)"));
+	menu.AddItem("rotate-10z", Translate(client, "%t", "Back 10 degree (Z axys)"));
+	menu.AddItem("rotate15z", Translate(client, "%t", "Rotate 15 degree (Z axys)"));
+	menu.AddItem("rotate-15z", Translate(client, "%t", "Back 15 degree (Z axys)"));
+	menu.AddItem("rotate45z", Translate(client, "%t", "Rotate 45 degree (Z axys)"));
+	menu.AddItem("rotate90z", Translate(client, "%t", "Rotate 90 degree (Z axys)"));
+	menu.AddItem("rotate180z", Translate(client, "%t", "Rotate 180 degree (Z axys)"));
+	
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iRotateMenuPosition[client], MENU_TIME_FOREVER);
@@ -1445,25 +1448,26 @@ Menu DisplayMoveMenu(int client)
 {
 	g_iMoveCategory[client] = 2;
 	Menu menu = new Menu(MenuHandler_PropPosition);
-	menu.AddItem("moveup1", "向上移動 1 單位");
-	menu.AddItem("moveup10", "向上移動 10 單位");
-	menu.AddItem("moveup30", "向上移動 30 單位");
-	menu.AddItem("movedown1", "向下移動 1 單位");
-	menu.AddItem("movedown10", "向下移動 10 單位");
-	menu.AddItem("movedown30", "向下移動 30 單位");
-	menu.AddItem("moveright1", "向右移動 1 單位");
-	menu.AddItem("moveright10", "向右移動 10 單位");
-	menu.AddItem("moveright30", "向右移動 30 單位");
-	menu.AddItem("moveleft1", "向左移動 1 單位");
-	menu.AddItem("moveleft10", "向左移動 10 單位");
-	menu.AddItem("moveleft30", "向左移動 30 單位");
-	menu.AddItem("moveforward1", "向前移動 1 單位");
-	menu.AddItem("moveforward10", "向前移動 10 單位");
-	menu.AddItem("moveforward30", "向前移動 30 單位");
-	menu.AddItem("movebackward1", "向後移動 1 單位");
-	menu.AddItem("movebackward10", "向後移動 10 單位");
-	menu.AddItem("movebackward30", "向後移動 30 單位");
-	menu.SetTitle("移動物件");
+	menu.SetTitle("%T", "Move", client);
+	menu.AddItem("moveup1", Translate(client, "%t", "Move Up 1 Unit"));
+	menu.AddItem("moveup10", Translate(client, "%t", "Move Up 10 Unit"));
+	menu.AddItem("moveup30", Translate(client, "%t", "Move Up 30 Unit"));
+	menu.AddItem("movedown1", Translate(client, "%t", "Move Down 1 Unit"));
+	menu.AddItem("movedown10", Translate(client, "%t", "Move Down 10 Unit"));
+	menu.AddItem("movedown30", Translate(client, "%t", "Move Down 30 Unit"));
+	menu.AddItem("moveright1", Translate(client, "%t", "Move Right 1 Unit"));
+	menu.AddItem("moveright10", Translate(client, "%t", "Move Right 10 Unit"));
+	menu.AddItem("moveright30", Translate(client, "%t", "Move Right 30 Unit"));
+	menu.AddItem("moveleft1", Translate(client, "%t", "Move Left 1 Unit"));
+	menu.AddItem("moveleft10", Translate(client, "%t", "Move Left 10 Unit"));
+	menu.AddItem("moveleft30", Translate(client, "%t", "Move Left 30 Unit"));
+	menu.AddItem("moveforward1", Translate(client, "%t", "Move Forward 1 Unit"));
+	menu.AddItem("moveforward10", Translate(client, "%t", "Move Forward 10 Unit"));
+	menu.AddItem("moveforward30", Translate(client, "%t", "Move Forward 30 Unit"));
+	menu.AddItem("movebackward1", Translate(client, "%t", "Move Backward 1 Unit"));
+	menu.AddItem("movebackward10", Translate(client, "%t", "Move Backward 10 Unit"));
+	menu.AddItem("movebackward30", Translate(client, "%t", "Move Backward 30 Unit"));
+	
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	menu.DisplayAt(client, g_iMoveMenuPosition[client], MENU_TIME_FOREVER);
@@ -2012,18 +2016,18 @@ void DeleteLookingEntity(int client)
 
 				char m_ModelName[PLATFORM_MAX_PATH];
 				GetEntPropString(Object, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
-				PrintToChat(client, "[SM] 物件(%d) 模組: %s", Object, m_ModelName);
+				PrintToChat(client, "[SM] %T", "Object Model", client, Object, m_ModelName);
 
 				float position[3];
 				GetEntPropVector(Object, Prop_Send, "m_vecOrigin", position);
-				PrintToChat(client, "[SM] 物件(%d) 位置: %f, %f, %f", Object, position[0], position[1], position[2]);
+				PrintToChat(client, "[SM] %T", "Object Position", client, Object, position[0], position[1], position[2]);
 
 				float angle[3];
 				GetEntPropVector(Object, Prop_Data, "m_angRotation", angle);
-				PrintToChat(client, "[SM] 物件(%d) 角度: %f, %f, %f", Object, angle[0], angle[1], angle[2]);
+				PrintToChat(client, "[SM] %T", "Object Angle", client, Object, angle[0], angle[1], angle[2]);
 
 				AcceptEntityInput(Object, "KillHierarchy");
-				PrintToChat(client, "[SM] 成功地移除了物件(%d)", Object);
+				PrintToChat(client, "[SM] %T", "Successfully removed an object", client, Object);
 				if(Object == g_iLastObject[client])
 				{
 					g_iLastObject[client] = -1;
@@ -2046,7 +2050,7 @@ void DeleteLookingEntity(int client)
 		int Object = GetClientAimTarget(client, false);
 		if(Object == -2)
 		{
-			PrintToChat(client, "[SM] 這個插件在這款遊戲上行不通");
+			PrintToChat(client, "[SM] %T","This plugin won't work in this game",client);
 			SetFailState("Unhandled Behaviour");
 		}
 		if(Object > 0 && IsValidEntity(Object))
@@ -2064,7 +2068,7 @@ void DeleteLookingEntity(int client)
 				g_vecEntityAngles[Object][1] = 0.0;
 				g_vecEntityAngles[Object][2] = 0.0;
 				AcceptEntityInput(Object, "KillHierarchy");
-				PrintToChat(client, "[SM] 成功地移除了物件");
+				PrintToChat(client, "[SM] %T", "Successfully removed an object", client, Object);
 				if(Object == g_iLastObject[client])
 				{
 					g_iLastObject[client] = -1;
@@ -2080,7 +2084,7 @@ void DeleteLookingEntity(int client)
 			}
 		}
 	}
-	PrintToChat(client, "[SM] 你準心並沒有指向一個合法的物件");
+	PrintToChat(client, "[SM] %T","You are not looking to a valid object",client);
 }
 
 void DeleteAllProps()
@@ -2152,7 +2156,7 @@ void DeleteLastProp(int client)
 		|| strcmp(class, "prop_dynamic_override") == 0)
 		{
 			AcceptEntityInput(g_iLastObject[client], "KillHierarchy");
-			PrintToChat(client, "[SM] 成功地刪除了上一個生成的物件");
+			PrintToChat(client, "[SM] %T","Succesfully deleted the last spawned object",client);
 			g_iLastObject[client] = -1;
 			g_vecLastEntityAngles[client][0] = 0.0;
 			g_vecLastEntityAngles[client][1] = 0.0;
@@ -2172,7 +2176,7 @@ void DeleteLastProp(int client)
 		}
 		else
 		{
-			PrintToChat(client, "[SM] 上一個生成的物件 %i 已經不再是一個合法的東西!", Object);
+			PrintToChat(client, "[SM] %T", "The last spawned object index is not an object anymore!", client, Object);
 			g_iLastObject[client] = -1;
 			g_vecLastEntityAngles[client][0] = 0.0;
 			g_vecLastEntityAngles[client][1] = 0.0;
@@ -2186,11 +2190,11 @@ void DeleteLastProp(int client)
 	}
 	else if(Object > 0 && !IsValidEntity(Object))
 	{
-		PrintToChat(client, "[SM] 上一個生成的物件已經不合法了");
+		PrintToChat(client, "[SM] %T","The last object is not valid anymore",client);
 	}
 	else if(Object <= 0)
 	{
-		PrintToChat(client, "[SM] 你還沒生成過任何物件，You idiot!");
+		PrintToChat(client, "[SM] %T","You haven't spawned anything yet",client);
 	}
 }
 
@@ -2236,7 +2240,7 @@ void SaveMapStripper(int client)
 	
 	if(FileExists(FileName))
 	{
-		PrintHintText(client, "檔案已存在. 舊的內容不會被刪除.");
+		PrintHintText(client, "%T", "The file already exists.", client);
 	}
 	#if DEBUG
 	LogSpawn("[DEBUG] <SaveMapStripper> File stated, proceed");
@@ -2323,7 +2327,7 @@ void SaveMapStripper(int client)
 	#endif
 	FlushFile(file);
 	CloseHandle(file);
-	PrintToChat(client, "\x03[SM] 已成功儲存所有物件 (%s)", FileName);
+	PrintToChat(client, "\x03[SM] %T (%s)", "Succesfully saved the map data", client, FileName);
 	#if DEBUG
 	LogSpawn("[DEBUG] <SaveMapStripper> END");
 	#endif
@@ -2346,7 +2350,7 @@ void SaveRoutingPath(int client, int type)
 	BuildPath(Path_SM, FileName, sizeof(FileName), "../stripper/routing/%s.cfg", map);
 	if(FileExists(FileName))
 	{
-		PrintHintText(client, "檔案已存在. 舊的內容不會被刪除.");
+		PrintHintText(client, "%T", "The file already exists.", client);
 		Exists = true;
 	}
 	file = OpenFile(FileName, "a+");
@@ -2502,7 +2506,7 @@ void SaveRoutingPath(int client, int type)
 	}
 	FlushFile(file);
 	CloseHandle(file);
-	PrintToChat(client, "\x03[SM] 已成功儲存所有物件 (%s)", FileName);
+	PrintToChat(client, "\x03[SM] %T (%s)", "Succesfully saved the map data", client, FileName);
 }
 
 void SavePluginProps(int client)
@@ -2605,7 +2609,7 @@ void SavePluginProps(int client)
 	
 	FlushFile(file);
 	CloseHandle(file);
-	PrintToChat(client, "\x03[SM] 已成功儲存所有物件 (%s)", FileNameT);
+	PrintToChat(client, "\x03[SM] %T (%s)", "Succesfully saved the map data", client, FileNameT);
 }
 
 public Action CmdLoad(int client, int args)
@@ -2750,7 +2754,7 @@ public Action CmdRemoveLook(int client, int args)
 
 public Action CmdRemoveAll(int client, int args)
 {
-	PrintToChat(client, "\x04[SM] 你確定要刪除所有生成過的物件?");
+	PrintToChat(client, "\x04[SM] %T","Are you sure(Delete All)?",client);
 	BuildDeleteAllCmd(client);
 	return Plugin_Handled;
 }
@@ -2758,9 +2762,9 @@ public Action CmdRemoveAll(int client, int args)
 Menu BuildDeleteAllCmd(int client)
 {
 	Menu menu = new Menu(MenuHandler_cmd_Ask);
-	menu.SetTitle("你確定?");
-	menu.AddItem("sm_spyes", "對啦!");
-	menu.AddItem("sm_spno", "不對喔~");
+	menu.SetTitle("%T", "Are you sure?", client);
+	menu.AddItem("sm_spyes", Translate(client, "%t", "Yes"));
+	menu.AddItem("sm_spno", Translate(client, "%t", "No"));
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -2776,11 +2780,11 @@ public int MenuHandler_cmd_Ask(Menu menu, MenuAction action, int param1, int par
 			if(strcmp(menucmd, "sm_spyes")== 0)
 			{
 				DeleteAllProps();
-				PrintToChat(param1, "[SM] 成功地刪除了所有生成過的物件");
+				PrintToChat(param1, "[SM] %T", "Successfully deleted all spawned objects", param1);
 			}
 			else
 			{
-				PrintToChat(param1, "[SM] 取消!取消!取消!");
+				PrintToChat(param1, "[SM] %T", "Canceled", param1);
 			}
 		}
 		case MenuAction_Cancel:
@@ -3085,4 +3089,12 @@ public void BuildFileDirectories()
 			CreateDirectory(FolderNames[Num], 509);
 		}
 	}
+}
+
+stock char[] Translate(int client, const char[] format, any ...)
+{
+	char buffer[192];
+	SetGlobalTransTarget(client);
+	VFormat(buffer, sizeof(buffer), format, 3);
+	return buffer;
 }
