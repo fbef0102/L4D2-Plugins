@@ -3,9 +3,15 @@ Let admins spawn any kind of objects and saved to cfg
 -Video-
 Unlimited Map C8 by Harry: https://www.youtube.com/watch?v=UTUjd6hlpt0
 
+-L4D2-Unlimited-Map-
+https://github.com/fbef0102/L4D2-Unlimited-Map
+
 -ChangeLog-
-v3.3
+v3.4
 -Remake Code
+-Translation Support
+-some menu has back button
+-menu won't be disappeared if I spawn an object
 -Add more options
 -More objects
 
@@ -16,14 +22,13 @@ v2.0
 type !admin to call adm menu and you will see "生成物件" option
 
 ---Create Object---
-1. 管理員輸入!admin->生成物件->生成物件->選擇其中一項
-2. 動態（會受重力影響），穿透（擺好看），固態（不受重力影響）
-3. 推薦選擇固態，避免發生模組不見的問題
+1. Admin types !admin in chat->Spawn Objects->Spawn Objects->Select the spawn method
+2. Physics（affected by gravity），Non-solid（You can go through it），Solid（won't be affected by gravity）
+3. I recommend "Solid" to prevent some models disappeared
 
 ---Save Object---
-1. 管理員輸入!admin->生成物件->儲存物件
-2. 推薦選擇Stripper File，如果沒有請自行上網安裝stripper插件
-(http://www.bailopan.net/stripper/snapshots/1.2/)
+1. Admin types !admin in chat->Spawn Objects->Save Objects->Select The Save Method
+2. I recommend "Save Stripper File", Don't know how to install stripper read this: http://www.bailopan.net/stripper/snapshots/1.2/
 
 -Convars-
 cfg\sourcemod\l4d2_spawn_props.cfg
@@ -67,6 +72,15 @@ l4d2_spawn_props_static "1"
 l4d2_spawn_props_version "3.3"
 
 
+***中文說明***
+---如何創造物件---
+1. 管理員輸入!admin->生成物件->生成物件->選擇其中一項
+2. 動態（會受重力影響），穿透（擺好看），固態（不受重力影響）
+3. 推薦選擇固態，避免發生模組不見的問題
+
+---如何儲存物件---
+1. 管理員輸入!admin->生成物件->儲存物件
+2. 推薦選擇Stripper File，不知道stripper插件請閱讀: http://www.bailopan.net/stripper/snapshots/1.2/)
 
 
 
