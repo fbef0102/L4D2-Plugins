@@ -1,5 +1,8 @@
 Adjustable melee swing rate for each melee weapon.
 
+-ChangeLog-
+AlliedModder Post: https://forums.alliedmods.net/showthread.php?t=332737
+
 -Convar-
 cfg/sourcemod/l4d2_melee_swing.cfg
 // 0=Plugin off, 1=Plugin on.
