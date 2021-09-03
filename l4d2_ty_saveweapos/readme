@@ -1,0 +1,21 @@
+L4D2 coop save weapon when map transition if more than 4 players
+
+-Changelog-
+v5.1
+-Remake code
+-Add ConVar and generate cfg
+-Support every round start if survivors wipe out
+
+v4.1
+-Original Post: https://forums.alliedmods.net/showthread.php?t=263860
+
+-ConVar-
+cfg/sourcemod/l4d2_ty_saveweapon.cfg
+// Do not restore weapons and items to new player after survivors have left start safe area for at least x seconds. (0=Always restore)
+l4d2_ty_saveweapon_game_seconds_block "100"
+
+// If 1, restore full health when end of chapter.
+l4d2_ty_saveweapon_health "0"
+
+-Command-
+None
