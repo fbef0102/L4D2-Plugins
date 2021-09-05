@@ -75,7 +75,7 @@ public Plugin myinfo =
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.1",
+	version = "5.2",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
@@ -574,18 +574,24 @@ void HxGiveC(int client)
 			HxFakeCHEAT(client, "give", "pistol");
 			HxFakeCHEAT(client, "give", "pistol");
 			iSlot1 = GetPlayerWeaponSlot(client, 1);
-			SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_prop1[client]);
-			SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_prop5[client]);
+			if(iSlot1 > 0)
+			{
+				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_prop1[client]);
+				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_prop5[client]);
+			}
 		}
 		else
 		{
 			HxFakeCHEAT(client, "give", sg_slot1[client]);
 			iSlot1 = GetPlayerWeaponSlot(client, 1);
-			if (!strcmp(sg_slot1[client], "chainsaw", true) || !strcmp(sg_slot1[client], "pistol", true) || !strcmp(sg_slot1[client], "pistol_magnum", true))
+			if(iSlot1 > 0)
 			{
-				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_prop1[client]);
+				if (!strcmp(sg_slot1[client], "chainsaw", true) || !strcmp(sg_slot1[client], "pistol", true) || !strcmp(sg_slot1[client], "pistol_magnum", true))
+				{
+					SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_prop1[client]);
+				}
+				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_prop5[client]);
 			}
-			SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_prop5[client]);
 		}
 	}
 
