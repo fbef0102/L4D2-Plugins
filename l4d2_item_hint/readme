@@ -1,11 +1,12 @@
 When using 'Look' in vocalize menu, print corresponding item to chat area.
 
 -ChangeLog-
-v1.3
+v0.3
 -Add all gun weapons, melee weapons, minigun, ammo and items.
+-Add cooldown.
 
-v0.1
--Original Post: https://forums.alliedmods.net/showthread.php?t=333669
+v0.2
+-Original Post: https://forums.alliedmods.net/showpost.php?p=2756974&postcount=15
 
 -Convars-
 cfg\sourcemod\l4d2_item_hint.cfg
