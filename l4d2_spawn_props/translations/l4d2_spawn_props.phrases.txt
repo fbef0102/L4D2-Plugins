@@ -605,4 +605,10 @@
 		"zho"	"已成功儲存所有物件"
 		"chi"	"已成功储存所有物件"
 	}
+	"The last spawned object index is not an object anymore!"
+	{
+		"en"	"The last spawned object index is not an object anymore!"
+		"zho"	"上一個生成的物件已不再是物體!"
+		"chi"	"上一个生成的物件已不再是物体!"
+	}
 }
