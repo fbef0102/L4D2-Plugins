@@ -1,21 +1,37 @@
 L4D2 coop save weapon when map transition if more than 4 players
 
 -Changelog-
-v5.2
+v5.3
 -Remake code
+-Add the last stand two melee
 -Add ConVar and generate cfg
--Support every round start if survivors wipe out
+-Save health
+-Save Character Model
+-Support Bots
+-Doesn't support custom melee save
 
 v4.1
 -Original Post: https://forums.alliedmods.net/showthread.php?t=263860
 
+-Require-
+left4dhooks: https://forums.alliedmods.net/showthread.php?p=2684862
+
 -ConVar-
 cfg/sourcemod/l4d2_ty_saveweapon.cfg
-// Do not restore weapons and items to new player after survivors have left start safe area for at least x seconds. (0=Always restore)
+// Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)
 l4d2_ty_saveweapon_game_seconds_block "100"
 
 // If 1, restore full health when end of chapter.
 l4d2_ty_saveweapon_health "0"
+
+// If 1, save weapons and health for bots as well.
+l4d2_ty_saveweapon_save_bot "1"
+
+// If 1, save character model and restore.
+l4d2_ty_saveweapon_save_character "0"
+
+// If 1, save health and restore.
+l4d2_ty_saveweapon_save_health "1"
 
 -Command-
 None
