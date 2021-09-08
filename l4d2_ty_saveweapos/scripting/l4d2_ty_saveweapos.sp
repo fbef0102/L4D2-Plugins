@@ -48,7 +48,21 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 	"models/w_models/weapons/w_eq_adrenaline.mdl"
 };
 
-ConVar g_hGameMode, g_hFullHealth, g_hGameTimeBlock;
+static char survivor_names[8][] = { "Nick", "Rochelle", "Coach", "Ellis", "Bill", "Zoey", "Francis", "Louis"};
+static char survivor_models[8][] =
+{
+	"models/survivors/survivor_gambler.mdl",
+	"models/survivors/survivor_producer.mdl",
+	"models/survivors/survivor_coach.mdl",
+	"models/survivors/survivor_mechanic.mdl",
+	"models/survivors/survivor_namvet.mdl",
+	"models/survivors/survivor_teenangst.mdl",
+	"models/survivors/survivor_biker.mdl",
+	"models/survivors/survivor_manager.mdl"
+};
+
+ConVar g_hGameMode, g_hFullHealth, g_hGameTimeBlock, 
+	g_hSaveBot, g_hSaveHealth, g_hSaveCharacter;
 
 char sg_buffer0[64];
 char sg_slot0[MAXPLAYERS+1][64];
@@ -65,6 +79,22 @@ int ig_prop5[MAXPLAYERS+1]; /* slot 1 m_nSkin */
 int ig_Ammo0[MAXPLAYERS+1]; /* slot 0 ammo*/
 int ig_AmmoOffset0[MAXPLAYERS+1]; /* slot 0 ammo offset*/
 int g_iSpawned[MAXPLAYERS+1];
+int g_iRecorded[MAXPLAYERS+1];
+
+enum Enum_Health
+{
+	iHealth,
+	iHealthTemp,
+	iHealthTime,
+	iReviveCount,
+	iGoingToDie,
+	iThirdStrike,
+	iHealthMAX,
+	
+}
+int 	g_iHealthInfo[MAXPLAYERS+1][view_as<int>(iHealthMAX)]; //health
+int 	g_iProp[MAXPLAYERS+1]; //character index
+char 	g_sModelInfo[MAXPLAYERS+1][64]; //character model
 
 bool ig_protection, g_bGiveWeaponBlock;
 int ammoOffset, g_iCountDownTime;	
@@ -75,7 +105,7 @@ public Plugin myinfo =
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.2",
+	version = "5.3",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
@@ -97,14 +127,21 @@ public void OnPluginStart()
 {
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 
-	g_hFullHealth = CreateConVar("l4d2_ty_saveweapon_health", "0", "If 1, restore full health when end of chapter.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hGameTimeBlock = CreateConVar("l4d2_ty_saveweapon_game_seconds_block", "100", "Do not restore weapons and items to a player after survivors have left start safe area for at least x seconds. (0=Always restore)", FCVAR_NOTIFY, true, 0.0);
+	g_hFullHealth = 	CreateConVar("l4d2_ty_saveweapon_health", "1", "If 1, restore full health when end of chapter.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hGameTimeBlock = 	CreateConVar("l4d2_ty_saveweapon_game_seconds_block", "100", "Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)", FCVAR_NOTIFY, true, 0.0);
+	g_hSaveBot = 		CreateConVar("l4d2_ty_saveweapon_save_bot", "1", "If 1, save weapons and health for bots as well.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSaveHealth = 	CreateConVar("l4d2_ty_saveweapon_save_health",	"1", "If 1, save health and restore.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSaveCharacter = 	CreateConVar("l4d2_ty_saveweapon_save_character",	"0", "If 1, save character model and restore.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	
 	AutoExecConfig(true,	"l4d2_ty_saveweapon");
 	
 	g_hGameMode = FindConVar("mp_gamemode");
 	g_hGameMode.AddChangeHook(ConVarChanged_Allow);
 	g_hFullHealth.AddChangeHook(ConVarChanged_Cvars);
 	g_hGameTimeBlock.AddChangeHook(ConVarChanged_Cvars);
+	g_hSaveBot.AddChangeHook(ConVarChanged_Cvars);
+	g_hSaveHealth.AddChangeHook(ConVarChanged_Cvars);
+	g_hSaveCharacter.AddChangeHook(ConVarChanged_Cvars);
 	
 	HookEvent("round_start",  			Event_RoundStart,	 	EventHookMode_PostNoCopy);
 	HookEvent("player_spawn", 			Event_PlayerSpawn, 		EventHookMode_PostNoCopy);
@@ -149,6 +186,11 @@ public void OnMapStart()
 		PrecacheModel(g_sWeaponModels2[i], true);
 	}
 	
+	for( int i = 0; i < 8; i++ )
+	{
+		PrecacheModel(survivor_models[i], true);
+	}
+	
 	PrecacheModel("models/weapons/melee/v_bat.mdl", true);
 	PrecacheModel("models/weapons/melee/v_cricket_bat.mdl", true);
 	PrecacheModel("models/weapons/melee/v_crowbar.mdl", true);
@@ -161,7 +203,8 @@ public void OnMapStart()
 	PrecacheModel("models/weapons/melee/v_tonfa.mdl", true);
 	PrecacheModel("models/weapons/melee/v_pitchfork.mdl", true);
 	PrecacheModel("models/weapons/melee/v_shovel.mdl", true);
-
+	PrecacheModel("models/v_models/v_knife_t.mdl", true);
+	
 	PrecacheModel("models/weapons/melee/w_bat.mdl", true);
 	PrecacheModel("models/weapons/melee/w_cricket_bat.mdl", true);
 	PrecacheModel("models/weapons/melee/w_crowbar.mdl", true);
@@ -174,6 +217,7 @@ public void OnMapStart()
 	PrecacheModel("models/weapons/melee/w_tonfa.mdl", true);
 	PrecacheModel("models/weapons/melee/w_pitchfork.mdl", true);
 	PrecacheModel("models/weapons/melee/w_shovel.mdl", true);
+	PrecacheModel("models/w_models/weapons/w_knife_t.mdl", true);
 
 	PrecacheGeneric("scripts/melee/baseball_bat.txt", true);
 	PrecacheGeneric("scripts/melee/cricket_bat.txt", true);
@@ -212,11 +256,14 @@ public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char
 }
 
 int g_iGameTimeBlock;
-bool g_bFullhealth;
+bool g_bFullhealth, g_bSaveBot, g_bSaveHealth, g_bSaveCharacter;
 void GetCvars()
 {
 	g_bFullhealth = g_hFullHealth.BoolValue;
 	g_iGameTimeBlock = g_hGameTimeBlock.IntValue;
+	g_bSaveBot = g_hSaveBot.BoolValue;
+	g_bSaveHealth = g_hSaveHealth.BoolValue;
+	g_bSaveCharacter = g_hSaveCharacter.BoolValue;
 }
 
 void IsAllowed()
@@ -265,15 +312,17 @@ public void OnGamemode(const char[] output, int caller, int activator, float del
 
 public void OnClientPutInServer(int client)
 {
-	if (g_iCurrentMode == 1 && !IsFakeClient(client))
+	if (g_iCurrentMode == 1 && IsClientInGame(client))
 	{
+		if(IsFakeClient(client) && !g_bSaveBot) return;
+		
 		CreateTimer(2.5, HxTimerConnected, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
 
 public void OnClientDisconnect(int client)
 {
-	if (!IsFakeClient(client))
+	if (IsClientInGame(client) && GetClientTeam(client) == 2)
 	{
 		if (ig_protection == false)
 		{
@@ -300,6 +349,18 @@ void HxCleaning(int client)
 	sg_slot2[client][0] = '\0';
 	sg_slot3[client][0] = '\0';
 	sg_slot4[client][0] = '\0';
+	
+	g_iHealthInfo[client][iHealth] = 100;
+	g_iHealthInfo[client][iHealthTemp] = 0;
+	g_iHealthInfo[client][iHealthTime] = 0;
+	g_iHealthInfo[client][iReviveCount] = 0;
+	g_iHealthInfo[client][iGoingToDie] = 0;
+	g_iHealthInfo[client][iThirdStrike] = 0;
+	
+	g_iProp[client] = 0;
+	g_sModelInfo[client][0] = '\0';
+	g_iRecorded[client] = 0;
+	
 }
 
 void HxGetSlot0Ammo (int client, const char[] sWeaponName)
@@ -472,21 +533,49 @@ void HxGetSlot1(int client, int iSlot1)
 		return;
 	}
 
-	GetEdictClassname(iSlot1, sg_slot1[client], 64);
-	LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);
+	//GetEdictClassname(iSlot1, sg_slot1[client], 64);
+	//LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);
 }
 
 void HxSaveC(int client)
 {
+	g_iRecorded[client] = 1;
+	
 	int iSlot0;
 	int iSlot1;
 	int iSlot2;
 	int iSlot3;
 	int iSlot4;
 
-	if (g_bFullhealth)
+	if(g_bSaveCharacter)
 	{
-		HxFakeCHEAT(client, "give", "health");
+		// Store model
+		GetClientModel(client, g_sModelInfo[client], 64);
+		
+		// Store prop
+		g_iProp[client] = GetEntProp(client, Prop_Send, "m_survivorCharacter");
+	}
+	
+	if (g_bSaveHealth)
+	{
+		// Save health
+		g_iHealthInfo[client][iReviveCount] =  GetEntProp(client, Prop_Send, "m_currentReviveCount");
+		g_iHealthInfo[client][iThirdStrike] =  GetEntProp(client, Prop_Send, "m_bIsOnThirdStrike");
+
+		if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) 
+		{
+			g_iHealthInfo[client][iHealth]       =  1;	
+			g_iHealthInfo[client][iHealthTemp]   = 30;
+			g_iHealthInfo[client][iHealthTime]   =  0;
+			g_iHealthInfo[client][iGoingToDie]   =  1;
+		}
+		else 
+		{
+			g_iHealthInfo[client][iHealth]		= GetEntData(client, FindDataMapInfo(client, "m_iHealth"), 4);
+			g_iHealthInfo[client][iHealthTemp]	= RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") );
+			g_iHealthInfo[client][iHealthTime]  = RoundToNearest( GetGameTime() - GetEntPropFloat(client, Prop_Send, "m_healthBufferTime") );
+			g_iHealthInfo[client][iGoingToDie]  = GetEntProp(client, Prop_Send, "m_isGoingToDie");
+		}
 	}
 	
 	iSlot0 = GetPlayerWeaponSlot(client, 0);
@@ -533,6 +622,39 @@ void HxFakeCHEAT(int client, const char[] sCmd, const char[] sArg)
 
 void HxGiveC(int client)
 {
+	if(g_iRecorded[client] == 0) return;
+	
+	// Update model & props
+	if(g_bSaveCharacter)
+	{
+		SetEntProp(client, Prop_Send, "m_survivorCharacter", g_iProp[client]);  
+		SetEntityModel(client, g_sModelInfo[client]);
+		if (IsFakeClient(client))		// if bot, replace name
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				if (StrEqual(g_sModelInfo[client], survivor_models[i])) SetClientInfo(client, "name", survivor_names[i]);
+			}
+		}
+	}
+	
+	// Restore health
+	if (g_bSaveHealth)
+	{
+		if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
+
+		SetEntProp(client, Prop_Send, "m_currentReviveCount", g_iHealthInfo[client][iReviveCount]);
+		SetEntProp(client, Prop_Send, "m_isGoingToDie", g_iHealthInfo[client][iGoingToDie]);
+		SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", g_iHealthInfo[client][iThirdStrike]);
+		
+		SetEntProp(client, Prop_Send, "m_iHealth", g_iHealthInfo[client][iHealth], 1);
+		SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 1.0*g_iHealthInfo[client][iHealthTemp]);
+		SetEntPropFloat(client, Prop_Send, "m_healthBufferTime", GetGameTime() - 1.0*g_iHealthInfo[client][iHealthTime]);
+		
+		// Disable heart beat sound if not B&W
+		if (!g_iHealthInfo[client][iThirdStrike]) for (int i = 0; i <= 255; i++) StopSound(client, i, "player/heartbeatloop.wav");
+	}
+	
 	int iSlot0;
 	int iSlot1;
 	int iSlot2;
@@ -560,11 +682,14 @@ void HxGiveC(int client)
 	{
 		HxFakeCHEAT(client, "give", sg_slot0[client]);
 		iSlot0 = GetPlayerWeaponSlot(client, 0);
-		SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_prop0[client], 4);
-		SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_prop2[client], 4);
-		SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_prop3[client], 4);
-		SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_prop4[client], 4);
-		SetEntData(client, ammoOffset+(ig_AmmoOffset0[client]*4), ig_Ammo0[client]);
+		if(iSlot0 > 0)
+		{
+			SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_prop0[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_prop2[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_prop3[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_prop4[client], 4);
+			SetEntData(client, ammoOffset+(ig_AmmoOffset0[client]*4), ig_Ammo0[client]);
+		}
 	}
 
 	if (sg_slot1[client][0] != '\0')
@@ -644,6 +769,8 @@ public Action HxTimerConnected(Handle timer, int userid)
 				return Plugin_Stop;
 			}
 		}
+		
+		if(iTeam == 1 && IsFakeClient(client)) return Plugin_Stop;
 	}
 
 	return Plugin_Continue;
@@ -726,13 +853,32 @@ public void Event_MapTransition(Event event, const char[] name, bool dontBroadca
 
 	if (g_iCurrentMode == 1)
 	{
-		for (int i = 1; i <= MaxClients; i++)
+		if (g_bFullhealth)
 		{
-			HxCleaning(i);
-			if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				HxSaveC(i);
+				if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+				{
+					HxFakeCHEAT(i, "give", "health");
+					SetEntPropFloat(i, Prop_Send, "m_healthBufferTime", GetGameTime());
+					SetEntPropFloat(i, Prop_Send, "m_healthBuffer", 0.0);
+				}
 			}
+		}
+		CreateTimer(1.0, Timer_Event_MapTransition, _, TIMER_FLAG_NO_MAPCHANGE); //delay is necessary for waiting all afk human players to take over bot
+	}
+}
+
+public Action Timer_Event_MapTransition(Handle timer)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		HxCleaning(i);
+		if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+		{
+			if(IsFakeClient(i) && !g_bSaveBot) continue;
+				
+			HxSaveC(i);
 		}
 	}
 }
