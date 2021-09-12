@@ -38,7 +38,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d2_explosive_cars</b>: Cars explode after they take some damage
 * <b>l4d2_item_hint</b>: When using 'Look' in vocalize menu, print corresponding item to chat area.
 * <b>l4d_flying_car</b>: Replaces getaway chopper by flying car in L4D2 C8 No Mercy
-* <b>l4d2_ty_saveweapos</b>: L4D2 coop save weapon when map transition if more than 4 players
+* <b>l4d2_ty_saveweapons</b>: L4D2 coop save weapon when map transition if more than 4 players
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
