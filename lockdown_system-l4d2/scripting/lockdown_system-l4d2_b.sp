@@ -1,6 +1,5 @@
 /*	The Last Stand Gamedate signature fix
 *	(Thanks to Shadowysn's work, [L4D1/2] Direct Infected Spawn (Limit-Bypass), https://forums.alliedmods.net/showthread.php?t=320849)
-*	(Stupid IDIOT TLS team, pushing unuseful updates no one really cares or asks for. Come on! Value)
 */
 
 #pragma semicolon 1
@@ -11,7 +10,7 @@
 #include <glow>
 #include <left4dhooks>
 #include <multicolors>
-#define PLUGIN_VERSION "4.2"
+#define PLUGIN_VERSION "4.3"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -20,7 +19,6 @@
 #define MODEL_SAFEROOM_DOOR_2 "models/props_doors/checkpoint_door_-02.mdl"
 #define MODEL_SAFEROOM_DOOR_3 "models/lighthouse/checkpoint_door_lighthouse02.mdl"
 #define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
-#define Resistance_Server 1
 
 ConVar lsAnnounce, lsAntiFarmDuration, lsDuration, lsMobs, lsTankDemolitionBefore, lsTankDemolitionAfter,
 	lsType, lsNearByAllSurvivor, lsHint, lsGetInLimit, lsDoorOpeningTeleport, lsDoorOpeningTankInterval,
@@ -38,10 +36,10 @@ char sKeyMan[128], sLastName[2048][128];
 Handle hAntiFarmTime = null, hLockdownTime = null;
 static Handle hCreateTank = null;
 
-#if Resistance_Server
-	ConVar lsMapTwoTanks;
-	bool g_bMapTwoTanks;
-#endif
+ConVar lsMapTwoTanks;
+bool g_bMapTwoTanks;
+
+GlobalForward g_hForwardOpenSafeRoomFinish;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -52,13 +50,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		return APLRes_SilentFailure;
 	}
 
-	CreateNative("Is_End_SafeRoom_Door_Open", Native_Is_End_SafeRoom_Door_Open);
+	g_hForwardOpenSafeRoomFinish	= new GlobalForward("L4D2_OnLockDownOpenDoorFinish", ET_Ignore, Param_String);
 	return APLRes_Success;
-}
-
-public int Native_Is_End_SafeRoom_Door_Open(Handle plugin, int numParams)
-{
-	return bLDFinished;
 }
 
 public Plugin myinfo = 
@@ -92,9 +85,7 @@ public void OnPluginStart()
 	lsDoorLockColor = CreateConVar(	"lockdown_system-l4d2_lock_glow_color",	"255 0 0",	"The default glow color for saferoom door when lock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorUnlockColor = CreateConVar( "lockdown_system-l4d2_unlock_glow_color",	"200 200 200",	"The default glow color for saferoom door when unlock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorGlowRange = CreateConVar( "lockdown_system-l4d2_glow_range", "550", "The default value for saferoom door glow range.", FCVAR_NOTIFY, true, 0.0);
-#if Resistance_Server
 	lsMapTwoTanks = CreateConVar("lockdown_system-l4d2_map_two_Tank",	"c1m3_mall",	"Two tanks during opening door in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
-#endif
 
 	GetCvars();
 	lsAnnounce.AddChangeHook(OnLSCVarsChanged);
@@ -187,7 +178,6 @@ public void OnMapStart()
 		}
 	}
 
-#if Resistance_Server
 	g_bMapTwoTanks = false;
 	lsMapTwoTanks.GetString(sCvar, sizeof(sCvar));
 	if( sCvar[0] != '\0' )
@@ -204,7 +194,6 @@ public void OnMapStart()
 			}
 		}
 	}
-#endif
 
 	if(L4D_IsMissionFinalMap())
 	{
@@ -388,14 +377,11 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 
 				if(bTankDemolitionBefore && !bSpawnTank) 
 				{
-#if Resistance_Server
+
 					if(g_bMapTwoTanks)
 						ExecuteSpawn(true , 2);
 					else
 						ExecuteSpawn(true , 1);
-#else	
-					ExecuteSpawn(true , 1);
-#endif
 
 					bSpawnTank = true;
 				}
@@ -543,6 +529,10 @@ public Action LockdownOpening(Handle timer, any entity)
 			if(blsHint) CPrintToChatAll("{default}[{olive}TS{default}]{green} <{olive}%s{green}>{default} %t", sKeyMan, "open the door already");
 			CreateTimer(5.0, LaunchTankDemolition, _, TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(5.0, LaunchSlayTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+
+			Call_StartForward(g_hForwardOpenSafeRoomFinish);
+			Call_PushString(sKeyMan);
+			Call_Finish();
 		}
 		return Plugin_Stop;
 	}
@@ -556,13 +546,12 @@ public Action LockdownOpening(Handle timer, any entity)
 	if(iDoorOpeningTankInterval > 0 && _iDoorOpeningTankInterval >= iDoorOpeningTankInterval)
 	{
 		CreateTimer(0.1, Timer_SpawnTank, _,TIMER_FLAG_NO_MAPCHANGE);
-#if Resistance_Server
+
 		if(g_bMapTwoTanks)
 		{
 			CreateTimer(0.2, Timer_SpawnTank, _,TIMER_FLAG_NO_MAPCHANGE);
-			CreateTimer(0.3, Timer_SpawnTank, _,TIMER_FLAG_NO_MAPCHANGE);
 		}
-#endif
+		
 		_iDoorOpeningTankInterval = 0;
 	}
 	_iDoorOpeningTankInterval++;
