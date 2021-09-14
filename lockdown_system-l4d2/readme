@@ -90,4 +90,4 @@ None
  *
  * @noreturn
  */
-forward void R2comp_OnUnscrambleEnd(const char[] sKeyMan);
+forward void L4D2_OnLockDownOpenDoorFinish(const char[] sKeyMan);
