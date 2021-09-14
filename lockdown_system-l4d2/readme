@@ -82,8 +82,8 @@ lockdown_system-l4d2_unlock_glow_color "200 200 200"
 -Command-
 None
 
--natives & forwards API-
-**
+-Natives & Forwards API-
+/**
  * @brief Called when saferoom door is completely opened
  *
  * @param sKeyMan    who opened the saferoom door.
