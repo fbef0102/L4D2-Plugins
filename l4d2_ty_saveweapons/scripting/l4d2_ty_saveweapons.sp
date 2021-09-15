@@ -8,10 +8,11 @@
  * Fixed 2016 user Merudo
 */
 #pragma semicolon 1
+#pragma newdecls required
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
-#pragma newdecls required
+
 #define	MAX_WEAPONS2		29
 
 static char g_sWeaponModels2[MAX_WEAPONS2][] =
@@ -64,22 +65,21 @@ static char survivor_models[8][] =
 ConVar g_hGameMode, g_hFullHealth, g_hGameTimeBlock, 
 	g_hSaveBot, g_hSaveHealth, g_hSaveCharacter;
 
-char sg_buffer0[64];
-char sg_slot0[MAXPLAYERS+1][64];
-char sg_slot1[MAXPLAYERS+1][64];
-char sg_slot2[MAXPLAYERS+1][64];
-char sg_slot3[MAXPLAYERS+1][64];
-char sg_slot4[MAXPLAYERS+1][64];
-int ig_prop0[MAXPLAYERS+1]; /* m_iClip1 */
-int ig_prop1[MAXPLAYERS+1]; /* m_iClip1 saw */
-int ig_prop2[MAXPLAYERS+1]; /* m_upgradeBitVec */
-int ig_prop3[MAXPLAYERS+1]; /* m_nUpgradedPrimaryAmmoLoaded */
-int ig_prop4[MAXPLAYERS+1]; /* slot 0 m_nSkin */
-int ig_prop5[MAXPLAYERS+1]; /* slot 1 m_nSkin */
-int ig_Ammo0[MAXPLAYERS+1]; /* slot 0 ammo*/
-int ig_AmmoOffset0[MAXPLAYERS+1]; /* slot 0 ammo offset*/
-int g_iSpawned[MAXPLAYERS+1];
-int g_iRecorded[MAXPLAYERS+1];
+char sg_slot0[MAXPLAYERS+1][64];			/* slot0 weapon */
+char sg_slot1[MAXPLAYERS+1][64];			/* slot1 weapon*/
+char sg_slot2[MAXPLAYERS+1][64];			/* slot2 weapon */
+char sg_slot3[MAXPLAYERS+1][64];			/* slot3 weapon */
+char sg_slot4[MAXPLAYERS+1][64];			/* slot4 weapon */
+int ig_slots0_clip[MAXPLAYERS+1]; 			/* slot0 m_iClip */
+int ig_slots1_clip[MAXPLAYERS+1]; 			/* slot1 m_iClip */
+int ig_slots0_upgrade_bit[MAXPLAYERS+1]; 	/* slot0 m_upgradeBitVec */
+int ig_slots0_upgraded_ammo[MAXPLAYERS+1]; 	/* slot0 m_nUpgradedPrimaryAmmoLoaded */
+int ig_slots0_skin[MAXPLAYERS+1]; 			/* slot0 m_nSkin */
+int ig_slots1_skin[MAXPLAYERS+1]; 			/* slot1 m_nSkin */
+int ig_slots0_ammo[MAXPLAYERS+1]; 			/* slot0 ammo */
+int ig_slots0_ammo_offest[MAXPLAYERS+1]; 	/* slot0 ammo offset */
+bool g_bGiven[MAXPLAYERS+1];					/* client is already stored */
+bool g_bRecorded[MAXPLAYERS+1];				/* client is recorded to save */
 
 enum Enum_Health
 {
@@ -92,11 +92,11 @@ enum Enum_Health
 	iHealthMAX,
 	
 }
-int 	g_iHealthInfo[MAXPLAYERS+1][view_as<int>(iHealthMAX)]; //health
-int 	g_iProp[MAXPLAYERS+1]; //character index
-char 	g_sModelInfo[MAXPLAYERS+1][64]; //character model
+int 	g_iHealthInfo[MAXPLAYERS+1][view_as<int>(iHealthMAX)]; 	//client health
+int 	g_iProp[MAXPLAYERS+1]; 									//client character index
+char 	g_sModelInfo[MAXPLAYERS+1][64]; 						//client character model
 
-bool ig_protection, g_bGiveWeaponBlock;
+bool g_bGiveWeaponBlock, g_bMapTransition;
 int ammoOffset, g_iCountDownTime;	
 Handle PlayerLeftStartTimer = null, CountDownTimer = null;
 
@@ -105,11 +105,12 @@ public Plugin myinfo =
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.3",
+	version = "5.4",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
-bool bLate;
+GlobalForward g_hForwardSaveWeaponGive;
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	EngineVersion test = GetEngineVersion();
@@ -119,7 +120,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
 		return APLRes_SilentFailure;
 	}
-	bLate = late;
+
+	g_hForwardSaveWeaponGive = new GlobalForward("L4D2_OnSaveWeaponHxGiveC", ET_Ignore, Param_Cell);
 	return APLRes_Success;
 }
 
@@ -127,13 +129,13 @@ public void OnPluginStart()
 {
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 
-	g_hFullHealth = 	CreateConVar("l4d2_ty_saveweapon_health", "1", "If 1, restore full health when end of chapter.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hGameTimeBlock = 	CreateConVar("l4d2_ty_saveweapon_game_seconds_block", "100", "Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)", FCVAR_NOTIFY, true, 0.0);
-	g_hSaveBot = 		CreateConVar("l4d2_ty_saveweapon_save_bot", "1", "If 1, save weapons and health for bots as well.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hSaveHealth = 	CreateConVar("l4d2_ty_saveweapon_save_health",	"1", "If 1, save health and restore.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hSaveCharacter = 	CreateConVar("l4d2_ty_saveweapon_save_character",	"0", "If 1, save character model and restore.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hFullHealth = 	CreateConVar("l4d2_ty_saveweapons_health", "0", "If 1, restore 100 full health when end of chapter.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hGameTimeBlock = 	CreateConVar("l4d2_ty_saveweapons_game_seconds_block", "60", "Do not restore weapons and health after survivors have left start safe area for at least x seconds. (0=Always restore)", FCVAR_NOTIFY, true, 0.0);
+	g_hSaveBot = 		CreateConVar("l4d2_ty_saveweapons_save_bot", "1", "If 1, save weapons and health for bots as well.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSaveHealth = 	CreateConVar("l4d2_ty_saveweapons_save_health",	"1", "If 1, save health and restore. (can save >100 hp)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSaveCharacter = 	CreateConVar("l4d2_ty_saveweapons_save_character",	"0", "If 1, save character model and restore.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	
-	AutoExecConfig(true,	"l4d2_ty_saveweapon");
+	AutoExecConfig(true,	"l4d2_ty_saveweapons");
 	
 	g_hGameMode = FindConVar("mp_gamemode");
 	g_hGameMode.AddChangeHook(ConVarChanged_Allow);
@@ -150,35 +152,23 @@ public void OnPluginStart()
 	HookEvent("mission_lost", 			Event_RoundEnd,			EventHookMode_PostNoCopy); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
 	HookEvent("finale_vehicle_leaving", Event_RoundEnd,			EventHookMode_PostNoCopy); //救援載具離開之時  (沒有觸發round_end)
 	HookEvent("map_transition", 		Event_MapTransition, 	EventHookMode_PostNoCopy);
-	HookEvent("finale_win", 			Event_FinaleWin);
-	
-	if (bLate)
-	{
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			HxCleaning(i);
-		}
-	}
+
+	HxCleaningAll();
 }
 
 public void OnPluginEnd()
 {
 	ResetPlugin();
-	ResetTimer();
 }
 
 bool g_bMapStarted;
 public void OnMapStart()
 {
 	g_bMapStarted = true;
-
-	ig_protection = false;
+	
 	if (L4D_IsFirstMapInScenario())
 	{
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			HxCleaning(i);
-		}
+		HxCleaningAll();
 	}
 	
 	for( int i = 0; i < MAX_WEAPONS2; i++ )
@@ -237,7 +227,11 @@ public void OnMapEnd()
 {
 	g_bMapStarted = false;
 	ResetPlugin();
-	ResetTimer();
+
+	if(g_bMapTransition == false)
+	{
+		HxCleaningAll();
+	}
 }
 
 public void OnConfigsExecuted()
@@ -312,318 +306,162 @@ public void OnGamemode(const char[] output, int caller, int activator, float del
 
 public void OnClientPutInServer(int client)
 {
-	if (g_iCurrentMode == 1 && IsClientInGame(client))
+	if (g_iCurrentMode == 1 && IsClientInGame(client) && g_bGiveWeaponBlock == false && g_bGiven[client] == false)
 	{
 		if(IsFakeClient(client) && !g_bSaveBot) return;
 		
-		CreateTimer(2.5, HxTimerConnected, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+		CreateTimer(1.0, HxTimerRestore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
 
-public void OnClientDisconnect(int client)
+public Action HxTimerRestore(Handle timer, int userid)
 {
-	if (IsClientInGame(client) && GetClientTeam(client) == 2)
+	if(g_bGiveWeaponBlock) return Plugin_Stop;
+
+	int client = GetClientOfUserId(userid);
+	if (client && IsClientInGame(client))
 	{
-		if (ig_protection == false)
+		int iTeam = GetClientTeam(client);
+		if (iTeam == 2)
 		{
-			//HxCleaning(client);
-			g_iSpawned[client] = 1;
+			if (IsPlayerAlive(client))
+			{
+				HxGiveC(client);
+				return Plugin_Stop;
+			}
 		}
-	}
-}
-
-
-void HxCleaning(int client)
-{
-	ig_prop0[client] = 0;
-	ig_prop1[client] = 0;
-	ig_prop2[client] = 0;
-	ig_prop3[client] = 0;
-	ig_prop4[client] = 0;
-	ig_prop5[client] = 0;
-	ig_Ammo0[client] = 0;
-	ig_AmmoOffset0[client] = 0;
-
-	sg_slot0[client][0] = '\0';
-	sg_slot1[client][0] = '\0';
-	sg_slot2[client][0] = '\0';
-	sg_slot3[client][0] = '\0';
-	sg_slot4[client][0] = '\0';
-	
-	g_iHealthInfo[client][iHealth] = 100;
-	g_iHealthInfo[client][iHealthTemp] = 0;
-	g_iHealthInfo[client][iHealthTime] = 0;
-	g_iHealthInfo[client][iReviveCount] = 0;
-	g_iHealthInfo[client][iGoingToDie] = 0;
-	g_iHealthInfo[client][iThirdStrike] = 0;
-	
-	g_iProp[client] = 0;
-	g_sModelInfo[client][0] = '\0';
-	g_iRecorded[client] = 0;
-	
-}
-
-void HxGetSlot0Ammo (int client, const char[] sWeaponName)
-{
-	if (strcmp(sWeaponName, "weapon_smg", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 5;
-	}
-	else if (strcmp(sWeaponName, "weapon_pumpshotgun", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 7;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_autoshotgun", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 8;
-	}
-	else if (strcmp(sWeaponName, "weapon_hunting_rifle", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 9;
-	}
-	else if (strcmp(sWeaponName, "weapon_smg_silenced", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 5;
-	}
-	else if (strcmp(sWeaponName, "weapon_smg_mp5", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 5;
-	}
-	else if (strcmp(sWeaponName, "weapon_shotgun_chrome", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 7;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_ak47", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_desert", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_sniper_military", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 10;
-	}
-	else if (strcmp(sWeaponName, "weapon_grenade_launcher", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 17;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_sg552", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_m60", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 6;
-	}
-	else if (strcmp(sWeaponName, "weapon_sniper_awp", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 10;
-	}
-	else if (strcmp(sWeaponName, "weapon_sniper_scout", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 10;
-	}
-	else if (strcmp(sWeaponName, "weapon_shotgun_spas", true) == 0)
-	{
-		ig_AmmoOffset0[client] = 8;
-	}
-
-	ig_Ammo0[client] = GetEntData(client, ammoOffset+(ig_AmmoOffset0[client]*4));
-	//PrintToChatAll("%N - ammo: %d - offset: %d", client,ig_Ammo0[client],ig_AmmoOffset0[client]);
-}
-
-void HxGetSlot1(int client, int iSlot1)
-{
-	sg_buffer0[0] = '\0';
-	GetEntPropString(iSlot1, Prop_Data, "m_ModelName", sg_buffer0, sizeof(sg_buffer0)-1);
-
-	if (StrContains(sg_buffer0, "v_pistol", true) != -1) // v_pistolA.mdl
-	{
-		sg_slot1[client] = "pistol";
-		ig_prop1[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
-		return;
-	}
-	if (StrContains(sg_buffer0, "dual_pistol", true) != -1) //v_dual_pistolA.mdl
-	{
-		sg_slot1[client] = "dual_pistol";
-		ig_prop1[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
-		return;
-	}
-	if (StrContains(sg_buffer0, "eagle", true) != -1) //v_desert_eagle.mdl
-	{
-		sg_slot1[client] = "pistol_magnum";
-		ig_prop1[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
-		return;
-	}
-	if (StrContains(sg_buffer0, "v_bat", true) != -1) //v_bat.mdl
-	{
-		sg_slot1[client] = "baseball_bat";
-		return;
-	}
-	if (StrContains(sg_buffer0, "cricket_bat", true) != -1) //v_cricket_bat.mdl
-	{
-		sg_slot1[client] = "cricket_bat";
-		return;
-	}
-	if (StrContains(sg_buffer0, "crowbar", true) != -1) //v_crowbar.mdl
-	{
-		sg_slot1[client] = "crowbar";
-		return;
-	}
-	if (StrContains(sg_buffer0, "fireaxe", true) != -1) //v_fireaxe.mdl
-	{
-		sg_slot1[client] = "fireaxe";
-		return;
-	}
-	if (StrContains(sg_buffer0, "katana", true) != -1) //v_katana.mdl
-	{
-		sg_slot1[client] = "katana";
-		return;
-	}
-	if (StrContains(sg_buffer0, "golfclub", true) != -1) //v_golfclub.mdl
-	{
-		sg_slot1[client] = "golfclub";
-		return;
-	}
-	if (StrContains(sg_buffer0, "machete", true) != -1) //v_machete.mdl
-	{
-		sg_slot1[client] = "machete";
-		return;
-	}
-	if (StrContains(sg_buffer0, "tonfa", true) != -1) //v_tonfa.mdl
-	{
-		sg_slot1[client] = "tonfa";
-		return;
-	}
-	if (StrContains(sg_buffer0, "guitar", true) != -1) //v_electric_guitar.mdl
-	{
-		sg_slot1[client] = "electric_guitar";
-		return;
-	}
-	if (StrContains(sg_buffer0, "frying_pan", true) != -1) //v_frying_pan.mdl
-	{
-		sg_slot1[client] = "frying_pan";
-		return;
-	}
-	if (StrContains(sg_buffer0, "chainsaw", true) != -1) //v_chainsaw.mdl
-	{
-		ig_prop1[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1", 4);
-		sg_slot1[client] = "chainsaw";
-		return;
-	}
-	if (StrContains(sg_buffer0, "knife", true) != -1) //v_knife_t.mdl
-	{
-		sg_slot1[client] = "knife";
-		return;
-	}
-	if (StrContains(sg_buffer0, "pitchfork", true) != -1) //v_pitchfork.mdl
-	{
-		sg_slot1[client] = "pitchfork";
-		return;
-	}
-	if (StrContains(sg_buffer0, "shovel", true) != -1) //v_shovel.mdl
-	{
-		sg_slot1[client] = "shovel";
-		return;
-	}
-
-	//GetEdictClassname(iSlot1, sg_slot1[client], 64);
-	//LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);
-}
-
-void HxSaveC(int client)
-{
-	g_iRecorded[client] = 1;
-	
-	int iSlot0;
-	int iSlot1;
-	int iSlot2;
-	int iSlot3;
-	int iSlot4;
-
-	if(g_bSaveCharacter)
-	{
-		// Store model
-		GetClientModel(client, g_sModelInfo[client], 64);
+		else if(iTeam == 3 || iTeam == 4) //just in case
+		{
+			if (IsPlayerAlive(client))
+			{
+				return Plugin_Stop;
+			}
+		}
 		
-		// Store prop
-		g_iProp[client] = GetEntProp(client, Prop_Send, "m_survivorCharacter");
-	}
-	
-	if (g_bSaveHealth)
-	{
-		// Save health
-		g_iHealthInfo[client][iReviveCount] =  GetEntProp(client, Prop_Send, "m_currentReviveCount");
-		g_iHealthInfo[client][iThirdStrike] =  GetEntProp(client, Prop_Send, "m_bIsOnThirdStrike");
+		if(iTeam == 1 && IsFakeClient(client)) 
+			return Plugin_Stop;
 
-		if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) 
-		{
-			g_iHealthInfo[client][iHealth]       =  1;	
-			g_iHealthInfo[client][iHealthTemp]   = 30;
-			g_iHealthInfo[client][iHealthTime]   =  0;
-			g_iHealthInfo[client][iGoingToDie]   =  1;
-		}
-		else 
-		{
-			g_iHealthInfo[client][iHealth]		= GetEntData(client, FindDataMapInfo(client, "m_iHealth"), 4);
-			g_iHealthInfo[client][iHealthTemp]	= RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") );
-			g_iHealthInfo[client][iHealthTime]  = RoundToNearest( GetGameTime() - GetEntPropFloat(client, Prop_Send, "m_healthBufferTime") );
-			g_iHealthInfo[client][iGoingToDie]  = GetEntProp(client, Prop_Send, "m_isGoingToDie");
-		}
+		return Plugin_Continue;
 	}
-	
-	iSlot0 = GetPlayerWeaponSlot(client, 0);
-	iSlot1 = GetPlayerWeaponSlot(client, 1);
-	iSlot2 = GetPlayerWeaponSlot(client, 2);
-	iSlot3 = GetPlayerWeaponSlot(client, 3);
-	iSlot4 = GetPlayerWeaponSlot(client, 4);
 
-	if (iSlot0 > 0)
+	return Plugin_Stop;
+}
+
+
+int g_iRoundStart, g_iPlayerSpawn;
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+{
+	for( int i = 1; i <= MaxClients; i++) g_bGiven[i] = false;
+	g_bGiveWeaponBlock = false;
+
+	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
+		CreateTimer(0.5, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
+	g_iRoundStart = 1;
+}
+
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
+		CreateTimer(0.5, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
+	g_iPlayerSpawn = 1;
+}
+
+public Action tmrStart(Handle timer)
+{
+	g_bMapTransition = false;
+	if (g_iCurrentMode == 1)
 	{
-		GetEdictClassname(iSlot0, sg_slot0[client], 64);
-		ig_prop0[client] = GetEntProp(iSlot0, Prop_Send, "m_iClip1", 4);
-		ig_prop2[client] = GetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", 4);
-		ig_prop3[client] = GetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", 4);
-		ig_prop4[client] = GetEntProp(iSlot0, Prop_Send, "m_nSkin", 4);
-		HxGetSlot0Ammo(client, sg_slot0[client]);
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i))
+			{
+				if(IsFakeClient(i) && !g_bSaveBot) continue;
+
+				CreateTimer(1.0, HxTimerRestore, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+			}
+		}
 	}
-	if (iSlot1 > 0)
+
+	if(PlayerLeftStartTimer == null) PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
+}
+
+public Action Timer_PlayerLeftStart(Handle Timer)
+{
+	if (L4D_HasAnySurvivorLeftSafeArea())
 	{
-		HxGetSlot1(client, iSlot1);
-		ig_prop5[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin");
+		g_iCountDownTime = g_iGameTimeBlock;
+		if(g_iCountDownTime > 0)
+		{
+			if(CountDownTimer == null) CountDownTimer = CreateTimer(1.0, Timer_CountDown, _, TIMER_REPEAT);
+		}
+
+		PlayerLeftStartTimer = null;
+		return Plugin_Stop;
 	}
-	if (iSlot2 > 0)
+	return Plugin_Continue; 
+}
+
+public Action Timer_CountDown(Handle timer)
+{
+	if(g_iCountDownTime <= 0) 
 	{
-		GetEdictClassname(iSlot2, sg_slot2[client], 64);
+		g_bGiveWeaponBlock = true;
+		CountDownTimer = null;
+		return Plugin_Stop;
 	}
-	if (iSlot3 > 0)
+	g_iCountDownTime--;
+	return Plugin_Continue;
+}
+
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+{
+	ResetPlugin();
+}
+
+public void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
+{
+	g_bMapTransition = true;
+	if (g_iCurrentMode == 1)
 	{
-		GetEdictClassname(iSlot3, sg_slot3[client], 64);
-	}
-	if (iSlot4 > 0)
-	{
-		GetEdictClassname(iSlot4, sg_slot4[client], 64);
+		if (g_bFullhealth)
+		{
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+				{
+					HxFakeCHEAT(i, "give", "health");
+					SetEntPropFloat(i, Prop_Send, "m_healthBufferTime", GetGameTime());
+					SetEntPropFloat(i, Prop_Send, "m_healthBuffer", 0.0);
+				}
+			}
+		}
+		CreateTimer(1.0, Timer_Event_MapTransition, _, TIMER_FLAG_NO_MAPCHANGE); //delay is necessary for waiting all afk human players to take over bot
 	}
 }
 
-void HxFakeCHEAT(int client, const char[] sCmd, const char[] sArg)
+public Action Timer_Event_MapTransition(Handle timer)
 {
-	int iFlags = GetCommandFlags(sCmd);
-	SetCommandFlags(sCmd, iFlags & ~FCVAR_CHEAT);
-	FakeClientCommand(client, "%s %s", sCmd, sArg);
-	SetCommandFlags(sCmd, iFlags);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		HxCleaning(i);
+		if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+		{
+			if(IsFakeClient(i) && !g_bSaveBot) continue;
+				
+			HxSaveC(i);
+		}
+	}
 }
 
 void HxGiveC(int client)
 {
-	if(g_iRecorded[client] == 0) return;
+	if(g_bRecorded[client] == false || g_bGiven[client] == true) return;
+	g_bGiven[client] = true;
 	
+	Call_StartForward(g_hForwardSaveWeaponGive);
+	Call_PushCell(client);
+	Call_Finish();
+
 	// Update model & props
 	if(g_bSaveCharacter)
 	{
@@ -684,11 +522,11 @@ void HxGiveC(int client)
 		iSlot0 = GetPlayerWeaponSlot(client, 0);
 		if(iSlot0 > 0)
 		{
-			SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_prop0[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_prop2[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_prop3[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_prop4[client], 4);
-			SetEntData(client, ammoOffset+(ig_AmmoOffset0[client]*4), ig_Ammo0[client]);
+			SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_slots0_clip[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_slots0_upgrade_bit[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_slots0_upgraded_ammo[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_slots0_skin[client], 4);
+			SetEntData(client, ammoOffset+(ig_slots0_ammo_offest[client]*4), ig_slots0_ammo[client]);
 		}
 	}
 
@@ -701,8 +539,8 @@ void HxGiveC(int client)
 			iSlot1 = GetPlayerWeaponSlot(client, 1);
 			if(iSlot1 > 0)
 			{
-				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_prop1[client]);
-				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_prop5[client]);
+				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
+				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
 			}
 		}
 		else
@@ -713,9 +551,9 @@ void HxGiveC(int client)
 			{
 				if (!strcmp(sg_slot1[client], "chainsaw", true) || !strcmp(sg_slot1[client], "pistol", true) || !strcmp(sg_slot1[client], "pistol_magnum", true))
 				{
-					SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_prop1[client]);
+					SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
 				}
-				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_prop5[client]);
+				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
 			}
 		}
 	}
@@ -742,163 +580,311 @@ void HxRemoveWeapon(int client, int entity)
 	}
 }
 
-public Action HxTimerConnected(Handle timer, int userid)
+void HxSaveC(int client)
 {
-	if(g_bGiveWeaponBlock) return Plugin_Stop;
+	g_bRecorded[client] = true;
+	
+	int iSlot0;
+	int iSlot1;
+	int iSlot2;
+	int iSlot3;
+	int iSlot4;
 
-	int client = GetClientOfUserId(userid);
-	if (client && IsClientInGame(client))
+	if(g_bSaveCharacter)
 	{
-		int iTeam = GetClientTeam(client);
-		if (iTeam == 2)
-		{
-			if (IsPlayerAlive(client) && g_iSpawned[client] == 0)
-			{
-				HxGiveC(client);
-				//HxCleaning(client);
-				g_iSpawned[client] = 1;
-			}
-			return Plugin_Stop;
-		}
-		else if(iTeam == 3 || iTeam == 4) //just in case
-		{
-			if (IsPlayerAlive(client))
-			{
-				//HxCleaning(client);
-				g_iSpawned[client] = 1;
-				return Plugin_Stop;
-			}
-		}
+		// Store model
+		GetClientModel(client, g_sModelInfo[client], 64);
 		
-		if(iTeam == 1 && IsFakeClient(client)) return Plugin_Stop;
+		// Store prop
+		g_iProp[client] = GetEntProp(client, Prop_Send, "m_survivorCharacter");
 	}
-
-	return Plugin_Continue;
-}
-
-int g_iRoundStart, g_iPlayerSpawn;
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
-{
-	for( int i = 1; i <= MaxClients; i++) g_iSpawned[i] = false;
-	g_bGiveWeaponBlock = false;
-
-	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
-		CreateTimer(1.0, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
-	g_iRoundStart = 1;
-}
-
-public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
-{
-	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
-		CreateTimer(1.0, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
-	g_iPlayerSpawn = 1;
-}
-
-public Action tmrStart(Handle timer)
-{
-	ResetPlugin();
-	if (g_iCurrentMode == 1)
+	
+	if (g_bSaveHealth)
 	{
-		for (int i = 1; i <= MaxClients; i++)
+		// Save health
+		g_iHealthInfo[client][iReviveCount] =  GetEntProp(client, Prop_Send, "m_currentReviveCount");
+		g_iHealthInfo[client][iThirdStrike] =  GetEntProp(client, Prop_Send, "m_bIsOnThirdStrike");
+
+		if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) 
 		{
-			if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i) && g_iSpawned[i] == 0)
-			{
-				HxGiveC(i);
-				//HxCleaning(i);
-				g_iSpawned[i] = 1;
-			}
+			g_iHealthInfo[client][iHealth]       =  1;	
+			g_iHealthInfo[client][iHealthTemp]   = 30;
+			g_iHealthInfo[client][iHealthTime]   =  0;
+			g_iHealthInfo[client][iGoingToDie]   =  1;
+		}
+		else 
+		{
+			g_iHealthInfo[client][iHealth]		= GetEntProp(client, Prop_Send, "m_iHealth");
+			g_iHealthInfo[client][iHealthTemp]	= RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") );
+			g_iHealthInfo[client][iHealthTime]  = RoundToNearest( GetGameTime() - GetEntPropFloat(client, Prop_Send, "m_healthBufferTime") );
+			g_iHealthInfo[client][iGoingToDie]  = GetEntProp(client, Prop_Send, "m_isGoingToDie");
 		}
 	}
+	
+	iSlot0 = GetPlayerWeaponSlot(client, 0);
+	iSlot1 = GetPlayerWeaponSlot(client, 1);
+	iSlot2 = GetPlayerWeaponSlot(client, 2);
+	iSlot3 = GetPlayerWeaponSlot(client, 3);
+	iSlot4 = GetPlayerWeaponSlot(client, 4);
 
-	if(PlayerLeftStartTimer == null) PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
-}
-
-public Action Timer_PlayerLeftStart(Handle Timer)
-{
-	if (L4D_HasAnySurvivorLeftSafeArea())
+	if (iSlot0 > 0)
 	{
-		g_iCountDownTime = g_iGameTimeBlock;
-		if(g_iCountDownTime > 0)
-		{
-			if(CountDownTimer == null) CountDownTimer = CreateTimer(1.0, Timer_CountDown, _, TIMER_REPEAT);
-		}
-
-		PlayerLeftStartTimer = null;
-		return Plugin_Stop;
+		GetEdictClassname(iSlot0, sg_slot0[client], 64);
+		ig_slots0_clip[client] = GetEntProp(iSlot0, Prop_Send, "m_iClip1", 4);
+		ig_slots0_upgrade_bit[client] = GetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", 4);
+		ig_slots0_upgraded_ammo[client] = GetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", 4);
+		ig_slots0_skin[client] = GetEntProp(iSlot0, Prop_Send, "m_nSkin", 4);
+		HxGetSlot0Ammo(client, sg_slot0[client]);
 	}
-	return Plugin_Continue; 
-}
-
-public Action Timer_CountDown(Handle timer)
-{
-	if(g_iCountDownTime <= 0) 
+	if (iSlot1 > 0)
 	{
-		g_bGiveWeaponBlock = true;
-		CountDownTimer = null;
-		return Plugin_Stop;
+		HxGetSlot1(client, iSlot1);
+		ig_slots1_skin[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin");
 	}
-	g_iCountDownTime--;
-	return Plugin_Continue;
-}
-
-public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
-{
-	ResetPlugin();
-	ResetTimer();
-}
-
-public void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
-{
-	ig_protection = true;
-
-	if (g_iCurrentMode == 1)
+	if (iSlot2 > 0)
 	{
-		if (g_bFullhealth)
-		{
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
-				{
-					HxFakeCHEAT(i, "give", "health");
-					SetEntPropFloat(i, Prop_Send, "m_healthBufferTime", GetGameTime());
-					SetEntPropFloat(i, Prop_Send, "m_healthBuffer", 0.0);
-				}
-			}
-		}
-		CreateTimer(1.0, Timer_Event_MapTransition, _, TIMER_FLAG_NO_MAPCHANGE); //delay is necessary for waiting all afk human players to take over bot
+		GetEdictClassname(iSlot2, sg_slot2[client], 64);
+	}
+	if (iSlot3 > 0)
+	{
+		GetEdictClassname(iSlot3, sg_slot3[client], 64);
+	}
+	if (iSlot4 > 0)
+	{
+		GetEdictClassname(iSlot4, sg_slot4[client], 64);
 	}
 }
 
-public Action Timer_Event_MapTransition(Handle timer)
+void HxCleaning(int client)
 {
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		HxCleaning(i);
-		if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
-		{
-			if(IsFakeClient(i) && !g_bSaveBot) continue;
-				
-			HxSaveC(i);
-		}
-	}
+	ig_slots0_clip[client] = 0;
+	ig_slots1_clip[client] = 0;
+	ig_slots0_upgrade_bit[client] = 0;
+	ig_slots0_upgraded_ammo[client] = 0;
+	ig_slots0_skin[client] = 0;
+	ig_slots1_skin[client] = 0;
+	ig_slots0_ammo[client] = 0;
+	ig_slots0_ammo_offest[client] = 0;
+
+	sg_slot0[client][0] = '\0';
+	sg_slot1[client][0] = '\0';
+	sg_slot2[client][0] = '\0';
+	sg_slot3[client][0] = '\0';
+	sg_slot4[client][0] = '\0';
+	
+	g_iHealthInfo[client][iHealth] = 100;
+	g_iHealthInfo[client][iHealthTemp] = 0;
+	g_iHealthInfo[client][iHealthTime] = 0;
+	g_iHealthInfo[client][iReviveCount] = 0;
+	g_iHealthInfo[client][iGoingToDie] = 0;
+	g_iHealthInfo[client][iThirdStrike] = 0;
+	
+	g_iProp[client] = 0;
+	g_sModelInfo[client][0] = '\0';
+	
+	g_bRecorded[client] = false;
+	
 }
 
-public void Event_FinaleWin(Event event, const char[] name, bool dontBroadcast)
+void HxGetSlot0Ammo (int client, const char[] sWeaponName)
 {
-	for (int i = 1; i <= MaxClients; i++)
+	if (strcmp(sWeaponName, "weapon_smg", true) == 0)
 	{
-		HxCleaning(i);
+		ig_slots0_ammo_offest[client] = 5;
 	}
+	else if (strcmp(sWeaponName, "weapon_pumpshotgun", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 7;
+	}
+	else if (strcmp(sWeaponName, "weapon_rifle", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 3;
+	}
+	else if (strcmp(sWeaponName, "weapon_autoshotgun", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 8;
+	}
+	else if (strcmp(sWeaponName, "weapon_hunting_rifle", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 9;
+	}
+	else if (strcmp(sWeaponName, "weapon_smg_silenced", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 5;
+	}
+	else if (strcmp(sWeaponName, "weapon_smg_mp5", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 5;
+	}
+	else if (strcmp(sWeaponName, "weapon_shotgun_chrome", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 7;
+	}
+	else if (strcmp(sWeaponName, "weapon_rifle_ak47", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 3;
+	}
+	else if (strcmp(sWeaponName, "weapon_rifle_desert", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 3;
+	}
+	else if (strcmp(sWeaponName, "weapon_sniper_military", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 10;
+	}
+	else if (strcmp(sWeaponName, "weapon_grenade_launcher", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 17;
+	}
+	else if (strcmp(sWeaponName, "weapon_rifle_sg552", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 3;
+	}
+	else if (strcmp(sWeaponName, "weapon_rifle_m60", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 6;
+	}
+	else if (strcmp(sWeaponName, "weapon_sniper_awp", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 10;
+	}
+	else if (strcmp(sWeaponName, "weapon_sniper_scout", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 10;
+	}
+	else if (strcmp(sWeaponName, "weapon_shotgun_spas", true) == 0)
+	{
+		ig_slots0_ammo_offest[client] = 8;
+	}
+
+	ig_slots0_ammo[client] = GetEntData(client, ammoOffset+(ig_slots0_ammo_offest[client]*4));
+	//PrintToChatAll("%N - ammo: %d - offset: %d", client,ig_slots0_ammo[client],ig_slots0_ammo_offest[client]);
+}
+
+void HxGetSlot1(int client, int iSlot1)
+{
+	char sg_buffer0[64];
+	GetEntPropString(iSlot1, Prop_Data, "m_ModelName", sg_buffer0, sizeof(sg_buffer0)-1);
+
+	if (StrContains(sg_buffer0, "v_pistol", true) != -1) // v_pistolA.mdl
+	{
+		sg_slot1[client] = "pistol";
+		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
+		return;
+	}
+	if (StrContains(sg_buffer0, "dual_pistol", true) != -1) //v_dual_pistolA.mdl
+	{
+		sg_slot1[client] = "dual_pistol";
+		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
+		return;
+	}
+	if (StrContains(sg_buffer0, "eagle", true) != -1) //v_desert_eagle.mdl
+	{
+		sg_slot1[client] = "pistol_magnum";
+		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
+		return;
+	}
+	if (StrContains(sg_buffer0, "v_bat", true) != -1) //v_bat.mdl
+	{
+		sg_slot1[client] = "baseball_bat";
+		return;
+	}
+	if (StrContains(sg_buffer0, "cricket_bat", true) != -1) //v_cricket_bat.mdl
+	{
+		sg_slot1[client] = "cricket_bat";
+		return;
+	}
+	if (StrContains(sg_buffer0, "crowbar", true) != -1) //v_crowbar.mdl
+	{
+		sg_slot1[client] = "crowbar";
+		return;
+	}
+	if (StrContains(sg_buffer0, "fireaxe", true) != -1) //v_fireaxe.mdl
+	{
+		sg_slot1[client] = "fireaxe";
+		return;
+	}
+	if (StrContains(sg_buffer0, "katana", true) != -1) //v_katana.mdl
+	{
+		sg_slot1[client] = "katana";
+		return;
+	}
+	if (StrContains(sg_buffer0, "golfclub", true) != -1) //v_golfclub.mdl
+	{
+		sg_slot1[client] = "golfclub";
+		return;
+	}
+	if (StrContains(sg_buffer0, "machete", true) != -1) //v_machete.mdl
+	{
+		sg_slot1[client] = "machete";
+		return;
+	}
+	if (StrContains(sg_buffer0, "tonfa", true) != -1) //v_tonfa.mdl
+	{
+		sg_slot1[client] = "tonfa";
+		return;
+	}
+	if (StrContains(sg_buffer0, "guitar", true) != -1) //v_electric_guitar.mdl
+	{
+		sg_slot1[client] = "electric_guitar";
+		return;
+	}
+	if (StrContains(sg_buffer0, "frying_pan", true) != -1) //v_frying_pan.mdl
+	{
+		sg_slot1[client] = "frying_pan";
+		return;
+	}
+	if (StrContains(sg_buffer0, "chainsaw", true) != -1) //v_chainsaw.mdl
+	{
+		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1", 4);
+		sg_slot1[client] = "chainsaw";
+		return;
+	}
+	if (StrContains(sg_buffer0, "knife", true) != -1) //v_knife_t.mdl
+	{
+		sg_slot1[client] = "knife";
+		return;
+	}
+	if (StrContains(sg_buffer0, "pitchfork", true) != -1) //v_pitchfork.mdl
+	{
+		sg_slot1[client] = "pitchfork";
+		return;
+	}
+	if (StrContains(sg_buffer0, "shovel", true) != -1) //v_shovel.mdl
+	{
+		sg_slot1[client] = "shovel";
+		return;
+	}
+
+	//GetEdictClassname(iSlot1, sg_slot1[client], 64);
+	//LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);
+}
+
+void HxFakeCHEAT(int client, const char[] sCmd, const char[] sArg)
+{
+	int iFlags = GetCommandFlags(sCmd);
+	SetCommandFlags(sCmd, iFlags & ~FCVAR_CHEAT);
+	FakeClientCommand(client, "%s %s", sCmd, sArg);
+	SetCommandFlags(sCmd, iFlags);
 }
 
 void ResetPlugin()
 {
 	g_iRoundStart = 0;
 	g_iPlayerSpawn = 0;
+	ResetTimer();
 }
 
 void ResetTimer()
 {
 	delete PlayerLeftStartTimer;
 	delete CountDownTimer;
+}
+
+void HxCleaningAll()
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		HxCleaning(i);
+	}
 }

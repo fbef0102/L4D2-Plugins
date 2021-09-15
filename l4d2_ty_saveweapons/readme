@@ -1,7 +1,7 @@
 L4D2 coop save weapon when map transition if more than 4 players
 
 -Changelog-
-v5.3
+v5.4
 -Remake code
 -Add the last stand two melee
 -Add ConVar and generate cfg
@@ -9,6 +9,7 @@ v5.3
 -Save Character Model
 -Support Bots
 -Doesn't support custom melee save
+-Doesn't save if change map in game (ex. vote change new campaign)
 
 v4.1
 -Original Post: https://forums.alliedmods.net/showthread.php?t=263860
@@ -19,9 +20,9 @@ left4dhooks: https://forums.alliedmods.net/showthread.php?p=2684862
 -ConVar-
 cfg/sourcemod/l4d2_ty_saveweapons.cfg
 // Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)
-l4d2_ty_saveweapons_game_seconds_block "100"
+l4d2_ty_saveweapons_game_seconds_block "60"
 
-// If 1, restore full health when end of chapter.
+// If 1, restore 100 full health when end of chapter.
 l4d2_ty_saveweapons_health "0"
 
 // If 1, save weapons and health for bots as well.
@@ -30,8 +31,18 @@ l4d2_ty_saveweapons_save_bot "1"
 // If 1, save character model and restore.
 l4d2_ty_saveweapons_save_character "0"
 
-// If 1, save health and restore.
+// If 1, save health and restore. (can save >100 hp)
 l4d2_ty_saveweapons_save_health "1"
 
 -Command-
 None
+
+-Natives & Forwards API-
+/**
+ * @brief Called when restore and give weapons, health to a player
+ *
+ * @param client    the client who is given to.
+ *
+ * @noreturn
+ */
+forward void L4D2_OnSaveWeaponHxGiveC(int client);
