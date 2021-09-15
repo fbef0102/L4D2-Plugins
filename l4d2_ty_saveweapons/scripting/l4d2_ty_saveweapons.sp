@@ -457,10 +457,6 @@ void HxGiveC(int client)
 {
 	if(g_bRecorded[client] == false || g_bGiven[client] == true) return;
 	g_bGiven[client] = true;
-	
-	Call_StartForward(g_hForwardSaveWeaponGive);
-	Call_PushCell(client);
-	Call_Finish();
 
 	// Update model & props
 	if(g_bSaveCharacter)
@@ -514,7 +510,6 @@ void HxGiveC(int client)
 		if (iSlot3 > 0) HxRemoveWeapon(client, iSlot3);
 		if (iSlot4 > 0) HxRemoveWeapon(client, iSlot4);
 	}
-	else return;
 
 	if (sg_slot0[client][0] != '\0')
 	{
@@ -570,6 +565,10 @@ void HxGiveC(int client)
 	{
 		HxFakeCHEAT(client, "give", sg_slot4[client]);
 	}
+
+	Call_StartForward(g_hForwardSaveWeaponGive);
+	Call_PushCell(client);
+	Call_Finish();
 }
 
 void HxRemoveWeapon(int client, int entity)
