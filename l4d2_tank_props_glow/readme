@@ -6,33 +6,29 @@ Stop tank props from fading whilst the tank is alive
 https://www.youtube.com/watch?v=UZDF6dbagxU&feature=youtu.be
 
 -ChangLog-
-v2.0
+v2.3
 -AlliedModder Post: https://forums.alliedmods.net/showthread.php?t=312447
 
 -ConVar-
 left4dead2\cfg\sourcemod\l4d2_tank_props_glow.cfg
+// Time it takes for hittables that were punched by Tank to dissapear after the Tank dies.
+l4d2_tank_prop_dissapear_time "5.0"
+
 // Prop Glow Color, three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
-// -
-// Default: "255 255 255"
 l4d2_tank_prop_glow_color "255 255 255"
 
 // Only Tank can see the glow
-// -
-// Default: "0"
 l4d2_tank_prop_glow_only "0"
 
 // How near to props do players need to be to enable their glow.
-// -
-// Default: "4500"
-l4d2_tank_prop_glow_range "4500"
+l4d2_tank_prop_glow_range "3000"
 
 // Spectators can see the glow too
-// -
-// Default: "1"
 l4d2_tank_prop_glow_spectators "1"
 
 // Show Hittable Glow for infected team while the tank is alive
-// -
-// Default: "1"
 l4d_tank_props_glow "1"
+
+
+
 
