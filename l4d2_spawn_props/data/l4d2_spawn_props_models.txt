@@ -511,7 +511,7 @@ models/props_unique/subwaytracks01_h.mdl TAG- 鐵軌 h
 models/props_unique/spawn_apartment/coffeeammo.mdl TAG- 彈藥推 (L4D model)
 models/props/terror/ammo_stack.mdl TAG- 彈藥推 (L4D2 model)
 models/props/de_prodigy/ammo_can_02.mdl TAG- 彈藥箱模型
-models/w_models/weapons/w_pistol_B.mdl TAG- 手槍模型
+models/w_models/weapons/w_pistol_1911.mdl TAG- L4D1手槍模型
 models/w_models/weapons/w_smg_uzi.mdl TAG- Uzi機槍模型
 models/w_models/weapons/w_shotgun.mdl TAG- 木製散彈槍模型
 models/w_models/weapons/w_rifle_m16a2.mdl TAG- M16步槍模型
@@ -524,6 +524,8 @@ models/w_models/weapons/w_eq_molotov.mdl TAG- 火焰瓶模型
 models/props_junk/gascan001a.mdl TAG- 汽油桶模型
 models/props_equipment/oxygentank01.mdl TAG- 氧氣罐模型
 models/props_junk/propanecanister001a.mdl TAG- 瓦斯桶模型
+models/props_interiors/medicalcabinet02.mdl TAG- 醫療櫃
+models/w_models/weapons/w_pistol_B.mdl TAG- L4D2手槍模型
 models/w_models/weapons/w_desert_eagle.mdl TAG- 沙漠之鷹模型
 models/w_models/weapons/w_smg_a.mdl TAG- 消音機槍模型
 models/w_models/weapons/w_pumpshotgun_A.mdl TAG- 鐵製散彈槍模型
