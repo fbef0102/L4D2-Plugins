@@ -452,6 +452,8 @@ models/props_mill/pipeset32d_512a.mdl TAG- 大型管道 - 512單位
 models/props_wasteland/prison_pipes002a.mdl TAG- 大量水管線
 models/props_unique/greenhouse_pipewall.mdl TAG- 大型管線 1
 models/props_unique/greenhouseboiler_all.mdl TAG- 大型管線 2
+models/props_rooftop/gutter_pipe_128.mdl TAG- 排水管 - 128單位
+models/props_rooftop/gutter_pipe_256.mdl TAG- 排水管 - 256單位
 models/props_industrial/oil_pipes.mdl TAG- 排水管線
 models/props_unique/pumpstation01.mdl TAG- 屋頂排水管道
 models/props_industrial/pumpstation_pipes01.mdl TAG- 排水管道
