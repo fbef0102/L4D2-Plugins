@@ -3,7 +3,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.3"
 #define MODEL_CAR1			"models/props_vehicles/taxi_cab.mdl"
 #define MODEL_CAR3			"models/props_vehicles/police_car.mdl"
 #define MODEL_GLASS			"models/props_vehicles/police_car_glass.mdl"
@@ -272,6 +272,10 @@ public void event_finale_vehicle_leaving(Handle event, const char[] name, bool d
 	{
 		g_iProbability = 3;
 	}
+
+	UnhookEvent("finale_escape_start", event_finale_escape_start, EventHookMode_PostNoCopy);
+	UnhookEvent("finale_vehicle_leaving", event_finale_vehicle_leaving, EventHookMode_PostNoCopy);
+	UnhookEvent("finale_vehicle_ready", event_finale_vehicle_ready, EventHookMode_PostNoCopy);
 }
 
 public Action RandomExplosions(Handle timer)
