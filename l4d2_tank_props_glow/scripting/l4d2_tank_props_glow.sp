@@ -16,6 +16,7 @@ ConVar
 	g_hTankPropFade = null,
 	g_hCvartankPropsGlow = null,
 	g_hCvarRange = null,
+	g_hCvarRangeMin = null,
 	g_hCvarColor = null,
 	g_hCvarTankOnly = null,
 	g_hCvarTankSpec = null,
@@ -29,6 +30,7 @@ int
 	g_iEntityList[MAX_EDICTS] = {-1, ...},
 	g_iTankClient = -1,
 	g_iCvarRange = 0,
+	g_iCvarRangeMin = 0,
 	g_iCvarColor = 0;
 
 bool
@@ -39,8 +41,8 @@ bool
 public Plugin myinfo =
 {
 	name = "L4D2 Tank Hittable Glow",
-	author = "Harry Potter, Sir, A1m`",
-	version = "2.3",
+	author = "Harry Potter, Sir, A1m`, Derpduck",
+	version = "2.4",
 	description = "Stop tank props from fading whilst the tank is alive + add Hittable Glow."
 };
 
@@ -49,6 +51,7 @@ public void OnPluginStart()
 	g_hCvartankPropsGlow = CreateConVar("l4d_tank_props_glow", "1", "Show Hittable Glow for infected team while the tank is alive", FCVAR_NOTIFY);
 	g_hCvarColor = CreateConVar("l4d2_tank_prop_glow_color", "255 255 255", "Prop Glow Color, three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCvarRange = CreateConVar("l4d2_tank_prop_glow_range", "4500", "How near to props do players need to be to enable their glow.", FCVAR_NOTIFY);
+	g_hCvarRangeMin = CreateConVar("l4d2_tank_prop_glow_range_min", "256", "How near to props do players need to be to disable their glow.", FCVAR_NOTIFY);
 	g_hCvarTankOnly = CreateConVar("l4d2_tank_prop_glow_only", "0", "Only Tank can see the glow", FCVAR_NOTIFY);
 	g_hCvarTankSpec = CreateConVar("l4d2_tank_prop_glow_spectators", "1", "Spectators can see the glow too", FCVAR_NOTIFY);
 	g_hCvarTankPropsBeGone = CreateConVar("l4d2_tank_prop_dissapear_time", "10.0", "Time it takes for hittables that were punched by Tank to dissapear after the Tank dies.", FCVAR_NOTIFY);
@@ -59,23 +62,18 @@ public void OnPluginStart()
 	g_hCvartankPropsGlow.AddChangeHook(TankPropsGlowAllow);
 	g_hCvarColor.AddChangeHook(ConVarChanged_Glow);
 	g_hCvarRange.AddChangeHook(ConVarChanged_Range);
+	g_hCvarRangeMin.AddChangeHook(ConVarChanged_RangeMin);
 	g_hCvarTankOnly.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarTankSpec.AddChangeHook(ConVarChanged_Cvars);
 
-	AutoExecConfig(true, "l4d2_tank_props_glow");
-
 	PluginEnable();
+
+	AutoExecConfig(true, "l4d2_tank_props_glow");
 }
 
 public void OnPluginEnd()
 {
 	PluginDisable();
-}
-
-public void OnMapEnd()
-{
-	g_hTankProps.Clear();
-	g_hTankPropsHit.Clear();
 }
 
 public void ConVarChanged_Cvars(ConVar hConvar, const char[] sOldValue, const char[] sNewValue)
@@ -88,6 +86,7 @@ void GetCvars()
 	g_bCvarTankOnly = g_hCvarTankOnly.BoolValue;
 	g_bCvarTankSpec = g_hCvarTankSpec.BoolValue;
 	g_iCvarRange = g_hCvarRange.IntValue;
+	g_iCvarRangeMin = g_hCvarRangeMin.IntValue;
 
 	char sColor[16];
 	g_hCvarColor.GetString(sColor, sizeof(sColor));
@@ -148,6 +147,28 @@ public void ConVarChanged_Range(ConVar hConVar, const char[] sOldValue, const ch
 	}
 }
 
+public void ConVarChanged_RangeMin(ConVar hConVar, const char[] sOldValue, const char[] sNewValue)
+{
+	GetCvars();
+
+	if (!g_bTankSpawned) {
+		return;
+	}
+	
+	int iRef = INVALID_ENT_REFERENCE, iValue = -1, iSize = g_hTankPropsHit.Length;
+	for (int i = 0; i < iSize; i++) {
+		iValue = g_hTankPropsHit.Get(i);
+		
+		if (iValue > 0 && IsValidEdict(iValue)) {
+			iRef = g_iEntityList[iValue];
+			
+			if (IsValidEntRef(iRef)) {
+				SetEntProp(iRef, Prop_Send, "m_nGlowRangeMin", g_iCvarRangeMin);
+			}
+		}
+	}
+}
+
 void PluginEnable()
 {
 	g_hTankPropFade.SetBool(false);
@@ -164,6 +185,7 @@ void PluginEnable()
 	g_hCvarColor.GetString(sColor, sizeof(sColor));
 	g_iCvarColor = GetColor(sColor);
 	g_iCvarRange = g_hCvarRange.IntValue;
+	g_iCvarRangeMin = g_hCvarRangeMin.IntValue;
 	g_bCvarTankOnly = g_hCvarTankOnly.BoolValue;
 }
 
@@ -201,6 +223,12 @@ void PluginDisable()
 	
 	delete g_hTankPropsHit;
 	g_hTankPropsHit = null;
+}
+
+public void OnMapEnd()
+{
+	g_hTankProps.Clear();
+	g_hTankPropsHit.Clear();
 }
 
 public void TankPropRoundReset(Event hEvent, const char[] sEventName, bool bDontBroadcast)
@@ -278,10 +306,16 @@ public void PropDamaged(int iVictim, int iAttacker, int iInflictor, float fDamag
 void CreateTankPropGlow(int iTarget)
 {
 	// Spawn dynamic prop entity
-	int iEntity = CreateEntityByName("prop_dynamic_ornament");
+	int iEntity = CreateEntityByName("prop_dynamic_override");
 	if (iEntity == -1) {
 		return;
 	}
+	
+	// Get position of hittable
+	float vOrigin[3];
+	float vAngles[3];
+	GetEntPropVector(iTarget, Prop_Send, "m_vecOrigin", vOrigin);
+	GetEntPropVector(iTarget, Prop_Data, "m_angRotation", vAngles);
 	
 	// Get Client Model
 	char sModelName[PLATFORM_MAX_PATH];
@@ -295,18 +329,21 @@ void CreateTankPropGlow(int iTarget)
 	SetEntProp(iEntity, Prop_Send, "m_CollisionGroup", 0);
 	SetEntProp(iEntity, Prop_Send, "m_nSolidType", 0);
 	SetEntProp(iEntity, Prop_Send, "m_nGlowRange", g_iCvarRange);
+	SetEntProp(iEntity, Prop_Send, "m_nGlowRangeMin", g_iCvarRangeMin);
 	SetEntProp(iEntity, Prop_Send, "m_iGlowType", 2);
 	SetEntProp(iEntity, Prop_Send, "m_glowColorOverride", g_iCvarColor);
 	AcceptEntityInput(iEntity, "StartGlowing");
 
 	// Set model invisible
-	SetEntityRenderMode(iEntity, RENDER_TRANSCOLOR);
+	SetEntityRenderMode(iEntity, RENDER_NONE);
 	SetEntityRenderColor(iEntity, 0, 0, 0, 0);
+	
+	// Set model to hittable position
+	TeleportEntity(iEntity, vOrigin, vAngles, NULL_VECTOR);
 
 	// Set model attach to client, and always synchronize
 	SetVariantString("!activator");
-	AcceptEntityInput(iEntity, "SetAttached", iTarget);
-	AcceptEntityInput(iEntity, "TurnOn");
+	AcceptEntityInput(iEntity, "SetParent", iTarget);
 
 	SDKHook(iEntity, SDKHook_SetTransmit, OnTransmit);
 	g_iEntityList[iTarget] = EntIndexToEntRef(iEntity);
@@ -349,11 +386,10 @@ bool IsTankProp(int iEntity)
 	if (!bHasTankGlow) {
 		return false;
 	}
-	
-	// Exception
+
 	char sModel[PLATFORM_MAX_PATH];
 	GetEntPropString(iEntity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
-	if (strcmp("models/props/cs_assault/forklift.mdl", sModel) == 0) {
+	if (strcmp("models/props/cs_assault/forklift.mdl", sModel) == 0 ) {
 		return false;
 	}
 	
