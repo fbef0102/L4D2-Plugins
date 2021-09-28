@@ -1,15 +1,16 @@
 L4D2 coop save weapon when map transition if more than 4 players
 
 -Changelog-
-v5.4
+v5.5
 -Remake code
 -Add the last stand two melee
 -Add ConVar and generate cfg
 -Save health
 -Save Character Model
 -Support Bots
--Doesn't support custom melee save
+-Support custom melee save
 -Doesn't save if change map in game (ex. vote change new campaign)
+-Compatible with the [ANY] Cheats: https://forums.alliedmods.net/showthread.php?t=195037
 
 v4.1
 -Original Post: https://forums.alliedmods.net/showthread.php?t=263860

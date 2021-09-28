@@ -78,8 +78,9 @@ int ig_slots0_skin[MAXPLAYERS+1]; 			/* slot0 m_nSkin */
 int ig_slots1_skin[MAXPLAYERS+1]; 			/* slot1 m_nSkin */
 int ig_slots0_ammo[MAXPLAYERS+1]; 			/* slot0 ammo */
 int ig_slots0_ammo_offest[MAXPLAYERS+1]; 	/* slot0 ammo offset */
-bool g_bGiven[MAXPLAYERS+1];					/* client is already stored */
+bool g_bGiven[MAXPLAYERS+1];				/* client is already stored */
 bool g_bRecorded[MAXPLAYERS+1];				/* client is recorded to save */
+bool g_bSlot1_IsMelee[MAXPLAYERS+1];		/* slot1 is melee */
 
 enum Enum_Health
 {
@@ -105,7 +106,7 @@ public Plugin myinfo =
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.4",
+	version = "5.5",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
@@ -425,13 +426,22 @@ public void Event_MapTransition(Event event, const char[] name, bool dontBroadca
 	{
 		if (g_bFullhealth)
 		{
-			for (int i = 1; i <= MaxClients; i++)
+			for (int client = 1; client <= MaxClients; client++)
 			{
-				if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+				if (IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
 				{
-					HxFakeCHEAT(i, "give", "health");
-					SetEntPropFloat(i, Prop_Send, "m_healthBufferTime", GetGameTime());
-					SetEntPropFloat(i, Prop_Send, "m_healthBuffer", 0.0);
+					if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
+
+					SetEntProp(client, Prop_Send, "m_currentReviveCount", 0);
+					SetEntProp(client, Prop_Send, "m_isGoingToDie", 0);
+					SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 0);
+					
+					SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
+					SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
+					SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
+					
+					// Disable heart beat sound if not B&W
+					for (int i = 0; i <= 255; i++) StopSound(client, i, "player/heartbeatloop.wav");
 				}
 			}
 		}
@@ -511,9 +521,12 @@ void HxGiveC(int client)
 		if (iSlot4 > 0) HxRemoveWeapon(client, iSlot4);
 	}
 
+	int weapon;
 	if (sg_slot0[client][0] != '\0')
 	{
-		HxFakeCHEAT(client, "give", sg_slot0[client]);
+		weapon = HxCreateWeapon(sg_slot0[client]);
+		if (weapon != -1) EquipPlayerWeapon(client, weapon);
+		
 		iSlot0 = GetPlayerWeaponSlot(client, 0);
 		if(iSlot0 > 0)
 		{
@@ -527,43 +540,53 @@ void HxGiveC(int client)
 
 	if (sg_slot1[client][0] != '\0')
 	{
-		if (!strcmp(sg_slot1[client], "dual_pistol", true))
+		if(g_bSlot1_IsMelee[client] == true)
 		{
-			HxFakeCHEAT(client, "give", "pistol");
-			HxFakeCHEAT(client, "give", "pistol");
-			iSlot1 = GetPlayerWeaponSlot(client, 1);
-			if(iSlot1 > 0)
-			{
-				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
-				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
-			}
+			weapon = HxCreateWeapon("weapon_melee", sg_slot1[client]);
+			if (weapon != -1) EquipPlayerWeapon(client, weapon);
 		}
 		else
 		{
-			HxFakeCHEAT(client, "give", sg_slot1[client]);
-			iSlot1 = GetPlayerWeaponSlot(client, 1);
-			if(iSlot1 > 0)
+			if (!strcmp(sg_slot1[client], "dual_pistol", true))
 			{
-				if (!strcmp(sg_slot1[client], "chainsaw", true) || !strcmp(sg_slot1[client], "pistol", true) || !strcmp(sg_slot1[client], "pistol_magnum", true))
-				{
-					SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
-				}
-				SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
+				weapon = HxCreateWeapon("weapon_pistol");
+				if (weapon != -1) EquipPlayerWeapon(client, weapon);
+				
+				weapon = HxCreateWeapon("weapon_pistol");
+				if (weapon != -1) EquipPlayerWeapon(client, weapon);
+			}
+			else
+			{
+				weapon = HxCreateWeapon(sg_slot1[client]);
+				if (weapon != -1) EquipPlayerWeapon(client, weapon);
+			}
+		}
+		
+		iSlot1 = GetPlayerWeaponSlot(client, 1);
+		if(iSlot1 > 0)
+		{
+			SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
+			if (StrContains(sg_slot1[client], "chainsaw", false) >= 0 || StrContains(sg_slot1[client], "pistol", false) >= 0)
+			{
+				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
 			}
 		}
 	}
 
 	if (sg_slot2[client][0] != '\0')
 	{
-		HxFakeCHEAT(client, "give", sg_slot2[client]);
+		weapon = HxCreateWeapon(sg_slot2[client]);
+		if (weapon != -1) EquipPlayerWeapon(client, weapon);
 	}
 	if (sg_slot3[client][0] != '\0')
 	{
-		HxFakeCHEAT(client, "give", sg_slot3[client]);
+		weapon = HxCreateWeapon(sg_slot3[client]);
+		if (weapon != -1) EquipPlayerWeapon(client, weapon);
 	}
 	if (sg_slot4[client][0] != '\0')
 	{
-		HxFakeCHEAT(client, "give", sg_slot4[client]);
+		weapon = HxCreateWeapon(sg_slot4[client]);
+		if (weapon != -1) EquipPlayerWeapon(client, weapon);
 	}
 
 	Call_StartForward(g_hForwardSaveWeaponGive);
@@ -628,7 +651,7 @@ void HxSaveC(int client)
 
 	if (iSlot0 > 0)
 	{
-		GetEdictClassname(iSlot0, sg_slot0[client], 64);
+		GetEntityClassname(iSlot0, sg_slot0[client], 64);
 		ig_slots0_clip[client] = GetEntProp(iSlot0, Prop_Send, "m_iClip1", 4);
 		ig_slots0_upgrade_bit[client] = GetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", 4);
 		ig_slots0_upgraded_ammo[client] = GetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", 4);
@@ -638,19 +661,19 @@ void HxSaveC(int client)
 	if (iSlot1 > 0)
 	{
 		HxGetSlot1(client, iSlot1);
-		ig_slots1_skin[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin");
+		ig_slots1_skin[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin", 4);
 	}
 	if (iSlot2 > 0)
 	{
-		GetEdictClassname(iSlot2, sg_slot2[client], 64);
+		GetEntityClassname(iSlot2, sg_slot2[client], 64);
 	}
 	if (iSlot3 > 0)
 	{
-		GetEdictClassname(iSlot3, sg_slot3[client], 64);
+		GetEntityClassname(iSlot3, sg_slot3[client], 64);
 	}
 	if (iSlot4 > 0)
 	{
-		GetEdictClassname(iSlot4, sg_slot4[client], 64);
+		GetEntityClassname(iSlot4, sg_slot4[client], 64);
 	}
 }
 
@@ -682,7 +705,7 @@ void HxCleaning(int client)
 	g_sModelInfo[client][0] = '\0';
 	
 	g_bRecorded[client] = false;
-	
+	g_bSlot1_IsMelee[client] = false;
 }
 
 void HxGetSlot0Ammo (int client, const char[] sWeaponName)
@@ -762,7 +785,7 @@ void HxGetSlot0Ammo (int client, const char[] sWeaponName)
 
 void HxGetSlot1(int client, int iSlot1)
 {
-	char sg_buffer0[64];
+	/*char sg_buffer0[64];
 	GetEntPropString(iSlot1, Prop_Data, "m_ModelName", sg_buffer0, sizeof(sg_buffer0)-1);
 
 	if (StrContains(sg_buffer0, "v_pistol", true) != -1) // v_pistolA.mdl
@@ -855,16 +878,84 @@ void HxGetSlot1(int client, int iSlot1)
 		return;
 	}
 
-	//GetEdictClassname(iSlot1, sg_slot1[client], 64);
-	//LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);
+	GetEntityClassname(iSlot1, sg_slot1[client], 64);
+	LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);*/
+	
+	char wep_name[64]; wep_name[0] = '\0';
+	if (HasEntProp(iSlot1, Prop_Data, "m_strMapSetScriptName")) //support custom melee
+	{
+		GetEntPropString(iSlot1, Prop_Data, "m_strMapSetScriptName", wep_name, sizeof(wep_name));
+		g_bSlot1_IsMelee[client] = true;
+	}
+	else
+	{
+		g_bSlot1_IsMelee[client]= false;
+		if (HasEntProp(iSlot1, Prop_Send, "m_isDualWielding") && 
+		GetEntProp(iSlot1, Prop_Send, "m_isDualWielding") > 0) //dual pistol
+		{
+			strcopy(wep_name, sizeof(wep_name), "dual_pistol");
+		}
+		else
+		{
+			GetEntityClassname(iSlot1, wep_name, sizeof(wep_name));
+		}
+		
+		if (StrContains(wep_name, "chainsaw", false) >= 0 || StrContains(wep_name, "pistol", false) >= 0) //chainsaw, pistol, dual_pistol, pistol_magnum
+		{
+			ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
+		}
+	}
+	
+	if (wep_name[0] != '\0')
+	{
+		strcopy(sg_slot1[client], 64, wep_name);
+	}
 }
 
+/*
 void HxFakeCHEAT(int client, const char[] sCmd, const char[] sArg)
 {
 	int iFlags = GetCommandFlags(sCmd);
 	SetCommandFlags(sCmd, iFlags & ~FCVAR_CHEAT);
 	FakeClientCommand(client, "%s %s", sCmd, sArg);
 	SetCommandFlags(sCmd, iFlags);
+}
+*/
+
+int HxCreateWeapon(const char[] class_name, const char[] melee_name = "")
+{
+	int weapon = -1;
+	if(strcmp(class_name, "weapon_melee") == 0)
+	{
+		weapon = CreateEntityByName(class_name);
+		if (!RealValidEntity(weapon)) weapon = -1;
+		else
+		{
+			DispatchKeyValue(weapon, "melee_script_name", melee_name);
+			DispatchSpawn(weapon);
+		}
+	}
+	else
+	{
+		char wep_str[128];
+		strcopy(wep_str, sizeof(wep_str), class_name);
+		if (StrContains(wep_str, "weapon_", false) < 0)
+		{
+			Format(wep_str, sizeof(wep_str), "weapon_%s", wep_str);
+		}
+		
+		weapon = CreateEntityByName(wep_str);
+		if (!RealValidEntity(weapon)) weapon = -1;
+		else DispatchSpawn(weapon);
+	}
+	
+	return weapon;
+}
+
+bool RealValidEntity(int entity)
+{
+	if (entity <= 0 || !IsValidEntity(entity)) return false;
+	return true;
 }
 
 void ResetPlugin()
