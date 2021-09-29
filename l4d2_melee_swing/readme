@@ -1,6 +1,7 @@
 Adjustable melee swing rate for each melee weapon.
 
 -ChangeLog-
+v1.3
 AlliedModder Post: https://forums.alliedmods.net/showthread.php?t=332737
 
 -Convar-
@@ -28,6 +29,9 @@ l4d2_melee_swing_frying_pan_rate "0.75"
 
 // 0=Value Default, The interval for swinging Golf Club. (clamped between 0.2 and 1.0)
 l4d2_melee_swing_golfclub_rate "0.75"
+
+// 0=Value Default, 1=Each melee rate unchanged, modify melee swinging rate multi when incapacitated. (ex. Use 'Incapped Weapons Patch by Silvers' to allow using Weapons while Incapped)
+l4d2_melee_swing_incapacitated_multi_rate "2.0"
 
 // 0=Value Default, The interval for swinging Katana. (clamped between 0.2 and 1.0)
 l4d2_melee_swing_katana_rate "0.8"
