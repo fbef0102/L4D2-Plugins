@@ -5,7 +5,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "1.2"
 #define DEBUG 0
 
 public Plugin myinfo = 
@@ -14,7 +14,7 @@ public Plugin myinfo =
 	author = "HarryPotter",
 	description = "Adjustable melee swing rate for each melee weapon.",
 	version = PLUGIN_VERSION,
-	url = "https://steamcommunity.com/id/HarryPotter_TW"
+	url = "https://forums.alliedmods.net/showthread.php?t=332737"
 };
 
 bool bLate;
@@ -36,13 +36,14 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #define TEAM_SURVIVORS 		2
 
 //convar
-ConVar g_hCvarAllow, g_hCvarRate[MAX_MELEE];
+ConVar g_hCvarAllow, g_hCvarRate[MAX_MELEE], g_hCvarInapRate;
 float g_fCvarRate[MAX_MELEE];
 
 //value
 int g_iMAEntid[MAXPLAYERS+1];
 float g_flMANextTime[MAXPLAYERS+1];
 float melee_speed[MAXPLAYERS+1];
+float g_fCvarInapRate;
 
 //offeset
 int g_iNextPAttO, g_ActiveWeaponOffset;
@@ -84,11 +85,14 @@ public void OnPluginStart()
 	g_hCvarRate[11] = CreateConVar(		"l4d2_melee_swing_pitchfork_rate",		"0.88",			"0=Value Default, The interval for swinging Pitchfork. (clamped between 0.2 and 1.0)", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarRate[12] = CreateConVar(		"l4d2_melee_swing_shovel_rate",			"1.0",			"0=Value Default, The interval for swinging shovel. (clamped between 0.2 and 1.0)", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarRate[13] = CreateConVar(		"l4d2_melee_swing_unknown_rate",		"0.0",			"0=Value Default, Custom Third Party Melee, The interval for swinging unknown melee weapon. (clamped between 0.2 and 1.0)", CVAR_FLAGS, true, 0.0, true, 1.0);
+	g_hCvarInapRate = CreateConVar(		"l4d2_melee_swing_incapacitated_multi_rate",	"2.0",			"0=Value Default, 1=Each melee rate unchanged, modify melee swinging rate multi when incapacitated. (ex. Use 'Incapped Weapons Patch by Silvers' to allow using Weapons while Incapped)", CVAR_FLAGS, true, 0.0);
+	
 	AutoExecConfig(true,				"l4d2_melee_swing");
 	
 	g_hCvarAllow.AddChangeHook(ConVarChanged_Allow);
 	for( int i = 0; i < MAX_MELEE; i++ )
 		g_hCvarRate[i].AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarInapRate.AddChangeHook(ConVarChanged_Cvars);
 	
 	if (bLate)
 	{
@@ -96,7 +100,7 @@ public void OnPluginStart()
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
-				SDKHook(i, SDKHook_WeaponSwitchPost, OnWeaponSwitched);
+				OnClientPutInServer(i);
 			}
 		}
 	}
@@ -134,6 +138,8 @@ void GetCvars()
 {
 	for( int i = 0; i < MAX_MELEE; i++ )
 		g_fCvarRate[i] = g_hCvarRate[i].FloatValue;
+	
+	g_fCvarInapRate = g_hCvarInapRate.FloatValue;
 }
 
 bool g_bCvarAllow;
@@ -235,7 +241,6 @@ void Melee_OnGameFrame()
 		if(!IsClientInGame(i)) continue;
 		if(!IsPlayerAlive(i)) continue;
 		if(GetClientTeam(i) != TEAM_SURVIVORS) continue;
-		if(IsPlayerIncap(i)) continue;
 		
 		iEntid = GetEntDataEnt2(i, g_ActiveWeaponOffset);
 		if (iEntid == -1 || g_iMAEntid[i] == 0) continue;
@@ -253,7 +258,16 @@ void Melee_OnGameFrame()
 				#if DEBUG
 					PrintToChatAll("OnGameFrame() %N - addspeed: %f", i, melee_speed[i]);
 				#endif
-				flNextTime_calc = flGameTime + melee_speed[i];
+				if(IsPlayerIncap(i)) //incap
+				{
+					if(g_fCvarInapRate == 0.0) continue;
+					
+					flNextTime_calc = flGameTime + melee_speed[i] * g_fCvarInapRate;
+				}
+				else
+				{
+					flNextTime_calc = flGameTime + melee_speed[i];
+				}
 				g_flMANextTime[i] = flNextTime_calc;
 				SetEntDataFloat(iEntid, g_iNextPAttO, flNextTime_calc, true);
 				continue;	
@@ -272,7 +286,7 @@ public Action Event_WeaponFire(Event event, const char[] name, bool dontBroadcas
 
 		char sBuffer[8];
 		event.GetString("weapon", sBuffer, sizeof(sBuffer));
-		if (strcmp(sBuffer, "melee") == 0)
+		if (strcmp(sBuffer, "melee") == 0 && HasEntProp(iWeapon, Prop_Data, "m_strMapSetScriptName"))
 		{
 			if (g_iMAEntid[client] != iWeapon)
 			{
@@ -285,19 +299,19 @@ public Action Event_WeaponFire(Event event, const char[] name, bool dontBroadcas
 						PrintToChatAll("Event_WeaponFire %N - hold %s - addspeed: %f", client, sTemp, melee_speed[client]);
 					#endif
 				}
-				else 
+				else // Custom Third Party Melee
 				{
 					melee_speed[client] = g_fCvarRate[MAX_MELEE - 1];
 				}
 				
 				g_iMAEntid[client]=iWeapon;
-				g_flMANextTime[i]= GetEntDataFloat(iWeapon, g_iNextPAttO);
+				g_flMANextTime[client]= GetEntDataFloat(iWeapon, g_iNextPAttO);
 			}
 		}
 		else 
 		{
 			//if no, then store in known-non-melee var
-			g_iMAEntid[i] = 0;
+			g_iMAEntid[client] = 0;
 		}
 	}
 }
