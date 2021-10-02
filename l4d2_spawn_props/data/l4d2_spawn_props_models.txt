@@ -15,7 +15,7 @@ models/props_urban/boat002.mdl TAG- 小船
 models/lostcoast/props_wasteland/boat_wooden01a_static.mdl TAG- 伐木舟 a
 models/lostcoast/props_wasteland/boat_wooden03a_static.mdl TAG- 伐木舟 b
 models/props_vehicles/boat_trailer20ft.mdl TAG- 只有骨架的船
-models/props_vehicles/bus01.mdl TAG- 巴士 1
+models/props_vehicles/bus01.mdl TAG- 巴士 01
 models/props_vehicles/bus01_2.mdl TAG- 巴士 01_2
 models/props_waterfront/tour_bus.mdl TAG- 明星巴士 - c6
 models/props_vehicles/cara_69sedan.mdl TAG- 轎車 69
@@ -252,6 +252,7 @@ models/props_furniture/drawer1.mdl TAG- 家具抽屜櫃 (可打破)
 models/props_interiors/dresser_short.mdl TAG- 抽屜櫃 - 三層
 models/props_interiors/dresser_tall.mdl TAG- 抽屜櫃 - 五層
 models/props_interiors/file_cabinet1_group.mdl TAG- 文件抽屜櫃 - 鐵
+models/props/cs_office/file_cabinet2.mdl TAG- 文件抽屜櫃 - 4層
 models/props_interiors/shelvinggrocery01.mdl TAG- 貨架食品櫃 - 7層
 models/props_interiors/shelvingstore01.mdl TAG- 貨架食品櫃 - 4層
 models/props_mall/mall_display_04.mdl TAG- 商場小型展櫃
@@ -292,7 +293,7 @@ models/props/cs_militia/militiawindow02_breakable_chunk_02.mdl TAG- 木屋破損
 models/props/cs_militia/militiawindow02_breakable_chunk_03.mdl TAG- 木屋破損窗戶 3 (可打破)
 models/props/cs_militia/militiawindow02_breakable_chunk_04.mdl TAG- 木屋破損窗戶 4 (可打破)
 models/props/cs_militia/militiawindow02_breakable.mdl TAG- 木屋完整窗戶 (可打破)
-models/props_vents/ventbreakable01.mdl TAG- 通風管氣窗口 (可打破)
+models/props_vents/ventbreakable01.mdl TAG- 通風管窗口蓋 (可打破)
 models/props_interiors/table_picnic.mdl TAG- 野餐桌 (可打破)
 models/props_interiors/table_picnic_break01.mdl TAG- 野餐桌 - 破碎 1
 models/props_interiors/table_picnic_break02.mdl TAG- 野餐桌 - 破碎 2
@@ -315,6 +316,7 @@ models/props_urban/fence_gate001_256.mdl TAG- 市區圍欄大門 (好用)
 models/props_fortifications/barricade_gate001_64_reference.mdl TAG- 路障 - 單層無把手 (好用)
 models/props_fortifications/barricade001_64_reference.mdl TAG- 路障 - 單層
 models/props_fortifications/barricade001_128_reference.mdl TAG- 路障 - 雙層
+models/props_unique/airport/temp_barricade.mdl TAG- 路障 - 機場
 models/props_wasteland/exterior_fence002b.mdl TAG- 鐵絲網圍欄 - 更短單層
 models/props_wasteland/exterior_fence002c.mdl TAG- 鐵絲網圍欄 - 單層
 models/props_wasteland/exterior_fence002d.mdl TAG- 鐵絲網圍欄 - 雙層
@@ -351,12 +353,16 @@ models/props_unique/wooden_barricade.mdl TAG- 木製路障 - 完美
 models/props_unique/wooden_barricade_break1.mdl TAG- 木製路障 - 損壞程度低
 models/props_unique/wooden_barricade_break2.mdl TAG- 木製路障 - 損壞程度中
 models/props_unique/wooden_barricade_break3.mdl TAG- 木製路障 - 損壞程度高
-models/props_fortifications/concrete_block001_128_reference.mdl TAG- 混凝土砌塊
-models/props_fortifications/concrete_barrier001_96_reference.mdl TAG- 混凝土防撞欄
-models/props_fortifications/concrete_barrier001_128_reference.mdl TAG- 混凝土防撞欄 - 較長
+models/props_fortifications/concrete_block001_128_reference.mdl TAG- 混凝土砌塊 - 128 單位
+models/props_fortifications/concrete_barrier001_96_reference.mdl TAG- 混凝土防撞欄 - 96 單位
+models/props_fortifications/concrete_barrier001_128_reference.mdl TAG- 混凝土防撞欄 - 128 單位
+models/props_c17/concrete_barrier001a.mdl TAG- 混凝土防撞欄 - 較高
 models/props_exteriors/guardrail128a.mdl TAG- 道路護欄
 models/props_exteriors/roadsidefence_64.mdl TAG- 道路圍欄 - 單層
 models/props_exteriors/roadsidefence_512.mdl TAG- 道路圍欄 - 八層
+models/props_unique/zombiebreakwallexteriorairport01_main.mdl TAG- 壁紙 - 機場
+models/props_unique/zombiebreakwallhospitalexterior01_main.mdl TAG- 壁紙 - 醫院
+models/props_unique/zombiebreakwallexteriorairportoffices01_main.mdl TAG- 壁紙 - 機場辦公室
 models/lighthouse/props/wall_144_324.mdl TAG- 牆壁 - 144X324 單位
 models/props_update/brick_128.mdl TAG- 磚頭牆 - 128 單位
 models/props_update/brick_256.mdl TAG- 磚頭牆 - 256 單位
@@ -389,9 +395,13 @@ models/props_buildings/barn_supports_bases.mdl TAG- 八個石柱 - 穀倉
 models/lighthouse/props/junkyard_column.mdl TAG- 方柱 - 垃圾場
 models/props_street/phonepole1_tall.mdl TAG- 電話桿
 models/props_c17/utilitypole01d.mdl TAG- 電線桿
-models/props_debris/barricade_short02a.mdl TAG- 瓦礫碎泥土石 a
-models/props_debris/barricade_short03a.mdl TAG- 瓦礫碎泥土石 b
-models/props_debris/barricade_short04a.mdl TAG- 瓦礫碎泥土石 c
+models/props_debris/barricade_short02a.mdl TAG- 瓦礫碎泥土石 - 矮 02a
+models/props_debris/barricade_short03a.mdl TAG- 瓦礫碎泥土石 - 矮 03a
+models/props_debris/barricade_short04a.mdl TAG- 瓦礫碎泥土石 - 矮 04a
+models/props_debris/barricade_tall01a.mdl TAG- 瓦礫碎泥土石 - 長 01a
+models/props_debris/barricade_tall02a.mdl TAG- 瓦礫碎泥土石 - 長 02a
+models/props_debris/barricade_tall03a.mdl TAG- 瓦礫碎泥土石 - 長 03a
+models/props_debris/barricade_tall04a.mdl TAG- 瓦礫碎泥土石 - 長 04a
 models/props_wasteland/rock_moss01.mdl TAG- 大石 1
 models/props_wasteland/rock_moss02.mdl TAG- 大石 2
 models/props_wasteland/rock_moss03.mdl TAG- 大石 3
@@ -408,14 +418,16 @@ models/props_wasteland/rockcliff_cluster03b.mdl TAG- 兩個大型岩石 a
 models/props_wasteland/rockcliff_cluster03b_caves.mdl TAG- 兩個大型岩石 b
 models/props_wasteland/rockcliff_cluster03c.mdl TAG- 兩個大型+一個小型岩石
 models/props_foliage/swamp_rock02.mdl TAG- 長滿蘚苔的石頭 - 兩個
-models/props_foliage/rock_coast02_ls1.mdl TAG- 海岸巨石 a
-models/props_foliage/rock_coast02_ls2.mdl TAG- 海岸巨石 b
+models/props_foliage/rock_coast02f.mdl TAG- 海岸巨石
+models/props_foliage/rock_coast02_ls1.mdl TAG- 海岸巨石 ls1
+models/props_foliage/rock_coast02_ls2.mdl TAG- 海岸巨石 ls2
 models/lostcoast/props_wasteland/rock_coast02a.mdl TAG- 海岸巨石 c
 models/props_wasteland/rock_cliff01.mdl TAG- 巨大岩壁 a
 models/props_wasteland/rockcliff_cluster01a.mdl TAG- 巨大岩壁 b
 models/props_wasteland/rockcliff_cluster02c.mdl TAG- 巨大岩壁 c
 models/props_wasteland/rockcliff_cluster03a.mdl TAG- 巨大岩壁 d
 models/props_wasteland/rockcliff_cluster03a_river.mdl TAG- 巨大岩壁 e
+models/props_unique/airportdeparturescreen01.mdl TAG- 機場螢幕器
 models/props_street/trafficlight01.mdl TAG- 交通路燈 - 大型
 models/props_c17/lamppost03a_on.mdl TAG- 路燈 - 開燈
 models/props_c17/lamppost03a_off.mdl TAG- 路燈 - 關燈
@@ -424,7 +436,13 @@ models/props_unique/ticketbooth.mdl TAG- 售票口
 models/props_mill/elevator01_cage.mdl TAG- 升降電梯 - c4m2
 models/lighthouse/diesel_pump.mdl TAG- 柴油泵
 models/props_rooftop/train_signalbox_01.mdl TAG- 火車信號箱
+models/props/cs_militia/fireplacechimney01.mdl TAG- 壁爐煙囪
 models/props_rooftop/vent_large1.mdl TAG- 通風管電壓箱
+models/props_rooftop/acvent01.mdl TAG- 屋頂的通風窗口 01
+models/props_rooftop/acvent02.mdl TAG- 屋頂的通風窗口 02
+models/props_rooftop/acvent03.mdl TAG- 屋頂的通風窗口 03
+models/props_rooftop/acvent04.mdl TAG- 屋頂的通風窗口 04
+models/props_rooftop/acvent05.mdl TAG- 屋頂的通風窗口 05
 models/props_unique/generator_short.mdl TAG- 發電機 - 渦輪
 models/props_c17/substation_circuitbreaker03.mdl TAG- 發電廠 - 斷路器
 models/props_c17/substation_transformer01a.mdl TAG- 發電廠 - 變壓器
@@ -449,6 +467,12 @@ models/props_mall/mall_kioskc.mdl TAG- 商場亭 C
 models/props_mill/pipeset32d_128a.mdl TAG- 大型管道 - 128單位
 models/props_mill/pipeset32d_256a.mdl TAG- 大型管道 - 256單位
 models/props_mill/pipeset32d_512a.mdl TAG- 大型管道 - 512單位
+models/props_pipes/PipeSet32d_128_001a.mdl TAG- 超粗水管 - 128單位
+models/props_pipes/PipeSet32d_256_001a.mdl TAG- 超粗水管 - 256單位
+models/props_pipes/PipeSet32d_512_001a.mdl TAG- 超粗水管 - 512單位
+models/props_pipes/pipeset02d_64_001a.mdl TAG- 水管線集  - 64單位
+models/props_pipes/pipeset02d_128_001a.mdl TAG- 水管線集  - 128單位
+models/props_pipes/pipeset02d_512_001a.mdl TAG- 水管線集  - 512單位
 models/props_wasteland/prison_pipes002a.mdl TAG- 大量水管線
 models/props_unique/greenhouse_pipewall.mdl TAG- 大型管線 1
 models/props_unique/greenhouseboiler_all.mdl TAG- 大型管線 2
@@ -629,8 +653,6 @@ models/props_c17/computer01_keyboard.mdl TAG- 鍵盤
 models/props_interiors/corkboardverticle01.mdl TAG- 公告欄
 models/props_urban/picture_frame001.mdl TAG- 一幅畫 1
 models/props_interiors/painting_landscape01.mdl TAG- 一幅畫 2
-models/props_unique/zombiebreakwallexteriorairport01_main.mdl TAG- 壁紙 - 機場
-models/props_unique/zombiebreakwallexteriorairportoffices01_main.mdl TAG- 壁紙 - 機場辦公室
 models/props/de_nuke/electricalbox01.mdl TAG- 兩個大電器箱 - 只有半面
 models/props/de_nuke/electricalbox02.mdl TAG- 兩個小電器箱 - 只有半面
 models/props_interiors/closet_clothes.mdl TAG- 衣架 - 含衣服
@@ -690,6 +712,7 @@ models/props_vehicles/carparts_wheel01a_static.mdl TAG- 汽車零件 - 實心輪
 models/lighthouse/props/wheelhouse_window_bars.mdl TAG- 操舵室窗戶
 models/lighthouse/props/brick_broken_wall_debris.mdl TAG- 散落磚頭
 models/props_signs/sign_truckstop_01_lettera.mdl TAG- 霓虹燈字母A（穿透）
+models/props_street/concertinawire128.mdl TAG- 蛇腹形鐵絲網
 //Category Misc 雜項類
 models/props_exteriors/wood_stairs_swamp.mdl TAG- 沼澤木製樓梯 - 5階
 models/props_exteriors/wood_stairs_120_swamp.mdl TAG- 沼澤木製樓梯 - 15階
@@ -699,6 +722,7 @@ models/props_exteriors/wood_porchsteps_01.mdl TAG- 木製樓梯 - 10階 (好用)
 models/props_exteriors/wood_stairs_120.mdl TAG- 木製樓梯 - 15階 (好用)
 models/props_buildings/barn_steps.mdl TAG- 木製樓梯 - 15階 - 有扶手
 models/props_c17/metalladder001.mdl TAG- 梯子 - 8階
+models/props/cs_office/ladder1.mdl TAG- 梯子 - 9階
 models/props_exteriors/stairs_house_01.mdl TAG- 房子裡的樓梯 - 18階
 models/lighthouse/props/wooden_steps_a.mdl TAG- 中空木階 - 4階
 models/lighthouse/props/wooden_steps_b.mdl TAG- 中空木階 - 5階
@@ -760,6 +784,7 @@ models/props_exteriors/chimney4.mdl TAG- 兩管煙囪
 models/props_exteriors/chimney2.mdl TAG- 三管煙囪
 models/props_industrial/barrel_fuel.mdl TAG- 燃油桶
 models/props_interiors/luggagescale.mdl TAG- 指示牌 - 行李車
+models/props_street/stopsign01.mdl TAG- Stop警告標誌
 models/props_exteriors/park_sign.mdl TAG- 公園提示牌
 models/props_misc/military_sign01.mdl TAG- 軍事標誌 a
 models/props_misc/military_sign01_2.mdl TAG- 軍事標誌 b
@@ -785,11 +810,15 @@ models/props/cs_office/vending_machine.mdl TAG- 自動販賣機 - 飲料
 models/props_equipment/snack_machine.mdl TAG- 自動販賣機 - 點心
 models/props_debris/dead_cow.mdl TAG- 死牛
 models/props_debris/dead_cow_smallpile.mdl TAG- 一堆死牛
-models/deadbodies/dead_female_civilian_01.mdl TAG- 死去平民 - 躺著
-models/deadbodies/dead_female_civilian_02.mdl TAG- 死去平民 - 坐著
-models/deadbodies/dead_female_civilian_draped_01.mdl TAG- 死去平民 - 已蓋上布 a
-models/deadbodies/dead_female_civilian_draped_02.mdl TAG- 死去平民 - 已蓋上布 b
-models/deadbodies/dead_male_torso_01.mdl TAG- 死去平民 - 一半屍體
+models/deadbodies/dead_female_civilian_01.mdl TAG- 死去平民 - 躺著 - 女性
+models/deadbodies/dead_female_civilian_02.mdl TAG- 死去平民 - 坐著 - 女性
+models/deadbodies/dead_female_civilian_draped_01.mdl TAG- 死去平民 - 女性 - 已蓋上布 a
+models/deadbodies/dead_female_civilian_draped_02.mdl TAG- 死去平民 - 女性 - 已蓋上布 b
+models/deadbodies/dead_male_civilian_01.mdl TAG- 死去平民 - 坐著 a - 男性
+models/deadbodies/dead_male_civilian_body.mdl TAG- 死去平民 - 坐著 b - 男性
+models/deadbodies/dead_male_civilian_02.mdl TAG- 死去平民 - 躺著 - 男性
+models/deadbodies/dead_male_civilian_draped_01.mdl TAG- 死去平民 - 男性 - 已蓋上布 a
+models/deadbodies/dead_male_torso_01.mdl TAG- 死去平民 - 男性 - 一半屍體
 models/deadbodies/dead_pilot.mdl TAG- 飛行員屍體 - 躺著
 models/deadbodies/dead_military_male01.mdl TAG- 軍人屍體 - 站立 (穿透)
 models/deadbodies/dead_male_suit_01.mdl TAG- 男西裝屍體 - 站立 (穿透)
