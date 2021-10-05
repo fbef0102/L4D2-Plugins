@@ -10,7 +10,7 @@
 #include <glow>
 #include <left4dhooks>
 #include <multicolors>
-#define PLUGIN_VERSION "4.3"
+#define PLUGIN_VERSION "4.4"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -808,7 +808,7 @@ stock bool IsSurvivor(int client)
 
 stock bool IsValidEnt(int entity)
 {
-	return (entity > 0 && IsValidEntity(entity));
+	return (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity));
 }
 
 stock bool IsCommonInfected(int entity)
@@ -1021,7 +1021,7 @@ public void OnTouch(int door, int other)
 
 bool IsWitch(int entity)
 {
-    if (entity > 0 && IsValidEntity(entity))
+    if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
     {
         char strClassName[64];
         GetEdictClassname(entity, strClassName, sizeof(strClassName));
