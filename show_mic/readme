@@ -7,7 +7,10 @@ see show_mic.jpg
 1. SM 1.10 or above
 2. Meta 1.11 or above
 3. ThirdPersonShoulder_Detect: https://forums.alliedmods.net/showthread.php?p=2529779
-4. Accelerator74/VoiceHook: https://github.com/Accelerator74/VoiceHook/releases
+4. VoiceHook: 
+  * windows: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Windows%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.dll
+  * linux: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Linux%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.so
+
 
 -ChangeLog-
 v1.5
