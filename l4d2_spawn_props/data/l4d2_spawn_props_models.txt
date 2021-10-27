@@ -517,6 +517,7 @@ models/lighthouse/props/ceiling_metal_beams.mdl TAG- 天花板金屬梁
 models/props_unique/airport_greenhouse.mdl TAG- 機場第一關卡的巨大溫室骨架
 models/props_fairgrounds/slide.mdl TAG- 遊樂園滑梯
 models/props_unique/airport/atlas.mdl TAG- 大力士雕像拿著地球模型
+models/conspiracy/cspy_radiotower.mdl TAG- 超高無線電塔
 models/props_cemetery/grave_01.mdl TAG- 墓碑 1 (可打破)
 models/props_cemetery/grave_02.mdl TAG- 墓碑 2 (可打破)
 models/props_cemetery/grave_03.mdl TAG- 墓碑 3 (可打破)
@@ -751,13 +752,14 @@ models/props_fairgrounds/anvil_case_64.mdl TAG- 舞會箱 - 較長
 models/props_fairgrounds/anvil_case_casters_32.mdl TAG- 舞會箱 - 有滾輪 (好用)
 models/props_fairgrounds/anvil_case_casters_64.mdl TAG- 舞會箱 - 較長 - 有滾輪 (好用)
 models/props/cs_militia/boxes_garage_lower.mdl TAG- 三個箱子 (好用)
-models/props_crates/static_crate_40.mdl TAG- 軍用封裝箱 (好用)
 models/props_junk/cardboard_box03_static.mdl TAG- 紙箱 a (固態)
 models/props_junk/cardboard_box04_static.mdl TAG- 紙箱 b (固態)
 models/props_junk/cardboard_box05_static.mdl TAG- 紙箱 c (固態)
 models/props_junk/cardboard_box07_static.mdl TAG- 紙箱 d (固態)
+models/props/cs_assault/washer_box.mdl TAG- 裝洗衣服的箱子
 models/props/cs_assault/box_stack1.mdl TAG- 危險包裝 - 雙層12箱
 models/props/cs_assault/box_stack2.mdl TAG- 危險包裝 - 單層9箱
+models/props/cs_militia/boxes_frontroom.mdl TAG- 雙層箱子 - 上五下三 (好用)
 models/props/cs_militia/footlocker01_closed.mdl TAG- 鎖住箱
 models/props_junk/cinderblock01a.mdl TAG- 方形瓷磚
 models/props_junk/dumpster.mdl TAG- 垃圾箱 - 綠色
@@ -790,11 +792,13 @@ models/props_misc/military_sign01.mdl TAG- 軍事標誌 a
 models/props_misc/military_sign01_2.mdl TAG- 軍事標誌 b
 models/props_misc/military_sign02.mdl TAG- 軍事標誌 c
 models/props_mall/mall_directory.mdl TAG- 指示牌 - 商場地圖
+models/props_rooftop/billboard06.mdl TAG- 廣告牌 - MONEY BANK
 models/props_signs/burgersign_beacon.mdl TAG- 超大廣告牌 a - Burger TANK - 沒亮 (穿透)
 models/props_signs/burgersign.mdl TAG- 超大廣告牌 a - Burger TANK - 發亮 (穿透)
 models/props_signs/raisedbillboard.mdl TAG- 超大廣告牌 b - Burger TANK
 models/props_fairgrounds/entrance_sign.mdl TAG- 超大標誌 - 遊樂園入口
 models/props_fortifications/police_barrier001_128_reference.mdl TAG- 警察護欄告示
+models/props_street/traffic_plate_01.mdl TAG- 金屬鐵板
 models/props_interiors/sheetrock_leaning.mdl TAG- 長型鐵板 - 推疊
 models/props_equipment/tablegreenhouse01.mdl TAG- 長型鐵板架 - c11m1
 models/props_swamp/ferry.mdl TAG- 搭建鐵皮屋
@@ -802,6 +806,7 @@ models/props_unique/airport/atlas_break_ball.mdl TAG- 地球模型
 models/lighthouse/props/camp_tent.mdl TAG- 露營帳篷
 models/lighthouse/glass_design01a.mdl TAG- 透明玻璃
 models/lighthouse/glass_design01b.mdl TAG- 透明玻璃 - 較寬
+models/props_unique/airport/luggage_pile1.mdl TAG- 行李推 - 機場
 models/props_fortifications/fortification_indoor_01.mdl TAG- 行李推疊堡壘
 models/props_fortifications/sandbags_line2.mdl TAG- 建築沙袋 - 6層
 models/props_fortifications/sandbags_corner3.mdl TAG- 建築沙袋 - 4層 - 弧型
