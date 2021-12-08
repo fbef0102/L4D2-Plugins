@@ -3,20 +3,42 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 
-Handle g_hUseEntity;
-ConVar CvarFindRadius, CoolDown;
-StringMap g_smModelToName;
+ConVar CvarFindRadius, g_hColorGlowRange, g_hCvarColor, g_hGlowTimer, g_hCoolDown;
+int g_iColorGlowRange, g_iCvarColor;
+float g_fCoolDown, g_fGlowTimer;
 float fCoolDownTime[MAXPLAYERS+1];
+
+#define MAXENTITIES 2048
+int g_iModelIndex[MAXENTITIES] = 0;
+Handle g_iModelTimer[MAXENTITIES];
+Handle g_hUseEntity;
+StringMap g_smModelToName;
 
 public Plugin myinfo =
 {
 	name = "L4D2 Item hint",
 	author = "BHaType, fdxx, HarryPotter",
-	description = "When using 'Look' in vocalize menu, print corresponding item to chat area.",
-	version = "0.3",
+	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow.",
+	version = "0.4",
 	url = "https://forums.alliedmods.net/showthread.php?t=333669"
 };
+
+bool bLate;
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+
+	bLate = late;
+	return APLRes_Success; 
+}
 
 public void OnPluginStart()
 {
@@ -44,15 +66,61 @@ public void OnPluginStart()
 
 	CvarFindRadius = FindConVar("player_use_radius");
 	AddCommandListener(Vocalize_Listener, "vocalize");
-
-	CreateStringMap();
 	
-	CoolDown = CreateConVar(	"l4d2_item_hint_cooldown_time",			"2.5",			"Cold Down Time in seconds a player can use 'Look' item chat again.", FCVAR_NOTIFY, true, 0.0 );
-	AutoExecConfig(true,		"l4d2_item_hint");	
+	g_hCoolDown = CreateConVar(			"l4d2_item_hint_cooldown_time",	"2.5",	"Cold Down Time in seconds a player can use 'Look' item chat again.", FCVAR_NOTIFY, true, 0.0 );
+	g_hGlowTimer = CreateConVar(		"l4d2_item_hint_glow_timer",	"15.0",	"Item Glow Time.", FCVAR_NOTIFY, true, 0.0 );
+	g_hColorGlowRange = CreateConVar(	"l4d2_item_hint_glow_range",	"1000",	"Item Glow Range.", FCVAR_NOTIFY, true, 0.0 );
+	g_hCvarColor = CreateConVar(		"l4d2_item_hint_glow_color",	"200 200 200",	"Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)", FCVAR_NOTIFY);
+	AutoExecConfig(true,		"l4d2_item_hint");
+
+	GetCvars();
+	g_hCoolDown.AddChangeHook(ConVarChanged_Cvars);
+	g_hGlowTimer.AddChangeHook(ConVarChanged_Cvars);
+	g_hColorGlowRange.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarColor.AddChangeHook(ConVarChanged_Cvars);
 
 	HookEvent("round_start", Event_RoundStart);
+	HookEvent("round_end", Event_Round_End);
+	HookEvent("map_transition", Event_Round_End); //戰役過關到下一關的時候 (沒有觸發round_end)
+	HookEvent("mission_lost", Event_Round_End); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
+	HookEvent("finale_vehicle_leaving", Event_Round_End); //救援載具離開之時  (沒有觸發round_end)
+	HookEvent("spawner_give_item", Event_SpawnerGiveItem);
 
+	CreateStringMap();
 	Clear();
+
+	if (bLate)
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i))
+			{
+				OnClientPutInServer(i);
+			}
+		}
+	}
+}
+
+public void OnPluginEnd()
+{
+	delete g_smModelToName;
+	RemoveItemGlow_Timer();
+}
+
+public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	GetCvars();
+}
+
+void GetCvars()
+{
+	g_fCoolDown = g_hCoolDown.FloatValue;
+	g_fGlowTimer = g_hGlowTimer.FloatValue;
+	g_iColorGlowRange = g_hColorGlowRange.IntValue;
+
+	char sColor[16];
+	g_hCvarColor.GetString(sColor, sizeof(sColor));
+	g_iCvarColor = GetColor(sColor);
 }
 
 void CreateStringMap()
@@ -118,14 +186,31 @@ void CreateStringMap()
 	g_smModelToName.SetString("models/weapons/melee/w_shovel.mdl", 						"Shovel!");
 }
 
-public void OnPluginEnd()
+bool g_bConfigLoaded;
+public void OnConfigsExecuted()
 {
-	delete g_smModelToName;
+    g_bConfigLoaded = true;
+}
+
+public void OnMapEnd()
+{
+	RemoveItemGlow_Timer();
+	g_bConfigLoaded = false;
 }
 
 public void OnClientPutInServer(int client)
 {
 	Clear(client);
+	SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquipPost);
+}
+
+public void OnWeaponEquipPost(int client, int weapon)
+{
+	if (!IsValidEntity(weapon))
+		return;
+
+	RemoveEntityModelGlow(weapon);
+	delete g_iModelTimer[weapon];
 }
 
 public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
@@ -133,8 +218,26 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 	Clear();
 }
 
+public Action Event_Round_End(Event event, const char[] name, bool dontBroadcast)
+{
+	RemoveItemGlow_Timer();
+}
+
+public void Event_SpawnerGiveItem(Event event, const char[] name, bool dontBroadcast)
+{
+	int entity = event.GetInt("spawner");
+	int count = GetEntProp(entity, Prop_Data, "m_itemCount");
+
+	if(count <= 1)
+	{
+		RemoveEntityModelGlow(entity);
+		delete g_iModelTimer[entity];
+	}
+}
+
 public Action Vocalize_Listener(int client, const char[] command, int argc)
 {
+	bool bGlow = false;
 	if (IsRealSur(client))
 	{
 		static char sCmdString[32];
@@ -144,7 +247,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 			{
 				static int iEntity;
 				iEntity = GetUseEntity(client, CvarFindRadius.FloatValue);
-				if (MaxClients < iEntity <= GetMaxEntities())
+				if (IsValidEntityIndex(iEntity) && IsValidEntity(iEntity))
 				{
 					if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
 					{
@@ -155,15 +258,51 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 							if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
 							{
 								PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
-								fCoolDownTime[client] = GetEngineTime() + CoolDown.FloatValue;
-								return Plugin_Continue;
+								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
+								bGlow = true;
 							}
-							
-							if (StrContains(sEntModelName, "/melee/") != -1) //custom 3rd party melee weapon
+							else if (StrContains(sEntModelName, "/melee/") != -1) //custom 3rd party melee weapon
 							{
 								PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: Melee!", client);
-								fCoolDownTime[client] = GetEngineTime() + CoolDown.FloatValue;
-								return Plugin_Continue;
+								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
+								bGlow = true;
+							}
+
+							if(bGlow && g_iCvarColor != 0) 
+							{
+								// Spawn dynamic prop entity
+								int entity = CreateEntityByName("prop_dynamic_override");
+								if (entity == -1) return Plugin_Continue;
+								
+								// Set new fake model
+								DispatchKeyValue(entity, "model", sEntModelName);
+								DispatchSpawn(entity);
+
+								float vPos[3], vAng[3];
+								GetEntPropVector(iEntity, Prop_Data, "m_vecOrigin", vPos);
+								GetEntPropVector(iEntity, Prop_Send, "m_angRotation", vAng);
+								TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
+
+								// Set outline glow color
+								SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
+								SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
+								SetEntProp(entity, Prop_Send, "m_nGlowRange", g_iColorGlowRange);
+								SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
+								SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColor);
+								AcceptEntityInput(entity, "StartGlowing");
+
+								// Set model invisible
+								SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+								SetEntityRenderColor(entity, 0, 0, 0, 0);
+
+								// Set model attach to item, and always synchronize
+								SetVariantString("!activator");
+								AcceptEntityInput(entity, "SetParent", iEntity);
+
+								g_iModelIndex[iEntity] = entity;
+
+								delete g_iModelTimer[iEntity];
+								g_iModelTimer[iEntity] = CreateTimer(g_fGlowTimer, ColdDown, iEntity);
 							}
 						}
 					}
@@ -173,6 +312,21 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 	}
 	
 	return Plugin_Continue;
+}
+
+public Action ColdDown(Handle timer, int iEntity)
+{		
+	RemoveEntityModelGlow(iEntity);
+	g_iModelTimer[iEntity] = null;
+}
+
+void RemoveEntityModelGlow(int iEntity)
+{
+	int entity = g_iModelIndex[iEntity];
+	g_iModelIndex[iEntity] = 0;
+
+	if( IsValidEntRef(entity) )
+		AcceptEntityInput(entity, "kill");
 }
 
 int GetUseEntity(int client, float fRadius)
@@ -198,4 +352,55 @@ void Clear(int client = -1)
 	{
 		fCoolDownTime[client] = 0.0;
 	}
+}
+
+int GetColor(char[] sTemp)
+{
+	if( StrEqual(sTemp, "") )
+		return 0;
+
+	char sColors[3][4];
+	int color = ExplodeString(sTemp, " ", sColors, 3, 4);
+
+	if( color != 3 )
+		return 0;
+
+	color = StringToInt(sColors[0]);
+	color += 256 * StringToInt(sColors[1]);
+	color += 65536 * StringToInt(sColors[2]);
+
+	return color;
+}
+
+bool IsValidEntRef(int entity)
+{
+	if( entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE && entity!= -1 )
+		return true;
+	return false;
+}
+
+public void OnEntityDestroyed(int entity)
+{
+	if (!g_bConfigLoaded)
+		return;
+		
+	if (!IsValidEntityIndex(entity))
+		return;
+
+	g_iModelIndex[entity] = 0;
+	delete g_iModelTimer[entity];
+}
+
+void RemoveItemGlow_Timer()
+{
+	for (int entity = 1; entity < MAXENTITIES; entity++)
+	{
+		RemoveEntityModelGlow(entity);
+		delete g_iModelTimer[entity];
+	}
+}
+
+bool IsValidEntityIndex(int entity)
+{
+    return (MaxClients+1 <= entity <= GetMaxEntities());
 }

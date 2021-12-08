@@ -1,9 +1,10 @@
 When using 'Look' in vocalize menu, print corresponding item to chat area.
 
 -ChangeLog-
-v0.3
+v0.4
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
+-Add Glow, everyone can see the item through wall.
 
 v0.2
 -Original Post: https://forums.alliedmods.net/showpost.php?p=2756974&postcount=15
@@ -12,6 +13,18 @@ v0.2
 cfg\sourcemod\l4d2_item_hint.cfg
 // Cold Down Time in seconds a player can use 'Look' item chat again.
 l4d2_item_hint_cooldown_time "2.5"
+
+// Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)
+l4d2_item_hint_glow_color "0 255 255"
+
+// Item Glow Range.
+l4d2_item_hint_glow_range "1000"
+
+// Item Glow Time.
+l4d2_item_hint_glow_timer "15.0"
+
+
+
 
 -Commands-
 None
