@@ -10,6 +10,7 @@ see show_mic.jpg
 4. VoiceHook: 
   * windows: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Windows%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.dll
   * linux: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Linux%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.so
+  please also create a empty file on extensions folder, and name it to "voicehook.autoload"
 
 
 -ChangeLog-
