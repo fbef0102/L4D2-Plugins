@@ -215,12 +215,12 @@ static char specialMenu[][][] =
 static char infectedSpawnMenu[][][] =
 {
 	{"Suicide",		"Suicide", 			"0"},
-	{"Smoker",		"Smoker", 			"350"},
-	{"Boomer",		"Boomer", 			"200"},
-	{"Hunter",		"Hunter", 			"150"},
-	{"Spitter",		"Spitter", 			"400"},
-	{"Jockey",		"Jockey", 			"250"},
-	{"Charger",		"Charger", 			"300"},
+	{"Smoker",		"Smoker", 			"400"},
+	{"Boomer",		"Boomer", 			"250"},
+	{"Hunter",		"Hunter", 			"200"},
+	{"Spitter",		"Spitter", 			"450"},
+	{"Jockey",		"Jockey", 			"300"},
+	{"Charger",		"Charger", 			"350"},
 	{"Tank",		"Tank", 			"3000"}
 };
 
@@ -239,23 +239,23 @@ static int g_iTransferPointList[] =
 //WeaponName/AmmoOffset/AmmoGive
 static char weapon_ammo[][][] =
 {
-	{"weapon_smg",		 				"5", 	"300"},
-	{"weapon_pumpshotgun",				"7", 	"40"},
+	{"weapon_smg",		 				"5", 	"400"},
+	{"weapon_pumpshotgun",				"7", 	"64"},
 	{"weapon_rifle",					"3", 	"250"},
-	{"weapon_autoshotgun",				"8", 	"60"},
+	{"weapon_autoshotgun",				"8", 	"64"},
 	{"weapon_hunting_rifle",			"9", 	"100"},
-	{"weapon_smg_silenced",				"5", 	"300"},
-	{"weapon_smg_mp5", 	 				"5", 	"300"},
-	{"weapon_shotgun_chrome",	 		"7", 	"40"},
+	{"weapon_smg_silenced",				"5", 	"400"},
+	{"weapon_smg_mp5", 	 				"5", 	"400"},
+	{"weapon_shotgun_chrome",	 		"7", 	"64"},
 	{"weapon_rifle_ak47",  				"3",	"250"},
 	{"weapon_rifle_desert",				"3", 	"250"},
-	{"weapon_sniper_military",			"10", 	"120"},
+	{"weapon_sniper_military",			"10", 	"100"},
 	{"weapon_grenade_launcher", 	 	"17", 	"15"},
 	{"weapon_rifle_sg552",	 			"3", 	"250"},
-	{"weapon_rifle_m60",  				"6",	"150"},
+	{"weapon_rifle_m60",  				"6",	"200"},
 	{"weapon_sniper_awp", 	 			"10", 	"100"},
 	{"weapon_sniper_scout",	 			"10", 	"100"},
-	{"weapon_shotgun_spas",  			"8",	"60"}
+	{"weapon_shotgun_spas",  			"8",	"64"}
 };
 
 bool bLate;
@@ -2498,47 +2498,6 @@ bool TeleportToNearestTeammate (int client, char[] displayName)
 	PlaySound(client, BUY_Sound2);
 
 	return true;
-}
-
-stock int L4D2_GetInfectedAttacker(int client)
-{
-	int attacker;
-
-	/* Charger */
-	attacker = GetEntPropEnt(client, Prop_Send, "m_pummelAttacker");
-	if (attacker > 0)
-	{
-		return attacker;
-	}
-
-	attacker = GetEntPropEnt(client, Prop_Send, "m_carryAttacker");
-	if (attacker > 0)
-	{
-		return attacker;
-	}
-	/* Jockey */
-	attacker = GetEntPropEnt(client, Prop_Send, "m_jockeyAttacker");
-	if (attacker > 0)
-	{
-		return attacker;
-	}
-	
-
-	/* Hunter */
-	attacker = GetEntPropEnt(client, Prop_Send, "m_pounceAttacker");
-	if (attacker > 0)
-	{
-		return attacker;
-	}
-
-	/* Smoker */
-	attacker = GetEntPropEnt(client, Prop_Send, "m_tongueOwner");
-	if (attacker > 0)
-	{
-		return attacker;
-	}
-
-	return -1;
 }
 
 bool IsFire(const char[] classname)
