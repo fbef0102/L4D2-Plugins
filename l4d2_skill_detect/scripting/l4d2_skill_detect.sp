@@ -59,7 +59,7 @@
 #include <sdktools>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "1.0"
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
 #define IS_SURVIVOR(%1)         (GetClientTeam(%1) == 2)
