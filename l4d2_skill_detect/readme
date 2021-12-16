@@ -5,12 +5,11 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 2. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?t=321696
 
 -ChangeLog-
-v1.1
--Without the need of ReadyUp and <left4framework>, but require left4dhooks.
+v1.0
 -Delete high-pounce and tank-rock-skeet reports
 
-v1.0
--Original code: https://github.com/L4D-Community/L4D2-Competitive-Framework/blob/main/addons/sourcemod/scripting/l4d2_skill_detect.sp
+v0.9.20
+-Original code: https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_skill_detect.sp
 
 -Related-
 1. Pounce Announce: Announces each successful pounce done by an infected hunter player to every player on the server.
