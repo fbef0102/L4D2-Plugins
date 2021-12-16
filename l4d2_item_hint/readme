@@ -1,7 +1,7 @@
 When using 'Look' in vocalize menu, print corresponding item to chat area.
 
 -ChangeLog-
-v0.4
+v0.5
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
 -Add Glow, everyone can see the item through wall.

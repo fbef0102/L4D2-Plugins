@@ -21,7 +21,7 @@ public Plugin myinfo =
 	name = "L4D2 Item hint",
 	author = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow.",
-	version = "0.4",
+	version = "0.5",
 	url = "https://forums.alliedmods.net/showthread.php?t=333669"
 };
 
@@ -387,7 +387,7 @@ public void OnEntityDestroyed(int entity)
 	if (!IsValidEntityIndex(entity))
 		return;
 
-	g_iModelIndex[entity] = 0;
+	RemoveEntityModelGlow(entity);
 	delete g_iModelTimer[entity];
 }
 
