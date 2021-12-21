@@ -1,17 +1,18 @@
-When using 'Look' in vocalize menu, print corresponding item to chat area.
+When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or mark like back 4 blood
 
 -ChangeLog-
-v0.5
+v0.6
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
 -Add Glow, everyone can see the item through wall.
+-Add Mark, using 'Look' in vocalize menu to mark the area.
 
 v0.2
--Original Post: https://forums.alliedmods.net/showpost.php?p=2756974&postcount=15
+-Original Post: https://forums.alliedmods.net/showthread.php?t=333669
 
 -Convars-
 cfg\sourcemod\l4d2_item_hint.cfg
-// Cold Down Time in seconds a player can use 'Look' item chat again.
+// Cold Down Time in seconds a player can use 'Look' item/mark hint again.
 l4d2_item_hint_cooldown_time "2.5"
 
 // Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)
@@ -23,8 +24,23 @@ l4d2_item_hint_glow_range "1000"
 // Item Glow Time.
 l4d2_item_hint_glow_timer "15.0"
 
+// How close can a player use 'Look' item hint.
+l4d2_item_hint_use_range "150"
 
+// Item Hint Sound. (Empty = OFF)
+l4d2_item_hint_use_sound "buttons/blip1.wav"
 
+// Mark Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)
+l4d2_mark_hint_glow_color "200 200 200"
+
+// Mark Glow Time.
+l4d2_mark_hint_glow_timer "10.0"
+
+// How far away can a player use 'Look' mark hint.
+l4d2_mark_hint_use_range "900"
+
+// Mark Hint Sound. (Empty = OFF)
+l4d2_mark_hint_use_sound "buttons/blip1.wav"
 
 -Commands-
 None
