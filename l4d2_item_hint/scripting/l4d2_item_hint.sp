@@ -34,9 +34,9 @@ public Plugin myinfo =
 {
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
-	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or mark like back 4 blood.",
+	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or mark the area like back 4 blood.",
 	version     = "0.6",
-	url         = "https://forums.alliedmods.net/showthread.php?t=333669"
+	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
 bool bLate;
