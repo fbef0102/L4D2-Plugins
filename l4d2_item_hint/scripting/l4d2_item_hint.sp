@@ -13,9 +13,9 @@
 #define ENTITY_WORLDSPAWN             0
 
 ConVar g_hCoolDown,
-	g_hItemUseHintRange, g_hItemUseSound, g_hItemGlowTimer, g_hItemColorGlowRange, g_hItemCvarColor,
+	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemColorGlowRange, g_hItemCvarColor,
 	g_hMarkUseRange, g_hMarkUseSound, g_hMarkGlowTimer, g_hMarkCvarColor;
-int g_iItemColorGlowRange, g_iItemCvarColor,
+int g_iItemAnnounceType, g_iItemColorGlowRange, g_iItemCvarColor,
 	g_iMarkCvarColorArray[3];
 float g_fCoolDown,
 	g_fItemUseHintRange, g_fItemGlowTimer,
@@ -34,8 +34,8 @@ public Plugin myinfo =
 {
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
-	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or mark the area like back 4 blood.",
-	version     = "0.6",
+	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker like back 4 blood.",
+	version     = "0.7",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -82,22 +82,24 @@ public void OnPluginStart()
 	// g_hItemUseHintRange = FindConVar("player_use_radius");
 	AddCommandListener(Vocalize_Listener, "vocalize");
 
-	g_hCoolDown           = CreateConVar("l4d2_item_hint_cooldown_time", "2.5", "Cold Down Time in seconds a player can use 'Look' item/mark hint again.", FCVAR_NOTIFY, true, 0.0);
+	g_hCoolDown           = CreateConVar("l4d2_item_hint_cooldown_time", "2.5", "Cold Down Time in seconds a player can use 'Look' Item Hint/Spot Marker again.", FCVAR_NOTIFY, true, 0.0);
 	g_hItemUseHintRange   = CreateConVar("l4d2_item_hint_use_range", "150", "How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
 	g_hItemUseSound       = CreateConVar("l4d2_item_hint_use_sound", "buttons/blip1.wav", "Item Hint Sound. (Empty = OFF)", FCVAR_NOTIFY);
+	g_hItemAnnounceType   = CreateConVar("l4d2_item_hint_announce_type", "1", "Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	g_hItemGlowTimer      = CreateConVar("l4d2_item_hint_glow_timer", "15.0", "Item Glow Time.", FCVAR_NOTIFY, true, 0.0);
 	g_hItemColorGlowRange = CreateConVar("l4d2_item_hint_glow_range", "1000", "Item Glow Range.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemCvarColor      = CreateConVar("l4d2_item_hint_glow_color", "0 255 255", "Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)", FCVAR_NOTIFY);
-	g_hMarkUseRange       = CreateConVar("l4d2_mark_hint_use_range", "900", "How far away can a player use 'Look' mark hint.", FCVAR_NOTIFY, true, 1.0);
-	g_hMarkUseSound       = CreateConVar("l4d2_mark_hint_use_sound", "buttons/blip1.wav", "Mark Hint Sound. (Empty = OFF)", FCVAR_NOTIFY);
-	g_hMarkGlowTimer      = CreateConVar("l4d2_mark_hint_glow_timer", "10.0", "Mark Glow Time.", FCVAR_NOTIFY, true, 0.0);
-	g_hMarkCvarColor      = CreateConVar("l4d2_mark_hint_glow_color", "200 200 200", "Mark Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)", FCVAR_NOTIFY);
+	g_hItemCvarColor      = CreateConVar("l4d2_item_hint_glow_color", "0 255 255", "Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)", FCVAR_NOTIFY);
+	g_hMarkUseRange       = CreateConVar("l4d2_spot_marker_use_range", "900", "How far away can a player use 'Look' Spot Marker.", FCVAR_NOTIFY, true, 1.0);
+	g_hMarkUseSound       = CreateConVar("l4d2_spot_marker_use_sound", "buttons/blip1.wav", "Spot Marker Sound. (Empty = OFF)", FCVAR_NOTIFY);
+	g_hMarkGlowTimer      = CreateConVar("l4d2_spot_marker_duration", "10.0", "Spot Marker Duration.", FCVAR_NOTIFY, true, 0.0);
+	g_hMarkCvarColor      = CreateConVar("l4d2_spot_marker_color", "200 200 200", "Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)", FCVAR_NOTIFY);
 	AutoExecConfig(true, "l4d2_item_hint");
 
 	GetCvars();
 	g_hCoolDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseHintRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseSound.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemAnnounceType.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemGlowTimer.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemColorGlowRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemCvarColor.AddChangeHook(ConVarChanged_Cvars);
@@ -145,6 +147,7 @@ void GetCvars()
 	g_fCoolDown         = g_hCoolDown.FloatValue;
 	g_fItemUseHintRange = g_hItemUseHintRange.FloatValue;
 	g_hItemUseSound.GetString(g_sItemUseSound, sizeof(g_sItemUseSound));
+	g_iItemAnnounceType = g_hItemAnnounceType.IntValue;
 	g_fItemGlowTimer      = g_hItemGlowTimer.FloatValue;
 	g_iItemColorGlowRange = g_hItemColorGlowRange.IntValue;
 
@@ -167,25 +170,25 @@ void CreateStringMap()
 	g_smModelToName = new StringMap();
 
 	// Case-sensitive
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_Medkit.mdl", "First aid kit!");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_medkit.mdl", "First aid kit!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_defibrillator.mdl", "Defibrillator!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_painpills.mdl", "Pain pills!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_adrenaline.mdl", "Adrenaline!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_bile_flask.mdl", "Bile Bomb!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_molotov.mdl", "Molotov!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_pipebomb.mdl", "Pipe bomb!");
-	g_smModelToName.SetString("models/w_models/Weapons/w_laser_sights.mdl", "Laser Sight!");
+	g_smModelToName.SetString("models/w_models/weapons/w_laser_sights.mdl", "Laser Sight!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_incendiary_ammopack.mdl", "Incendiary UpgradePack!");
 	g_smModelToName.SetString("models/w_models/weapons/w_eq_explosive_ammopack.mdl", "Explosive UpgradePack!");
 	g_smModelToName.SetString("models/props/terror/ammo_stack.mdl", "Ammo!");
 	g_smModelToName.SetString("models/props_unique/spawn_apartment/coffeeammo.mdl", "Ammo!");
 	g_smModelToName.SetString("models/props/de_prodigy/ammo_can_02.mdl", "Ammo!");
 	g_smModelToName.SetString("models/weapons/melee/w_chainsaw.mdl", "Chainsaw!");
-	g_smModelToName.SetString("models/w_models/weapons/w_pistol_B.mdl", "Pistol!");
-	g_smModelToName.SetString("models/w_models/weapons/w_pistol_a.mdl.mdl", "Pistol!");
+	g_smModelToName.SetString("models/w_models/weapons/w_pistol_b.mdl", "Pistol!");
+	g_smModelToName.SetString("models/w_models/weapons/w_pistol_a.mdl", "Pistol!");
 	g_smModelToName.SetString("models/w_models/weapons/w_desert_eagle.mdl", "Magnum!");
 	g_smModelToName.SetString("models/w_models/weapons/w_shotgun.mdl", "Pump Shotgun!");
-	g_smModelToName.SetString("models/w_models/weapons/w_pumpshotgun_A.mdl", "Shotgun Chrome!");
+	g_smModelToName.SetString("models/w_models/weapons/w_pumpshotgun_a.mdl", "Shotgun Chrome!");
 	g_smModelToName.SetString("models/w_models/weapons/w_smg_uzi.mdl", "Uzi!");
 	g_smModelToName.SetString("models/w_models/weapons/w_smg_a.mdl", "Silenced Smg!");
 	g_smModelToName.SetString("models/w_models/weapons/w_smg_mp5.mdl", "MP5!");
@@ -298,17 +301,42 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 						if (GetEntPropString(iEntity, Prop_Data, "m_ModelName", sEntModelName, sizeof(sEntModelName)) > 1)
 						{
 							// PrintToChatAll("Model - %s", sEntModelName);
+							StringToLowerCase(sEntModelName);
 							static char sItemName[64];
 							if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
 							{
-								PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+								switch(g_iItemAnnounceType)
+								{
+									case 0: {/*nothing*/}
+									case 1: {
+										PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+									}
+									case 2: {
+										PrintHintTextToAll("(Vocalize) %N: %s", client, sItemName);
+									}
+									case 3: {
+										PrintCenterTextAll("(Vocalize) %N: %s", client, sItemName);
+									}
+								}
 								if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
 								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
 								bGlow                 = true;
 							}
 							else if (StrContains(sEntModelName, "/melee/") != -1)    // custom 3rd party melee weapon
 							{
-								PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: Melee!", client);
+								switch(g_iItemAnnounceType)
+								{
+									case 0: {/*nothing*/}
+									case 1: {
+										PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: Melee!", client);
+									}
+									case 2: {
+										PrintHintTextToAll("(Vocalize) %N: Melee!", client);
+									}
+									case 3: {
+										PrintCenterTextAll("(Vocalize) %N: Melee!", client);
+									}
+								}
 								if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
 								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
 								bGlow                 = true;
@@ -316,44 +344,12 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 
 							if (bGlow && g_iItemCvarColor != 0)
 							{
-								// Spawn dynamic prop entity
-								int entity = CreateEntityByName("prop_dynamic_override");
-								if (entity == -1) return Plugin_Continue;
-
-								// Set new fake model
-								DispatchKeyValue(entity, "model", sEntModelName);
-								DispatchSpawn(entity);
-
-								float vPos[3], vAng[3];
-								GetEntPropVector(iEntity, Prop_Data, "m_vecOrigin", vPos);
-								GetEntPropVector(iEntity, Prop_Send, "m_angRotation", vAng);
-								TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
-
-								// Set outline glow color
-								SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
-								SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
-								SetEntProp(entity, Prop_Send, "m_nGlowRange", g_iItemColorGlowRange);
-								SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
-								SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iItemCvarColor);
-								AcceptEntityInput(entity, "StartGlowing");
-
-								// Set model invisible
-								SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
-								SetEntityRenderColor(entity, 0, 0, 0, 0);
-
-								// Set model attach to item, and always synchronize
-								SetVariantString("!activator");
-								AcceptEntityInput(entity, "SetParent", iEntity);
-
-								g_iModelIndex[iEntity] = EntIndexToEntRef(entity);
-
-								delete g_iModelTimer[iEntity];
-								g_iModelTimer[iEntity] = CreateTimer(g_fItemGlowTimer, ColdDown, iEntity);
+								CreateItemGlow(iEntity, sEntModelName);
 							}
 						}
 					}
 				}
-				else
+				else // client / world / infected
 				{
 					CreateSpotMarker(client);
 				}
@@ -474,6 +470,46 @@ void RemoveAllMark()
 bool IsValidEntityIndex(int entity)
 {
 	return (MaxClients + 1 <= entity <= GetMaxEntities());
+}
+
+public void CreateItemGlow(int iEntity, const char[] sEntModelName)
+{
+	// Spawn dynamic prop entity
+	int entity = CreateEntityByName("prop_dynamic_override");
+	if (entity == -1) return;
+	
+	// Delete previous glow first
+	RemoveEntityModelGlow(iEntity);
+	delete g_iModelTimer[iEntity];
+
+	// Set new fake model
+	DispatchKeyValue(entity, "model", sEntModelName);
+	DispatchSpawn(entity);
+
+	float vPos[3], vAng[3];
+	GetEntPropVector(iEntity, Prop_Data, "m_vecOrigin", vPos);
+	GetEntPropVector(iEntity, Prop_Send, "m_angRotation", vAng);
+	TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
+
+	// Set outline glow color
+	SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
+	SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
+	SetEntProp(entity, Prop_Send, "m_nGlowRange", g_iItemColorGlowRange);
+	SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
+	SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iItemCvarColor);
+	AcceptEntityInput(entity, "StartGlowing");
+
+	// Set model invisible
+	SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+	SetEntityRenderColor(entity, 0, 0, 0, 0);
+
+	// Set model attach to item, and always synchronize
+	SetVariantString("!activator");
+	AcceptEntityInput(entity, "SetParent", iEntity);
+
+	g_iModelIndex[iEntity] = EntIndexToEntRef(entity);
+
+	g_iModelTimer[iEntity] = CreateTimer(g_fItemGlowTimer, ColdDown, iEntity);
 }
 
 public void CreateSpotMarker(int client)
@@ -708,4 +744,12 @@ public bool TraceFilter(int entity, int contentsMask, int client)
         return true;
 
     return false;
+}
+
+void StringToLowerCase(char[] input)
+{
+    for (int i = 0; i < strlen(input); i++)
+    {
+        input[i] = CharToLower(input[i]);
+    }
 }
