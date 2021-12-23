@@ -1,17 +1,21 @@
-When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or mark the area like back 4 blood.
+When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker like back 4 blood.
 
 -ChangeLog-
-v0.6
+v0.7
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
--Add Glow, everyone can see the item through wall.
--Add Mark, using 'Look' in vocalize menu to mark the area.
+-Add Item Glow, everyone can see the item through wall.
+-Add Spot Mark, using 'Look' in vocalize menu to mark the area.
+-Add sound.
 
 v0.2
 -Original Post: https://forums.alliedmods.net/showthread.php?t=333669
 
 -Convars-
 cfg\sourcemod\l4d2_item_hint.cfg
+// Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+l4d2_item_hint_announce_type "1"
+
 // Cold Down Time in seconds a player can use 'Look' item/mark hint again.
 l4d2_item_hint_cooldown_time "2.5"
 
@@ -30,17 +34,17 @@ l4d2_item_hint_use_range "150"
 // Item Hint Sound. (Empty = OFF)
 l4d2_item_hint_use_sound "buttons/blip1.wav"
 
-// Mark Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Glow)
-l4d2_mark_hint_glow_color "200 200 200"
+// Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)
+l4d2_spot_marker_color "200 200 200"
 
-// Mark Glow Time.
-l4d2_mark_hint_glow_timer "10.0"
+// Spot Marker Duration.
+l4d2_spot_marker_duration "10.0"
 
-// How far away can a player use 'Look' mark hint.
-l4d2_mark_hint_use_range "900"
+// How far away can a player use 'Look' Spot Marker.
+l4d2_spot_marker_use_range "900"
 
-// Mark Hint Sound. (Empty = OFF)
-l4d2_mark_hint_use_sound "buttons/blip1.wav"
+// Spot Marker Sound. (Empty = OFF)
+l4d2_spot_marker_use_sound "buttons/blip1.wav"
 
 -Commands-
 None
