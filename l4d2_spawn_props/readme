@@ -30,6 +30,11 @@ type !admin to call adm menu and you will see "Spawn Objects" option
 1. Admin types !admin in chat->Spawn Objects->Save Objects->Select The Save Method
 2. I recommend "Save Stripper File", Don't know how to install stripper read this: http://www.bailopan.net/stripper/snapshots/1.2/
 
+---Why I can't read object spawn menu?----
+The data/l4d2_spawn_props_models.txt is Chinese language,
+Either you translate by yourself
+or just download english data here(but fewer models): https://forums.alliedmods.net/showpost.php?p=2607756&postcount=178
+
 -Convars-
 cfg\sourcemod\l4d2_spawn_props.cfg
 // Enable the plugin to auto load the cache?
