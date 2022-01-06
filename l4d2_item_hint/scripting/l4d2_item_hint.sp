@@ -35,7 +35,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker like back 4 blood.",
-	version     = "0.7",
+	version     = "0.8",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -289,7 +289,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 		static char sCmdString[32];
 		if (GetCmdArgString(sCmdString, sizeof(sCmdString)) > 1)
 		{
-			if (strncmp(sCmdString, "smartlook #", 11) == 0 && GetEngineTime() > fCoolDownTime[client])
+			if (strncmp(sCmdString, "smartlook #", 11, false) == 0 && GetEngineTime() > fCoolDownTime[client])
 			{
 				static int iEntity;
 				iEntity = GetUseEntity(client, g_fItemUseHintRange);

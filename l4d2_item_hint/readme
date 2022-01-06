@@ -1,12 +1,13 @@
 When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker like back 4 blood.
 
 -ChangeLog-
-v0.7
+v0.8
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
 -Add Item Glow, everyone can see the item through wall.
 -Add Spot Mark, using 'Look' in vocalize menu to mark the area.
 -Add sound.
+-Fixes custom vocalizers that uses SmartLook with capitals.
 
 v0.2
 -Original Post: https://forums.alliedmods.net/showthread.php?t=333669
