@@ -1,41 +1,40 @@
 #pragma semicolon 1
+#pragma newdecls required
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
+#include <left4dhooks>
 
-enum
-{
-	L4D_TEAM_SPECTATOR = 1,
-	L4D_TEAM_SURVIVOR,
-	L4D_TEAM_INFECTED
-}
+#define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
 
 ConVar g_hCvarColor;
 ConVar g_hCvarColor2;
 int g_iCvarColor;
 int g_iCvarColor2;
 
-static bool bSpecCheatActive[MAXPLAYERS + 1]; //spectatpr open watch
+bool bSpecCheatActive[MAXPLAYERS + 1]; //spectatpr open watch
 int g_iModelIndex[MAXPLAYERS+1];			// Player Model entity reference
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+
+	return APLRes_Success; 
+}
 
 public Plugin myinfo = 
 {
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
-    version = "1.8",
+    version = "1.9",
     url = "https://steamcommunity.com/id/fbef0102/"
-}
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	EngineVersion test = GetEngineVersion();
-	if( test != Engine_Left4Dead2)
-	{
-		strcopy(error, err_max, "Plugin supports Left 4 Dead 2 only.");
-		return APLRes_SilentFailure;
-	}
-	return APLRes_Success;
 }
 
 public void OnPluginStart()
@@ -72,7 +71,7 @@ public void OnPluginStart()
 	Clear();
 }
 
-public OnPluginEnd() //unload插件的時候
+public void OnPluginEnd() //unload插件的時候
 {
 	UnhookEvent("player_spawn", Event_PlayerSpawn);
 	UnhookEvent("player_death", Event_PlayerDeath);
@@ -87,12 +86,15 @@ public OnPluginEnd() //unload插件的時候
 public Action ToggleSpecCheatCmd(int client, int args) 
 {
 	if(GetClientTeam(client)!= L4D_TEAM_SPECTATOR)
-		return;
+		return Plugin_Handled;
+
 	bSpecCheatActive[client] = !bSpecCheatActive[client];
 	PrintToChat(client, "\x01[\x04WatchMode\x01]\x03 Watch Cheater Mode \x01 is now \x05%s\x01.", (bSpecCheatActive[client] ? "On" : "Off"));
+
+	return Plugin_Handled;
 }
 
-public Action Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if( client && IsClientInGame(client) && !IsFakeClient(client))
@@ -101,23 +103,22 @@ public Action Event_PlayerDisconnect(Event event, const char[] name, bool dontBr
 	}
 }
 
-public L4D_OnEnterGhostState(int client)
+public void L4D_OnEnterGhostState(int client)
 {
 	CreateInfectedModelGlow(client);
 }
 
-public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 { 
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
 	if(client && IsClientInGame(client) && GetClientTeam(client) == L4D_TEAM_INFECTED)
 	{
-		RemoveInfectedModelGlow(client); //有可能特感變成坦克復活
 		CreateInfectedModelGlow(client);
 	}
 }
 
-public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 { 
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
@@ -142,11 +143,13 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 
 public void CreateInfectedModelGlow(int client)
 {
+	RemoveInfectedModelGlow(client); //有可能特感變成坦克復活
+
 	if (!client || 
 	!IsClientInGame(client) || 
 	GetClientTeam(client) != L4D_TEAM_INFECTED || 
 	!IsPlayerAlive(client)) return;
-	
+
 	///////設定發光物件//////////
 	// Get Client Model
 	char sModelName[64];
@@ -154,8 +157,9 @@ public void CreateInfectedModelGlow(int client)
 	//PrintToChatAll("%N: %s",client,sModelName);
 	
 	// Spawn dynamic prop entity
-	int entity = CreateEntityByName("prop_dynamic_ornament");
-	if (entity == -1) return;
+	int entity = CreateEntityByName("prop_dynamic_override");
+	if (CheckIfEntityMax( entity ) == false)
+		return;
 
 	// Set new fake model
 	PrecacheModel(sModelName);
@@ -224,7 +228,7 @@ int GetColor(char[] sTemp)
 	return color;
 }
 
-public ConVarChanged_Glow(Handle convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChanged_Glow(Handle convar, const char[] oldValue, const char[] newValue) {
 	char sColor[16];
 	g_hCvarColor.GetString(sColor, sizeof(sColor));
 	g_iCvarColor = GetColor(sColor);
@@ -244,7 +248,7 @@ public ConVarChanged_Glow(Handle convar, const char[] oldValue, const char[] new
 	}
 }
 
-public ConVarChanged_Glow_2(Handle convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChanged_Glow_2(Handle convar, const char[] oldValue, const char[] newValue) {
 	char sColor2[16];
 	g_hCvarColor2.GetString(sColor2, sizeof(sColor2));
 	g_iCvarColor2 = GetColor(sColor2);
@@ -266,12 +270,12 @@ public ConVarChanged_Glow_2(Handle convar, const char[] oldValue, const char[] n
 
 bool IsPlayerGhost(int client)
 {
-	return bool:GetEntProp(client, Prop_Send, "m_isGhost");
+	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isGhost"));
 }
 
 bool IsValidEntRef(int entity)
 {
-	if( entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE && entity!= -1 )
+	if( entity >0 && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE)
 		return true;
 	return false;
 }
@@ -283,4 +287,16 @@ void Clear()
 		bSpecCheatActive[i] = false;  
 		RemoveInfectedModelGlow(i);
 	}
+}
+
+bool CheckIfEntityMax(int entity)
+{
+	if(entity == -1) return false;
+
+	if(	entity > ENTITY_SAFE_LIMIT)
+	{
+		AcceptEntityInput(entity, "Kill");
+		return false;
+	}
+	return true;
 }
