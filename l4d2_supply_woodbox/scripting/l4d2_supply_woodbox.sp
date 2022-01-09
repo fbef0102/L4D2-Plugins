@@ -724,8 +724,7 @@ int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false
 			return -1;
 
 		DispatchKeyValue(entity, "solid", "6");
-		
-		SpawnMelee(g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)], fPos);
+		DispatchKeyValue(entity, "melee_script_name", g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)]);
 	}
 	else
 	{
@@ -1085,14 +1084,6 @@ stock void GetMeleeClasses()
 	}	
 }
 
-stock void SpawnMelee(char Class[32], float Position[3])
-{
-	int MeleeSpawn = CreateEntityByName( "weapon_melee" );
-	DispatchKeyValue( MeleeSpawn, "melee_script_name", Class );
-	DispatchSpawn( MeleeSpawn );
-	TeleportEntity(MeleeSpawn, Position, NULL_VECTOR, NULL_VECTOR );
-	
-}
 public Action GetMeleeTable(Handle timer)
 {
 	GetMeleeClasses();
