@@ -1,4 +1,6 @@
 CSO Random Supply Boxes in l4d2
+-Supply boxes are dropped randomly in the map every certain seconds to provide support for the fight against the zombies.
+They contain several types of weapons or items inside, depending on the cvar you set.
 video showcase: https://youtu.be/hpGlmwdWH6o
 
 -ChangeLog-
@@ -8,6 +10,7 @@ AlliedModders Post: https://forums.alliedmods.net/showthread.php?t=335862
 -Random box model available
 -Item chance to drop Weapons/Melee/Medic/Throwable/Others
 -Custom sound
+-Detect custom melee and spawn
 -Translation Support
 -Supply box life time
 -Remove item if no one picks up after it drops from box after a while
