@@ -4,7 +4,6 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <left4dhooks>
-#include <multicolors>
 
 #define AIRDROP_CHANCE 15
 #define MAXENTITIES                   2048
@@ -606,7 +605,7 @@ public Action Timer_SupplyBoxDrop(Handle hTimer)
 					{
 						if(IsClientInGame(i) && (GetClientTeam(i) == TEAM_SURVIVORS || GetClientTeam(i) == TEAM_SPECTATOR))
 						{
-							CPrintToChat(i, "%T", "Supply_Drop", i);
+							PrintToChat(i, "%T", "Supply_Drop", i);
 						}
 					}
 				}
