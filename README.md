@@ -40,6 +40,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d_flying_car</b>: Replaces getaway chopper by flying car in L4D2 C8 No Mercy
 * <b>l4d2_ty_saveweapons</b>: L4D2 coop save weapon when map transition if more than 4 players
 * <b>l4d2_skill_detect</b>: Detects and reports skeets, crowns, levels, highpounces, etc.
+* <b>l4d2_supply_woodbox</b>: CSO Random Supply Boxes in l4d2
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
