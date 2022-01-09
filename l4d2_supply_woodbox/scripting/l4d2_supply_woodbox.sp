@@ -59,22 +59,8 @@ Handle PlayerLeftStartTimer = null, SupplyBoxDropTimer = null;
 bool g_bSupplyBoxSpawnFinal, g_bFinaleStarted;
 Handle g_ItemDeleteTimer[MAXENTITIES];
 
-char g_sMeleeScripts[MAX_MELEE][] =
-{
-	"fireaxe",
-	"baseball_bat",
-	"cricket_bat",
-	"crowbar",
-	"frying_pan",
-	"golfclub",
-	"electric_guitar",
-	"katana",
-	"machete",
-	"tonfa",
-	"knife",
-	"pitchfork",
-	"shovel"
-};
+int g_iMeleeClassCount;
+char g_sMeleeClass[16][32];
 
 #define SOUND_DROP1 "npc/chopper_pilot/hospital_intro_heli_12.wav"
 #define SOUND_DROP2 "npc/chopper_pilot/hospital_intro_heli_13.wav"
@@ -208,6 +194,8 @@ public void OnMapStart()
 		PrecacheModel("models/props_junk/wood_crate001a_chunk02.mdl", true);
 		PrecacheModel("models/props_junk/wood_crate001a_chunk01.mdl", true);
 	}
+	
+	CreateTimer(1.0, GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 bool g_bConfigLoaded;
@@ -737,8 +725,8 @@ int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false
 			return -1;
 
 		DispatchKeyValue(entity, "solid", "6");
-		int model = GetRandomInt(0, MAX_MELEE-1);
-		DispatchKeyValue(entity, "melee_script_name", g_sMeleeScripts[model]);
+		
+		SpawnMelee(g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)], fPos);
 	}
 	else
 	{
@@ -1081,4 +1069,32 @@ bool IsValidClient(int client)
 {
     if ( !( 1 <= client <= MaxClients ) || !IsClientInGame(client) ) return false;      
     return true; 
+}
+
+//credit spirit12 for auto melee detection
+stock void GetMeleeClasses()
+{
+	int MeleeStringTable = FindStringTable( "MeleeWeapons" );
+	g_iMeleeClassCount = GetStringTableNumStrings( MeleeStringTable );
+	
+	int len = sizeof(g_sMeleeClass);
+	
+	for( int i = 0; i < g_iMeleeClassCount; i++ )
+	{
+		ReadStringTable( MeleeStringTable, i, g_sMeleeClass[i], len );
+		//LogAcitivity( "Function::GetMeleeClasses - Getting melee classes: %s", g_sMeleeClass[i]);
+	}	
+}
+
+stock void SpawnMelee(char Class[32], float Position[3])
+{
+	int MeleeSpawn = CreateEntityByName( "weapon_melee" );
+	DispatchKeyValue( MeleeSpawn, "melee_script_name", Class );
+	DispatchSpawn( MeleeSpawn );
+	TeleportEntity(MeleeSpawn, Position, NULL_VECTOR, NULL_VECTOR );
+	
+}
+public Action GetMeleeTable(Handle timer)
+{
+	GetMeleeClasses();
 }
