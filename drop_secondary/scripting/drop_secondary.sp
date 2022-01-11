@@ -20,11 +20,13 @@
 
 static g_PlayerSecondaryWeapons[MAXPLAYERS + 1];
 
+// native int Timer_Delete_Weapon(int entity); //from clear_weapon_drop
+
 public Plugin myinfo =
 {
 	name		= "L4D2 Drop Secondary",
 	author		= "Jahze, Visor, NoBody & HarryPotter",
-	version		= "1.8",
+	version		= "1.9",
 	description	= "Survivor players will drop their secondary weapon when they die",
 	url		= "https://github.com/Attano/Equilibrium"
 };
@@ -128,68 +130,16 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	int clip;
 	GetEdictClassname(weapon, sWeapon, 32);
 	
-	int index = CreateEntityByName(sWeapon); 
+	int entity = CreateEntityByName(sWeapon); 
 	float origin[3];
 	float ang[3];
+	char melee_name[64];
 	if (strcmp(sWeapon, "weapon_melee") == 0)
 	{
-		char melee[150];
-		GetEntPropString(weapon , Prop_Data, "m_ModelName", melee, sizeof(melee));
-		if (strcmp(melee, MODEL_V_FIREAXE) == 0)
+		if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
 		{
-			DispatchKeyValue(index, "melee_script_name", "fireaxe");
-		}
-		else if (strcmp(melee, MODEL_V_FRYING_PAN) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "frying_pan");
-		}
-		else if (strcmp(melee, MODEL_V_MACHETE) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "machete");
-		}
-		else if (strcmp(melee, MODEL_V_BASEBALL_BAT) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "baseball_bat");
-		}
-		else if (strcmp(melee, MODEL_V_CROWBAR) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "crowbar");
-		}
-		else if (strcmp(melee, MODEL_V_CRICKET_BAT) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "cricket_bat");
-		}
-		else if (strcmp(melee, MODEL_V_TONFA) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "tonfa");
-		}
-		else if (strcmp(melee, MODEL_V_KATANA) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "katana");
-		}
-		else if (strcmp(melee, MODEL_V_ELECTRIC_GUITAR) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "electric_guitar");
-		}
-		else if (strcmp(melee, MODEL_V_GOLFCLUB) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "golfclub");
-		}
-		else if (strcmp(melee, MODEL_V_SHIELD) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "riotshield");
-		}
-		else if (strcmp(melee, MODEL_V_KNIFE) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "knife");
-		}
-		else if (strcmp(melee, MODEL_V_SHOVEL) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "shovel");
-		}
-		else if (strcmp(melee, MODEL_V_PITCHFORK) == 0)
-		{
-			DispatchKeyValue(index, "melee_script_name", "pitchfork");
+			GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", melee_name, sizeof(melee_name));
+			DispatchKeyValue(entity, "melee_script_name", melee_name);
 		}
 		else return;
 	}
@@ -199,15 +149,20 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	}
 	else if (strcmp(sWeapon, "weapon_pistol") == 0 && (GetEntProp(weapon, Prop_Send, "m_isDualWielding") > 0))
 	{
-		int indexC = CreateEntityByName(sWeapon);
+		int entity2 = CreateEntityByName(sWeapon);
 		GetClientEyePosition(client,origin);
 		GetClientEyeAngles(client, ang);
 		GetAngleVectors(ang, ang, NULL_VECTOR,NULL_VECTOR);
 		NormalizeVector(ang,ang);
 		ScaleVector(ang, 90.0);
 		
-		DispatchSpawn(indexC);
-		TeleportEntity(indexC, origin, NULL_VECTOR, ang);
+		DispatchSpawn(entity2);
+		TeleportEntity(entity2, origin, NULL_VECTOR, ang);
+		clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
+		if(clip - 15 <= 0) SetEntProp(entity2, Prop_Send, "m_iClip1", 0);
+		else clip = clip - 15;
+
+		// Timer_Delete_Weapon(entity2);	
 	}
 	else if (strcmp(sWeapon, "weapon_pistol_magnum") == 0)
 	{
@@ -223,11 +178,12 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	NormalizeVector(ang,ang);
 	ScaleVector(ang, 90.0);
 	
-	DispatchSpawn(index);
-	TeleportEntity(index, origin, NULL_VECTOR, ang);
+	DispatchSpawn(entity);
+	TeleportEntity(entity, origin, NULL_VECTOR, ang);
 
 	if (strcmp(sWeapon, "weapon_chainsaw") == 0 || strcmp(sWeapon, "weapon_pistol") == 0 || strcmp(sWeapon, "weapon_pistol_magnum") == 0)
 	{
-		SetEntProp(index, Prop_Send, "m_iClip1", clip);
+		SetEntProp(entity, Prop_Send, "m_iClip1", clip);
 	}
+	// Timer_Delete_Weapon(entity);
 }
