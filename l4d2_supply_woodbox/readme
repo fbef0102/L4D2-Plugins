@@ -18,6 +18,9 @@ AlliedModders Post: https://forums.alliedmods.net/showthread.php?t=335862
 v0.0
 -Original author by Lux (https://forums.alliedmods.net/member.php?u=257841)
 
+-Require-
+left4dhooks: https://forums.alliedmods.net/showthread.php?p=2684862
+
 -ConVar-
 cfg\sourcemod\l4d2_supply_woodbox.cfg
 // 0=Plugin off, 1=Plugin on.
