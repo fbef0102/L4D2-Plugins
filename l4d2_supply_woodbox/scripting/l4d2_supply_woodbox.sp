@@ -1087,4 +1087,5 @@ stock void GetMeleeClasses()
 public Action GetMeleeTable(Handle timer)
 {
 	GetMeleeClasses();
+	return Plugin_Continue;
 }
