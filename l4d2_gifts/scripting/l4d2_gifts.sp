@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION		"2.5"
+#define PLUGIN_VERSION		"2.7"
 
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -17,11 +17,10 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <smlib>
-#include <glow>
+#include <left4dhooks>
 
 #define DATABASE_CONFIG 	"l4d2gifts"
-#define TAG_GIFT			"{G}[{L}GIFTS{G}]\x01"
+#define TAG_GIFT			"[GIFTS]"
 #define	MAX_GIFTS			20
 #define MAX_STRING_WIDTH	64
 #define MAX_TYPEGIFTS		3
@@ -165,23 +164,23 @@ static char weapons_name2[MAX_SPECIALITEMS2][2][50] =
 //WeaponName/AmmoOffset/AmmoGive
 static char weapon_ammo[][][] =
 {
-	{"weapon_smg",		 				"5", 	"300"},
-	{"weapon_pumpshotgun",				"7", 	"40"},
+	{"weapon_smg",		 				"5", 	"400"},
+	{"weapon_pumpshotgun",				"7", 	"64"},
 	{"weapon_rifle",					"3", 	"250"},
-	{"weapon_autoshotgun",				"8", 	"60"},
+	{"weapon_autoshotgun",				"8", 	"64"},
 	{"weapon_hunting_rifle",			"9", 	"100"},
-	{"weapon_smg_silenced",				"5", 	"300"},
-	{"weapon_smg_mp5", 	 				"5", 	"300"},
-	{"weapon_shotgun_chrome",	 		"7", 	"40"},
+	{"weapon_smg_silenced",				"5", 	"400"},
+	{"weapon_smg_mp5", 	 				"5", 	"400"},
+	{"weapon_shotgun_chrome",	 		"7", 	"64"},
 	{"weapon_rifle_ak47",  				"3",	"250"},
 	{"weapon_rifle_desert",				"3", 	"250"},
-	{"weapon_sniper_military",			"10", 	"120"},
+	{"weapon_sniper_military",			"10", 	"100"},
 	{"weapon_grenade_launcher", 	 	"17", 	"15"},
 	{"weapon_rifle_sg552",	 			"3", 	"250"},
-	{"weapon_rifle_m60",  				"6",	"150"},
+	{"weapon_rifle_m60",  				"6",	"200"},
 	{"weapon_sniper_awp", 	 			"10", 	"100"},
 	{"weapon_sniper_scout",	 			"10", 	"100"},
-	{"weapon_shotgun_spas",  			"8",	"60"}
+	{"weapon_shotgun_spas",  			"8",	"64"}
 };
 
 int CurrentPointsForMap[MAXPLAYERS+1];
@@ -216,6 +215,7 @@ char sPath_gifts[PLATFORM_MAX_PATH];
 int g_iCountGifts;
 int g_iOffset_Incapacitated;        // Used to check if tank is dying
 int ammoOffset;	
+bool g_bFinalHasStart, g_bIsOpenSafeRoom;
 
 #define SND_REWARD1			"level/gnomeftw.wav"
 #define SND_REWARD2			"level/loud/climber.wav"
@@ -290,6 +290,7 @@ public void OnPluginStart()
 	HookEvent("round_end", Event_RoundEnd);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("witch_killed", OnWitchKilled);
+	HookEvent("finale_vehicle_ready", Finale_Vehicle_Ready);
 	
 	RegConsoleCmd("sm_giftcollect", Command_GiftCollected, "View number of gifts collected");
 	RegConsoleCmd("sm_giftc", Command_GiftCollected, "View number of gifts collected");
@@ -427,9 +428,9 @@ public Action Command_GiftCollected(int client, int args)
 		return Plugin_Handled;
 	
 
-	Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Number of gifts collected");
-	Client_PrintToChat(client, false, "{B}Special: %t", "In current map: %d | In current round: %d", CurrentGiftsForMap[client][TYPE_SPECIAL], CurrentGiftsForRound[client][TYPE_SPECIAL]);
-	Client_PrintToChat(client, false, "{B}Total: %t", "In current map: %d | In current round: %d", CurrentGiftsTotalForMap[client], CurrentGiftsTotalForRound[client]);
+	PrintToChat(client, "%s %T", TAG_GIFT, "Number of gifts collected", client);
+	PrintToChat(client, "Special: %T", "In current map: %d | In current round: %d", client, CurrentGiftsForMap[client][TYPE_SPECIAL], CurrentGiftsForRound[client][TYPE_SPECIAL]);
+	PrintToChat(client, "Total: %T", "In current map: %d | In current round: %d", client, CurrentGiftsTotalForMap[client], CurrentGiftsTotalForRound[client]);
 
 	return Plugin_Handled;
 }
@@ -509,6 +510,9 @@ public bool LoadConfigGifts(bool precache)
 
 public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
+	g_bFinalHasStart = false;
+	g_bIsOpenSafeRoom = false;
+
 	if (!bGiftEnable) 
 		return;
 
@@ -530,15 +534,26 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 
 public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
+	g_bFinalHasStart = false;
+	g_bIsOpenSafeRoom = false;
+
 	if (!bGiftEnable) 
 		return;
 	
 	gifts_collected_round = 0;
 }
 
+public Action Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast) 
+{
+	g_bFinalHasStart = true;
+}
+
 public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!bGiftEnable)
+		return;
+
+	if(g_bIsOpenSafeRoom|| g_bFinalHasStart)
 		return;
 
 	if (iGiftMaxRound != 0 && gifts_collected_round > iGiftMaxRound)
@@ -575,6 +590,9 @@ public Action OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!bGiftEnable)
 		return;
+
+	if(g_bIsOpenSafeRoom|| g_bFinalHasStart)
+		return;	
 
 	//int attacker = GetClientOfUserId(event.GetInt("userid"));
 	int witch = event.GetInt("witchid");
@@ -613,7 +631,7 @@ void NotifyGift(int client, int type, int gift = -1)
 				GiveWeapon(client, weapons_name[index][0]);
 		}
 		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name[index][1]);
-		else Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name[index][1]);
+		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name[index][1]);
 		PlaySound(client,SND_REWARD2);
 		AddCollect(client, type);
 	}
@@ -643,7 +661,7 @@ void NotifyGift(int client, int type, int gift = -1)
 		}
 
 		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name2[index][1]);
-		else Client_PrintToChat(client, false, "%s %t", TAG_GIFT, "Spawn Gift Special Not Points", client, weapons_name2[index][1]);
+		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name2[index][1]);
 		PlaySound(client,SND_REWARD1);
 		AddCollect(client, type);
 	}
@@ -734,37 +752,37 @@ int DropGift(int client, char[] type = "special")
 			case 1:
 			{
 				GetColor(AURA_CYAN, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 			case 2:
 			{
 				GetColor(AURA_BLUE, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 			case 3:
 			{
 				GetColor(AURA_GREEN, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 			case 4:
 			{
 				GetColor(AURA_PINK, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 			case 5:
 			{
 				GetColor(AURA_RED, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 			case 6:
 			{
 				GetColor(AURA_ORANGE, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 			case 7:
 			{
 				GetColor(AURA_YELLOW, color);
-				L4D2_SetEntGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
 			}
 		}
 		g_GifLife[gift] = 0;
@@ -827,7 +845,7 @@ public void OnTouch(int gift, int other)
 			}
 			SetEntityHealth(other, CurrentHealth + AddHP);
 			if(g_bAnnounce) PrintCenterTextAll("%t", "Infected Got Gift", other, AddHP);
-			else Client_PrintToChat(other, false, "%s %t", TAG_GIFT, "Infected Got Gift", other, AddHP);
+			else PrintToChat(other, "%s %T", TAG_GIFT, "Infected Got Gift", other, other, AddHP);
 			PlaySound(other,SND_REWARD2);
 			SDKUnhook(gift, SDKHook_Touch, OnTouch);
 			AcceptEntityInput(gift, "kill");
@@ -1008,6 +1026,11 @@ bool CheckIfEntityMax(int entity)
 void PrintCenterToTeam (int team, int client, char[] displayMessage)
 {
 	for (int i = 1; i <= MaxClients; i++)
-		if(IsClientInGame(i) && (GetClientTeam(i) == team || GetClientTeam(i) == TEAM_SPECTATOR))
+		if(IsClientInGame(i) && (GetClientTeam(i) == team || GetClientTeam(i) == 1))
 			PrintCenterText(i, "%t", "Spawn Gift Special Not Points", client, displayMessage);
+}
+
+public void L4D2_OnLockDownOpenDoorFinish(const char[] sKeyMan)
+{
+	g_bIsOpenSafeRoom = true;
 }
