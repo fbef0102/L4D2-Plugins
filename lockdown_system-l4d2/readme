@@ -1,17 +1,29 @@
 Locks Saferoom Door Until Someone Opens It.
 
 -Changelog-
-v4.4
--Remake Code
--ProdigySim's method for indirectly getting signatures added, created the whole code for indirectly getting signatures so the plugin can now withstand most updates to L4D2!
-(Thanks to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849 and ProdigySim: https://github.com/ProdigySim/DirectInfectedSpawn)
--Add more covars
--Update L4D2 "The Last Stand" gamedata
--improve code
--translation support
--Fixed "lockdown_system-l4d2_spam_bot_disable" not working
--Fixed not workng in L4D2 "The Last Stand" Map
--Fixed plugin not working in versus
+v4.5
+- Remake Code
+- ProdigySim's method for indirectly getting signatures added, created the whole code for indirectly getting signatures so the plugin can now withstand most updates to L4D2!
+ (Thanks to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849 and ProdigySim: https://github.com/ProdigySim/DirectInfectedSpawn)
+- Update L4D2 "The Last Stand" gamedata
+- Translation support
+- Workng in L4D2 "The Last Stand" Map
+- Replace Left 4 Downtown 2 extension with Left 4 DHooks Direct
+- Remove Convar "Lockdown_system-l4d(2)_menu".
+- fixed plugin not working in versus.
+- All survivors must assemble near the saferoom door first before open. (prevent rushing players)
+- fixed plugin not working in "c10m2_drainage"
+- display who open/close the door
+- spawn a tank before door open
+- spawn multi tanks after door open
+- keep spawning a tank when door is opening (players will not feel boring)
+- display a message showing who opened or closed the saferoom door. (everyone will know who spamming the door)
+- after Safe room door is opened, set a timer to count down. Slay players who still are not inside the saferoom. (prevent cowards)
+- when door is opening, if any common or infected spawns inside the saferoom, teleport them outside. (prevent being stuck inside the saferoom)
+- stop AI survivor from opening and closing the door. (prevent stupid bots from spamming the door)
+- Set the door glow color
+- Seconds to lock door after opening and closing the saferoom door.
+- after saferoom door is opened, how many chance can the survivors open the door. (stop noobs from playing the doors)
 
 v1.7
 -Original Post: https://forums.alliedmods.net/showthread.php?t=281305
@@ -45,6 +57,9 @@ lockdown_system-l4d2_map_off "c10m3_ranchhouse,l4d_reverse_hos03_sewers,l4d2_sta
 
 // Number Of Mobs To Spawn
 lockdown_system-l4d2_mobs "5"
+
+// After saferoom door is opened, how many chance can the survivors open the door. (0=Can't open door after close, -1=No limit)
+lockdown_system-l4d2_open_chance "2"
 
 // Time Interval to spawn a tank when door is opening (0=off)
 lockdown_system-l4d2_opening_tank_interval "50"

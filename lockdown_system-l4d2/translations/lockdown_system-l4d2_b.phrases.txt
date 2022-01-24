@@ -87,4 +87,24 @@
 		"chi"			"关闭 安全门!"
 		"es"			"CERRO LA PUERTA"
 	}
+	"Chance"
+	{
+		"#format"		"{1:d}"
+		"en"			"The survivors have only {green}{1}{default} chance(s) to open the safe room door"
+		"zho"			"倖存者只有 {green}{1}{default} 次機會打開安全室大門!"
+		"chi"			"生还者只有 {green}{1}{default} 次机会打开安全室大门!"
+	}
+	"Chance Left"
+	{
+		"#format"		"{1:d}"
+		"en"			"The survivors have {green}{1}{default} chance(s) left to open the door"
+		"zho"			"倖存者剩餘 {green}{1}{default} 次機會打開大門!"
+		"chi"			"生还者剩余 {green}{1}{default} 次机会打开大门!"
+	}
+	"No Chance"
+	{
+		"en"			"Chance to open the door have run out!!"
+		"zho"			"打開大門的機會已用完!!"
+		"chi"			"打开大门的机会已用完!!"
+	}
 }

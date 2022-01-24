@@ -7,10 +7,9 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <glow>
 #include <left4dhooks>
 #include <multicolors>
-#define PLUGIN_VERSION "4.4"
+#define PLUGIN_VERSION "4.5"
 
 #define UNLOCK 0
 #define LOCK 1
@@ -22,16 +21,16 @@
 
 ConVar lsAnnounce, lsAntiFarmDuration, lsDuration, lsMobs, lsTankDemolitionBefore, lsTankDemolitionAfter,
 	lsType, lsNearByAllSurvivor, lsHint, lsGetInLimit, lsDoorOpeningTeleport, lsDoorOpeningTankInterval,
-	lsDoorBotDisable, lsMapOff, lsPreventDoorSpamDuration, lsDoorLockColor, lsDoorUnlockColor, lsDoorGlowRange;
+	lsDoorBotDisable, lsMapOff, lsPreventDoorSpamDuration, lsDoorLockColor, lsDoorUnlockColor, lsDoorGlowRange, lsDoorOpenChance;
 
 int iAntiFarmDuration, iDuration, iMobs, iType, iDoorStatus, iCheckpointDoor, iSystemTime, iGetInLimit, 
-	iDoorOpeningTankInterval, iDoorGlowRange;
+	iDoorOpeningTankInterval, iDoorGlowRange, g_iDoorOpenChance, iDoorOpenChance;
 int _iDoorOpeningTankInterval, g_iRoundStart, g_iPlayerSpawn, g_iDoorLockColors[3], g_iDoorUnlockColors[3];
 float fDoorSpeed, fFirstUserOrigin[3], fPreventDoorSpamDuration;
 bool bAntiFarmInit, bLockdownInit, bLDFinished, bAnnounce, 
 	bNearByAllSurvivor,bDoorOpeningTeleport, bTankDemolitionBefore, bTankDemolitionAfter,
 	bSurvivorsAssembleAlready,blsHint, bDoorBotDisable;
-bool bSpawnTank, bRoundEnd;
+bool bSpawnTank, bRoundEnd, g_bIsSafeRoomOpen;
 char sKeyMan[128], sLastName[2048][128];
 Handle hAntiFarmTime = null, hLockdownTime = null;
 static Handle hCreateTank = null;
@@ -85,8 +84,9 @@ public void OnPluginStart()
 	lsDoorLockColor = CreateConVar(	"lockdown_system-l4d2_lock_glow_color",	"255 0 0",	"The default glow color for saferoom door when lock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorUnlockColor = CreateConVar( "lockdown_system-l4d2_unlock_glow_color",	"200 200 200",	"The default glow color for saferoom door when unlock. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY );
 	lsDoorGlowRange = CreateConVar( "lockdown_system-l4d2_glow_range", "550", "The default value for saferoom door glow range.", FCVAR_NOTIFY, true, 0.0);
+	lsDoorOpenChance = CreateConVar("lockdown_system-l4d2_open_chance",	"2",	"After saferoom door is opened, how many chance can the survivors open the door. (0=Can't open door after close, -1=No limit)", FCVAR_NOTIFY );
 	lsMapTwoTanks = CreateConVar("lockdown_system-l4d2_map_two_Tank",	"c1m3_mall",	"Two tanks during opening door in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
-
+	
 	GetCvars();
 	lsAnnounce.AddChangeHook(OnLSCVarsChanged);
 	lsAntiFarmDuration.AddChangeHook(OnLSCVarsChanged);
@@ -104,6 +104,7 @@ public void OnPluginStart()
 	lsDoorLockColor.AddChangeHook(OnLSCVarsChanged);
 	lsDoorUnlockColor.AddChangeHook(OnLSCVarsChanged);
 	lsDoorGlowRange.AddChangeHook(OnLSCVarsChanged);
+	lsDoorOpenChance.AddChangeHook(OnLSCVarsChanged);
 
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("player_spawn", Event_PlayerSpawn,	EventHookMode_PostNoCopy);
@@ -234,7 +235,7 @@ public Action tmrStart(Handle timer)
 {
 	if (g_bValidMap == false)
 	{
-		return;
+		return Plugin_Continue;
 	}
 
 	iType = (lsType.IntValue == 0) ? GetRandomInt(1, 2) : lsType.IntValue;
@@ -245,15 +246,19 @@ public Action tmrStart(Handle timer)
 	bSurvivorsAssembleAlready = false;
 	bRoundEnd = false;
 	bSpawnTank = false;
+	g_bIsSafeRoomOpen = false;
+	iDoorOpenChance = (g_iDoorOpenChance == -1) ? -1 : g_iDoorOpenChance + 1;
 	_iDoorOpeningTankInterval = 0;
 
 	InitDoor();
 
 	ResetPlugin();
+	
+	return Plugin_Continue;
 }
 
 
-public Action TC_ev_EntityKilled(Event event, const char[] name, bool dontBroadcast) 
+public void TC_ev_EntityKilled(Event event, const char[] name, bool dontBroadcast) 
 {
 	if (g_bValidMap == false || !bTankDemolitionAfter || !bLDFinished)
 	{
@@ -272,6 +277,8 @@ public Action Timer_SpawnTank(Handle timer)
 		CheatCommand(GetRandomClient(), "z_spawn_old", "tank auto");
 	else
 		ExecuteSpawn(true, 1);
+	
+	return Plugin_Continue;
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -306,12 +313,14 @@ public Action ForceEndLockdown(Handle timer)
 {
 	delete hLockdownTime;
 	bLDFinished = true;
+	
+	return Plugin_Continue;
 }
 
 public Action OrderShutDown(Handle timer)
 {
 	SetCheckpointDoor_Default();
-	return Plugin_Stop;
+	return Plugin_Continue;
 }
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
@@ -320,6 +329,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		if(IsFakeClient(client) && bDoorBotDisable) return Plugin_Handled;
 	}
+	
 	return Plugin_Continue;
 }
 
@@ -349,6 +359,12 @@ public Action OnPlayerUsePre(Event event, const char[] name, bool dontBroadcast)
 			GetEdictClassname(used, sEntityClass, sizeof(sEntityClass));
 			if (strcmp(sEntityClass, "prop_door_rotating_checkpoint") != 0 || used != iCheckpointDoor)
 			{
+				return Plugin_Continue;
+			}
+
+			if(g_bIsSafeRoomOpen == true && iDoorOpenChance == 0)
+			{
+				PrintHintText(user, "[TS] %T", "No Chance", user);
 				return Plugin_Continue;
 			}
 			
@@ -494,6 +510,8 @@ public Action CheckAntiFarm(Handle timer, any entity)
 public Action EndAntiFarm(Handle timer)
 {
 	hAntiFarmTime = null;
+	
+	return Plugin_Continue;
 }
 
 public Action LockdownOpening(Handle timer, any entity)
@@ -525,10 +543,17 @@ public Action LockdownOpening(Handle timer, any entity)
 			}
 			
 			EmitSoundToAll("level/highscore.wav", entity, SNDCHAN_AUTO, SNDLEVEL_RAIDSIREN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_LOW, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
-			if(bAnnounce) PrintCenterTextAll("%t","Door is opened! GET IN!!");
+
 			if(blsHint) CPrintToChatAll("{default}[{olive}TS{default}]{green} <{olive}%s{green}>{default} %t", sKeyMan, "open the door already");
+			if(bAnnounce)
+			{
+				PrintCenterTextAll("%t","Door is opened! GET IN!!");
+				if(g_iDoorOpenChance >= 0) CPrintToChatAll("{default}[{olive}TS{default}] %t", "Chance", iDoorOpenChance - 1);
+			}
 			CreateTimer(5.0, LaunchTankDemolition, _, TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(5.0, LaunchSlayTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+
+			g_bIsSafeRoomOpen = true;
 
 			Call_StartForward(g_hForwardOpenSafeRoomFinish);
 			Call_PushString(sKeyMan);
@@ -576,7 +601,7 @@ public Action LaunchTankDemolition(Handle timer)
 {
 	if (bTankDemolitionAfter == false)
 	{
-		return;
+		return Plugin_Continue;
 	}
 	
 	ExecuteSpawn(true, 4);
@@ -584,12 +609,16 @@ public Action LaunchTankDemolition(Handle timer)
 	{
 		CPrintToChatAll("{default}[{olive}TS{default}] %t","Tanks are coming");
 	}
+	
+	return Plugin_Continue;
 }
 
 public Action LaunchSlayTimer(Handle timer)
 {
 	iSystemTime = iGetInLimit;
 	if(iSystemTime > 0) CreateTimer(1.0, AntiPussy, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	
+	return Plugin_Continue;
 }
 
 public Action AntiPussy(Handle timer)
@@ -702,16 +731,22 @@ void InitDoor()
 
 public void OnDoorAntiSpam(const char[] output, int caller, int activator, float delay)
 {
-	if (strcmp(output, "OnFullyClosed") == 0 && !bLDFinished)
+	if (strcmp(output, "OnFullyClosed") == 0)
 	{
-		return;
+		if(!bLDFinished) return;
 	}
 	
 	AcceptEntityInput(caller, "Lock");
 	SetEntProp(caller, Prop_Data, "m_hasUnlockSequence", LOCK);
 	
-	L4D2_SetEntGlow(caller, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorLockColors, false);
+	L4D2_SetEntityGlow(caller, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorLockColors, false);
 	
+	if(strcmp(output, "OnFullyClosed") == 0 && g_bIsSafeRoomOpen && g_iDoorOpenChance >= 0)
+	{
+		CPrintToChatAll("{default}[{olive}TS{default}] %t", "Chance Left", --iDoorOpenChance);
+		if(iDoorOpenChance == 0) return;
+	}
+
 	CreateTimer(fPreventDoorSpamDuration, PreventDoorSpam, EntIndexToEntRef(caller), TIMER_FLAG_NO_MAPCHANGE);
 }
 
@@ -719,15 +754,15 @@ public Action PreventDoorSpam(Handle timer, any entity)
 {
 	if (!entity || (entity = EntRefToEntIndex(entity)) == INVALID_ENT_REFERENCE)
 	{
-		return Plugin_Stop;
+		return Plugin_Continue;
 	}
 	
-	L4D2_SetEntGlow(entity, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorUnlockColors, false);
+	L4D2_SetEntityGlow(entity, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorUnlockColors, false);
 	
 	SetEntProp(entity, Prop_Data, "m_hasUnlockSequence", UNLOCK);
 	AcceptEntityInput(entity, "Unlock");
 	
-	return Plugin_Stop;
+	return Plugin_Continue;
 }
 
 public void OnDoorBlocked(const char[] output, int caller, int activator, float delay)
@@ -749,7 +784,7 @@ void ControlDoor(int entity, int iOperation)
 	{
 		case LOCK:
 		{
-			L4D2_SetEntGlow(entity, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorLockColors, false);
+			L4D2_SetEntityGlow(entity, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorLockColors, false);
 			
 			AcceptEntityInput(entity, "Close");
 			if (iType == 1)
@@ -765,7 +800,7 @@ void ControlDoor(int entity, int iOperation)
 		}
 		case UNLOCK:
 		{
-			L4D2_SetEntGlow(entity, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorUnlockColors, false);
+			L4D2_SetEntityGlow(entity, L4D2Glow_Constant, iDoorGlowRange, 0, g_iDoorUnlockColors, false);
 			
 			SetEntProp(entity, Prop_Data, "m_hasUnlockSequence", UNLOCK);
 			AcceptEntityInput(entity, "Unlock");
@@ -854,7 +889,9 @@ stock void ExecuteSpawn(bool btank, int iCount)
 
 public Action Timer_CreateTank(Handle timer)
 {
-	CreateTankBot();	
+	CreateTankBot();
+
+	return Plugin_Continue;
 }
 
 void CreateTankBot()
@@ -893,6 +930,8 @@ public Action AttackOnTank(Handle timer, int tank)
 		SetEntProp(tank, Prop_Send, "m_hasVisibleThreats", 1);
 		DealDamage(tank, 0,  GetSurvivor(), DMG_BULLET, "weapon_smg");
 	}
+	
+	return Plugin_Continue;
 }
 
 stock bool IsPlayerGhost(int client)
@@ -982,6 +1021,7 @@ void GetCvars()
 	bDoorBotDisable = lsDoorBotDisable.BoolValue;
 	fPreventDoorSpamDuration = lsPreventDoorSpamDuration.FloatValue;
 	iDoorGlowRange = lsDoorGlowRange.IntValue;
+	g_iDoorOpenChance = lsDoorOpenChance.IntValue;
 	
 	char sColor[16];
 	lsDoorLockColor.GetString(sColor, sizeof(sColor));
@@ -1042,7 +1082,7 @@ void SetCheckpointDoor_Default()
 	{
 		if (IsValidEntity(iCheckpointDoor))
 		{
-			L4D2_SetEntGlow(iCheckpointDoor, L4D2Glow_None, 0, 0, {0, 0, 0}, false);
+			L4D2_SetEntityGlow(iCheckpointDoor, L4D2Glow_None, 0, 0, {0, 0, 0}, false);
 			
 			UnhookSingleEntityOutput(iCheckpointDoor, "OnFullyOpen", OnDoorAntiSpam);
 			UnhookSingleEntityOutput(iCheckpointDoor, "OnFullyClosed", OnDoorAntiSpam);
