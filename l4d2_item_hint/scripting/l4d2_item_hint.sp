@@ -11,22 +11,37 @@
 #define CLASSNAME_INFO_TARGET         "info_target"
 #define CLASSNAME_ENV_SPRITE          "env_sprite"
 #define ENTITY_WORLDSPAWN             0
+#define TEAM_SPECTATOR 1
+#define TEAM_SURVIVOR 2
+#define TEAM_INFECTED 3
+#define ENTITY_SAFE_LIMIT 2000
 
 ConVar g_hCoolDown,
-	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemColorGlowRange, g_hItemCvarColor,
-	g_hMarkUseRange, g_hMarkUseSound, g_hMarkGlowTimer, g_hMarkCvarColor;
-int g_iItemAnnounceType, g_iItemColorGlowRange, g_iItemCvarColor,
-	g_iMarkCvarColorArray[3];
+	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemGlowRange, g_hItemCvarColor,
+	g_hItemInstructorHint, g_hItemInstructorColor, g_hItemInstructorIcon,
+	g_hSpotMarkUseRange, g_hSpotMarkUseSound, g_hSpotMarkGlowTimer, g_hSpotMarkCvarColor, 
+	g_hSpotMarkInstructorHint, g_hSpotMarkInstructorColor, g_hSpotMarkInstructorIcon,
+	g_hInfectedMarkUseRange, g_hInfectedMarkUseSound, g_hInfectedMarkGlowTimer, g_hInfectedMarkGlowRange, g_hInfectedMarkCvarColor, g_hInfectedMarkWitch;
+int g_iItemAnnounceType, g_iItemGlowRange, g_iItemCvarColor,
+	g_iSpotMarkCvarColorArray[3],
+	g_iInfectedMarkGlowRange, g_iInfectedMarkCvarColor;
 float g_fCoolDown,
 	g_fItemUseHintRange, g_fItemGlowTimer,
-	g_fMarkUseRange, g_fMarkGlowTimer;
+	g_fSpotMarkUseRange, g_fSpotMarkGlowTimer,
+	g_fInfectedMarkUseRange, g_fInfectedMarkGlowTimer;
 float       fCoolDownTime[MAXPLAYERS + 1];
-static char g_sMarkCvarColor[12], g_sItemUseSound[100], g_sMarkUseSound[100], g_sKillDelay[32];
+static char g_sItemInstructorColor[12], g_sItemInstructorIcon[16], g_sSpotMarkCvarColor[12], g_sItemUseSound[100], g_sSpotMarkUseSound[100], g_sKillDelay[32],
+			g_sInfectedMarkUseSound[100], g_sSpotMarkInstructorColor[12], g_sSpotMarkInstructorIcon[16];
+bool g_bItemInstructorHint, g_bSpotMarkInstructorHint, g_bInfectedMarkWitch;
 
 
 static bool   ge_bMoveUp[MAXENTITIES+1];
-int       g_iModelIndex[MAXENTITIES] = 0;
-Handle    g_iModelTimer[MAXENTITIES];
+int       g_iModelIndex[MAXENTITIES+1] = {0};
+Handle    g_iModelTimer[MAXENTITIES+1] = {null};
+int       g_iEnvInstructorIndex[MAXENTITIES+1] = {0};
+Handle    g_iEnvInstructorTimer[MAXENTITIES+1] = {null};
+int       g_iTargetInstructorIndex[MAXENTITIES+1] = {0};
+Handle    g_iTargetInstructorTimer[MAXENTITIES+1] = {null};
 Handle    g_hUseEntity;
 StringMap g_smModelToName;
 
@@ -34,8 +49,8 @@ public Plugin myinfo =
 {
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
-	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker like back 4 blood.",
-	version     = "0.8",
+	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
+	version     = "0.9",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -82,17 +97,32 @@ public void OnPluginStart()
 	// g_hItemUseHintRange = FindConVar("player_use_radius");
 	AddCommandListener(Vocalize_Listener, "vocalize");
 
-	g_hCoolDown           = CreateConVar("l4d2_item_hint_cooldown_time", "2.5", "Cold Down Time in seconds a player can use 'Look' Item Hint/Spot Marker again.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemUseHintRange   = CreateConVar("l4d2_item_hint_use_range", "150", "How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
-	g_hItemUseSound       = CreateConVar("l4d2_item_hint_use_sound", "buttons/blip1.wav", "Item Hint Sound. (Empty = OFF)", FCVAR_NOTIFY);
-	g_hItemAnnounceType   = CreateConVar("l4d2_item_hint_announce_type", "1", "Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	g_hItemGlowTimer      = CreateConVar("l4d2_item_hint_glow_timer", "15.0", "Item Glow Time.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemColorGlowRange = CreateConVar("l4d2_item_hint_glow_range", "1000", "Item Glow Range.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemCvarColor      = CreateConVar("l4d2_item_hint_glow_color", "0 255 255", "Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)", FCVAR_NOTIFY);
-	g_hMarkUseRange       = CreateConVar("l4d2_spot_marker_use_range", "900", "How far away can a player use 'Look' Spot Marker.", FCVAR_NOTIFY, true, 1.0);
-	g_hMarkUseSound       = CreateConVar("l4d2_spot_marker_use_sound", "buttons/blip1.wav", "Spot Marker Sound. (Empty = OFF)", FCVAR_NOTIFY);
-	g_hMarkGlowTimer      = CreateConVar("l4d2_spot_marker_duration", "10.0", "Spot Marker Duration.", FCVAR_NOTIFY, true, 0.0);
-	g_hMarkCvarColor      = CreateConVar("l4d2_spot_marker_color", "200 200 200", "Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)", FCVAR_NOTIFY);
+	g_hCoolDown				= CreateConVar("l4d2_item_hint_cooldown_time", "2.5", "Cold Down Time in seconds a player can use 'Look' Item Hint/Spot Marker/Infected Marker again.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemUseHintRange		= CreateConVar("l4d2_item_hint_use_range", "150", "How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
+	g_hItemUseSound			= CreateConVar("l4d2_item_hint_use_sound", "buttons/blip1.wav", "Item Hint Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
+	g_hItemAnnounceType		= CreateConVar("l4d2_item_hint_announce_type", "1", "Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	g_hItemGlowTimer		= CreateConVar("l4d2_item_hint_glow_timer", "15.0", "Item Glow Time.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemGlowRange		= CreateConVar("l4d2_item_hint_glow_range", "1000", "Item Glow Range.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemCvarColor		= CreateConVar("l4d2_item_hint_glow_color", "0 255 255", "Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)", FCVAR_NOTIFY);
+	g_hItemInstructorHint	= CreateConVar("l4d2_item_instructorhint_enable", "1", "If 1, Create instructor hint on marked item.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hItemInstructorColor	= CreateConVar("l4d2_item_instructorhint_color", "0 0 255", "Instructor hint color on marked item.", FCVAR_NOTIFY);
+	g_hItemInstructorIcon	= CreateConVar("l4d2_item_instructorhint_icon", "icon_interact", "Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)", FCVAR_NOTIFY);
+	
+	g_hSpotMarkUseRange     	= CreateConVar("l4d2_spot_marker_use_range", "1800", "How far away can a player use 'Look' Spot Marker.", FCVAR_NOTIFY, true, 1.0);
+	g_hSpotMarkUseSound     	= CreateConVar("l4d2_spot_marker_use_sound", "buttons/blip1.wav", "Spot Marker Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
+	g_hSpotMarkGlowTimer		= CreateConVar("l4d2_spot_marker_duration", "10.0", "Spot Marker Duration.", FCVAR_NOTIFY, true, 0.0);
+	g_hSpotMarkCvarColor		= CreateConVar("l4d2_spot_marker_color", "200 200 200", "Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)", FCVAR_NOTIFY);
+	g_hSpotMarkInstructorHint	= CreateConVar("l4d2_spot_marker_instructorhint_enable", "1", "If 1, Create instructor hint on Spot Marker.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSpotMarkInstructorColor	= CreateConVar("l4d2_spot_marker_instructorhint_color", "0 255 0", "Instructor hint color on Spot Marker.", FCVAR_NOTIFY);
+	g_hSpotMarkInstructorIcon	= CreateConVar("l4d2_spot_marker_instructorhint_icon", "icon_info", "Instructor icon name on Spot Marker.", FCVAR_NOTIFY);
+	
+	g_hInfectedMarkUseRange     = CreateConVar("l4d2_infected_marker_use_range", "1800", "How far away can a player use 'Look' Infected Marker.", FCVAR_NOTIFY, true, 1.0);
+	g_hInfectedMarkUseSound		= CreateConVar("l4d2_infected_marker_use_sound", "items/suitchargeok1.wav", "Infected Marker Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
+	g_hInfectedMarkGlowTimer   	= CreateConVar("l4d2_infected_marker_glow_timer", "15.0", "Infected Marker Glow Time.", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedMarkGlowRange   	= CreateConVar("l4d2_infected_marker_glow_range", "2500", "Infected Marker Glow Range", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedMarkCvarColor   	= CreateConVar("l4d2_infected_marker_glow_color", "255 120 203", "Infected Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Infected Marker)", FCVAR_NOTIFY);
+	g_hInfectedMarkWitch    	= CreateConVar("l4d2_infected_marker_witch_enable", "1", "If 1, Enable 'Look' Infected Marker on witch.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	
 	AutoExecConfig(true, "l4d2_item_hint");
 
 	GetCvars();
@@ -101,22 +131,37 @@ public void OnPluginStart()
 	g_hItemUseSound.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemAnnounceType.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemGlowTimer.AddChangeHook(ConVarChanged_Cvars);
-	g_hItemColorGlowRange.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemGlowRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemCvarColor.AddChangeHook(ConVarChanged_Cvars);
-	g_hMarkUseRange.AddChangeHook(ConVarChanged_Cvars);
-	g_hMarkUseSound.AddChangeHook(ConVarChanged_Cvars);
-	g_hMarkGlowTimer.AddChangeHook(ConVarChanged_Cvars);
-	g_hMarkCvarColor.AddChangeHook(ConVarChanged_Cvars);
-
+	g_hItemInstructorHint.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemInstructorColor.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemInstructorIcon.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkUseRange.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkUseSound.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkGlowTimer.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkCvarColor.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkInstructorHint.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkInstructorColor.AddChangeHook(ConVarChanged_Cvars);
+	g_hSpotMarkInstructorIcon.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedMarkUseRange.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedMarkUseSound.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedMarkGlowTimer.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedMarkGlowRange.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedMarkCvarColor.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedMarkWitch.AddChangeHook(ConVarChanged_Cvars);
+	
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("round_end", Event_Round_End);
 	HookEvent("map_transition", Event_Round_End);            //戰役過關到下一關的時候 (沒有觸發round_end)
 	HookEvent("mission_lost", Event_Round_End);              //戰役滅團重來該關卡的時候 (之後有觸發round_end)
 	HookEvent("finale_vehicle_leaving", Event_Round_End);    //救援載具離開之時  (沒有觸發round_end)
 	HookEvent("spawner_give_item", Event_SpawnerGiveItem);
+	HookEvent("player_spawn", Event_PlayerSpawn);
+	HookEvent("player_team", Event_PlayerTeam);
+	HookEvent("player_death", Event_PlayerDeath);
+	HookEvent("witch_killed", Event_WitchKilled);
 
 	CreateStringMap();
-	Clear();
 
 	if (bLate)
 	{
@@ -133,8 +178,8 @@ public void OnPluginStart()
 public void OnPluginEnd()
 {
 	delete g_smModelToName;
-	RemoveItemGlow_Timer();
-	RemoveAllMark();
+	RemoveAllGlow_Timer();
+	RemoveAllSpotMark();
 }
 
 public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -149,20 +194,40 @@ void GetCvars()
 	g_hItemUseSound.GetString(g_sItemUseSound, sizeof(g_sItemUseSound));
 	g_iItemAnnounceType = g_hItemAnnounceType.IntValue;
 	g_fItemGlowTimer      = g_hItemGlowTimer.FloatValue;
-	g_iItemColorGlowRange = g_hItemColorGlowRange.IntValue;
+	g_iItemGlowRange 	= g_hItemGlowRange.IntValue;
 
 	char sColor[16];
 	g_hItemCvarColor.GetString(sColor, sizeof(sColor));
 	g_iItemCvarColor = GetColor(sColor);
 
-	g_fMarkUseRange = g_hMarkUseRange.FloatValue;
-	g_hMarkUseSound.GetString(g_sMarkUseSound, sizeof(g_sMarkUseSound));
-	g_fMarkGlowTimer      = g_hMarkGlowTimer.FloatValue;
-	FormatEx(g_sKillDelay, sizeof(g_sKillDelay), "OnUser1 !self:Kill::%.2f:-1", g_fMarkGlowTimer);
+	g_bItemInstructorHint = g_hItemInstructorHint.BoolValue;
+	g_hItemInstructorColor.GetString(g_sItemInstructorColor, sizeof(g_sItemInstructorColor));
+	TrimString(g_sItemInstructorColor);
+	g_hItemInstructorIcon.GetString(g_sItemInstructorIcon, sizeof(g_sItemInstructorIcon));
+	
+	g_fSpotMarkUseRange = g_hSpotMarkUseRange.FloatValue;
+	g_hSpotMarkUseSound.GetString(g_sSpotMarkUseSound, sizeof(g_sSpotMarkUseSound));
+	g_fSpotMarkGlowTimer = g_hSpotMarkGlowTimer.FloatValue;
+	FormatEx(g_sKillDelay, sizeof(g_sKillDelay), "OnUser1 !self:Kill::%.2f:-1", g_fSpotMarkGlowTimer);
 
-	g_hMarkCvarColor.GetString(g_sMarkCvarColor, sizeof(g_sMarkCvarColor));
-	TrimString(g_sMarkCvarColor);
-	g_iMarkCvarColorArray = ConvertRGBToIntArray(g_sMarkCvarColor);
+	g_hSpotMarkCvarColor.GetString(g_sSpotMarkCvarColor, sizeof(g_sSpotMarkCvarColor));
+	TrimString(g_sSpotMarkCvarColor);
+	g_iSpotMarkCvarColorArray = ConvertRGBToIntArray(g_sSpotMarkCvarColor);
+
+	g_bSpotMarkInstructorHint = g_hSpotMarkInstructorHint.BoolValue;
+	g_hSpotMarkInstructorColor.GetString(g_sSpotMarkInstructorColor, sizeof(g_sSpotMarkInstructorColor));
+	TrimString(g_sSpotMarkInstructorColor);
+	g_hSpotMarkInstructorIcon.GetString(g_sSpotMarkInstructorIcon, sizeof(g_sSpotMarkInstructorIcon));
+	
+	g_fInfectedMarkUseRange = g_hInfectedMarkUseRange.FloatValue;
+	g_hInfectedMarkUseSound.GetString(g_sInfectedMarkUseSound, sizeof(g_sInfectedMarkUseSound));
+	g_fInfectedMarkGlowTimer = g_hInfectedMarkGlowTimer.FloatValue;
+	g_iInfectedMarkGlowRange = g_hInfectedMarkGlowRange.IntValue;
+	
+	g_hInfectedMarkCvarColor.GetString(sColor, sizeof(sColor));
+	g_iInfectedMarkCvarColor = GetColor(sColor);
+	
+	g_bInfectedMarkWitch = g_hInfectedMarkWitch.BoolValue;
 }
 
 void CreateStringMap()
@@ -233,14 +298,14 @@ int g_iFieldModelIndex;
 public void OnMapStart()
 {
 	if (strlen(g_sItemUseSound) > 0) PrecacheSound(g_sItemUseSound);
-	if (strlen(g_sMarkUseSound) > 0) PrecacheSound(g_sMarkUseSound);
+	if (strlen(g_sSpotMarkUseSound) > 0) PrecacheSound(g_sSpotMarkUseSound);
 	g_iFieldModelIndex = PrecacheModel(MODEL_MARK_FIELD, true);
 	PrecacheModel(MODEL_MARK_SPRITE, true);
 }
 
 public void OnMapEnd()
 {
-	RemoveItemGlow_Timer();
+	RemoveAllGlow_Timer();
 }
 
 public void OnClientPutInServer(int client)
@@ -256,17 +321,23 @@ public void OnWeaponEquipPost(int client, int weapon)
 
 	RemoveEntityModelGlow(weapon);
 	delete g_iModelTimer[weapon];
+
+	RemoveEntityEnvInstructor(weapon);
+	delete g_iEnvInstructorTimer[weapon];
+
+	RemoveTargetInstructor(weapon);
+	delete g_iTargetInstructorTimer[weapon];
 }
 
-public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Clear();
 }
 
-public Action Event_Round_End(Event event, const char[] name, bool dontBroadcast)
+public void Event_Round_End(Event event, const char[] name, bool dontBroadcast)
 {
-	RemoveItemGlow_Timer();
-	RemoveAllMark();
+	RemoveAllGlow_Timer();
+	RemoveAllSpotMark();
 }
 
 public void Event_SpawnerGiveItem(Event event, const char[] name, bool dontBroadcast)
@@ -278,13 +349,38 @@ public void Event_SpawnerGiveItem(Event event, const char[] name, bool dontBroad
 	{
 		RemoveEntityModelGlow(entity);
 		delete g_iModelTimer[entity];
+
+		RemoveEntityEnvInstructor(entity);
+		delete g_iEnvInstructorTimer[entity];
+
+		RemoveTargetInstructor(entity);
+		delete g_iTargetInstructorTimer[entity];
 	}
 }
 
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{ 
+	RemoveEntityModelGlow(GetClientOfUserId(event.GetInt("userid")));
+}
+
+public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast) 
+{
+	RemoveEntityModelGlow(GetClientOfUserId(event.GetInt("userid")));
+}
+
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+{
+	RemoveEntityModelGlow(GetClientOfUserId(event.GetInt("userid")));
+}
+
+public void Event_WitchKilled(Event event, const char[] name, bool dontBroadcast)
+{
+	RemoveEntityModelGlow(event.GetInt("witchid"));
+}		
+
 public Action Vocalize_Listener(int client, const char[] command, int argc)
 {
-	bool bGlow = false;
-	if (IsRealSur(client))
+	if (IsRealSur(client) && !IsHandingFromLedge(client) && GetInfectedAttacker(client) == -1)
 	{
 		static char sCmdString[32];
 		if (GetCmdArgString(sCmdString, sizeof(sCmdString)) > 1)
@@ -303,55 +399,51 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 							// PrintToChatAll("Model - %s", sEntModelName);
 							StringToLowerCase(sEntModelName);
 							static char sItemName[64];
+							bool bIsVaildItem;
 							if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
 							{
-								switch(g_iItemAnnounceType)
-								{
-									case 0: {/*nothing*/}
-									case 1: {
-										PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
-									}
-									case 2: {
-										PrintHintTextToAll("(Vocalize) %N: %s", client, sItemName);
-									}
-									case 3: {
-										PrintCenterTextAll("(Vocalize) %N: %s", client, sItemName);
-									}
-								}
+								bIsVaildItem = true;
+							}
+							else if (StrContains(sEntModelName, "/melee/") != -1)   // entity is not in the listb(custom melee weapon model)
+							{
+								FormatEx(sItemName, sizeof sItemName, "%s", "Melee!");
+								
+								bIsVaildItem = true;
+							}
+							else if (StrContains(sEntModelName, "/weapons/") != -1) // entity is not in the list (custom weapom model)
+							{
+								FormatEx(sItemName, sizeof sItemName, "%s", "Weapons!");
+								
+								bIsVaildItem = true;
+							}
+							else // entity is not in the list (other entity model on the map)
+							{ 
+								CreateMarker(client);
+								
+								bIsVaildItem = false;
+							}
+							
+							if(bIsVaildItem)
+							{
+								NotifyMessage(client, sItemName);
+								
 								if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
 								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
-								bGlow                 = true;
-							}
-							else if (StrContains(sEntModelName, "/melee/") != -1)    // custom 3rd party melee weapon
-							{
-								switch(g_iItemAnnounceType)
+								CreateEntityModelGlow(iEntity, sEntModelName);
+								
+								if(g_bItemInstructorHint)
 								{
-									case 0: {/*nothing*/}
-									case 1: {
-										PrintToChatAll("\x01(\x04Vocalize\x01) \x05%N\x01: Melee!", client);
-									}
-									case 2: {
-										PrintHintTextToAll("(Vocalize) %N: Melee!", client);
-									}
-									case 3: {
-										PrintCenterTextAll("(Vocalize) %N: Melee!", client);
-									}
+									float vEndPos[3];
+									GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
+									CreateInstructorHint(client, iEntity, vEndPos, sItemName, 1);
 								}
-								if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
-								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
-								bGlow                 = true;
-							}
-
-							if (bGlow && g_iItemCvarColor != 0)
-							{
-								CreateItemGlow(iEntity, sEntModelName);
 							}
 						}
 					}
 				}
-				else // client / world / infected
+				else // client / world / infected / witch
 				{
-					CreateSpotMarker(client);
+					CreateMarker(client);
 				}
 			}
 		}
@@ -360,19 +452,21 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 	return Plugin_Continue;
 }
 
-public Action ColdDown(Handle timer, int iEntity)
+public Action Timer_ItemGlow(Handle timer, int iEntity)
 {
 	RemoveEntityModelGlow(iEntity);
 	g_iModelTimer[iEntity] = null;
+	
+	return Plugin_Continue;
 }
 
 void RemoveEntityModelGlow(int iEntity)
 {
-	int entity             = g_iModelIndex[iEntity];
+	int glowentity = g_iModelIndex[iEntity];
 	g_iModelIndex[iEntity] = 0;
 
-	if (IsValidEntRef(entity))
-		RemoveEntity(entity);
+	if (IsValidEntRef(glowentity))
+		RemoveEntity(glowentity);
 }
 
 int GetUseEntity(int client, float fRadius)
@@ -382,7 +476,7 @@ int GetUseEntity(int client, float fRadius)
 
 bool IsRealSur(int client)
 {
-	return (client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client) && !IsFakeClient(client));
+	return (client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVOR && IsPlayerAlive(client) && !IsFakeClient(client));
 }
 
 void Clear(int client = -1)
@@ -433,19 +527,31 @@ public void OnEntityDestroyed(int entity)
 	RemoveEntityModelGlow(entity);
 	delete g_iModelTimer[entity];
 
+	RemoveEntityEnvInstructor(entity);
+	delete g_iEnvInstructorTimer[entity];
+
+	RemoveTargetInstructor(entity);
+	delete g_iTargetInstructorTimer[entity];
+
 	ge_bMoveUp[entity] = false;
 }
 
-void RemoveItemGlow_Timer()
+void RemoveAllGlow_Timer()
 {
 	for (int entity = 1; entity < MAXENTITIES; entity++)
 	{
 		RemoveEntityModelGlow(entity);
 		delete g_iModelTimer[entity];
+
+		RemoveEntityEnvInstructor(entity);
+		delete g_iEnvInstructorTimer[entity];
+
+		RemoveTargetInstructor(entity);
+		delete g_iTargetInstructorTimer[entity];
 	}
 }
 
-void RemoveAllMark()
+void RemoveAllSpotMark()
 {
     int entity;
     char targetname[16];
@@ -472,11 +578,13 @@ bool IsValidEntityIndex(int entity)
 	return (MaxClients + 1 <= entity <= GetMaxEntities());
 }
 
-public void CreateItemGlow(int iEntity, const char[] sEntModelName)
+void CreateEntityModelGlow(int iEntity, const char[] sEntModelName)
 {
+	if (g_iItemCvarColor == 0) return; //no glow
+		
 	// Spawn dynamic prop entity
 	int entity = CreateEntityByName("prop_dynamic_override");
-	if (entity == -1) return;
+	if( !CheckIfEntityMax(entity) ) return;
 	
 	// Delete previous glow first
 	RemoveEntityModelGlow(iEntity);
@@ -494,7 +602,7 @@ public void CreateItemGlow(int iEntity, const char[] sEntModelName)
 	// Set outline glow color
 	SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
 	SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
-	SetEntProp(entity, Prop_Send, "m_nGlowRange", g_iItemColorGlowRange);
+	SetEntProp(entity, Prop_Send, "m_nGlowRange", g_iItemGlowRange);
 	SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
 	SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iItemCvarColor);
 	AcceptEntityInput(entity, "StartGlowing");
@@ -506,21 +614,105 @@ public void CreateItemGlow(int iEntity, const char[] sEntModelName)
 	// Set model attach to item, and always synchronize
 	SetVariantString("!activator");
 	AcceptEntityInput(entity, "SetParent", iEntity);
-
+	///////發光物件完成//////////
+	
 	g_iModelIndex[iEntity] = EntIndexToEntRef(entity);
 
-	g_iModelTimer[iEntity] = CreateTimer(g_fItemGlowTimer, ColdDown, iEntity);
+	g_iModelTimer[iEntity] = CreateTimer(g_fItemGlowTimer, Timer_ItemGlow, iEntity);
+
+	//model 只能給誰看?
+	SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
 }
 
-public void CreateSpotMarker(int client)
+void CreateMarker(int client)
 {
-	if (g_iMarkCvarColorArray[0] == 0) return; //disable mark glow
+	int clientAim = GetClientAimTarget(client, false);
 
+	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim)) 
+	{
+		if( CreateInfectedMarker(client, clientAim) == false)
+			CreateSpotMarker(client, clientAim);
+	}
+	else if ( IsWitch(clientAim) )
+	{
+		if( CreateInfectedMarker(client, clientAim, true) == false)
+			CreateSpotMarker(client, clientAim);
+	}
+	else
+	{
+		CreateSpotMarker(client);
+	}
+}
+
+bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
+{
+	if (g_iInfectedMarkCvarColor == 0) return false; // disable infected mark
+	if (bIsWitch && g_bInfectedMarkWitch == false) return false; // disable infected mark on witch
+
+	float vStartPos[3], vEndPos[3];
+	GetEntPropVector(client, Prop_Data, "m_vecOrigin", vStartPos);
+	GetEntPropVector(infected, Prop_Data, "m_vecOrigin", vEndPos);
+	if (GetVectorDistance(vStartPos, vEndPos, true) > g_fInfectedMarkUseRange * g_fInfectedMarkUseRange)    // over distance
+		return false;
+		
+	// Spawn dynamic prop entity
+	int entity = -1;
+	entity = CreateEntityByName("prop_dynamic_ornament");
+	
+	if( !CheckIfEntityMax(entity) ) return false;
+
+	// Delete previous glow first
+	RemoveEntityModelGlow(infected);
+	delete g_iModelTimer[infected];
+	
+	// Get Model
+	char sModelName[64];
+	GetEntPropString(infected, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
+
+	// Set new fake model
+	SetEntityModel(entity, sModelName);
+	DispatchSpawn(entity);
+
+	// Set outline glow color
+	SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
+	SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
+	SetEntProp(entity, Prop_Send, "m_nGlowRange", g_iInfectedMarkGlowRange);
+	SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
+	SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iInfectedMarkCvarColor);
+	AcceptEntityInput(entity, "StartGlowing");
+
+	// Set model invisible
+	SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+	SetEntityRenderColor(entity, 0, 0, 0, 0);
+	
+	// Set model attach to infected, and always synchronize
+	SetVariantString("!activator");
+	AcceptEntityInput(entity, "SetAttached", infected);
+	AcceptEntityInput(entity, "TurnOn");
+	///////發光物件完成//////////
+
+	g_iModelIndex[infected] = EntIndexToEntRef(entity);
+
+	g_iModelTimer[infected] = CreateTimer(g_fInfectedMarkGlowTimer, Timer_ItemGlow, infected);
+	
+	//model 只能給誰看?
+	SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
+	
+	fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
+
+	if (strlen(g_sInfectedMarkUseSound) > 0)
+		EmitSoundToAll(g_sInfectedMarkUseSound, client);
+	
+	return true;
+}
+
+void CreateSpotMarker(int client, int clientAim = 0)
+{
 	bool  hit;
 	float vStartPos[3], vEndPos[3];
-
-	int clientAim = GetClientAimTarget(client, true);
 	GetClientAbsOrigin(client, vStartPos);
+
+	if (clientAim == 0) clientAim = GetClientAimTarget(client, true);
 
 	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim))
 	{
@@ -549,25 +741,24 @@ public void CreateSpotMarker(int client)
 	if (!hit)    // not hit
 		return;
 
-	if (GetVectorDistance(vStartPos, vEndPos, true) > g_fMarkUseRange * g_fMarkUseRange)    // over distance
+	if ( g_bSpotMarkInstructorHint ) CreateInstructorHint(client, 0, vEndPos, "", 2);
+
+	if ( strcmp(g_sSpotMarkCvarColor, "") == 0 ) return; //disable spot mark glow
+
+	if (GetVectorDistance(vStartPos, vEndPos, true) > g_fSpotMarkUseRange * g_fSpotMarkUseRange)    // over distance
 		return;
-
-	fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
-
-	if (strlen(g_sMarkUseSound) > 0)
-		EmitSoundToAll(g_sMarkUseSound, client);
 
 	float vBeamPos[3];
 	vBeamPos = vEndPos;
 	vBeamPos[2] += (2.0 + 1.0);    // Change the Z pos to go up according with the width for better looking
 
 	int color[4];
-	color[0] = g_iMarkCvarColorArray[0];
-	color[1] = g_iMarkCvarColorArray[1];
-	color[2] = g_iMarkCvarColorArray[2];
+	color[0] = g_iSpotMarkCvarColorArray[0];
+	color[1] = g_iSpotMarkCvarColorArray[1];
+	color[2] = g_iSpotMarkCvarColorArray[2];
 	color[3] = 255;
 
-	float timeLimit = GetGameTime() + g_fMarkGlowTimer;
+	float timeLimit = GetGameTime() + g_fSpotMarkGlowTimer;
 
 	DataPack pack;
 	CreateDataTimer(1.0, TimerField, pack, TIMER_FLAG_NO_MAPCHANGE);
@@ -580,7 +771,7 @@ public void CreateSpotMarker(int client)
 	pack.WriteFloat(vBeamPos[1]);
 	pack.WriteFloat(vBeamPos[2]);
 
-	float fieldDuration = (timeLimit - GetGameTime() < g_fMarkGlowTimer ? timeLimit - GetGameTime() : g_fMarkGlowTimer);
+	float fieldDuration = (timeLimit - GetGameTime() < 1.0 ? timeLimit - GetGameTime() : 1.0);
 
 	if (fieldDuration < 0.11)    // Prevent rounding to 0 which makes the beam don't disappear
 		fieldDuration = 0.11;    // less than 0.11 reads as 0 in L4D1
@@ -596,42 +787,54 @@ public void CreateSpotMarker(int client)
 	FormatEx(targetname, sizeof(targetname), "%s-%02i", "l4d_mark_hint", client);
 
 	int infoTarget = CreateEntityByName(CLASSNAME_INFO_TARGET);
-	DispatchKeyValue(infoTarget, "targetname", targetname);
+	if( CheckIfEntityMax(infoTarget) )
+	{
+		DispatchKeyValue(infoTarget, "targetname", targetname);
 
-	TeleportEntity(infoTarget, vSpritePos, NULL_VECTOR, NULL_VECTOR);
-	DispatchSpawn(infoTarget);
-	ActivateEntity(infoTarget);
+		TeleportEntity(infoTarget, vSpritePos, NULL_VECTOR, NULL_VECTOR);
+		DispatchSpawn(infoTarget);
+		ActivateEntity(infoTarget);
 
-	SetEntPropEnt(infoTarget, Prop_Send, "m_hOwnerEntity", client);
+		SetEntPropEnt(infoTarget, Prop_Send, "m_hOwnerEntity", client);
 
-	SetVariantString(g_sKillDelay);
-	AcceptEntityInput(infoTarget, "AddOutput");
-	AcceptEntityInput(infoTarget, "FireUser1");
+		SetVariantString(g_sKillDelay);
+		AcceptEntityInput(infoTarget, "AddOutput");
+		AcceptEntityInput(infoTarget, "FireUser1");
 
-	int sprite       = CreateEntityByName(CLASSNAME_ENV_SPRITE);
-	DispatchKeyValue(sprite, "targetname", targetname);
-	DispatchKeyValue(sprite, "spawnflags", "1");
+		int sprite       = CreateEntityByName(CLASSNAME_ENV_SPRITE);
+		if( CheckIfEntityMax(sprite) )
+		{
+			DispatchKeyValue(sprite, "targetname", targetname);
+			DispatchKeyValue(sprite, "spawnflags", "1");
+			SDKHook(sprite, SDKHook_SetTransmit, Hook_SetTransmit);
 
-	DispatchKeyValue(sprite, "model", MODEL_MARK_SPRITE);
-	DispatchKeyValue(sprite, "rendercolor", g_sMarkCvarColor);
-	DispatchKeyValue(sprite, "renderamt", "255");    // If renderamt goes before rendercolor, it doesn't render
-	DispatchKeyValue(sprite, "scale", "0.25");
-	DispatchKeyValue(sprite, "fademindist", "-1");
+			DispatchKeyValue(sprite, "model", MODEL_MARK_SPRITE);
+			DispatchKeyValue(sprite, "rendercolor", g_sSpotMarkCvarColor);
+			DispatchKeyValue(sprite, "renderamt", "255");    // If renderamt goes before rendercolor, it doesn't render
+			DispatchKeyValue(sprite, "scale", "0.25");
+			DispatchKeyValue(sprite, "fademindist", "-1");
 
-	TeleportEntity(sprite, vSpritePos, NULL_VECTOR, NULL_VECTOR);
-	DispatchSpawn(sprite);
-	ActivateEntity(sprite);
+			TeleportEntity(sprite, vSpritePos, NULL_VECTOR, NULL_VECTOR);
+			DispatchSpawn(sprite);
+			ActivateEntity(sprite);
 
-	SetVariantString("!activator");
-	AcceptEntityInput(sprite, "SetParent", infoTarget);    // We need parent the entity to an info_target, otherwise SetTransmit won't work
+			SetVariantString("!activator");
+			AcceptEntityInput(sprite, "SetParent", infoTarget);    // We need parent the entity to an info_target, otherwise SetTransmit won't work
 
-	SetEntPropEnt(sprite, Prop_Send, "m_hOwnerEntity", client);
-	AcceptEntityInput(sprite, "ShowSprite");
-	SetVariantString(g_sKillDelay);
-	AcceptEntityInput(sprite, "AddOutput");
-	AcceptEntityInput(sprite, "FireUser1");
+			SetEntPropEnt(sprite, Prop_Send, "m_hOwnerEntity", client);
+			AcceptEntityInput(sprite, "ShowSprite");
+			SetVariantString(g_sKillDelay);
+			AcceptEntityInput(sprite, "AddOutput");
+			AcceptEntityInput(sprite, "FireUser1");
+			
+			CreateTimer(0.1, TimerMoveSprite, EntIndexToEntRef(sprite), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			
+			fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
 
-	CreateTimer(0.1, TimerMoveSprite, EntIndexToEntRef(sprite), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			if (strlen(g_sSpotMarkUseSound) > 0)
+				EmitSoundToAll(g_sSpotMarkUseSound, client);
+		}
+	}
 }
 
 public Action TimerField(Handle timer, DataPack pack)
@@ -651,9 +854,9 @@ public Action TimerField(Handle timer, DataPack pack)
 	vBeamPos[2] = pack.ReadFloat();
 
 	if (timeLimit < GetGameTime())
-		return;
+		return Plugin_Continue;
 
-	float fieldDuration = (timeLimit - GetGameTime() < g_fMarkGlowTimer ? timeLimit - GetGameTime() : g_fMarkGlowTimer);
+	float fieldDuration = (timeLimit - GetGameTime() < 1.0 ? timeLimit - GetGameTime() : 1.0);
 
 	if (fieldDuration < 0.11) // Prevent rounding to 0 which makes the beam don't disappear
 		fieldDuration = 0.11; // less than 0.11 reads as 0 in L4D1
@@ -671,6 +874,8 @@ public Action TimerField(Handle timer, DataPack pack)
 	pack2.WriteFloat(vBeamPos[0]);
 	pack2.WriteFloat(vBeamPos[1]);
 	pack2.WriteFloat(vBeamPos[2]);
+	
+	return Plugin_Continue;
 }
 
 public Action TimerMoveSprite(Handle timer, int entityRef)
@@ -737,13 +942,13 @@ int[] ConvertRGBToIntArray(char[] sColor)
 
 public bool TraceFilter(int entity, int contentsMask, int client)
 {
-    if (entity == client)
-        return false;
+	if (entity == client)
+		return false;
 
-    if (entity == ENTITY_WORLDSPAWN || 1 <= entity <= MaxClients)
-        return true;
+	if (entity == ENTITY_WORLDSPAWN || 1 <= entity <= MaxClients)
+		return true;
 
-    return false;
+	return false;
 }
 
 void StringToLowerCase(char[] input)
@@ -752,4 +957,263 @@ void StringToLowerCase(char[] input)
     {
         input[i] = CharToLower(input[i]);
     }
+}
+
+void NotifyMessage(int client, const char[] sItemName)
+{
+	switch(g_iItemAnnounceType)
+	{
+		case 0: {/*nothing*/}
+		case 1: {
+			for (int i=1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
+				{
+					PrintToChat(i, "\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+				}
+			}
+		}
+		case 2: {
+			for (int i=1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
+				{
+					PrintHintText(i, "\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+				}
+			}
+		}
+		case 3: {
+			for (int i=1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
+				{
+					PrintCenterText(i, "\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+				}
+			}
+		}
+	}
+}
+
+stock bool IsHandingFromLedge(int client)
+{
+	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge"));
+}
+
+int GetInfectedAttacker(int client)
+{
+	int attacker;
+
+	/* Charger */
+	attacker = GetEntPropEnt(client, Prop_Send, "m_pummelAttacker");
+	if (attacker > 0)
+	{
+		return attacker;
+	}
+
+	attacker = GetEntPropEnt(client, Prop_Send, "m_carryAttacker");
+	if (attacker > 0)
+	{
+		return attacker;
+	}
+	/* Jockey */
+	attacker = GetEntPropEnt(client, Prop_Send, "m_jockeyAttacker");
+	if (attacker > 0)
+	{
+		return attacker;
+	}
+
+	/* Hunter */
+	attacker = GetEntPropEnt(client, Prop_Send, "m_pounceAttacker");
+	if (attacker > 0)
+	{
+		return attacker;
+	}
+
+	/* Smoker */
+	attacker = GetEntPropEnt(client, Prop_Send, "m_tongueOwner");
+	if (attacker > 0)
+	{
+		return attacker;
+	}
+
+	return -1;
+}
+
+bool IsWitch(int entity)
+{
+    if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
+    {
+        char strClassName[64];
+        GetEdictClassname(entity, strClassName, sizeof(strClassName));
+        return strcmp(strClassName, "witch", false) == 0;
+    }
+    return false;
+}
+
+bool IsPlayerGhost(int client)
+{
+	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isGhost"));
+}
+
+public Action Hook_SetTransmit(int entity, int client)
+{
+	if( GetClientTeam(client) == TEAM_INFECTED)
+		return Plugin_Handled;
+	
+	return Plugin_Continue;
+}
+
+bool CheckIfEntityMax(int entity)
+{
+	if(entity == -1) return false;
+
+	if(	entity > ENTITY_SAFE_LIMIT)
+	{
+		AcceptEntityInput(entity, "Kill");
+		return false;
+	}
+	return true;
+}
+
+// by BHaType: https://forums.alliedmods.net/showthread.php?p=2709810#post2709810
+void CreateInstructorHint(int client, int iEntity, const float vOrigin[3], const char[] sItemName, int type)
+{
+	static char sTargetName[64], sCaption[128];
+	Format(sTargetName, sizeof sTargetName, "%i_%.0f", client, GetEngineTime());
+	
+	switch(type)
+	{
+		case 1:
+		{
+			if( Create_info_target_instructor_hint(iEntity, vOrigin, sTargetName, g_fItemGlowTimer) )
+			{
+				FormatEx(sCaption, sizeof sCaption, "%s", sItemName);
+				Create_env_instructor_hint(iEntity, vOrigin, sTargetName, g_sItemInstructorIcon, sCaption, g_sItemInstructorColor, g_fItemGlowTimer, float(g_iItemGlowRange));
+			}
+		}
+		case 2:
+		{
+			if( Create_info_target_instructor_hint(0, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
+			{
+				FormatEx(sCaption, sizeof sCaption, "%N Marked something here", client);
+				Create_env_instructor_hint(0, vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange + 100.0);
+			}
+		}
+	}
+}
+
+bool Create_info_target_instructor_hint(int iEntity, const float vOrigin[3], const char[] sTargetName, float duration)
+{
+	int entity = CreateEntityByName("info_target_instructor_hint");
+	if (!CheckIfEntityMax(entity)) return false;
+
+	DispatchKeyValue(entity, "targetname", sTargetName);
+	DispatchSpawn(entity);
+	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
+	
+	if (iEntity > 0)
+	{
+		//delete previous env_instructor_hint first
+		RemoveTargetInstructor(iEntity);
+		delete g_iTargetInstructorTimer[iEntity];
+
+		g_iTargetInstructorIndex[iEntity] = EntIndexToEntRef(entity);
+		g_iTargetInstructorTimer[iEntity] = CreateTimer(duration, Timer_target_instructor_hint, iEntity);
+	}
+	else
+	{
+		char szBuffer[36];
+		Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+
+		SetVariantString(szBuffer); 
+		AcceptEntityInput(entity, "AddOutput"); 
+		AcceptEntityInput(entity, "FireUser1");
+	}
+
+	return true;
+}
+
+public Action Timer_target_instructor_hint(Handle timer, int iEntity)
+{
+	RemoveTargetInstructor(iEntity);
+	g_iTargetInstructorTimer[iEntity] = null;
+	
+	return Plugin_Continue;
+}
+
+void RemoveTargetInstructor(int iEntity)
+{
+	int info_target_instructor_hint = g_iTargetInstructorIndex[iEntity];
+	g_iTargetInstructorIndex[iEntity] = 0;
+
+	if (IsValidEntRef(info_target_instructor_hint))
+		RemoveEntity(info_target_instructor_hint);
+}
+
+void Create_env_instructor_hint(int iEntity, const float vOrigin[3], const char[] sTargetName, const char[] icon_name, const char[] caption, const char[] hint_color, float duration, float range)
+{
+	int entity = CreateEntityByName("env_instructor_hint");
+	if (!CheckIfEntityMax(entity)) return;
+
+	char sDuration[4];
+	IntToString(RoundFloat(duration), sDuration, sizeof sDuration);
+	char sRange[8];
+	IntToString(RoundFloat(range), sRange, sizeof sRange);
+
+	DispatchKeyValue(entity, "hint_timeout", sDuration);
+	DispatchKeyValue(entity, "hint_allow_nodraw_target", "1");
+	DispatchKeyValue(entity, "hint_target", sTargetName);
+	DispatchKeyValue(entity, "hint_auto_start", "1");
+	DispatchKeyValue(entity, "hint_color", hint_color);
+	DispatchKeyValue(entity, "hint_icon_offscreen", icon_name);
+	DispatchKeyValue(entity, "hint_instance_type", "0");
+	DispatchKeyValue(entity, "hint_icon_onscreen", icon_name);
+	DispatchKeyValue(entity, "hint_caption", caption);
+	DispatchKeyValue(entity, "hint_static", "0");
+	DispatchKeyValue(entity, "hint_nooffscreen", "0");
+	if (iEntity > 0) DispatchKeyValue(entity, "hint_icon_offset", "10");
+	else DispatchKeyValue(entity, "hint_icon_offset", "15");
+	DispatchKeyValue(entity, "hint_range", sRange);
+	DispatchKeyValue(entity, "hint_forcecaption", "1");
+	DispatchSpawn(entity);
+	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
+	AcceptEntityInput(entity, "ShowHint");
+
+	if (iEntity > 0)
+	{
+		//delete previous env_instructor_hint first
+		RemoveEntityEnvInstructor(iEntity);
+		delete g_iEnvInstructorTimer[iEntity];
+
+		g_iEnvInstructorIndex[iEntity] = EntIndexToEntRef(entity);
+		g_iEnvInstructorTimer[iEntity] = CreateTimer(duration, Timer_env_instructor_hint, iEntity);
+	}
+	else
+	{
+		char szBuffer[36];
+		Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+
+		SetVariantString(szBuffer); 
+		AcceptEntityInput(entity, "AddOutput"); 
+		AcceptEntityInput(entity, "FireUser1");
+	}
+}
+
+public Action Timer_env_instructor_hint(Handle timer, int iEntity)
+{
+	RemoveEntityEnvInstructor(iEntity);
+	g_iEnvInstructorTimer[iEntity] = null;
+	
+	return Plugin_Continue;
+}
+
+void RemoveEntityEnvInstructor(int iEntity)
+{
+	int env_instructor_hint = g_iEnvInstructorIndex[iEntity];
+	g_iEnvInstructorIndex[iEntity] = 0;
+
+	if (IsValidEntRef(env_instructor_hint))
+	{
+		RemoveEntity(env_instructor_hint);
+	}
 }
