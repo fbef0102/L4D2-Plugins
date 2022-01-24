@@ -14,6 +14,10 @@ v0.9
 v0.2
 -Original Post: https://forums.alliedmods.net/showthread.php?t=333669
 
+-Known Issue-
+1. The instructor hint show up is Double-Hint
+2. Sometimes, the instructor hint not display. It seems that game controls all instructor hint
+
 -Convars-
 cfg\sourcemod\l4d2_item_hint.cfg
 // Infected Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Infected Marker)
