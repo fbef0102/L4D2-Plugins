@@ -38,8 +38,8 @@ bool g_bItemInstructorHint, g_bSpotMarkInstructorHint, g_bInfectedMarkWitch;
 static bool   ge_bMoveUp[MAXENTITIES+1];
 int       g_iModelIndex[MAXENTITIES+1] = {0};
 Handle    g_iModelTimer[MAXENTITIES+1] = {null};
-//int       g_iInstructorIndex[MAXENTITIES+1] = {0};
-//Handle    g_iInstructorTimer[MAXENTITIES+1] = {null};
+int       g_iInstructorIndex[MAXENTITIES+1] = {0};
+Handle    g_iInstructorTimer[MAXENTITIES+1] = {null};
 Handle    g_hUseEntity;
 StringMap g_smModelToName;
 
@@ -331,8 +331,8 @@ public void OnWeaponEquipPost(int client, int weapon)
 	RemoveEntityModelGlow(weapon);
 	delete g_iModelTimer[weapon];
 
-	//RemoveInstructor(weapon);
-	//delete g_iInstructorTimer[weapon];
+	RemoveInstructor(weapon);
+	delete g_iInstructorTimer[weapon];
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
@@ -356,8 +356,8 @@ public void Event_SpawnerGiveItem(Event event, const char[] name, bool dontBroad
 		RemoveEntityModelGlow(entity);
 		delete g_iModelTimer[entity];
 
-		//RemoveInstructor(entity);
-		//delete g_iInstructorTimer[entity];
+		RemoveInstructor(entity);
+		delete g_iInstructorTimer[entity];
 	}
 }
 
@@ -438,7 +438,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 								{
 									float vEndPos[3];
 									GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
-									CreateInstructorHint(client, vEndPos, sItemName, view_as<EHintType>(eItemHint));
+									CreateInstructorHint(client, vEndPos, sItemName, iEntity, view_as<EHintType>(eItemHint));
 								}
 							}
 						}
@@ -530,8 +530,8 @@ public void OnEntityDestroyed(int entity)
 	RemoveEntityModelGlow(entity);
 	delete g_iModelTimer[entity];
 
-	//RemoveInstructor(entity);
-	//delete g_iInstructorTimer[entity];
+	RemoveInstructor(entity);
+	delete g_iInstructorTimer[entity];
 
 	ge_bMoveUp[entity] = false;
 }
@@ -543,8 +543,8 @@ void RemoveAllGlow_Timer()
 		RemoveEntityModelGlow(entity);
 		delete g_iModelTimer[entity];
 
-		//RemoveInstructor(entity);
-		//delete g_iInstructorTimer[entity];
+		RemoveInstructor(entity);
+		delete g_iInstructorTimer[entity];
 	}
 }
 
@@ -738,7 +738,7 @@ void CreateSpotMarker(int client, int clientAim = 0)
 	if (!hit)    // not hit
 		return;
 
-	if ( g_bSpotMarkInstructorHint ) CreateInstructorHint(client, vEndPos, "", view_as<EHintType>(eSpotMarker));
+	if ( g_bSpotMarkInstructorHint ) CreateInstructorHint(client, vEndPos, "", 0, view_as<EHintType>(eSpotMarker));
 
 	if ( strlen(g_sSpotMarkCvarColor) == 0 ) return; //disable spot mark glow
 
@@ -1075,7 +1075,7 @@ bool CheckIfEntityMax(int entity)
 }
 
 // by BHaType: https://forums.alliedmods.net/showthread.php?p=2709810#post2709810
-void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItemName, EHintType type)
+void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItemName, int iEntity, EHintType type)
 {
 	static char sTargetName[64], sCaption[128];
 	Format(sTargetName, sizeof sTargetName, "%i_%.0f", client, GetEngineTime());
@@ -1084,24 +1084,24 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 	{
 		case view_as<EHintType>(eItemHint):
 		{
-			if( Create_info_target_instructor_hint(vOrigin, sTargetName, g_fItemGlowTimer) )
+			if( Create_info_target_instructor_hint(iEntity, vOrigin, sTargetName, g_fItemGlowTimer) )
 			{
 				FormatEx(sCaption, sizeof sCaption, "%s", sItemName);
-				Create_env_instructor_hint(view_as<EHintType>(eItemHint), vOrigin, sTargetName, g_sItemInstructorIcon, sCaption, g_sItemInstructorColor, g_fItemGlowTimer, float(g_iItemGlowRange));
+				Create_env_instructor_hint(iEntity, view_as<EHintType>(eItemHint), vOrigin, sTargetName, g_sItemInstructorIcon, sCaption, g_sItemInstructorColor, g_fItemGlowTimer, float(g_iItemGlowRange));
 			}
 		}
 		case view_as<EHintType>(eSpotMarker):
 		{
-			if( Create_info_target_instructor_hint(vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
+			if( Create_info_target_instructor_hint(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
 			{
 				FormatEx(sCaption, sizeof sCaption, "%N Marked something here", client);
-				Create_env_instructor_hint(view_as<EHintType>(eSpotMarker), vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
+				Create_env_instructor_hint(iEntity, view_as<EHintType>(eSpotMarker), vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
 			}
 		}
 	}
 }
 
-bool Create_info_target_instructor_hint(const float vOrigin[3], const char[] sTargetName, float duration)
+bool Create_info_target_instructor_hint(int iEntity, const float vOrigin[3], const char[] sTargetName, float duration)
 {
 	int entity = CreateEntityByName("info_target_instructor_hint");
 	if (!CheckIfEntityMax(entity)) return false;
@@ -1109,37 +1109,30 @@ bool Create_info_target_instructor_hint(const float vOrigin[3], const char[] sTa
 	DispatchKeyValue(entity, "targetname", sTargetName);
 	DispatchSpawn(entity);
 	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
-	
-	char szBuffer[36];
-	Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
 
-	SetVariantString(szBuffer); 
-	AcceptEntityInput(entity, "AddOutput"); 
-	AcceptEntityInput(entity, "FireUser1");
+	if (iEntity > 0)
+	{
+		//delete previous env_instructor_hint first
+		RemoveInstructor(iEntity);
+		delete g_iInstructorTimer[iEntity];
 
-	// if (iEntity > 0)
-	// {
-	// 	//delete previous env_instructor_hint first
-	// 	RemoveInstructor(iEntity);
-	// 	delete g_iInstructorTimer[iEntity];
+		g_iInstructorIndex[iEntity] = EntIndexToEntRef(entity);
+		g_iInstructorTimer[iEntity] = CreateTimer(duration, Timer_instructor_hint, iEntity);
+	}
+	else
+	{
+		char szBuffer[36];
+		Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
 
-	// 	g_iInstructorIndex[iEntity] = EntIndexToEntRef(entity);
-	// 	g_iInstructorTimer[iEntity] = CreateTimer(duration, Timer_instructor_hint, iEntity);
-	// }
-	// else
-	// {
-	// 	char szBuffer[36];
-	// 	Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
-
-	// 	SetVariantString(szBuffer); 
-	// 	AcceptEntityInput(entity, "AddOutput"); 
-	// 	AcceptEntityInput(entity, "FireUser1");
-	// }
+		SetVariantString(szBuffer); 
+		AcceptEntityInput(entity, "AddOutput"); 
+		AcceptEntityInput(entity, "FireUser1");
+	}
 
 	return true;
 }
 
-void Create_env_instructor_hint(EHintType eType, const float vOrigin[3], const char[] sTargetName, const char[] icon_name, const char[] caption, const char[] hint_color, float duration, float range)
+void Create_env_instructor_hint(int iEntity, EHintType eType, const float vOrigin[3], const char[] sTargetName, const char[] icon_name, const char[] caption, const char[] hint_color, float duration, float range)
 {
 	int entity = CreateEntityByName("env_instructor_hint");
 	if (!CheckIfEntityMax(entity)) return;
@@ -1168,34 +1161,27 @@ void Create_env_instructor_hint(EHintType eType, const float vOrigin[3], const c
 	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
 	AcceptEntityInput(entity, "ShowHint");
 
-	char szBuffer[36];
-	Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+	if (iEntity > 0)
+	{
+		//delete previous env_instructor_hint first
+		RemoveInstructor(iEntity);
+		delete g_iInstructorTimer[iEntity];
 
-	SetVariantString(szBuffer); 
-	AcceptEntityInput(entity, "AddOutput"); 
-	AcceptEntityInput(entity, "FireUser1");
+		g_iInstructorIndex[iEntity] = EntIndexToEntRef(entity);
+		g_iInstructorTimer[iEntity] = CreateTimer(duration, Timer_instructor_hint, iEntity);
+	}
+	else
+	{
+		char szBuffer[36];
+		Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
 
-	// if (iEntity > 0)
-	// {
-	// 	//delete previous env_instructor_hint first
-	// 	RemoveInstructor(iEntity);
-	// 	delete g_iInstructorTimer[iEntity];
-
-	// 	g_iInstructorIndex[iEntity] = EntIndexToEntRef(entity);
-	// 	g_iInstructorTimer[iEntity] = CreateTimer(duration, Timer_instructor_hint, iEntity);
-	// }
-	// else
-	// {
-	// 	char szBuffer[36];
-	// 	Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
-
-	// 	SetVariantString(szBuffer); 
-	// 	AcceptEntityInput(entity, "AddOutput"); 
-	// 	AcceptEntityInput(entity, "FireUser1");
-	// }
+		SetVariantString(szBuffer); 
+		AcceptEntityInput(entity, "AddOutput"); 
+		AcceptEntityInput(entity, "FireUser1");
+	}
 }
 
-/* 
+
 public Action Timer_instructor_hint(Handle timer, int iEntity)
 {
 	RemoveInstructor(iEntity);
@@ -1212,4 +1198,3 @@ void RemoveInstructor(int iEntity)
 	if (IsValidEntRef(instructor_hint))
 		RemoveEntity(instructor_hint);
 }
-*/
