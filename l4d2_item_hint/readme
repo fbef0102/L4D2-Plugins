@@ -5,11 +5,13 @@ v0.9
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
 -Add Item Glow, everyone can see the item through wall.
--Add Spot Marker, using 'Look' in vocalize menu to mark the area.
--Add Infected Marker, using 'Look' in vocalize menu to mark the infected.
--Add Instructor hint, display instructor hint on Spot Marker/Infected Marker (Player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer)
 -Add sound.
 -Fixes custom vocalizers that uses SmartLook with capitals.
+-Add Spot Marker, using 'Look' in vocalize menu to mark the area.
+-Add Infected Marker, using 'Look' in vocalize menu to mark the infected.
+-Add Instructor hint, display instructor hint on Spot Marker/Infected Marker
+(player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer, or they can't see)
+(DO NOT modify convar "sv_gameinstructor_disable", this force all clients to disable their game instructors.
 
 v0.2
 -Original Post: https://forums.alliedmods.net/showthread.php?t=333669
