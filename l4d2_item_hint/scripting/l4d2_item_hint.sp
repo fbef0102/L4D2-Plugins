@@ -1,3 +1,5 @@
+//Harry @ 2020-2022
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -16,7 +18,7 @@
 #define TEAM_INFECTED 3
 #define ENTITY_SAFE_LIMIT 2000
 
-ConVar g_hCoolDown,
+ConVar g_hItemHintCoolDown, g_hSpotMarkCoolDown, g_hInfectedMarkCoolDown,
 	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemGlowRange, g_hItemCvarColor,
 	g_hItemInstructorHint, g_hItemInstructorColor, g_hItemInstructorIcon,
 	g_hSpotMarkUseRange, g_hSpotMarkUseSound, g_hSpotMarkGlowTimer, g_hSpotMarkCvarColor, g_hSpotMarkSpriteModel,
@@ -25,11 +27,11 @@ ConVar g_hCoolDown,
 int g_iItemAnnounceType, g_iItemGlowRange, g_iItemCvarColor,
 	g_iSpotMarkCvarColorArray[3],
 	g_iInfectedMarkGlowRange, g_iInfectedMarkCvarColor;
-float g_fCoolDown,
+float g_fItemHintCoolDown, g_fSpotMarkCoolDown, g_fInfectedMarkCoolDown,
 	g_fItemUseHintRange, g_fItemGlowTimer,
 	g_fSpotMarkUseRange, g_fSpotMarkGlowTimer,
 	g_fInfectedMarkUseRange, g_fInfectedMarkGlowTimer;
-float       fCoolDownTime[MAXPLAYERS + 1];
+float       g_fItemHintCoolDownTime[MAXPLAYERS + 1], g_fSpotMarkCoolDownTime[MAXPLAYERS + 1], g_fInfectedMarkCoolDownTime[MAXPLAYERS + 1];
 static char g_sItemInstructorColor[12], g_sItemInstructorIcon[16], g_sSpotMarkCvarColor[12], g_sItemUseSound[100], g_sSpotMarkUseSound[100], g_sKillDelay[32],
 			g_sInfectedMarkUseSound[100], g_sSpotMarkInstructorColor[12], g_sSpotMarkInstructorIcon[16], g_sSpotMarkSpriteModel[PLATFORM_MAX_PATH];
 bool g_bItemInstructorHint, g_bSpotMarkInstructorHint, g_bInfectedMarkWitch;
@@ -54,7 +56,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.1",
+	version     = "1.2",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -101,7 +103,7 @@ public void OnPluginStart()
 	// g_hItemUseHintRange = FindConVar("player_use_radius");
 	AddCommandListener(Vocalize_Listener, "vocalize");
 
-	g_hCoolDown				= CreateConVar("l4d2_item_marker_look_cooldown_time", "2.5", "Cold Down Time in seconds a player can use 'Look' Item Hint/Spot Marker/Infected Marker again.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemHintCoolDown				= CreateConVar("l4d2_item_hint_cooldown_time", "1.0", "Cold Down Time in seconds a player can use 'Look' Item Hint again.", FCVAR_NOTIFY, true, 0.0);
 	g_hItemUseHintRange		= CreateConVar("l4d2_item_hint_use_range", "150", "How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
 	g_hItemUseSound			= CreateConVar("l4d2_item_hint_use_sound", "buttons/blip1.wav", "Item Hint Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
 	g_hItemAnnounceType		= CreateConVar("l4d2_item_hint_announce_type", "1", "Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
@@ -112,6 +114,7 @@ public void OnPluginStart()
 	g_hItemInstructorColor	= CreateConVar("l4d2_item_instructorhint_color", "0 255 255", "Instructor hint color on marked item.", FCVAR_NOTIFY);
 	g_hItemInstructorIcon	= CreateConVar("l4d2_item_instructorhint_icon", "icon_interact", "Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)", FCVAR_NOTIFY);
 	
+	g_hSpotMarkCoolDown			= CreateConVar("l4d2_spot_marker_cooldown_time", "2.5", "Cold Down Time in seconds a player can use 'Look' Spot Marker again.", FCVAR_NOTIFY, true, 0.0);
 	g_hSpotMarkUseRange     	= CreateConVar("l4d2_spot_marker_use_range", "1800", "How far away can a player use 'Look' Spot Marker.", FCVAR_NOTIFY, true, 1.0);
 	g_hSpotMarkUseSound     	= CreateConVar("l4d2_spot_marker_use_sound", "buttons/blip1.wav", "Spot Marker Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
 	g_hSpotMarkGlowTimer		= CreateConVar("l4d2_spot_marker_duration", "10.0", "Spot Marker Duration.", FCVAR_NOTIFY, true, 0.0);
@@ -121,9 +124,10 @@ public void OnPluginStart()
 	g_hSpotMarkInstructorColor	= CreateConVar("l4d2_spot_marker_instructorhint_color", "200 200 200", "Instructor hint color on Spot Marker.", FCVAR_NOTIFY);
 	g_hSpotMarkInstructorIcon	= CreateConVar("l4d2_spot_marker_instructorhint_icon", "icon_info", "Instructor icon name on Spot Marker.", FCVAR_NOTIFY);
 	
+	g_hInfectedMarkCoolDown		= CreateConVar("l4d2_infected_marker_cooldown_time", "0.25", "Cold Down Time in seconds a player can use 'Look' Infected Marker again.", FCVAR_NOTIFY, true, 0.0);
 	g_hInfectedMarkUseRange     = CreateConVar("l4d2_infected_marker_use_range", "1800", "How far away can a player use 'Look' Infected Marker.", FCVAR_NOTIFY, true, 1.0);
 	g_hInfectedMarkUseSound		= CreateConVar("l4d2_infected_marker_use_sound", "items/suitchargeok1.wav", "Infected Marker Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
-	g_hInfectedMarkGlowTimer   	= CreateConVar("l4d2_infected_marker_glow_timer", "5.0", "Infected Marker Glow Time.", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedMarkGlowTimer   	= CreateConVar("l4d2_infected_marker_glow_timer", "10.0", "Infected Marker Glow Time.", FCVAR_NOTIFY, true, 0.0);
 	g_hInfectedMarkGlowRange   	= CreateConVar("l4d2_infected_marker_glow_range", "2500", "Infected Marker Glow Range", FCVAR_NOTIFY, true, 0.0);
 	g_hInfectedMarkCvarColor   	= CreateConVar("l4d2_infected_marker_glow_color", "255 120 203", "Infected Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Infected Marker)", FCVAR_NOTIFY);
 	g_hInfectedMarkWitch    	= CreateConVar("l4d2_infected_marker_witch_enable", "1", "If 1, Enable 'Look' Infected Marker on witch.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -131,7 +135,7 @@ public void OnPluginStart()
 	AutoExecConfig(true, "l4d2_item_hint");
 
 	GetCvars();
-	g_hCoolDown.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemHintCoolDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseHintRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseSound.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemAnnounceType.AddChangeHook(ConVarChanged_Cvars);
@@ -141,6 +145,8 @@ public void OnPluginStart()
 	g_hItemInstructorHint.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemInstructorColor.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemInstructorIcon.AddChangeHook(ConVarChanged_Cvars);
+
+	g_hSpotMarkCoolDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hSpotMarkUseRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hSpotMarkUseSound.AddChangeHook(ConVarChanged_Cvars);
 	g_hSpotMarkGlowTimer.AddChangeHook(ConVarChanged_Cvars);
@@ -149,6 +155,8 @@ public void OnPluginStart()
 	g_hSpotMarkInstructorHint.AddChangeHook(ConVarChanged_Cvars);
 	g_hSpotMarkInstructorColor.AddChangeHook(ConVarChanged_Cvars);
 	g_hSpotMarkInstructorIcon.AddChangeHook(ConVarChanged_Cvars);
+
+	g_hInfectedMarkCoolDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedMarkUseRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedMarkUseSound.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedMarkGlowTimer.AddChangeHook(ConVarChanged_Cvars);
@@ -195,48 +203,43 @@ public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char
 
 void GetCvars()
 {
-	g_fCoolDown         = g_hCoolDown.FloatValue;
+	g_fItemHintCoolDown         = g_hItemHintCoolDown.FloatValue;
 	g_fItemUseHintRange = g_hItemUseHintRange.FloatValue;
 	g_hItemUseSound.GetString(g_sItemUseSound, sizeof(g_sItemUseSound));
 	g_iItemAnnounceType = g_hItemAnnounceType.IntValue;
 	g_fItemGlowTimer      = g_hItemGlowTimer.FloatValue;
 	g_iItemGlowRange 	= g_hItemGlowRange.IntValue;
-
 	char sColor[16];
 	g_hItemCvarColor.GetString(sColor, sizeof(sColor));
 	g_iItemCvarColor = GetColor(sColor);
-
 	g_bItemInstructorHint = g_hItemInstructorHint.BoolValue;
 	g_hItemInstructorColor.GetString(g_sItemInstructorColor, sizeof(g_sItemInstructorColor));
 	TrimString(g_sItemInstructorColor);
 	g_hItemInstructorIcon.GetString(g_sItemInstructorIcon, sizeof(g_sItemInstructorIcon));
 	
+	g_fSpotMarkCoolDown = g_hSpotMarkCoolDown.FloatValue;
 	g_fSpotMarkUseRange = g_hSpotMarkUseRange.FloatValue;
 	g_hSpotMarkUseSound.GetString(g_sSpotMarkUseSound, sizeof(g_sSpotMarkUseSound));
 	g_fSpotMarkGlowTimer = g_hSpotMarkGlowTimer.FloatValue;
 	FormatEx(g_sKillDelay, sizeof(g_sKillDelay), "OnUser1 !self:Kill::%.2f:-1", g_fSpotMarkGlowTimer);
-
 	g_hSpotMarkCvarColor.GetString(g_sSpotMarkCvarColor, sizeof(g_sSpotMarkCvarColor));
 	TrimString(g_sSpotMarkCvarColor);
 	g_iSpotMarkCvarColorArray = ConvertRGBToIntArray(g_sSpotMarkCvarColor);
-	
 	g_hSpotMarkSpriteModel.GetString(g_sSpotMarkSpriteModel, sizeof(g_sSpotMarkSpriteModel));
 	TrimString(g_sSpotMarkSpriteModel);
 	if ( strlen(g_sSpotMarkSpriteModel) > 0 ) PrecacheModel(g_sSpotMarkSpriteModel, true);
-
 	g_bSpotMarkInstructorHint = g_hSpotMarkInstructorHint.BoolValue;
 	g_hSpotMarkInstructorColor.GetString(g_sSpotMarkInstructorColor, sizeof(g_sSpotMarkInstructorColor));
 	TrimString(g_sSpotMarkInstructorColor);
 	g_hSpotMarkInstructorIcon.GetString(g_sSpotMarkInstructorIcon, sizeof(g_sSpotMarkInstructorIcon));
 	
+	g_fInfectedMarkCoolDown = g_hInfectedMarkCoolDown.FloatValue;
 	g_fInfectedMarkUseRange = g_hInfectedMarkUseRange.FloatValue;
 	g_hInfectedMarkUseSound.GetString(g_sInfectedMarkUseSound, sizeof(g_sInfectedMarkUseSound));
 	g_fInfectedMarkGlowTimer = g_hInfectedMarkGlowTimer.FloatValue;
 	g_iInfectedMarkGlowRange = g_hInfectedMarkGlowRange.IntValue;
-	
 	g_hInfectedMarkCvarColor.GetString(sColor, sizeof(sColor));
 	g_iInfectedMarkCvarColor = GetColor(sColor);
-	
 	g_bInfectedMarkWitch = g_hInfectedMarkWitch.BoolValue;
 }
 
@@ -388,7 +391,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 		static char sCmdString[32];
 		if (GetCmdArgString(sCmdString, sizeof(sCmdString)) > 1)
 		{
-			if (strncmp(sCmdString, "smartlook #", 11, false) == 0 && GetEngineTime() > fCoolDownTime[client])
+			if (strncmp(sCmdString, "smartlook #", 11, false) == 0)
 			{
 				static int iEntity;
 				iEntity = GetUseEntity(client, g_fItemUseHintRange);
@@ -426,12 +429,12 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 								bIsVaildItem = false;
 							}
 							
-							if(bIsVaildItem)
+							if(bIsVaildItem && GetEngineTime() > g_fItemHintCoolDownTime[client])
 							{
 								NotifyMessage(client, sItemName);
 								
 								if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
-								fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
+								g_fItemHintCoolDownTime[client] = GetEngineTime() + g_fItemHintCoolDown;
 								CreateEntityModelGlow(iEntity, sEntModelName);
 								
 								if(g_bItemInstructorHint)
@@ -488,12 +491,16 @@ void Clear(int client = -1)
 	{
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			fCoolDownTime[i] = 0.0;
+			g_fItemHintCoolDownTime[i] = 0.0;
+			g_fSpotMarkCoolDownTime[i] = 0.0;
+			g_fInfectedMarkCoolDownTime[i] = 0.0;
 		}
 	}
 	else
 	{
-		fCoolDownTime[client] = 0.0;
+		g_fItemHintCoolDownTime[client] = 0.0;
+		g_fSpotMarkCoolDownTime[client] = 0.0;
+		g_fInfectedMarkCoolDownTime[client] = 0.0;
 	}
 }
 
@@ -627,8 +634,7 @@ void CreateMarker(int client)
 
 	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim)) 
 	{
-		if( CreateInfectedMarker(client, clientAim) == false)
-			CreateSpotMarker(client, clientAim);
+		CreateInfectedMarker(client, clientAim);
 	}
 	else if ( IsWitch(clientAim) )
 	{
@@ -643,6 +649,7 @@ void CreateMarker(int client)
 
 bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 {
+	if (GetEngineTime() < g_fInfectedMarkCoolDownTime[client]) return false; // cool down not yet
 	if (g_iInfectedMarkCvarColor == 0) return false; // disable infected mark
 	if (bIsWitch && g_bInfectedMarkWitch == false) return false; // disable infected mark on witch
 
@@ -695,7 +702,7 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	//model 只能給誰看?
 	SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
 	
-	fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
+	g_fInfectedMarkCoolDownTime[client] = GetEngineTime() + g_fInfectedMarkCoolDown;
 
 	if (strlen(g_sInfectedMarkUseSound) > 0)
 		EmitSoundToAll(g_sInfectedMarkUseSound, client);
@@ -705,6 +712,8 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 
 void CreateSpotMarker(int client, int clientAim = 0)
 {
+	if (GetEngineTime() < g_fSpotMarkCoolDownTime[client]) return; // cool down not yet
+
 	bool  hit;
 	float vStartPos[3], vEndPos[3];
 	GetClientAbsOrigin(client, vStartPos);
@@ -828,7 +837,7 @@ void CreateSpotMarker(int client, int clientAim = 0)
 			
 			CreateTimer(0.1, TimerMoveSprite, EntIndexToEntRef(sprite), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 			
-			fCoolDownTime[client] = GetEngineTime() + g_fCoolDown;
+			g_fSpotMarkCoolDownTime[client] = GetEngineTime() + g_fSpotMarkCoolDown;
 
 			if (strlen(g_sSpotMarkUseSound) > 0)
 				EmitSoundToAll(g_sSpotMarkUseSound, client);
