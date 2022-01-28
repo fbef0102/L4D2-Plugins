@@ -17,8 +17,8 @@ v0.2
 -Original Post: https://forums.alliedmods.net/showthread.php?t=333669
 
 -Known Issue-
-1. Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look ' item hint. 
-(Install  Use Priority Patch plugin to fix: https://forums.alliedmods.net/showthread.php?t=327511)
+1. Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look' item hint. 
+(Install Use Priority Patch plugin to fix: https://forums.alliedmods.net/showthread.php?t=327511)
 2. The instructor hint show up is Double-Hint
 3. Sometimes, the instructor hint not display. It seems that game controls all instructor hint
 
