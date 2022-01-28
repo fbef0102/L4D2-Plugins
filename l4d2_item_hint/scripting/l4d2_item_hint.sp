@@ -56,7 +56,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.2",
+	version     = "1.3",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -74,6 +74,15 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	bLate = late;
 	return APLRes_Success;
+}
+
+public void OnAllPluginsLoaded()
+{
+	// Use Priority Patch
+	if( FindConVar("l4d_use_priority_version") == null )
+	{
+		LogMessage("\n==========\nWarning: You should install \"[L4D & L4D2] Use Priority Patch\" to fix attached models blocking +USE action (item hint): https://forums.alliedmods.net/showthread.php?t=327511\n==========\n");
+	}
 }
 
 public void OnPluginStart()
@@ -395,7 +404,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 			{
 				static int iEntity;
 				iEntity = GetUseEntity(client, g_fItemUseHintRange);
-				if (IsValidEntityIndex(iEntity) && IsValidEntity(iEntity))
+				if (IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false)
 				{
 					if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
 					{
@@ -1206,4 +1215,15 @@ void RemoveInstructor(int iEntity)
 
 	if (IsValidEntRef(instructor_hint))
 		RemoveEntity(instructor_hint);
+}
+
+bool HasParentClient(int entity)
+{
+	int parent_entity = GetEntPropEnt(entity, Prop_Data, "m_pParent");
+	if (1 <= parent_entity <= MaxClients && IsClientInGame(parent_entity))
+	{
+		return true;
+	}
+
+	return false;
 }
