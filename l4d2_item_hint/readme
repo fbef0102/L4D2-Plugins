@@ -1,7 +1,7 @@
 When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.
 
 -ChangeLog-
-v1.2
+v1.3
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
 -Add Item Glow, everyone can see the item through wall.
@@ -17,8 +17,10 @@ v0.2
 -Original Post: https://forums.alliedmods.net/showthread.php?t=333669
 
 -Known Issue-
-1. The instructor hint show up is Double-Hint
-2. Sometimes, the instructor hint not display. It seems that game controls all instructor hint
+1. Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look ' item hint. 
+(Install  Use Priority Patch plugin to fix: https://forums.alliedmods.net/showthread.php?t=327511)
+2. The instructor hint show up is Double-Hint
+3. Sometimes, the instructor hint not display. It seems that game controls all instructor hint
 
 -Convars-
 cfg\sourcemod\l4d2_item_hint.cfg
