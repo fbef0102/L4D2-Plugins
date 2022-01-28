@@ -56,7 +56,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.3",
+	version     = "1.4",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -1219,10 +1219,13 @@ void RemoveInstructor(int iEntity)
 
 bool HasParentClient(int entity)
 {
-	int parent_entity = GetEntPropEnt(entity, Prop_Data, "m_pParent");
-	if (1 <= parent_entity <= MaxClients && IsClientInGame(parent_entity))
+	if(HasEntProp(entity, Prop_Send, "m_pParent"))
 	{
-		return true;
+		int parent_entity = GetEntPropEnt(entity, Prop_Data, "m_pParent");
+		if (1 <= parent_entity <= MaxClients && IsClientInGame(parent_entity))
+		{
+			return true;
+		}
 	}
 
 	return false;
