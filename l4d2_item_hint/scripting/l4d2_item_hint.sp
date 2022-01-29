@@ -56,7 +56,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.4",
+	version     = "1.5",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -404,6 +404,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 			{
 				static int iEntity;
 				iEntity = GetUseEntity(client, g_fItemUseHintRange);
+				//PrintToChatAll("%N is looking at %d", client, iEntity);
 				if (IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false)
 				{
 					if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
@@ -1219,9 +1220,10 @@ void RemoveInstructor(int iEntity)
 
 bool HasParentClient(int entity)
 {
-	if(HasEntProp(entity, Prop_Send, "m_pParent"))
+	if(HasEntProp(entity, Prop_Data, "m_pParent"))
 	{
 		int parent_entity = GetEntPropEnt(entity, Prop_Data, "m_pParent");
+		//PrintToChatAll("%d m_pParent: %d", entity, parent_entity);
 		if (1 <= parent_entity <= MaxClients && IsClientInGame(parent_entity))
 		{
 			return true;
