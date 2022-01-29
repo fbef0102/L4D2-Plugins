@@ -59,7 +59,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.6",
+	version     = "1.7",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -333,6 +333,9 @@ void CreateStringMap()
 	g_smModelToName.SetString("models/infected/hunter_l4d1.mdl", "Hunter!");
 	g_smModelToName.SetString("models/infected/witch.mdl", "Witch!");
 	g_smModelToName.SetString("models/infected/witch_bride.mdl", "Witch Bride!");
+	g_smModelToName.SetString("models/infected/spitter.mdl", "Spitter!");
+	g_smModelToName.SetString("models/infected/jockey.mdl", "Jockey!");
+	g_smModelToName.SetString("models/infected/charger.mdl", "Charger!");
 
 	g_smModelHeight = CreateTrie();
 
