@@ -534,22 +534,25 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 								bIsVaildItem = false;
 							}
 							
-							if(bIsVaildItem && GetEngineTime() > g_fItemHintCoolDownTime[client])
+							if(bIsVaildItem)
 							{
-								NotifyMessage(client, sItemName, view_as<EHintType>(eItemHint));
-								
-								if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
-								g_fItemHintCoolDownTime[client] = GetEngineTime() + g_fItemHintCoolDown;
-								CreateEntityModelGlow(iEntity, sEntModelName);
-								
-								if(g_bItemInstructorHint)
+								if(GetEngineTime() > g_fItemHintCoolDownTime[client])
 								{
-									float vEndPos[3];
-									GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
-									vEndPos[2] = vEndPos[2] + fHeight;
-									CreateInstructorHint(client, vEndPos, sItemName, iEntity, view_as<EHintType>(eItemHint));
+									NotifyMessage(client, sItemName, view_as<EHintType>(eItemHint));
+									
+									if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
+									g_fItemHintCoolDownTime[client] = GetEngineTime() + g_fItemHintCoolDown;
+									CreateEntityModelGlow(iEntity, sEntModelName);
+									
+									if(g_bItemInstructorHint)
+									{
+										float vEndPos[3];
+										GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
+										vEndPos[2] = vEndPos[2] + fHeight;
+										CreateInstructorHint(client, vEndPos, sItemName, iEntity, view_as<EHintType>(eItemHint));
+									}
 								}
-
+								
 								return Plugin_Continue;
 							}
 						}
