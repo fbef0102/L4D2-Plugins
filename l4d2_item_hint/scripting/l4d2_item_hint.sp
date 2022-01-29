@@ -320,6 +320,7 @@ void CreateStringMap()
 	g_smModelToName.SetString("models/weapons/melee/w_tonfa.mdl", "Nightstick!");
 	g_smModelToName.SetString("models/weapons/melee/w_golfclub.mdl", "Golf Club!");
 	g_smModelToName.SetString("models/weapons/melee/w_pitchfork.mdl", "Pitckfork!");
+	g_smModelToName.SetString("models/weapons/melee/w_shovel.mdl", "Shovel");
 	g_smModelToName.SetString("models/infected/boomette.mdl", "Boomer!");
 	g_smModelToName.SetString("models/infected/boomer.mdl", "Boomer!");
 	g_smModelToName.SetString("models/infected/boomer_l4d1.mdl", "Boomer!");
