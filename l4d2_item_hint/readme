@@ -1,7 +1,7 @@
 When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.
 
 -ChangeLog-
-v1.5
+v1.6
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
 -Add Item Glow, everyone can see the item through wall.
@@ -41,10 +41,10 @@ l4d2_item_hint_use_sound "buttons/blip1.wav"
 l4d2_item_hint_announce_type "1"
 
 // Item Glow Time.
-l4d2_item_hint_glow_timer "15.0"
+l4d2_item_hint_glow_timer "10.0"
 
 // Item Glow Range.
-l4d2_item_hint_glow_range "1000"
+l4d2_item_hint_glow_range "800"
 
 // Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)
 l4d2_item_hint_glow_color "0 255 255"
@@ -95,6 +95,9 @@ l4d2_infected_marker_use_range "1800"
 
 // Infected Marker Sound. (relative to to sound/, Empty = OFF)
 l4d2_infected_marker_use_sound "items/suitchargeok1.wav"
+
+// Changes how infected marker hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+l4d2_infected_marker_announce_type "1"
 
 // Infected Marker Glow Time.
 l4d2_infected_marker_glow_timer "10.0"
