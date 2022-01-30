@@ -522,22 +522,6 @@ void HxGiveC(int client)
 	}
 
 	int weapon;
-	if (sg_slot0[client][0] != '\0')
-	{
-		weapon = HxCreateWeapon(sg_slot0[client]);
-		if (weapon != -1) EquipPlayerWeapon(client, weapon);
-		
-		iSlot0 = GetPlayerWeaponSlot(client, 0);
-		if(iSlot0 > 0)
-		{
-			SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_slots0_clip[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_slots0_upgrade_bit[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_slots0_upgraded_ammo[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_slots0_skin[client], 4);
-			SetEntData(client, ammoOffset+(ig_slots0_ammo_offest[client]*4), ig_slots0_ammo[client]);
-		}
-	}
-
 	if (sg_slot1[client][0] != '\0')
 	{
 		if(g_bSlot1_IsMelee[client] == true)
@@ -570,6 +554,22 @@ void HxGiveC(int client)
 			{
 				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
 			}
+		}
+	}
+
+	if (sg_slot0[client][0] != '\0')
+	{
+		weapon = HxCreateWeapon(sg_slot0[client]);
+		if (weapon != -1) EquipPlayerWeapon(client, weapon);
+		
+		iSlot0 = GetPlayerWeaponSlot(client, 0);
+		if(iSlot0 > 0)
+		{
+			SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_slots0_clip[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_slots0_upgrade_bit[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_slots0_upgraded_ammo[client], 4);
+			SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_slots0_skin[client], 4);
+			SetEntData(client, ammoOffset+(ig_slots0_ammo_offest[client]*4), ig_slots0_ammo[client]);
 		}
 	}
 
