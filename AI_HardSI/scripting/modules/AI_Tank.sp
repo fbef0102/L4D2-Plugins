@@ -95,7 +95,7 @@ stock void Client_Push(int client, float clientEyeAngle[3], float power, int ove
 	ScaleVector(forwardVector, power);
 	//PrintToChatAll("Tank velocity: %.2f", forwardVector[1]);
 	
-	Entity_GetAbsVelocity(client,newVel);
+	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", newVel);
 	
 	for( int i = 0; i < 3; i++ ) {
 		switch( override[i] ) {
@@ -117,7 +117,7 @@ stock void Client_Push(int client, float clientEyeAngle[3], float power, int ove
 		newVel[i] += forwardVector[i];
 	}
 	
-	Entity_SetAbsVelocity(client,newVel);
+	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, newVel);
 }
 
 public Action L4D2_OnSelectTankAttack(int client, int &sequence) {

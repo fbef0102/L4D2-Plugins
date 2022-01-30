@@ -41,10 +41,16 @@ public void Hunter_OnModuleStart() {
 	hCvarHunterLeapAwayGiveUpRange = FindConVar("hunter_leap_away_give_up_range"); // range at which shooting a non-committed hunter will cause it to leap away	
 	hCvarLungeInterval = FindConVar("z_lunge_interval"); // cooldown on lunges
 	hCvarHunterPounceMaxLoftAngle = FindConVar("hunter_pounce_max_loft_angle"); // maximum vertical angle hunters can pounce
-	SetConVarInt(hCvarHunterCommittedAttackRange, 10000);
-	SetConVarInt(hCvarHunterPounceReadyRange, 500);
-	SetConVarInt(hCvarHunterLeapAwayGiveUpRange, 0); 
-	SetConVarInt(hCvarHunterPounceMaxLoftAngle, 0);
+	
+	hCvarHunterCommittedAttackRange.SetInt(10000);
+	hCvarHunterPounceReadyRange.SetInt(500);
+	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
+	hCvarHunterPounceMaxLoftAngle.SetInt(0);
+
+	hCvarHunterCommittedAttackRange.AddChangeHook(OnHunterCvarChange);
+	hCvarHunterPounceReadyRange.AddChangeHook(OnHunterCvarChange);
+	hCvarHunterLeapAwayGiveUpRange.AddChangeHook(OnHunterCvarChange);
+	hCvarHunterPounceMaxLoftAngle.AddChangeHook(OnHunterCvarChange);
 	
 	// proximity to nearest survivor when plugin starts to force hunters to lunge ASAP
 	hCvarFastPounceProximity = CreateConVar("ai_fast_pounce_proximity", "1000", "At what distance to start pouncing fast");
@@ -77,6 +83,14 @@ public void Hunter_OnModuleEnd() {
 	ResetConVar(hCvarHunterPounceMaxLoftAngle);
 	
 	ResetConVar(FindConVar("z_pounce_damage_interrupt"));
+}
+
+// Game tries to reset these cvars
+public void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
+	hCvarHunterCommittedAttackRange.SetInt(10000);
+	hCvarHunterPounceReadyRange.SetInt(500);
+	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
+	hCvarHunterPounceMaxLoftAngle.SetInt(0);
 }
 
 public Action Hunter_OnSpawn(int botHunter) {
@@ -276,4 +290,6 @@ float GaussianRNG( float mean, float std ) {
 // After the given interval, hunter is allowed to pounce/lunge
 public Action Timer_LungeInterval(Handle timer, any client) {
 	bCanLunge[client] = true;
+
+	return Plugin_Continue;
 }
