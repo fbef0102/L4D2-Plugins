@@ -1,9 +1,10 @@
 Improves the AI behaviour of special infected
 
 -Changelog-
-v1.2
+v1.3
 -Remake code
 -Replace left4downtown with left4dhooks
+-Compatibility support for SourceMod 1.11. Fixed various warnings.
 
 -ConVar-
 cfg/sourcemod/AI_HardSI.cfg

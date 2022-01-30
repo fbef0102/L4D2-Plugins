@@ -2,7 +2,6 @@
 #pragma newdecls required //強制1.7以後的新語法
 #include <sourcemod>
 #include <sdktools>
-#include <smlib>
 #include <left4dhooks>
 
 #include "includes/hardcoop_util.sp"
@@ -23,7 +22,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "1.2",
+	version = "1.3",
 	url = "github.com/breezyplease"
 };
 
@@ -66,10 +65,14 @@ public void OnPluginEnd() {
 
 public Action L4D_OnFirstSurvivorLeftSafeArea(int client) {
 	CreateTimer( hCvarAssaultReminderInterval.FloatValue, Timer_ForceInfectedAssault, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+
+	return Plugin_Continue;
 }
 
 public Action Timer_ForceInfectedAssault( Handle timer ) {
 	CheatCommand("nb_assault");
+
+	return Plugin_Continue;
 }
 
 /***********************************************************************************************************************************************************************************
@@ -179,6 +182,8 @@ public Action OnPlayerJump(Event event, char[] name, bool dontBroadcast) {
 	if( IsBotInfected(jumpingPlayer) )  {
 		bHasBeenShoved[jumpingPlayer] = false;
 	}
+
+	return Plugin_Continue;
 } 
 
 /***********************************************************************************************************************************************************************************

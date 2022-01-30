@@ -22,7 +22,8 @@ public void Jockey_OnModuleStart() {
 	// jockeys will move to attack survivors within this range
 	z_jockey_leap_again_timer = FindConVar("z_jockey_leap_again_timer");
 	hCvarJockeyLeapRange = FindConVar("z_jockey_leap_range");
-	SetConVarInt(hCvarJockeyLeapRange, 1000); 
+	hCvarJockeyLeapRange.SetInt(1000); 
+	hCvarJockeyLeapRange.AddChangeHook(OnJockeyCvarChange);
 	
 	// proximity when plugin will start forcing jockeys to hop
 	hCvarHopActivationProximity = CreateConVar("ai_hop_activation_proximity", "500", "How close a jockey will approach before it starts hopping");
@@ -30,6 +31,11 @@ public void Jockey_OnModuleStart() {
 
 public void Jockey_OnModuleEnd() {
 	hCvarJockeyLeapRange.RestoreDefault();
+}
+
+// Game tries to reset these cvars
+public void OnJockeyCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
+	hCvarJockeyLeapRange.SetInt(1000);
 }
 
 /***********************************************************************************************************************************************************************************
@@ -97,4 +103,6 @@ public void Jockey_OnShoved(int botJockey) {
 
 public Action Timer_LeapCooldown(Handle timer, any jockey) {
 	bCanLeap[jockey] = true;
+
+	return Plugin_Continue;
 }

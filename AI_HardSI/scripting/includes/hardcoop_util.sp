@@ -3,7 +3,6 @@
 #pragma semicolon 1
 #pragma newdecls required //強制1.7以後的新語法
 #include <sourcemod>
-#include <smlib>
 
 #if defined HARDCOOP_UTIL_included
 #endinput
@@ -87,11 +86,10 @@ stock bool IsPinned(int client) {
 /**
  * @return: The highest %map completion held by a survivor at the current point in time
  */
-stock void GetMaxSurvivorCompletion() {
+stock int GetMaxSurvivorCompletion() {
 	float flow = 0.0;
 	float tmp_flow;
 	float origin[3];
-	decl Address:pNavArea;
 	for ( int client = 1; client <= MaxClients; client++ ) {
 		if ( IsSurvivor(client) && IsPlayerAlive(client) ) {
 			GetClientAbsOrigin(client, origin);
@@ -124,7 +122,7 @@ stock float GetFarthestSurvivorFlow() {
             }
         }
     }
-	return farthestFlow;
+	return farthest_flow;
 }
 
 /**
@@ -138,38 +136,37 @@ stock float GetAverageSurvivorFlow() {
         if ( IsSurvivor(client) && IsPlayerAlive(client) ) {
             survivor_count++;
             GetClientAbsOrigin(client, origin);
-            float client_flow = GetFlow(origin);
             if ( GetFlow(origin) != -1.0 ) {
             	total_flow++;
             }
         }
     }
-    return FloatDiv(totalFlow, float(survivor_count));
+    return (total_flow / float(survivor_count));
 }
 
 /**
  * Returns the flow distance from given point to closest alive survivor. 
  * Returns -1.0 if either the given point or the survivors as a whole are not upon a valid nav mesh
  */
-stock int GetFlowDistToSurvivors(const float pos[3]) {
-	int spawnpoint_flow;
-	int lowest_flow_dist = -1;
+stock float GetFlowDistToSurvivors(const float pos[3]) {
+	float spawnpoint_flow;
+	float lowest_flow_dist = -1.0;
 	
 	spawnpoint_flow = GetFlow(pos);
-	if ( spawnpoint_flow == -1) {
-		return -1;
+	if ( spawnpoint_flow < 0) {
+		return -1.0;
 	}
 	
 	for ( int j = 0; j < MaxClients; j++ ) {
 		if ( IsSurvivor(j) && IsPlayerAlive(j) ) {
 			float origin[3];
-			int flow_dist;
+			float flow_dist;
 			
 			GetClientAbsOrigin(j, origin);
 			flow_dist = GetFlow(origin);
 			
 			// have we found a int valid(i.e. != -1) lowest flow_dist
-			if ( flow_dist != -1 && FloatCompare(FloatAbs(float(flow_dist) - float(spawnpoint_flow)), float(lowest_flow_dist)) ==  -1 ) {
+			if ( flow_dist > 0.0 && FloatCompare(FloatAbs(flow_dist - spawnpoint_flow), lowest_flow_dist) == -1 ) {
 				lowest_flow_dist = flow_dist;
 			}
 		}
@@ -181,7 +178,7 @@ stock int GetFlowDistToSurvivors(const float pos[3]) {
 /**
  * Returns the flow distance of a given point
  */
- stock int GetFlow(const float o[3]) {
+ stock float GetFlow(const float o[3]) {
  	float origin[3]; //non constant var
  	origin[0] = o[0];
  	origin[1] = o[1];
@@ -189,9 +186,9 @@ stock int GetFlowDistToSurvivors(const float pos[3]) {
  	Address pNavArea;
  	pNavArea = L4D2Direct_GetTerrorNavArea(origin);
  	if ( pNavArea != Address_Null ) {
- 		return RoundToNearest(L4D2Direct_GetTerrorNavAreaFlow(pNavArea));
+ 		return L4D2Direct_GetTerrorNavAreaFlow(pNavArea);
  	} else {
- 		return -1;
+ 		return -1.0;
  	}
  }
  
@@ -202,7 +199,7 @@ stock int GetFlowDistToSurvivors(const float pos[3]) {
  * @return bool
  */
 stock bool IsIncapacitated(int client) {
-    return GetEntProp(client, Prop_Send, "m_isIncapacitated");
+    return view_as<bool>(GetEntProp(client, Prop_Send, "m_isIncapacitated"));
 }
 
 /**
@@ -259,20 +256,6 @@ stock int GetSurvivorProximity( const float rp[3], int specificSurvivor = -1 ) {
 
 	GetEntPropVector( targetSurvivor, Prop_Send, "m_vecOrigin", targetSurvivorPos );
 	return RoundToNearest( GetVectorDistance(referencePos, targetSurvivorPos) );
-}
-
-/** @return: the index to a random survivor */
-stock int GetRandomSurvivor() {
-	int survivors[MAXPLAYERS];
-	int numSurvivors = 0;
-	for( int i = 0; i < MAXPLAYERS; i++ ) {
-		if( IsSurvivor(i) && IsPlayerAlive(i) ) {
-		    survivors[numSurvivors] = i;
-		    numSurvivors++;
-		}
-	}
-	if (numSurvivors == 0) return -1;
-	return survivors[GetRandomInt(0, numSurvivors - 1)];
 }
 
 /***********************************************************************************************************************************************************************************
@@ -383,7 +366,11 @@ stock int FindTankClient(int iTankClient) {
  * @return bool
  */
 stock bool IsTankInPlay() {
-    return bool (FindTankClient(-1) != -1);
+	if(FindTankClient(-1) != -1)
+	{
+		return true;
+	}
+	return false;
 }
 
 stock bool IsBotTank(int client) {
@@ -496,4 +483,6 @@ public Action Timer_KickBot(Handle timer, any client) {
 	if (IsClientInGame(client) && (!IsClientInKickQueue(client))) {
 		if (IsFakeClient(client))KickClient(client);
 	}
+
+	return Plugin_Continue;
 }
