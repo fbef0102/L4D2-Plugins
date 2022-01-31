@@ -59,7 +59,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.7",
+	version     = "1.8",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -491,10 +491,32 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 		{
 			if (strncmp(sCmdString, "smartlook #", 11, false) == 0)
 			{
+				int clientAim;
+				bool bIsAimInfeced = false, bIsAimWitch = false, bIsVaildItem = false;
+				static char sItemName[64], sEntModelName[PLATFORM_MAX_PATH];
+
+				// marker priority (infected maker > item hint > spot marker)
+				clientAim = GetClientAimTarget(client, false); //ignore glow model
+				
+				if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim)) 
+				{
+					bIsAimInfeced = true;
+
+					if( CreateInfectedMarker(client, clientAim) == true )
+						return Plugin_Continue;
+				}
+				else if ( IsWitch(clientAim) )
+				{
+					bIsAimWitch = true;
+
+					if( CreateInfectedMarker(client, clientAim, true) == true )
+						return Plugin_Continue;
+				}
+
 				static int iEntity;
 				iEntity = GetUseEntity(client, g_fItemUseHintRange);
 				//PrintToChatAll("%N is looking at %d", client, iEntity);
-				if (IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false)
+				if ( !bIsAimInfeced && !bIsAimWitch && IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false )
 				{
 					static char targetname[128];
 					GetEntPropString(iEntity, Prop_Data, "m_iName", targetname, sizeof(targetname));
@@ -505,13 +527,10 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 					
 					if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
 					{
-						static char sEntModelName[PLATFORM_MAX_PATH];
 						if (GetEntPropString(iEntity, Prop_Data, "m_ModelName", sEntModelName, sizeof(sEntModelName)) > 1)
 						{
 							//PrintToChatAll("Model - %s", sEntModelName);
 							StringToLowerCase(sEntModelName);
-							static char sItemName[64];
-							bool bIsVaildItem;
 							float fHeight = 10.0;
 							if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
 							{
@@ -562,8 +581,8 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 					}
 				}
 
-				// client / world / infected / witch
-				CreateMarker(client);
+				// client / world / witch
+				CreateSpotMarker(client, clientAim, bIsAimInfeced);
 			}
 		}
 	}
@@ -748,36 +767,9 @@ void CreateEntityModelGlow(int iEntity, const char[] sEntModelName)
 	SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
 }
 
-void CreateMarker(int client)
-{
-	int clientAim = GetClientAimTarget(client, false);
-
-	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim)) 
-	{
-		CreateInfectedMarker(client, clientAim);
-	}
-	else if ( IsWitch(clientAim) )
-	{
-		if( CreateInfectedMarker(client, clientAim, true) == false)
-			CreateSpotMarker(client, clientAim);
-	}
-	else
-	{
-		CreateSpotMarker(client);
-	}
-}
-
 bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 {
-	if (GetEngineTime() < g_fInfectedMarkCoolDownTime[client]) return false; // cool down not yet
-
-	// Get Model
-	static char sModelName[64];
-	static char sItemName[64];
-	GetEntPropString(infected, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
-	StringToLowerCase(sModelName);
-	g_smModelToName.GetString(sModelName, sItemName, sizeof(sItemName));
-	NotifyMessage(client, sItemName, view_as<EHintType>(eInfectedMaker));
+	if( GetEngineTime() < g_fInfectedMarkCoolDownTime[client]) return true; //colde down not yet 
 
 	if (g_iInfectedMarkCvarColor == 0) return false; // disable infected mark
 	if (bIsWitch && g_bInfectedMarkWitch == false) return false; // disable infected mark on witch
@@ -798,6 +790,10 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	RemoveEntityModelGlow(infected);
 	delete g_iModelTimer[infected];
 	
+	// Get Model
+	static char sModelName[64];
+	GetEntPropString(infected, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
+
 	// Set new fake model
 	SetEntityModel(entity, sModelName);
 	DispatchSpawn(entity);
@@ -832,11 +828,17 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	if (strlen(g_sInfectedMarkUseSound) > 0)
 		EmitSoundToAll(g_sInfectedMarkUseSound, client);
 	
+	static char sItemName[64];
+	StringToLowerCase(sModelName);
+	g_smModelToName.GetString(sModelName, sItemName, sizeof(sItemName));
+	NotifyMessage(client, sItemName, view_as<EHintType>(eInfectedMaker));
+	
 	return true;
 }
 
-void CreateSpotMarker(int client, int clientAim = 0)
+void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
 {
+	if (bIsAimInfeced) return;
 	if (GetEngineTime() < g_fSpotMarkCoolDownTime[client]) return; // cool down not yet
 
 	bool  hit;
