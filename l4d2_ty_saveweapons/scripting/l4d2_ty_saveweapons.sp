@@ -106,7 +106,7 @@ public Plugin myinfo =
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.5",
+	version = "5.6",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
@@ -534,10 +534,10 @@ void HxGiveC(int client)
 			if (!strcmp(sg_slot1[client], "dual_pistol", true))
 			{
 				weapon = HxCreateWeapon("weapon_pistol");
-				if (weapon != -1) EquipPlayerWeapon(client, weapon);
-				
+				if (weapon != -1) AcceptEntityInput(weapon, "Use", client, weapon);
+
 				weapon = HxCreateWeapon("weapon_pistol");
-				if (weapon != -1) EquipPlayerWeapon(client, weapon);
+				if (weapon != -1) AcceptEntityInput(weapon, "Use", client, weapon);
 			}
 			else
 			{
@@ -785,102 +785,6 @@ void HxGetSlot0Ammo (int client, const char[] sWeaponName)
 
 void HxGetSlot1(int client, int iSlot1)
 {
-	/*char sg_buffer0[64];
-	GetEntPropString(iSlot1, Prop_Data, "m_ModelName", sg_buffer0, sizeof(sg_buffer0)-1);
-
-	if (StrContains(sg_buffer0, "v_pistol", true) != -1) // v_pistolA.mdl
-	{
-		sg_slot1[client] = "pistol";
-		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
-		return;
-	}
-	if (StrContains(sg_buffer0, "dual_pistol", true) != -1) //v_dual_pistolA.mdl
-	{
-		sg_slot1[client] = "dual_pistol";
-		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
-		return;
-	}
-	if (StrContains(sg_buffer0, "eagle", true) != -1) //v_desert_eagle.mdl
-	{
-		sg_slot1[client] = "pistol_magnum";
-		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
-		return;
-	}
-	if (StrContains(sg_buffer0, "v_bat", true) != -1) //v_bat.mdl
-	{
-		sg_slot1[client] = "baseball_bat";
-		return;
-	}
-	if (StrContains(sg_buffer0, "cricket_bat", true) != -1) //v_cricket_bat.mdl
-	{
-		sg_slot1[client] = "cricket_bat";
-		return;
-	}
-	if (StrContains(sg_buffer0, "crowbar", true) != -1) //v_crowbar.mdl
-	{
-		sg_slot1[client] = "crowbar";
-		return;
-	}
-	if (StrContains(sg_buffer0, "fireaxe", true) != -1) //v_fireaxe.mdl
-	{
-		sg_slot1[client] = "fireaxe";
-		return;
-	}
-	if (StrContains(sg_buffer0, "katana", true) != -1) //v_katana.mdl
-	{
-		sg_slot1[client] = "katana";
-		return;
-	}
-	if (StrContains(sg_buffer0, "golfclub", true) != -1) //v_golfclub.mdl
-	{
-		sg_slot1[client] = "golfclub";
-		return;
-	}
-	if (StrContains(sg_buffer0, "machete", true) != -1) //v_machete.mdl
-	{
-		sg_slot1[client] = "machete";
-		return;
-	}
-	if (StrContains(sg_buffer0, "tonfa", true) != -1) //v_tonfa.mdl
-	{
-		sg_slot1[client] = "tonfa";
-		return;
-	}
-	if (StrContains(sg_buffer0, "guitar", true) != -1) //v_electric_guitar.mdl
-	{
-		sg_slot1[client] = "electric_guitar";
-		return;
-	}
-	if (StrContains(sg_buffer0, "frying_pan", true) != -1) //v_frying_pan.mdl
-	{
-		sg_slot1[client] = "frying_pan";
-		return;
-	}
-	if (StrContains(sg_buffer0, "chainsaw", true) != -1) //v_chainsaw.mdl
-	{
-		ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1", 4);
-		sg_slot1[client] = "chainsaw";
-		return;
-	}
-	if (StrContains(sg_buffer0, "knife", true) != -1) //v_knife_t.mdl
-	{
-		sg_slot1[client] = "knife";
-		return;
-	}
-	if (StrContains(sg_buffer0, "pitchfork", true) != -1) //v_pitchfork.mdl
-	{
-		sg_slot1[client] = "pitchfork";
-		return;
-	}
-	if (StrContains(sg_buffer0, "shovel", true) != -1) //v_shovel.mdl
-	{
-		sg_slot1[client] = "shovel";
-		return;
-	}
-
-	GetEntityClassname(iSlot1, sg_slot1[client], 64);
-	LogError("m_ModelName(%s) %s", sg_buffer0, sg_slot1[client]);*/
-	
 	char wep_name[64]; wep_name[0] = '\0';
 	if (HasEntProp(iSlot1, Prop_Data, "m_strMapSetScriptName")) //support custom melee
 	{
@@ -954,7 +858,7 @@ int HxCreateWeapon(const char[] class_name, const char[] melee_name = "")
 
 bool RealValidEntity(int entity)
 {
-	if (entity <= 0 || !IsValidEntity(entity)) return false;
+	if (entity <= MaxClients || !IsValidEntity(entity)) return false;
 	return true;
 }
 
