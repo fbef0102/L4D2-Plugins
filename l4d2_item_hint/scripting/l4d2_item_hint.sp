@@ -59,7 +59,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.8",
+	version     = "1.9",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -1334,7 +1334,7 @@ void Create_env_instructor_hint(int iEntity, EHintType eType, const float vOrigi
 	DispatchKeyValue(entity, "hint_forcecaption", "1");
 	DispatchSpawn(entity);
 	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
-	AcceptEntityInput(entity, "ShowHint");
+	//AcceptEntityInput(entity, "ShowHint"); //double hint
 
 	if (iEntity > 0)
 	{
