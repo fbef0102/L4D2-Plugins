@@ -642,7 +642,7 @@
 		"zho"	"球棒"
 		"chi"	"球棒"
 		"es"	"Bate de béisbol"
-		"ru"	"Баскетбольная бита"
+		"ru"	"Бейсбольная бита"
 	}
 	"Cricket Bat"
 	{
@@ -1619,8 +1619,10 @@
 	"No Friendly Fire"
 	{
 		"en"	"Neither take nor deal Friendly Fire damage (Only This Round)"
+		"pt"    "Não recebe nem causa dano de fogo amigo (apenas nesta rodada)"
 		"zho"	"不會造成與受到友傷 (當前回合)"
 		"chi"	"不会造成与受到友伤 (当前回合)"
+		"ru"	"Урон по своим на текущей карте выключен!"
 	}
 }
 
