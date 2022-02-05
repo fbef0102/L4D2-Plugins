@@ -1,3 +1,5 @@
+//Harry @ 2019-2022
+
 #pragma semicolon 1
 #pragma newdecls required
 #include <sourcemod>
@@ -10,11 +12,14 @@
 public Plugin myinfo = 
 {
 	name = "L4D2 Survivor and Infected Buy Shop", 
-	author = "Killing zombies and infected to earn points, Doing Damage to survivors to earn points", 
-	description ="Shop by HarryPoter", 
-	version = "3.5", 
-	url = "https://steamcommunity.com/id/HarryPotter_TW/"
+	author = "(Survivor) Killing zombies and infected to earn credits + (Infected) Doing Damage to survivors to earn credits", 
+	description ="Human and Zombie Shop by HarryPoter", 
+	version = "4.1", 
+	url = "http://steamcommunity.com/profiles/76561198026784913"
 }
+
+#define GAMEDATE_FILE "L4D2_Buy_Store"
+
 #define L4D_TEAM_SPECTATOR		1
 #define L4D_TEAM_SURVIVORS 		2
 #define L4D_TEAM_INFECTED 		3
@@ -29,45 +34,64 @@ public Plugin myinfo =
 
 #define	MAX_WEAPONS2       29
 #define X_REJUMPBOOST 		250.0
-#define MAX_MONEY			16000
 #define MODEL_GASCAN			"models/props_junk/gascan001a.mdl"
 
 ConVar g_BoomerKilled,g_ChargerKilled,g_SmokerKilled,g_HunterKilled,g_JockeyKilled,g_SpitterKilled,
-	g_WitchKilled,g_ZombieKilled, g_DecayDecay, g_MaxIncapCount, g_PlayerRequired,
+	g_WitchKilled,g_ZombieKilled, g_DecayDecay, g_SpawnRange, g_MaxIncapCount, g_PlayerRequired,
 	g_hHealTeammate, g_hDefiSave, g_hHelpTeammate, g_hTankHurt,  g_hIncapSurvivor, g_hKillSurvivor,
 	g_hCookiesCachedEnable, g_hTKSurvivorEnable, g_hGascanMapOff, g_hColaMapOff, g_hMaxJumpLimit,
 	g_hInfiniteAmmoTime, g_hStageComplete, g_hFinalMissionComplete, g_hWipeOutSurvivor, g_hDeadEyeTime,
-	g_hInfectedShopEnable, g_hInfectedShopColdDown, g_hImmuneDamageTime, g_hInfectedShopTankLimit;
+	g_hInfectedShopEnable, g_hInfectedShopTime, g_hInfectedShopColdDown, g_hSurvivorShopColdDown, 
+	g_hImmuneDamageTime, g_hInfectedShopTankLimit, 
+	g_hInfectedShopWitchLimit, g_hWitchSpawnSafetyRange, g_hWitchKillTime, g_hFreezeTime, g_hMaxMoney,
+	g_hNotifyKillInfectedType;
 int g_iBoomerKilled, g_iChargerKilled, g_iSmokerKilled, g_iHunterKilled, g_iJockeyKilled, g_iSpitterKilled,
 	g_iWitchKilled, g_iZombieKilled, g_iMaxIncapCount, g_iPlayerRequired, g_iHealTeammate,
 	g_iDefiSave, g_iHelpTeammate, g_iTankHurt, g_iIncapSurvivor, g_iKillSurvivor, g_iMaxJumpLimit,
-	g_iStageComplete, g_iFinalMissionComplete, g_iWipeOutSurvivor,
-	g_iInfiniteAmmoTime, g_iDeadEyeTime, g_iImmuneDamageTime, g_iInfectedShopTankLimit;
+	g_iStageComplete, g_iFinalMissionComplete, g_iWipeOutSurvivor, g_iInfiniteAmmoTime, 
+	g_iDeadEyeTime, g_iImmuneDamageTime, g_iInfectedShopTime, g_iInfectedShopTankLimit, g_iInfectedShopWitchLimit,
+	g_iFreezeTime, g_iMaxMoney, g_iNotifyKillInfectedType;
 bool g_bEnable, g_bTKSurvivorEnable, g_bInfectedShopEnable, g_bCookiesCachedEnable;
-float g_fInfectedShopColdDown;
+float g_fInfectedShopColdDown, g_fSurvivorShopColdDown, g_fWitchSpawnSafetyRange, g_fWitchKillTime;
 
 int ammoOffset;	
 int g_iCredits[MAXPLAYERS + 1];
-Menu g_hSurvivorMenu = null, g_hInfectedMenu = null;
+Menu g_hSurvivorMenu = null, g_hInfectedMenu = null, g_hSpectatorMenu = null;
 Handle g_hMoneyCookie;
-int g_iMenuWeaponPosition[MAXPLAYERS+1] = 0;
-int g_iMenuMeleePosition[MAXPLAYERS+1] = 0;
-int g_iMenuMedicThrowablePosition[MAXPLAYERS+1] = 0;
-int g_iMenuOtherPosition[MAXPLAYERS+1] = 0;
-int g_iMenuSpecialPosition[MAXPLAYERS+1] = 0;
-int g_iCanJump[MAXPLAYERS+1]; //how many times player can jump on air
+int g_iMenuWeaponPosition[MAXPLAYERS+1] = {0};
+int g_iMenuMeleePosition[MAXPLAYERS+1] = {0};
+int g_iMenuMedicThrowablePosition[MAXPLAYERS+1] = {0};
+int g_iMenuOtherPosition[MAXPLAYERS+1] = {0};
+int g_iMenuSpecialPosition[MAXPLAYERS+1] = {0};
+int g_iCanJump[MAXPLAYERS+1] = {0}; //how many times player can jump on air
+bool g_bClientNo_FF[MAXPLAYERS+1] = {false}; //No FF effect
 int g_iLastButtons[MAXPLAYERS+1];
 int g_iJumps[MAXPLAYERS+1];
-bool InfiniteAmmo[MAXPLAYERS+1]; //player can Infinite Ammo
-bool InfectedImmuneDamage[MAXPLAYERS+1]; //infected player can immune damage
 int g_iDamage[MAXPLAYERS+1][MAXPLAYERS+1]; //Used to temporarily store dmg to tank
 bool g_bDied[MAXPLAYERS+1]; //tank already dead
 int g_iLastHP[MAXPLAYERS+1]; //tank last hp before dead
-bool bFinaleEscapeStarted = false, g_bDeadEyeEffect = false;
+bool bFinaleEscapeStarted = false;
 int g_iModelIndex[MAXPLAYERS+1];			// Player Model entity reference
 int g_iTransferSelectPlayer[MAXPLAYERS+1]; //玩家選擇轉移金錢的對象
-float g_fInfectedBuyTime[MAXPLAYERS+1];
+float g_fInfectedBuyTime[MAXPLAYERS+1]; //特感玩家購買冷卻時間
+float g_fSurvivorBuyTime[MAXPLAYERS+1]; //人類玩家購買冷卻時間
 int g_iLightIndex[MAXPLAYERS+1]; //無敵狀態的光輝
+int g_iRoundStart, g_iPlayerSpawn, iCountDown;
+bool bLimitInfectedBuy;
+
+Handle InfiniteAmmo_Timer[MAXPLAYERS+1] = {null}; //player can Infinite Ammo
+Handle InfectedImmuneEverything_Timer[MAXPLAYERS+1] = {null}; //infected player immune everything
+Handle PlayerLeftStartTimer, CountDownTimer, DeadEyeTimer, FreezeTimer;
+Handle g_hCharger, g_hJockey, g_hSmoker, g_hHunter, g_hReset;
+int g_iCharger, g_iHunter, g_iJockey, g_iSmoker, g_iZombieClass, g_iVelocity;
+float g_flCharger, g_flSmoker, g_flJockey;
+StringMap g_smWeaponShortCut;
+StringMap g_smMeleeShortCut;
+StringMap g_smMedicThrowableShortCut;
+StringMap g_smOtherShortCut;
+StringMap g_smSurvivorSpecialShortCut;
+StringMap g_smInfectedSpawnShortCut;
+StringMap g_smInfectedSpecialShortCut;
 
 enum EMenuType
 {
@@ -76,12 +100,16 @@ enum EMenuType
 	eMeleeMenu,
 	eMedicThrowableMenu,
 	eOtherMenu,
-	eSpecialMenu,
+	eSurvivorSpecialMenu,
 	eTransferPlayerMenu,
 	eTransferPointMenu,
 	eInfectedSpawnMenu,
 	eInfectedSpecialMenu
 }
+
+EMenuType g_iLastBuyMenu[MAXPLAYERS+1]; //最後一次購買的介面
+int g_iLastBuyIndex[MAXPLAYERS+1]; //最後一次購買的選項
+char g_sLastBuyName[MAXPLAYERS+1][128]; //最後一次購買的商品名
 
 static char g_sWeaponModels2[MAX_WEAPONS2][] =
 {
@@ -125,31 +153,32 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 #define DEAD_EYES_Sound1 "ui/beep22.wav" 
 #define DEAD_EYES_Sound2 "level/lowscore.wav" 
 #define IMMUNE_EVERYTHING_Sound1 "physics/metal/metal_grate_impact_hard2.wav" 
+#define FREEZE_Sound "physics/glass/glass_impact_bullet4.wav"
 
 static const char INFECTED_NAME[]	= "infected";
 static const char WITCH_NAME[]		= "witch";
 
 static char weaponsMenu[][][] = 
 {
-	{"pistol",			"Pistol", 			"100"},
-	{"pistol_magnum",	"Magnum", 			"150"},
-	{"pumpshotgun",		"Pumpshotgun", 		"200"},
-	{"shotgun_chrome",	"Chrome Shotgun", 	"210"},
-	{"smg",				"Smg", 				"200"},
-	{"smg_silenced", 	"Silenced Smg", 	"210"},
-	{"smg_mp5",			"MP5", 				"230"},
-	{"rifle", 			"Rifle", 			"300"},
-	{"rifle_ak47", 		"AK47", 			"320"},
-	{"rifle_desert",	"Desert Rifle", 	"350"},
+	{"pistol",			"Pistol", 			"50"},
+	{"pistol_magnum",	"Magnum", 			"100"},
+	{"pumpshotgun",		"Pumpshotgun", 		"180"},
+	{"shotgun_chrome",	"Chrome Shotgun", 	"200"},
+	{"smg",				"Smg", 				"180"},
+	{"smg_silenced", 	"Silenced Smg", 	"200"},
+	{"smg_mp5",			"MP5", 				"250"},
+	{"rifle", 			"Rifle", 			"280"},
+	{"rifle_ak47", 		"AK47", 			"300"},
+	{"rifle_desert",	"Desert Rifle", 	"320"},
 	{"rifle_sg552", 	"SG552", 			"350"},
-	{"shotgun_spas",	"Spas Shotgun", 	"350"},
-	{"autoshotgun", 	"Autoshotgun", 		"350"},
-	{"hunting_rifle", 	"Hunting Rifle", 	"400"},
-	{"sniper_military", "Military Sniper", 	"450"},
-	{"sniper_scout", 	"SCOUT", 			"500"},
-	{"sniper_awp", 		"AWP",				"600"},
+	{"shotgun_spas",	"Spas Shotgun", 	"330"},
+	{"autoshotgun", 	"Autoshotgun", 		"330"},
+	{"hunting_rifle", 	"Hunting Rifle", 	"300"},
+	{"sniper_military", "Military Sniper", 	"350"},
+	{"sniper_scout", 	"SCOUT", 			"400"},
+	{"sniper_awp", 		"AWP",				"500"},
 	{"rifle_m60", 		"M60 Machine Gun", 	"1000"},
-	{"grenade_launcher","Grenade Launcher",	"1500"}
+	{"grenade_launcher","Grenade Launcher",	"1250"}
 };
 
 static char meleeMenu[][][] = 
@@ -176,17 +205,17 @@ static char medicThrowableMenu[][][] =
 	{"defibrillator",	"Defibrillator", 	"250"},
 	{"first_aid_kit",	"First Aid Kit", 	"250"},
 	{"pain_pills", 		"Pain Pill", 		"100"},
-	{"adrenaline",	 	"Adrenaline", 		"150"},
+	{"adrenaline",	 	"Adrenaline", 		"125"},
 	{"pipe_bomb", 		"Pipe Bomb", 		"150"},
 	{"molotov", 		"Molotov", 			"200"},
-	{"vomitjar", 		"Vomitjar", 		"300"}
+	{"vomitjar", 		"Vomitjar", 		"225"}
 };
 
 static char otherMenu[][][] =
 {
 	{"ammo",		 					"Ammo", 	 			"250"},
-	{"laser_sight",						"Laser Sight", 			"60"},
-	{"incendiary_ammo",					"Incendiary Ammo", 		"100"},
+	{"laser_sight",						"Laser Sight", 			"50"},
+	{"incendiary_ammo",					"Incendiary Ammo", 		"75"},
 	{"explosive_ammo",					"Explosive Ammo", 		"100"},
 	{"weapon_upgradepack_incendiary",	"Incendiary Pack", 		"200"},
 	{"weapon_upgradepack_explosive",	"Explosive Pack", 		"200"},
@@ -198,37 +227,42 @@ static char otherMenu[][][] =
 	{"gnome",							"Gnome", 				"2000"},
 };
 
-static char specialMenu[][][] =
+static char survivorSpecialMenu[][][] =
 {
-	{"Fire", 			"Fire Yourself", 				"500"},
-	{"Fire Infeceted", 	"All Infected Gets On Fire", 	"750"},
-	{"Teleport", 		"Teleport to teammate", 		"1000"},
-	{"Infinite Ammo",	"Infinite Ammo", 				"1250"},
-	{"Dead Eyes",		"Dead-Eyes", 					"1500"},
-	{"Kill Commons", 	"Kill Commons", 				"1750"},
-	{"Kill Witches", 	"Kill Witches", 				"2000"},
+	{"Fire", 			"Fire Yourself", 				"200"},
+	{"Fire_Infeceted", 	"All Infected Gets On Fire", 	"500"},
+	{"Teleport", 		"Teleport to teammate", 		"750"},
+	{"Infinite_Ammo",	"Infinite Ammo", 				"1000"},
+	{"No_FF", 			"No Friendly Fire", 			"1250"},
+	{"Dead_Eyes",		"Dead-Eyes", 					"1500"},
+	{"Kill_Commons", 	"Kill Commons", 				"1750"},
+	{"Heal_Survivors",	"Heal Survivors", 				"2000"},
 	{"Jump+1", 			"Jump+1", 						"2250"},
-	{"Heal Survivors",	"Heal Survivors", 				"2500"},
-	{"Slay Infected", 	"Slay Infected Attacker", 		"3000"},
+	{"Slay_Infected", 	"Slay Infected Attacker", 		"2500"},
+	{"Kill_Witches", 	"Kill Witches", 				"2750"},
+	{"Respawn", 		"Respawn Alive", 				"3000"},
+	{"Freeze_Infected", "Freeze-Infected", 				"3250"},
 };
 
 static char infectedSpawnMenu[][][] =
 {
 	{"Suicide",		"Suicide", 			"0"},
-	{"Smoker",		"Smoker", 			"400"},
+	{"Smoker",		"Smoker", 			"350"},
 	{"Boomer",		"Boomer", 			"250"},
 	{"Hunter",		"Hunter", 			"200"},
-	{"Spitter",		"Spitter", 			"450"},
+	{"Spitter",		"Spitter", 			"400"},
 	{"Jockey",		"Jockey", 			"300"},
 	{"Charger",		"Charger", 			"350"},
-	{"Tank",		"Tank", 			"3000"}
+	{"Tank",		"Tank", 			"2500"}
 };
 
 static char infectedSpecialMenu[][][] =
 {
-	{"Health",		"Full Health", 				"500"},
-	{"Teleport",	"Teleport to survivor", 	"1000"},
-	{"Immune",		"Immune Everything", 		"1250"}
+	{"Health",		"Full Health", 				"350"},
+	{"Horde",		"Zombie Horde", 			"750"},
+	{"Witch",		"Witch", 					"1000"},
+	{"Teleport",	"Teleport to survivor", 	"1250"},
+	{"Immune",		"Immune Everything", 		"1500"},
 };
 
 static int g_iTransferPointList[] = 
@@ -278,39 +312,56 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("L4D2_Buy_Store.phrases");
 
+	LoadGamedata();
+
+	g_iCharger = FindSendPropInfo("CTerrorPlayer", "m_pummelVictim"); 
+	g_iHunter = FindSendPropInfo("CTerrorPlayer", "m_pounceVictim");
+	g_iJockey = FindSendPropInfo("CTerrorPlayer", "m_jockeyVictim");
+	g_iSmoker = FindSendPropInfo("CTongue", "m_tongueState");
+	g_iZombieClass = FindSendPropInfo("CTerrorPlayer", "m_zombieClass");
+	g_iVelocity = FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]");
+
+	g_flCharger = FindConVar("z_charge_interval").FloatValue;
+	g_flSmoker = FindConVar("smoker_tongue_delay").FloatValue;
+	g_flJockey = FindConVar("z_jockey_leap_again_timer").FloatValue;
+
 	g_hMoneyCookie = RegClientCookie("l4d2_buy_store_money", "Money for L4D2_Buy_Store.smx", CookieAccess_Protected);
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 
 	g_hSurvivorMenu = new Menu(ShopMenuHandler, MenuAction_DisplayItem);
-	g_hSurvivorMenu.AddItem("instruction", "Instruction: Get points by killing common、infected or help teammate.");
+	g_hSurvivorMenu.AddItem("instruction", "Instruction: Get credits by killing common、infected or help teammate.");
 	g_hSurvivorMenu.AddItem("weaponsMenu", "Gun Weapons");
 	g_hSurvivorMenu.AddItem("meleeMenu", "Melee Weapons");
 	g_hSurvivorMenu.AddItem("medicThrowableMenu", "Medic and Throwables");
 	g_hSurvivorMenu.AddItem("othersMenu", "Others");
-	g_hSurvivorMenu.AddItem("specialMenu", "Speials");
-	g_hSurvivorMenu.AddItem("transfer", "Points Transfer");
+	g_hSurvivorMenu.AddItem("survivorSpecialMenu", "Survivor Specials");
+	g_hSurvivorMenu.AddItem("transfer", "Credits Transfer");
 	g_hSurvivorMenu.ExitButton = true;
 
 	g_hInfectedMenu = new Menu(InfectedShopMenuHandler, MenuAction_DisplayItem);
-	g_hInfectedMenu.AddItem("InfectedInstruction", "Instruction: Get points by doing damage to survivors.");
+	g_hInfectedMenu.AddItem("InfectedInstruction", "Instruction: Get credits by doing damage to survivors.");
 	g_hInfectedMenu.AddItem("InfectedSpawnMenu", "Infected Spawn");
-	g_hInfectedMenu.AddItem("InfectedSpecialMenu", "Speials");
-	g_hInfectedMenu.AddItem("transfer", "Points Transfer");
+	g_hInfectedMenu.AddItem("InfectedSpecialMenu", "Infected Specials");
+	g_hInfectedMenu.AddItem("transfer", "Credits Transfer");
 	g_hInfectedMenu.ExitButton = true;
+
+	g_hSpectatorMenu = new Menu(SpectatorShopMenuHandler, MenuAction_DisplayItem);
+	g_hSpectatorMenu.AddItem("transfer", "Credits Transfer");
+	g_hSpectatorMenu.ExitButton = true;
 
 	RegConsoleCmd("sm_shop", BuyShopCommand);
 	RegConsoleCmd("sm_buy", BuyShopCommand);
 	RegConsoleCmd("sm_b", BuyShopCommand);
-	RegConsoleCmd("sm_points", BuyShopCommand);
-	RegConsoleCmd("sm_point", BuyShopCommand);
-	RegConsoleCmd("sm_skill", BuyShopCommand);
-	RegConsoleCmd("sm_skills", BuyShopCommand);
 	RegConsoleCmd("sm_money", BuyShopCommand);
 	RegConsoleCmd("sm_purchase", BuyShopCommand);
-	RegConsoleCmd("sm_itempointshelp", BuyShopCommand);
 	RegConsoleCmd("sm_market", BuyShopCommand);
-	RegConsoleCmd("sm_usepoint", BuyShopCommand);
-	RegConsoleCmd("sm_usepoints", BuyShopCommand);
+	RegConsoleCmd("sm_item", BuyShopCommand);
+	RegConsoleCmd("sm_items", BuyShopCommand);
+	RegConsoleCmd("sm_credit", BuyShopCommand);
+	RegConsoleCmd("sm_credits", BuyShopCommand);
+
+	RegConsoleCmd("sm_repeatbuy", HandleCmdRepeatBuy);
+	RegConsoleCmd("sm_lastbuy", HandleCmdRepeatBuy);
 
 	RegConsoleCmd("sm_pay", PayCommand);
 	RegConsoleCmd("sm_donate", PayCommand);
@@ -321,10 +372,10 @@ public void OnPluginStart()
 	RegAdminCmd("sm_allbank", CheckBankCommand, ADMFLAG_BAN);
 	
 	RegAdminCmd("sm_givemoney", GiveMoneyCommand, ADMFLAG_BAN);
-	RegAdminCmd("sm_givepoint", GiveMoneyCommand, ADMFLAG_BAN);
+	RegAdminCmd("sm_givecredit", GiveMoneyCommand, ADMFLAG_BAN);
 	
 	RegAdminCmd("sm_clearmoney", ClearMoneyCommand, ADMFLAG_BAN);
-	RegAdminCmd("sm_clearpoint", ClearMoneyCommand, ADMFLAG_BAN);
+	RegAdminCmd("sm_clearcredit", ClearMoneyCommand, ADMFLAG_BAN);
 
 	HookEvent("witch_killed", witch_killed);
 	HookEvent("infected_death", infected_death);
@@ -337,7 +388,10 @@ public void OnPluginStart()
 	HookEvent("player_hurt", Event_PlayerHurt);
 	HookEvent("player_incapacitated", Event_PlayerIncapacitated);
 	HookEvent("round_start", Event_RoundStart);
-	HookEvent("round_end", Event_RoundEnd);
+	HookEvent("round_end",			Event_RoundEnd,		EventHookMode_PostNoCopy); //對抗模式下會觸發兩次 (第一次人類滅團之時 第二次隊伍換邊之時)
+	HookEvent("map_transition", Event_RoundEnd); //戰役模式下過關到下一關的時候 (沒有觸發round_end)
+	HookEvent("mission_lost", Event_RoundEnd); //戰役模式下滅團重來該關卡的時候 (之後有觸發round_end)
+	HookEvent("finale_vehicle_leaving", Event_RoundEnd); //救援載具離開之時  (沒有觸發round_end)
 	HookEvent("finale_start", OnFinaleStart_Event);
 	HookEvent("weapon_fire", Event_WeaponFire);
 	HookEvent("map_transition", Event_MapTransition); //戰役過關到下一關的時候
@@ -345,7 +399,7 @@ public void OnPluginStart()
 	HookEvent("mission_lost", Event_MissionLost); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
 
 	//*****************//
-	//  S E T T I N G S //
+	//  ConVar //
 	//****************//
 	g_PlayerRequired = CreateConVar("sm_shop_player_require", "4", "Numbers of real survivor and infected player require to active this plugin.", FCVAR_NOTIFY, true, 1.0);
 	g_hCookiesCachedEnable = CreateConVar("sm_shop_CookiesCached_enable", "1", "If 1, use CookiesCached to save player money. Otherwise, the moeny will not be saved if player leaves the server.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -363,22 +417,32 @@ public void OnPluginStart()
 	g_hHelpTeammate = CreateConVar("sm_shop_help_teammate_save", "30", "Giving money for saving incapacitated people. (No Hanging from legde)", FCVAR_NOTIFY, true, 1.0);
 	g_hIncapSurvivor = CreateConVar("sm_shop_infected_survivor_incap", "30", "Giving money for incapacitating a survivor. (No Hanging from legde)", FCVAR_NOTIFY, true, 1.0);
 	g_hKillSurvivor = CreateConVar("sm_shop_infected_survivor_killed", "100", "Giving money for killing a survivor.", FCVAR_NOTIFY, true, 1.0);
-	g_hTKSurvivorEnable = CreateConVar("sm_shop_survivor_TK_enable", "1", "If 1, decrease money if survivor friendly fire each other.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hTKSurvivorEnable = CreateConVar("sm_shop_survivor_TK_enable", "1", "If 1, decrease money if survivor friendly fire each other. (1 hp = 1 dollar)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hGascanMapOff = CreateConVar("sm_shop_gascan_map_off",	"c1m4_atrium,c6m3_port,c14m2_lighthouse",	"Can not buy gas can in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
 	g_hColaMapOff =	CreateConVar("sm_shop_cola_map_off",	"c1m2_streets",	"Can not buy cola in these maps, separate by commas (no spaces). (0=All maps, Empty = none).", FCVAR_NOTIFY );
-	g_hMaxJumpLimit  =	CreateConVar("sm_shop_special_max_jump_limit",	"3",	"Max Air Jump Limit for special item.", FCVAR_NOTIFY, true, 1.0);
-	g_hInfiniteAmmoTime  =	CreateConVar("sm_shop_special_infinite_ammo_time",	"15",	"How long could infinite ammo state last for special item.", FCVAR_NOTIFY, true, 1.0);
+	g_hMaxJumpLimit  =	CreateConVar("sm_shop_special_max_jump_limit",	"3",	"Max Air Jump Limit for survivor special item.", FCVAR_NOTIFY, true, 1.0);
+	g_hInfiniteAmmoTime  =	CreateConVar("sm_shop_special_infinite_ammo_time",	"15",	"How long could infinite ammo state last for survivor special item.", FCVAR_NOTIFY, true, 1.0);
 	g_hStageComplete =	CreateConVar("sm_shop_stage_complete", "400",	"Giving money to each alive survivor for mission accomplished award (non-final).", FCVAR_NOTIFY, true, 1.0);
 	g_hFinalMissionComplete =	CreateConVar("sm_shop_final_mission_complete", "3000",	"Giving money to each alive survivor for mission accomplished award (final).", FCVAR_NOTIFY, true, 1.0);
 	g_hWipeOutSurvivor =	CreateConVar("sm_shop_final_mission_lost", "300",	"Giving money to each infected player for wiping out survivors.", FCVAR_NOTIFY, true, 1.0);
-	g_hDeadEyeTime  =	CreateConVar("sm_shop_special_dead_eyes_time",	"60",	"How long could Dead-Eyes state last for special item.", FCVAR_NOTIFY, true, 1.0);
+	g_hDeadEyeTime  =	CreateConVar("sm_shop_special_dead_eyes_time",	"60",	"How long could Dead-Eyes state last for survivor special item.", FCVAR_NOTIFY, true, 1.0);
 	g_hInfectedShopEnable =	CreateConVar("sm_shop_infected_enable", "1",	"If 1, Enable shop for infected.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hInfectedShopColdDown =	CreateConVar("sm_shop_infected_cooltime_block", "30.0",	"Cold Down Time in seconds an infected player can not buy again after he buys item. (0=off).", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedShopTime = CreateConVar("sm_shop_infected_wait_time", "10", "Infected player must wait until survivors have left start safe area for at least X seconds to buy item. (0=Infected Shop available anytime)", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedShopColdDown =	CreateConVar("sm_shop_infected_cooltime_block", "30.0",	"Cold Down Time in seconds an infected player can not buy again after player buys item. (0=off).", FCVAR_NOTIFY, true, 0.0);
+	g_hSurvivorShopColdDown =	CreateConVar("sm_shop_survivor_cooltime_block", "5.0",	"Cold Down Time in seconds a survivor player can not buy again after player buys item. (0=off).", FCVAR_NOTIFY, true, 0.0);
 	g_hImmuneDamageTime =	CreateConVar("sm_shop_special_immune_everything_time",	"8",	"How long could Immune Everything last for infected special item.", FCVAR_NOTIFY, true, 1.0);
 	g_hInfectedShopTankLimit =	CreateConVar("sm_shop_infected_tank_limit",	"1",	"Tank limit on the field before infected can buy a tank. (0=Can't buy Tank)", FCVAR_NOTIFY, true, 0.0);
+	g_hInfectedShopWitchLimit =	CreateConVar("sm_shop_infected_witch_limit","4",	"Witch limit on the field before infected can buy a witch. (0=Can't buy Witch)", FCVAR_NOTIFY, true, 0.0);
+	g_hWitchSpawnSafetyRange = CreateConVar("sm_shop_infected_witch_spawn_safety_range", "1250", "How far away from survivors an infected can buy and spawn witch.", FCVAR_NOTIFY, true, 100.0);
+	g_hWitchKillTime = CreateConVar("sm_shop_infected_witch_lifespan", "180", "Amount of seconds before a witch is kicked. (only remove witches bought by player in this plugin)", FCVAR_NOTIFY, true, 1.0);
+	g_hFreezeTime =	CreateConVar("sm_shop_special_freeze_time",	"6",	"How long could Freeze-Infected state last for survivor special item.", FCVAR_NOTIFY, true, 1.0);
+	g_hMaxMoney =	CreateConVar("sm_shop_max_moeny_limit",	"32000",	"Maximum money limit. (Money saved when map change/leaving server)", FCVAR_NOTIFY, true, 1.0);
+	g_hNotifyKillInfectedType = CreateConVar("sm_shop_kill_infected_announce_type",	"1", "Changes how 'You got credits by killing infected' Message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+
 
 	g_MaxIncapCount = FindConVar("survivor_max_incapacitated_count");
 	g_DecayDecay = FindConVar("pain_pills_decay_rate");
+	g_SpawnRange = FindConVar("z_spawn_range");
 
 	GetCvars();
 	g_PlayerRequired.AddChangeHook(ConVarChanged_Allow);
@@ -406,9 +470,19 @@ public void OnPluginStart()
 	g_hWipeOutSurvivor.AddChangeHook(ConVarChanged_Cvars);
 	g_hDeadEyeTime.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedShopEnable.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedShopTime.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedShopColdDown.AddChangeHook(ConVarChanged_Cvars);
+	g_hSurvivorShopColdDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hImmuneDamageTime.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedShopTankLimit.AddChangeHook(ConVarChanged_Cvars);
+	g_hInfectedShopWitchLimit.AddChangeHook(ConVarChanged_Cvars);
+	g_hWitchSpawnSafetyRange.AddChangeHook(ConVarChanged_Cvars);
+	g_hWitchKillTime.AddChangeHook(ConVarChanged_Cvars);
+	g_hFreezeTime.AddChangeHook(ConVarChanged_Cvars);
+	g_hMaxMoney.AddChangeHook(ConVarChanged_Cvars);
+	g_hNotifyKillInfectedType.AddChangeHook(ConVarChanged_Cvars);
+
+	CreateShortCutStringMap();
 
 	//Autoconfig for plugin
 	AutoExecConfig(true, "L4D2_Buy_Store");
@@ -423,30 +497,51 @@ public void OnPluginStart()
 				OnClientPutInServer(i);
 			}
 		}
+
+		CreateTimer(0.5, PluginStart);
 	}
 }
 
 public void OnPluginEnd()
 {
+	ClearDefault();
+	ResetTimer();
+
 	if(g_bCookiesCachedEnable) SaveAllMoney();
 	delete g_hSurvivorMenu;
+	delete g_hInfectedMenu;
+	delete g_hSpectatorMenu;
+	delete g_hMoneyCookie;
 	g_bEnable = false;
 
 	for( int i = 1; i <= MaxClients; i++ ) {
 		g_iCredits[i] = 0;
+		UnFreezeInfected(i);
 		RemoveInfectedModelGlow(i);
 		DeleteLight(i);
 	}
+
+	delete g_smWeaponShortCut;
+	delete g_smMeleeShortCut;
+	delete g_smMedicThrowableShortCut;
+	delete g_smOtherShortCut;
+	delete g_smSurvivorSpecialShortCut;
+	delete g_smInfectedSpawnShortCut;
+	delete g_smInfectedSpecialShortCut;
 }
 
-bool g_bGascanMap, g_bColaMap;
+bool g_bGascanMap, g_bColaMap, g_bSpawnWitchBride;
 public void OnMapStart()
 {	
 	g_bGascanMap = true;
 	g_bColaMap = true;
+	g_bSpawnWitchBride = false;
 
 	char sMap[64];
 	GetCurrentMap(sMap, sizeof(sMap));
+	if(StrEqual("c6m1_riverbank", sMap, false))
+		g_bSpawnWitchBride = true;
+	
 	Format(sMap, sizeof(sMap), ",%s,", sMap);
 
 	char sCvar[512];
@@ -496,6 +591,13 @@ public void OnMapStart()
 	PrecacheSound(DEAD_EYES_Sound1);
 	PrecacheSound(DEAD_EYES_Sound2);
 	PrecacheSound(IMMUNE_EVERYTHING_Sound1);
+	PrecacheSound(FREEZE_Sound);
+}
+
+public void OnMapEnd()
+{
+	ClearDefault();
+	ResetTimer();
 }
 
 public void ConVarChanged_Allow(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -536,9 +638,41 @@ void GetCvars()
 	g_iWipeOutSurvivor = g_hWipeOutSurvivor.IntValue;
 	g_iDeadEyeTime = g_hDeadEyeTime.IntValue;
 	g_bInfectedShopEnable = g_hInfectedShopEnable.BoolValue;
+	g_iInfectedShopTime = g_hInfectedShopTime.IntValue;
 	g_fInfectedShopColdDown = g_hInfectedShopColdDown.FloatValue;
+	g_fSurvivorShopColdDown = g_hSurvivorShopColdDown.FloatValue;
 	g_iImmuneDamageTime = g_hImmuneDamageTime.IntValue;
 	g_iInfectedShopTankLimit = g_hInfectedShopTankLimit.IntValue;
+	g_iInfectedShopWitchLimit = g_hInfectedShopWitchLimit.IntValue;
+	g_fWitchSpawnSafetyRange = g_hWitchSpawnSafetyRange.FloatValue;
+	g_fWitchKillTime = g_hWitchKillTime.FloatValue;
+	g_iFreezeTime = g_hFreezeTime.IntValue;
+	g_iMaxMoney = g_hMaxMoney.IntValue;
+	g_iNotifyKillInfectedType = g_hNotifyKillInfectedType.IntValue;
+}
+
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
+	
+	if (client <= 0) return Plugin_Continue;
+	
+	if(g_bEnable == false) {
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
+		return Plugin_Continue;
+	}
+
+	char sTempArray[2][64];
+	ExplodeString(sArgs, " ", sTempArray, sizeof(sTempArray), sizeof(sTempArray[]));
+	if( strncmp(sTempArray[0], "b", 1, false) == 0 || 
+		strncmp(sTempArray[0], "buy", 3, false) == 0 || 
+		strncmp(sTempArray[0], "shop", 3, false) == 0 ||
+		strncmp(sTempArray[0], "item", 3, false) == 0 )
+	{
+		FakeClientCommand(client, "sm_buy %s", sTempArray[1]);
+		//PrintToChatAll("sm_buy %s", sTempArray[1]);
+		return Plugin_Stop;
+	}
+
+	return Plugin_Continue;
 }
 
 public Action BuyShopCommand(int client, int args)
@@ -554,33 +688,101 @@ public Action BuyShopCommand(int client, int args)
 		return Plugin_Handled;
 	}
 
-	int team = GetClientTeam(client);
-	if(team == L4D_TEAM_SPECTATOR)
+	if (args < 1)
 	{
-		ReplyToCommand(client, "[TS] %T", "Spectators can not buy", client);
-		CPrintToChat(client, "%T", "Left Money", client, g_iCredits[client]);
+		GoMainMenu(client);
 	}
-	else if(team == L4D_TEAM_SURVIVORS)
+	else if (args > 1)
 	{
-		if(IsPlayerAlive(client) == false)
+		ReplyToCommand(client, "[TS] Usage: sm_buy <item_name>");
+		return Plugin_Handled;	
+	}
+	else //buy shortcut command
+	{
+		char item_name[64];
+		GetCmdArg(1, item_name, sizeof(item_name));
+		StringToLowerCase(item_name);
+		//PrintToChatAll("buy %s", item_name);
+
+		int index;
+		int team = GetClientTeam(client);
+		if(team == L4D_TEAM_SPECTATOR)
 		{
-			ReplyToCommand(client, "[TS] %T", "Death can't buy", client);
+			ReplyToCommand(client, "[TS] %T", "Spectators can not buy", client);
 			CPrintToChat(client, "%T", "Left Money", client, g_iCredits[client]);
 			return Plugin_Handled;
 		}
-		g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", client, g_iCredits[client]);
-		g_hSurvivorMenu.Display(client, MENU_TIME_FOREVER);
-	}
-	else if(team == L4D_TEAM_INFECTED)
-	{
-		if(g_bInfectedShopEnable == false)
+		
+		if(team == L4D_TEAM_SURVIVORS)
 		{
-			ReplyToCommand(client, "[TS] %T", "Infected Shop is disabled", client);
-			CPrintToChat(client, "%T", "Left Money", client, g_iCredits[client]);
-			return Plugin_Handled;
+			if( g_smWeaponShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eWeaponMenu), index);
+			}
+			else if( g_smMeleeShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eMeleeMenu), index);
+			}
+			else if( g_smMedicThrowableShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eMedicThrowableMenu), index);
+			}
+			else if( g_smOtherShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eOtherMenu), index);
+			}
+			else if( g_smSurvivorSpecialShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eSurvivorSpecialMenu), index);
+			}
+			else
+			{
+				CPrintToChat(client, "[{olive}TS{default}] %T", "Item name is not available or wrong team", client, item_name);
+			}
 		}
-		g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", client, g_iCredits[client]);
-		g_hInfectedMenu.Display(client, MENU_TIME_FOREVER);
+		else if(team == L4D_TEAM_INFECTED)
+		{
+			if( g_smInfectedSpawnShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_INFECTED, view_as<EMenuType>(eInfectedSpawnMenu), index);
+			}
+			else if( g_smInfectedSpecialShortCut.GetValue(item_name, index) )
+			{
+				BuyItem(client, L4D_TEAM_INFECTED, view_as<EMenuType>(eInfectedSpecialMenu), index);
+			}
+			else
+			{
+				CPrintToChat(client, "[{olive}TS{default}] %T", "Item name is not available or wrong team", client, item_name);
+			}
+		}
+	}
+	
+	return Plugin_Handled;
+}
+
+// Repeat buy
+public Action HandleCmdRepeatBuy(int client, int args)
+{
+	if(g_bEnable == false) {
+		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
+		return Plugin_Handled;
+	}
+
+	if (client == 0)
+	{
+		PrintToServer("[TS] this command cannot be used by server.");
+		return Plugin_Handled;
+	}
+	
+	if(g_iLastBuyMenu[client] == view_as<EMenuType>(eNoneMenu) && g_iLastBuyIndex[client] == 0)
+	{
+		ReplyToCommand(client, "[TS] %T", "You didn't buy anything yet", client);
+		return Plugin_Handled;
+	}
+	
+	if(BuyItem(client, GetClientTeam(client), g_iLastBuyMenu[client], g_iLastBuyIndex[client]) & 4)
+	{
+		CPrintToChat(client, "[{olive}TS{default}] %T", "Last item you buy is not available", client, g_sLastBuyName[client]);
 	}
 	
 	return Plugin_Handled;
@@ -717,7 +919,7 @@ public Action GiveMoneyCommand(int client, int args)
 	}
 	if (args != 2)
 	{
-		ReplyToCommand(client, "[TS] Usage: !givemoney <player> <money>");
+		ReplyToCommand(client, "[TS] Usage: !givemoney <player> <+-money>");
 		return Plugin_Handled;
 	}
 
@@ -829,9 +1031,10 @@ public void OnClientCookiesCached(int client)
 
 public void OnClientPutInServer(int client)
 {
-	if (IsFakeClient(client)) return;
-	
-	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	g_iLastBuyMenu[client] = view_as<EMenuType>(eNoneMenu);
+	g_iLastBuyIndex[client] = 0;
+
+	SDKHook(client, SDKHook_OnTakeDamage, SurvivorOnTakeDamage);
 }
 
 public void OnClientDisconnect(int client)
@@ -840,7 +1043,7 @@ public void OnClientDisconnect(int client)
 	if(g_bCookiesCachedEnable == true && !IsFakeClient(client))
 	{
 		char sMoney[11];
-		if(g_iCredits[client] > MAX_MONEY) g_iCredits[client] = MAX_MONEY;
+		if(g_iCredits[client] > g_iMaxMoney) g_iCredits[client] = g_iMaxMoney;
 		IntToString(g_iCredits[client], sMoney, sizeof(sMoney));
 		SetClientCookie(client, g_hMoneyCookie, sMoney);
 	}
@@ -849,8 +1052,11 @@ public void OnClientDisconnect(int client)
 	g_iJumps[client] = 0;
 	g_iLastButtons[client] = 0;
 	g_iCanJump[client] = 0;
-	InfiniteAmmo[client] = false;
-	InfectedImmuneDamage[client] = false;
+	g_bClientNo_FF[client] = false;
+
+	delete InfiniteAmmo_Timer[client];
+	delete InfectedImmuneEverything_Timer[client];
+	
 	DeleteLight(client);
 } 
 
@@ -862,7 +1068,7 @@ public void evtHealSuccess(Event event, const char[] name, bool dontBroadcast)
 	if (g_bEnable && client != subject && client && IsClientInGame(client) && !IsFakeClient(client))
 	{
 		g_iCredits[client] += g_iHealTeammate;
-		PrintHintText(client, "[TS] %T", "Heal Teammate", client, g_iHealTeammate);
+		Notify_GetCredit(client, "Heal Teammate", g_iHealTeammate);
 	}
 }
 
@@ -872,7 +1078,7 @@ public void evtDefibrillatorSave(Event event, const char[] name, bool dontBroadc
 	if (g_bEnable && client && IsClientInGame(client) && !IsFakeClient(client))
 	{
 		g_iCredits[client] += g_iDefiSave;
-		PrintHintText(client, "[TS] %T", "Revive Teammate", client, g_iDefiSave);
+		Notify_GetCredit(client, "Revive Teammate", g_iDefiSave);
 	}
 }
 
@@ -882,11 +1088,11 @@ public void evtReviveSuccess(Event event, const char[] name, bool dontBroadcast)
 	if (g_bEnable && client && IsClientInGame(client) && !IsFakeClient(client) && event.GetBool("ledge_hang") == false ) //不是掛邊
 	{
 		g_iCredits[client] += g_iHelpTeammate;
-		PrintHintText(client, "[TS] %T", "Help Teammate", client, g_iHelpTeammate);
+		Notify_GetCredit(client, "Help Teammate", g_iHelpTeammate);
 	}
 }
 
-public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
 	int victim = GetClientOfUserId(event.GetInt("userid"));
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
@@ -947,7 +1153,7 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
 	}
 }
 
-public Action Event_PlayerIncapacitated(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerIncapacitated(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if(g_bEnable == false || !client || !IsClientInGame(client) || GetClientTeam(client) != L4D_TEAM_SURVIVORS) return;
@@ -956,34 +1162,42 @@ public Action Event_PlayerIncapacitated(Event event, const char[] name, bool don
 	if(attacker > 0 && !IsFakeClient(attacker))
 	{
 		g_iCredits[attacker] += g_iIncapSurvivor;
-		PrintHintText(attacker, "[TS] %T", "Incap Survivor", attacker, g_iIncapSurvivor);
+		Notify_GetCredit(attacker, "Incap Survivor", g_iIncapSurvivor);
 	}
 }
 
-public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
+	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
+		CreateTimer(0.5, PluginStart);
+	g_iRoundStart = 1;
+
 	for( int i = 1; i <= MaxClients; i++ ) {
-		InfiniteAmmo[i] = false;
 		g_iJumps[i] = 0;
 		g_iLastButtons[i] = 0;
 		g_iCanJump[i] = 0;
-		InfectedImmuneDamage[i] = false;
+		g_bClientNo_FF[i] = false;
 	}
 	bFinaleEscapeStarted = false;
-	g_bDeadEyeEffect = false;
 }
 
-public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
 {
+	ClearDefault();
+	ResetTimer();
+
 	if(g_bCookiesCachedEnable) SaveAllMoney();
 
 	for( int i = 1; i <= MaxClients; i++ )
 	{
 		DeleteLight(i);
 	}
+	
+	RemoveAllFreezeState();
+	RemoveAllModelGlow();
 }
 
-public Action OnFinaleStart_Event(Event event, const char[] name, bool dontBroadcast) 
+public void OnFinaleStart_Event(Event event, const char[] name, bool dontBroadcast) 
 {
 	for( int i = 1; i <= MaxClients; i++ ) {
 		g_iJumps[i] = 0;
@@ -996,7 +1210,7 @@ public Action OnFinaleStart_Event(Event event, const char[] name, bool dontBroad
 public void Event_WeaponFire(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	if (client && IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client) == L4D_TEAM_SURVIVORS && InfiniteAmmo[client])
+	if (InfiniteAmmo_Timer[client] != null && client && IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client) == L4D_TEAM_SURVIVORS)
 	{
 		int weaponent = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon"); //抓人類目前拿的武器
 		if (weaponent > 0 && IsValidEntity(weaponent) && HasEntProp(weaponent, Prop_Send, "m_iClip1"))
@@ -1015,9 +1229,10 @@ public void Event_WeaponFire(Event event, const char[] name, bool dontBroadcast)
 public void evtPlayerTeam(Event event, const char[] name, bool dontBroadcast) 
 {
 	int userid = event.GetInt("userid");
-	CreateTimer(1.0, PlayerChangeTeamCheck,userid);//延遲一秒檢查
+	CreateTimer(1.0, PlayerChangeTeamCheck, userid);//延遲一秒檢查
 
 	int client = GetClientOfUserId(userid);
+	UnFreezeInfected(client);
 	RemoveInfectedModelGlow(client);
 	DeleteLight(client);
 }
@@ -1029,6 +1244,8 @@ public Action PlayerChangeTeamCheck(Handle timer,int userid)
 	{
 		CheckPlayers();
 	}
+
+	return Plugin_Continue;
 }
 
 public void witch_killed(Event event, const char[] name, bool dontBroadcast)
@@ -1036,19 +1253,27 @@ public void witch_killed(Event event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if(g_bEnable == false || !client || !IsClientInGame(client) || IsFakeClient(client) || GetClientTeam(client) != L4D_TEAM_SURVIVORS ) return;
 	
+	Notify_GetCredit(client, "Kill Witch", g_iWitchKilled);
 	g_iCredits[client] += g_iWitchKilled;
-	PrintHintText(client, "[TS] %T", "Kill Witch", client, g_iWitchKilled);
 }
 
-public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 { 
+	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
+		CreateTimer(0.5, PluginStart);
+	g_iPlayerSpawn = 1;	
+
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
+	//Freeze-Infected Effect
+	FreezeInfected(client, false);
+	
+	//dead-eye effect
+	RemoveInfectedModelGlow(client); //有可能特感變成坦克復活
+	CreateInfectedModelGlow(client);
+		
 	if(client && IsClientInGame(client) && GetClientTeam(client) == L4D_TEAM_INFECTED)
 	{
-		RemoveInfectedModelGlow(client); //有可能特感變成坦克復活
-		CreateInfectedModelGlow(client);
-		
 		if (GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_TANK)
 		{
 			for( int i = 1; i <= MaxClients; i++ )
@@ -1065,11 +1290,10 @@ public void player_death(Event event, const char[] name, bool dontBroadcast)
 {
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	int victim = GetClientOfUserId(event.GetInt("userid"));
-	if(victim && IsClientInGame(victim) && GetClientTeam(victim) == L4D_TEAM_INFECTED)
-	{
-		RemoveInfectedModelGlow(victim);
-		DeleteLight(victim);
-	}
+
+	UnFreezeInfected(victim);
+	RemoveInfectedModelGlow(victim);
+	DeleteLight(victim);
 
 	if( g_bEnable && victim && IsClientInGame(victim) && GetClientTeam(victim) == L4D_TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_TANK)
 	{
@@ -1124,7 +1348,7 @@ public void player_death(Event event, const char[] name, bool dontBroadcast)
 				if(money > 0)
 				{
 					g_iCredits[attacker] += money;
-					PrintHintText(attacker, "[TS] %T", "Kill Infected", attacker, money);
+					Notify_GetCredit(attacker, "Kill Infected", money);
 				}
 			}
 		}
@@ -1133,7 +1357,7 @@ public void player_death(Event event, const char[] name, bool dontBroadcast)
 			if(!IsFakeClient(attacker))
 			{
 				g_iCredits[attacker] += g_iKillSurvivor;
-				PrintHintText(attacker, "[TS] %T", "Kill Survivor", attacker, g_iKillSurvivor);
+				Notify_GetCredit(attacker, "Kill Survivor", g_iKillSurvivor);
 			}
 		}
 	}
@@ -1203,12 +1427,14 @@ public void Event_MissionLost(Event event, const char[] name, bool dontBroadcast
 
 public Action Timer_NoInfiniteAmmo(Handle timer, int client)
 {
-	InfiniteAmmo[client] = false;
 	if(IsClientInGame(client))
 	{
-		PrintToChat(client, "%T", "InfiniteAmmo Timer",client);
+		CPrintToChat(client, "%T", "InfiniteAmmo Timer",client);
 		PlaySoundToClient(client, DEAD_EYES_Sound2);
 	}
+
+	InfiniteAmmo_Timer[client] = null;
+	return Plugin_Continue;
 }
 
 public int ShopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
@@ -1221,32 +1447,31 @@ public int ShopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			menu.GetItem(param2, item, sizeof(item));
 			if (strcmp(item, "instruction") == 0)
 			{
-				g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-				g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
+				GoMainMenu(param1);
 			}
 			if (strcmp(item, "weaponsMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eWeaponMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eWeaponMenu));
 			}
 			if (strcmp(item, "meleeMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eMeleeMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eMeleeMenu));
 			}
 			if (strcmp(item, "medicThrowableMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eMedicThrowableMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eMedicThrowableMenu));
 			}
 			if (strcmp(item, "othersMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eOtherMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eOtherMenu));
 			}
-			if (strcmp(item, "specialMenu") == 0)
+			if (strcmp(item, "survivorSpecialMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eSpecialMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eSurvivorSpecialMenu));
 			}
 			if (strcmp(item, "transfer") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eTransferPlayerMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eTransferPlayerMenu));
 			}
 		}
 		case MenuAction_DisplayItem:
@@ -1279,9 +1504,9 @@ public int ShopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 				Format(display, sizeof(display), "%T","othersMenu", param1);
 				return RedrawMenuItem(display);
 			}	
-			else if (strcmp(info, "specialMenu") == 0)
+			else if (strcmp(info, "survivorSpecialMenu") == 0)
 			{
-				Format(display, sizeof(display), "%T","specialMenu", param1);
+				Format(display, sizeof(display), "%T","survivorSpecialMenu", param1);
 				return RedrawMenuItem(display);
 			}
 			else if (strcmp(info, "transfer") == 0)
@@ -1295,7 +1520,7 @@ public int ShopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 	return 0;
 }
 
-public int Weapon_Menu_Handle(Menu weaponmenu, MenuAction action, int param1, int param2)
+public int Weapon_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
 	{
@@ -1303,353 +1528,176 @@ public int Weapon_Menu_Handle(Menu weaponmenu, MenuAction action, int param1, in
 		{
 			if( param2 == MenuCancel_ExitBack )
 			{
-				g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-				g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
-			}
-		}
-		case MenuAction_Select:
-		{
-			if(CanClientBuy(param1) == true) 
-			{
-				char item[64];
-				weaponmenu.GetItem(param2, item, sizeof(item));
-				
-				int index = StringToInt(item);
-				
-				int itemMoney = StringToInt(weaponsMenu[index][2]);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-				}
-				else
-				{
-					GiveFunction(param1, weaponsMenu[index][0], weaponsMenu[index][1]);
-					g_iCredits[param1] -= itemMoney;
-				}
-				g_iMenuWeaponPosition[param1] = weaponmenu.Selection; 
-				DisplayShopMenu(param1, EMenuType:eWeaponMenu);
-			}
-		}
-		case MenuAction_End:
-			delete weaponmenu;
-	}
-}
-
-public int Melee_Menu_Handle(Menu mmenu, MenuAction action, int param1, int param2)
-{
-	switch (action)
-	{
-		case MenuAction_Cancel:
-		{
-			if( param2 == MenuCancel_ExitBack )
-			{
-				g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-				g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
-			}
-		}
-		case MenuAction_Select:
-		{
-			if(CanClientBuy(param1) == true) 
-			{
-				char item[64];
-				mmenu.GetItem(param2, item, sizeof(item));
-				
-				int index = StringToInt(item);
-				int itemMoney = StringToInt(meleeMenu[index][2]);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-				}
-				else
-				{
-					GiveFunction(param1, meleeMenu[index][0], meleeMenu[index][1]);
-					g_iCredits[param1] -= itemMoney;
-				}
-				g_iMenuMeleePosition[param1] = mmenu.Selection; 
-				DisplayShopMenu(param1, EMenuType:eMeleeMenu);
-			}
-		}
-		case MenuAction_End:
-			delete mmenu;
-	}
-}
-
-public int Medic_Throwable_Menu_Handle(Menu omenu, MenuAction action, int param1, int param2)
-{
-	switch (action)
-	{
-		case MenuAction_Cancel:
-		{
-			if( param2 == MenuCancel_ExitBack )
-			{
-				g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-				g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
-			}
-		}
-		case MenuAction_Select:
-		{
-			if(CanClientBuy(param1) == true) 
-			{
-				char item[64];
-				omenu.GetItem(param2, item, sizeof(item));
-				
-				int index = StringToInt(item);
-				int itemMoney = StringToInt(medicThrowableMenu[index][2]);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-				}
-				else
-				{
-					if(strcmp(medicThrowableMenu[index][0], "health_100") == 0)
-					{
-						GiveClientHealth(param1, 100, medicThrowableMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-					else
-					{
-						GiveFunction(param1, medicThrowableMenu[index][0], medicThrowableMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-				}
-				g_iMenuMedicThrowablePosition[param1] = omenu.Selection; 
-				DisplayShopMenu(param1, EMenuType:eMedicThrowableMenu);
-			}
-		}
-		case MenuAction_End:
-			delete omenu;
-	}
-}
-
-public int Other_Menu_Handle(Menu othermenu, MenuAction action, int param1, int param2)
-{
-	switch (action)
-	{
-		case MenuAction_Cancel:
-		{
-			if( param2 == MenuCancel_ExitBack )
-			{
-				g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-				g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
-			}
-		}
-		case MenuAction_Select:
-		{
-			if(CanClientBuy(param1) == true) 
-			{
-				char item[64];
-				othermenu.GetItem(param2, item, sizeof(item));
-				
-				int index = StringToInt(item);
-				int itemMoney = StringToInt(otherMenu[index][2]);
-				int iSlot0 = GetPlayerWeaponSlot(param1, 0);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-				}
-				else
-				{
-					if(strcmp(otherMenu[index][0], "laser_sight") == 0 || strcmp(otherMenu[index][0], "incendiary_ammo") == 0 || strcmp(otherMenu[index][0], "explosive_ammo") == 0 )
-					{
-						if(iSlot0 <= 0 )
-						{
-							CPrintToChat(param1, "[{olive}TS{default}] %T", "Must have primary weapon", param1);
-						}
-						else
-						{
-							GiveUpgrade(param1, otherMenu[index][0], otherMenu[index][1]);
-							g_iCredits[param1] -= itemMoney;
-						}
-					}
-					else if(strcmp(otherMenu[index][0], "ammo") == 0)
-					{
-						if(iSlot0 <= 0 )
-						{
-							CPrintToChat(param1, "[{olive}TS{default}] %T", "Must have primary weapon", param1);
-						}
-						else
-						{
-							GiveClientAmmo(param1, iSlot0, otherMenu[index][1]);
-							g_iCredits[param1] -= itemMoney;
-						}
-					}
-					else if (strcmp(otherMenu[index][0], "gascan") == 0)
-					{
-						if(g_bGascanMap == false)
-						{
-							CPrintToChat(param1, "[{olive}TS{default}] %T", "Can't buy gascan in current map", param1);	
-						}
-						else
-						{
-							GiveFunction(param1, otherMenu[index][0], otherMenu[index][1]);
-							g_iCredits[param1] -= itemMoney;
-						}
-					}
-					else if (strcmp(otherMenu[index][0], "cola_bottles") == 0)
-					{
-						if(g_bColaMap == false)
-						{
-							CPrintToChat(param1, "[{olive}TS{default}] %T", "Can't buy cola in current map", param1);	
-						}
-						else
-						{
-							GiveFunction(param1, otherMenu[index][0], otherMenu[index][1]);
-							g_iCredits[param1] -= itemMoney;
-						}
-					}
-					else
-					{
-						GiveFunction(param1, otherMenu[index][0], otherMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-				}
-				g_iMenuOtherPosition[param1] = othermenu.Selection; 
-				DisplayShopMenu(param1, EMenuType:eOtherMenu);
-			}
-		}
-		case MenuAction_End:
-			delete othermenu;
-	}
-}
-
-public int Special_Menu_Handle(Menu specialmenu, MenuAction action, int param1, int param2)
-{
-	switch (action)
-	{
-		case MenuAction_Cancel:
-		{
-			if( param2 == MenuCancel_ExitBack )
-			{
-				g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-				g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
+				GoMainMenu(param1);
 			}
 		}
 		case MenuAction_Select:
 		{
 			char item[64];
-			specialmenu.GetItem(param2, item, sizeof(item));
+			menu.GetItem(param2, item, sizeof(item));
 			int index = StringToInt(item);
-			if(CanClientBuy(param1, specialMenu[index][0]) == true) 
+			g_iMenuWeaponPosition[param1] = menu.Selection; 
+			
+			if(BuyItem(param1, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eWeaponMenu), index) & 2)
 			{
-				
-				int itemMoney = StringToInt(specialMenu[index][2]);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-				}
-				else
-				{
-					if(strcmp(specialMenu[index][0], "Fire") == 0)
-					{
-						CreateFires(param1, specialMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-					if(strcmp(specialMenu[index][0], "Teleport") == 0)
-					{
-						if (IsHandingFromLedge(param1))
-						{
-							PrintToChat(param1, "%T", "Can't buy when handing from ledge", param1);
-						}
-						else
-						{
-							if( TeleportToNearestTeammate(param1, specialMenu[index][1]))
-							{
-								g_iCredits[param1] -= itemMoney;
-							}
-							else
-							{
-								PrintToChat(param1, "%T", "No Any Other Survivors", param1);
-							}
-						}
-					}
-					else if(strcmp(specialMenu[index][0], "Kill Commons") == 0)
-					{
-						KillAllCommonInfected(param1, specialMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-					else if(strcmp(specialMenu[index][0], "Heal Survivors") == 0)
-					{
-						HealthAllSurvivors(param1, specialMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-					else if (strcmp(specialMenu[index][0], "Jump+1") == 0)
-					{
-						if(g_iCanJump[param1] >= g_iMaxJumpLimit)
-						{
-							PrintToChat(param1, "%T", "Jump Limit", param1);
-						}
-						else if (bFinaleEscapeStarted)
-						{
-							PrintToChat(param1, "%T", "Can't buy after final rescue starts", param1);
-						}
-						else
-						{
-							g_iCanJump[param1]++;
-							PrintToTeam(param1, L4D_TEAM_SURVIVORS, specialMenu[index][1], true);
-							g_iCredits[param1] -= itemMoney;
-							PlaySound(param1, BUY_Sound2);
-						}
-					}
-					else if (strcmp(specialMenu[index][0], "Infinite Ammo") == 0)
-					{
-						if(InfiniteAmmo[param1] == true)
-						{
-							PrintToChat(param1, "%T", "Already Buy", param1);
-						}
-						else
-						{
-							InfiniteAmmo[param1] = true;
-							PrintToTeam(param1, L4D_TEAM_SURVIVORS, specialMenu[index][1], true);
-							g_iCredits[param1] -= itemMoney;
-							CreateTimer(float(g_iInfiniteAmmoTime), Timer_NoInfiniteAmmo, param1, TIMER_FLAG_NO_MAPCHANGE);
-							PlaySound(param1, BUY_Sound2);
-						}
-					}
-					else if (strcmp(specialMenu[index][0], "Fire Infeceted") == 0)
-					{
-						FireAllInfected(param1, specialMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}
-					else if (strcmp(specialMenu[index][0], "Kill Witches") == 0)
-					{
-						KillAllWitches(param1, specialMenu[index][1]);
-						g_iCredits[param1] -= itemMoney;
-					}	
-					else if (strcmp(specialMenu[index][0], "Slay Infected") == 0)
-					{
-						int infectedattacker = L4D2_GetInfectedAttacker(param1);
-						if(infectedattacker > 0)
-						{
-							ForcePlayerSuicide(infectedattacker);
-							g_iCredits[param1] -= itemMoney;
-							PrintToTeam(param1, 0, specialMenu[index][1], true);
-							PlaySound(param1, BUY_Sound2);
-						}
-						else
-						{
-							PrintToChat(param1, "%T", "You are not being attacked", param1);
-						}
-					}
-					else if (strcmp(specialMenu[index][0], "Dead Eyes") == 0)
-					{
-						if (g_bDeadEyeEffect == true)
-						{
-							PrintToChat(param1, "%T", "Someone Already Buy", param1);
-						}
-						else
-						{
-							CreateDeadEyesGlow(param1, specialMenu[index][1]);
-							g_iCredits[param1] -= itemMoney;
-						}
-					}		
-				}
-				g_iMenuSpecialPosition[param1] = specialmenu.Selection; 
-				//DisplayShopMenu(param1, EMenuType:eSpecialMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eWeaponMenu));
 			}
 		}
 		case MenuAction_End:
-			delete specialmenu;
+			delete menu;
 	}
+
+	return 0;
+}
+
+public int Melee_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Cancel:
+		{
+			if( param2 == MenuCancel_ExitBack )
+			{
+				GoMainMenu(param1);
+			}
+		}
+		case MenuAction_Select:
+		{
+			
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			int index = StringToInt(item);
+			g_iMenuMeleePosition[param1] = menu.Selection; 
+			
+			if(BuyItem(param1, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eMeleeMenu), index) & 2)
+			{
+				DisplayShopMenu(param1, view_as<EMenuType>(eMeleeMenu));
+			}
+		}
+		case MenuAction_End:
+			delete menu;
+	}
+
+	return 0;
+}
+
+public int Medic_Throwable_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Cancel:
+		{
+			if( param2 == MenuCancel_ExitBack )
+			{
+				GoMainMenu(param1);
+			}
+		}
+		case MenuAction_Select:
+		{
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			int index = StringToInt(item);
+			g_iMenuMedicThrowablePosition[param1] = menu.Selection; 
+			
+			if(BuyItem(param1, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eMedicThrowableMenu), index) & 2)
+			{
+				DisplayShopMenu(param1, view_as<EMenuType>(eMedicThrowableMenu));
+			}
+		}
+		case MenuAction_End:
+			delete menu;
+	}
+
+	return 0;
+}
+
+public int Other_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Cancel:
+		{
+			if( param2 == MenuCancel_ExitBack )
+			{
+				GoMainMenu(param1);
+			}
+		}
+		case MenuAction_Select:
+		{
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			int index = StringToInt(item);
+			g_iMenuOtherPosition[param1] = menu.Selection; 
+			
+			if(BuyItem(param1, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eOtherMenu), index) & 2)
+			{
+				DisplayShopMenu(param1, view_as<EMenuType>(eOtherMenu));
+			}
+		}
+		case MenuAction_End:
+			delete menu;
+	}
+
+	return 0;
+}
+
+public int Special_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Cancel:
+		{
+			if( param2 == MenuCancel_ExitBack )
+			{
+				GoMainMenu(param1);
+			}
+		}
+		case MenuAction_Select:
+		{
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			int index = StringToInt(item);
+			g_iMenuSpecialPosition[param1] = menu.Selection;
+			
+			if(BuyItem(param1, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eSurvivorSpecialMenu), index) & 2)
+			{
+				DisplayShopMenu(param1, view_as<EMenuType>(eSurvivorSpecialMenu));
+			}
+		}
+		case MenuAction_End:
+			delete menu;
+	}
+
+	return 0;
+}
+
+public int SpectatorShopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			if (strcmp(item, "transfer") == 0)
+			{
+				DisplayShopMenu(param1, view_as<EMenuType>(eTransferPlayerMenu));
+			}
+		}
+		case MenuAction_DisplayItem:
+		{
+			static char info[64];
+			static char display[128];
+			menu.GetItem(param2, info, sizeof(info));	
+			if (strcmp(info, "transfer") == 0)
+			{
+				Format(display, sizeof(display), "%T","transferMenu", param1);
+				return RedrawMenuItem(display);
+			}
+		}
+	}
+
+	return 0;
 }
 
 public int InfectedShopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
@@ -1662,20 +1710,19 @@ public int InfectedShopMenuHandler(Menu menu, MenuAction action, int param1, int
 			menu.GetItem(param2, item, sizeof(item));
 			if (strcmp(item, "InfectedInstruction") == 0)
 			{
-				g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", param1, g_iCredits[param1]);
-				g_hInfectedMenu.Display(param1, MENU_TIME_FOREVER);
+				GoMainMenu(param1);
 			}
 			if (strcmp(item, "InfectedSpawnMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eInfectedSpawnMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eInfectedSpawnMenu));
 			}
 			if (strcmp(item, "InfectedSpecialMenu") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eInfectedSpecialMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eInfectedSpecialMenu));
 			}
 			if (strcmp(item, "transfer") == 0)
 			{
-				DisplayShopMenu(param1, EMenuType:eTransferPlayerMenu);
+				DisplayShopMenu(param1, view_as<EMenuType>(eTransferPlayerMenu));
 			}
 		}
 		case MenuAction_DisplayItem:
@@ -1709,7 +1756,7 @@ public int InfectedShopMenuHandler(Menu menu, MenuAction action, int param1, int
 	return 0;
 }
 
-public int Infected_Spawn_Menu_Handle(Menu mmenu, MenuAction action, int param1, int param2)
+public int Infected_Spawn_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
 	{
@@ -1717,71 +1764,29 @@ public int Infected_Spawn_Menu_Handle(Menu mmenu, MenuAction action, int param1,
 		{
 			if( param2 == MenuCancel_ExitBack )
 			{
-				g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", param1, g_iCredits[param1]);
-				g_hInfectedMenu.Display(param1, MENU_TIME_FOREVER);
+				GoMainMenu(param1);
 			}
 		}
 		case MenuAction_Select:
 		{
-			if(CanInfectedBuy(param1) == true) 
-			{
-				char item[64];
-				mmenu.GetItem(param2, item, sizeof(item));
-				
-				int index = StringToInt(item);
-				int itemMoney = StringToInt(infectedSpawnMenu[index][2]);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-					return;
-				}
-				if (strcmp(infectedSpawnMenu[index][0], "Suicide") == 0)
-				{
-					if (!IsPlayerAlive(param1))
-					{
-						CPrintToChat(param1, "%T", "Alive Infected First", param1);
-						return;
-					}
-
-					ForcePlayerSuicide(param1);
-					PrintToTeam(param1, L4D_TEAM_INFECTED, infectedSpawnMenu[index][1]);
-					PlaySound(param1, BUY_Sound1);
-					g_iCredits[param1] -= itemMoney;
-					g_fInfectedBuyTime[param1] = GetEngineTime() + g_fInfectedShopColdDown;
-					return;
-				}
 			
-				if (IsPlayerAlive(param1))
-				{
-					CPrintToChat(param1, "%T", "Dead Infected First", param1);
-					return;
-				}
-				
-				if (strcmp(infectedSpawnMenu[index][0], "Tank") == 0 && CountTankInServer() >= g_iInfectedShopTankLimit )
-				{
-					CPrintToChat(param1, "%T", "Tank Limit Reached", param1);
-					return;
-				}
-
-				InfectedSpawnFunction(param1, infectedSpawnMenu[index][0]);
-				if (!IsPlayerAlive(param1)) //fail to spawn
-				{
-					CPrintToChat(param1, "%T", "Can not Spawn Infected", param1);
-					return;
-				}
-		
-				PrintToTeam(param1, L4D_TEAM_INFECTED, infectedSpawnMenu[index][1]);
-				PlaySound(param1, BUY_Sound1);
-				g_iCredits[param1] -= itemMoney;
-				g_fInfectedBuyTime[param1] = GetEngineTime() + g_fInfectedShopColdDown;
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			int index = StringToInt(item);
+			
+			if(BuyItem(param1, L4D_TEAM_INFECTED, view_as<EMenuType>(eInfectedSpawnMenu), index) & 2)
+			{
+				DisplayShopMenu(param1, view_as<EMenuType>(eInfectedSpawnMenu));
 			}
 		}
 		case MenuAction_End:
-			delete mmenu;
+			delete menu;
 	}
+
+	return 0;
 }
 
-public int Infected_Specials_Menu_Handle(Menu mmenu, MenuAction action, int param1, int param2)
+public int Infected_Specials_Menu_Handle(Menu menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
 	{
@@ -1789,72 +1794,25 @@ public int Infected_Specials_Menu_Handle(Menu mmenu, MenuAction action, int para
 		{
 			if( param2 == MenuCancel_ExitBack )
 			{
-				g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", param1, g_iCredits[param1]);
-				g_hInfectedMenu.Display(param1, MENU_TIME_FOREVER);
+				GoMainMenu(param1);
 			}
 		}
 		case MenuAction_Select:
 		{
-			if(CanInfectedBuy(param1) == true) 
+			char item[64];
+			menu.GetItem(param2, item, sizeof(item));
+			int index = StringToInt(item);
+			
+			if(BuyItem(param1, L4D_TEAM_INFECTED, view_as<EMenuType>(eInfectedSpecialMenu), index) & 2)
 			{
-				char item[64];
-				mmenu.GetItem(param2, item, sizeof(item));
-				
-				int index = StringToInt(item);
-				int itemMoney = StringToInt(infectedSpecialMenu[index][2]);
-				if( g_iCredits[param1] - itemMoney < 0)
-				{
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Not enough money", param1, g_iCredits[param1], itemMoney);
-				}
-				else
-				{
-					if (IsPlayerAlive(param1) && GetEntProp(param1, Prop_Send, "m_zombieClass") != ZC_TANK)
-					{
-						if (strcmp(infectedSpecialMenu[index][0], "Health") == 0)
-						{
-							SetEntityHealth(param1, GetEntProp(param1, Prop_Data, "m_iMaxHealth"));
-							PrintToTeam(param1, L4D_TEAM_INFECTED, infectedSpecialMenu[index][1], true);
-							PlaySound(param1, BUY_Sound2);
-							g_iCredits[param1] -= itemMoney;
-							g_fInfectedBuyTime[param1] = GetEngineTime() + g_fInfectedShopColdDown;
-						}
-						else if (strcmp(infectedSpecialMenu[index][0], "Immune") == 0)
-						{
-							if(InfectedImmuneDamage[param1]) return;
-							
-							InfectedImmuneDamage[param1] = true;
-							SetGodframedGlow(param1);
-							TurnFlashlightOn(param1);
-							CreateTimer(float(g_iImmuneDamageTime), Timer_NoImmuneDamage, param1, TIMER_FLAG_NO_MAPCHANGE);
-							CPrintToChat(param1, "%T", "Immune Everything Now", param1, g_iImmuneDamageTime);
-							PrintToTeam(param1, L4D_TEAM_INFECTED, infectedSpecialMenu[index][1], true);
-							PlaySound(param1, BUY_Sound2);
-							g_iCredits[param1] -= itemMoney;
-							g_fInfectedBuyTime[param1] = GetEngineTime() + g_fInfectedShopColdDown;
-						}
-						else if (strcmp(infectedSpecialMenu[index][0], "Teleport") == 0)
-						{
-							if( TeleportToNearestSurvivor(param1, infectedSpecialMenu[index][1]))
-							{
-								g_iCredits[param1] -= itemMoney;
-								g_fInfectedBuyTime[param1] = GetEngineTime() + g_fInfectedShopColdDown;
-							}
-							else
-							{
-								PrintToChat(param1, "%T", "No Any Other Survivors", param1);
-							}
-						}
-					}
-					else
-					{
-						CPrintToChat(param1, "%T", "Alive Infected Except Tank First", param1);
-					}
-				}
+				DisplayShopMenu(param1, view_as<EMenuType>(eInfectedSpecialMenu));
 			}
 		}
 		case MenuAction_End:
-			delete mmenu;
+			delete menu;
 	}
+
+	return 0;
 }
 
 void DisplayShopMenu(int client, EMenuType eMenutype)
@@ -1863,47 +1821,47 @@ void DisplayShopMenu(int client, EMenuType eMenutype)
 
 	switch(eMenutype)
 	{
-		case (EMenutype:eWeaponMenu):
+		case (view_as<EMenuType>(eWeaponMenu)):
 		{
 			menu = new Menu(Weapon_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Weapon Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenutype:eMeleeMenu):
+		case (view_as<EMenuType>(eMeleeMenu)):
 		{
 			menu = new Menu(Melee_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Melee Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenutype:eMedicThrowableMenu):
+		case (view_as<EMenuType>(eMedicThrowableMenu)):
 		{
 			menu = new Menu(Medic_Throwable_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "MedicThrowable Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenutype:eOtherMenu):
+		case (view_as<EMenuType>(eOtherMenu)):
 		{
 			menu = new Menu(Other_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Other Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenuType:eSpecialMenu):
+		case (view_as<EMenuType>(eSurvivorSpecialMenu)):
 		{
 			menu = new Menu(Special_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Special Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenuType:eTransferPlayerMenu):
+		case (view_as<EMenuType>(eTransferPlayerMenu)):
 		{
 			menu = new Menu(Transfer_Player_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Transfer Player Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenuType:eTransferPointMenu):
+		case (view_as<EMenuType>(eTransferPointMenu)):
 		{
 			menu = new Menu(Transfer_Point_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
-			menu.SetTitle("%T", "Transfer Point Menu Title", client, g_iCredits[client]);
+			menu.SetTitle("%T", "Transfer Credit Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenuType:eInfectedSpawnMenu):
+		case (view_as<EMenuType>(eInfectedSpawnMenu)):
 		{
 			menu = new Menu(Infected_Spawn_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Infected Spawn Menu Title", client, g_iCredits[client]);
 		}
-		case (EMenuType:eInfectedSpecialMenu):
+		case (view_as<EMenuType>(eInfectedSpecialMenu)):
 		{
 			menu = new Menu(Infected_Specials_Menu_Handle, MenuAction_Select | MenuAction_Cancel | MenuAction_End);
 			menu.SetTitle("%T", "Infected Specials Menu Title", client, g_iCredits[client]);
@@ -1917,47 +1875,47 @@ void DisplayShopMenu(int client, EMenuType eMenutype)
 
 	switch(eMenutype)
 	{
-		case (EMenutype:eWeaponMenu):
+		case (view_as<EMenuType>(eWeaponMenu)):
 		{
 			DisplayShopMenuItem(client, menu, weaponsMenu, sizeof(weaponsMenu));
 			menu.DisplayAt(client, g_iMenuWeaponPosition[client], MENU_TIME_FOREVER);
 		}
-		case (EMenutype:eMeleeMenu):
+		case (view_as<EMenuType>(eMeleeMenu)):
 		{
 			DisplayShopMenuItem(client, menu, meleeMenu, sizeof(meleeMenu));
 			menu.DisplayAt(client, g_iMenuMeleePosition[client], MENU_TIME_FOREVER);
 		}
-		case (EMenutype:eMedicThrowableMenu):
+		case (view_as<EMenuType>(eMedicThrowableMenu)):
 		{
 			DisplayShopMenuItem(client, menu, medicThrowableMenu, sizeof(medicThrowableMenu));
 			menu.DisplayAt(client, g_iMenuMedicThrowablePosition[client], MENU_TIME_FOREVER);
 		}
-		case (EMenutype:eOtherMenu):
+		case (view_as<EMenuType>(eOtherMenu)):
 		{
 			DisplayShopMenuItem(client, menu, otherMenu, sizeof(otherMenu));
 			menu.DisplayAt(client, g_iMenuOtherPosition[client], MENU_TIME_FOREVER);
 		}
-		case (EMenutype:eSpecialMenu):
+		case (view_as<EMenuType>(eSurvivorSpecialMenu)):
 		{
-			DisplayShopMenuItem(client, menu, specialMenu, sizeof(specialMenu));
+			DisplayShopMenuItem(client, menu, survivorSpecialMenu, sizeof(survivorSpecialMenu));
 			menu.DisplayAt(client, g_iMenuSpecialPosition[client], MENU_TIME_FOREVER);
 		}
-		case (EMenutype:eTransferPlayerMenu):
+		case (view_as<EMenuType>(eTransferPlayerMenu)):
 		{
 			ShowMenuTransferPlayerList(client, menu);
 			menu.Display(client, MENU_TIME_FOREVER);
 		}
-		case (EMenuType:eTransferPointMenu):
+		case (view_as<EMenuType>(eTransferPointMenu)):
 		{
 			ShowMenuTransferPointList(client, menu);
 			menu.Display(client, MENU_TIME_FOREVER);
 		}
-		case (EMenuType:eInfectedSpawnMenu):
+		case (view_as<EMenuType>(eInfectedSpawnMenu)):
 		{
 			DisplayShopMenuItem(client, menu, infectedSpawnMenu, sizeof(infectedSpawnMenu));
 			menu.Display(client, MENU_TIME_FOREVER);
 		}
-		case (EMenuType:eInfectedSpecialMenu):
+		case (view_as<EMenuType>(eInfectedSpecialMenu)):
 		{
 			DisplayShopMenuItem(client, menu, infectedSpecialMenu, sizeof(infectedSpecialMenu));
 			menu.Display(client, MENU_TIME_FOREVER);
@@ -1976,7 +1934,7 @@ void DisplayShopMenuItem (int client, Menu menu, const char [][][] array, const 
 	}
 }
 
-public Action ShowMenuTransferPlayerList(int client, Menu menu)
+public void ShowMenuTransferPlayerList(int client, Menu menu)
 {
 	int players = 0;
 	for(int i = 1; i <= MaxClients; i++)
@@ -2009,16 +1967,7 @@ public int Transfer_Player_Menu_Handle(Menu transfermenu, MenuAction action, int
 		{
 			if( param2 == MenuCancel_ExitBack )
 			{
-				if(GetClientTeam(param1) == L4D_TEAM_SURVIVORS)
-				{
-					g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-					g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
-				}
-				else if(GetClientTeam(param1) == L4D_TEAM_INFECTED)
-				{
-					g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", param1, g_iCredits[param1]);
-					g_hInfectedMenu.Display(param1, MENU_TIME_FOREVER);
-				} 
+				GoMainMenu(param1);
 			}
 		}
 		case MenuAction_Select:
@@ -2032,21 +1981,23 @@ public int Transfer_Player_Menu_Handle(Menu transfermenu, MenuAction action, int
 				if(ChoosenClient && IsClientInGame(ChoosenClient)) 
 				{
 					g_iTransferSelectPlayer[param1] = GetClientUserId(ChoosenClient);
-					DisplayShopMenu(param1, EMenuType:eTransferPointMenu);
+					DisplayShopMenu(param1, view_as<EMenuType>(eTransferPointMenu));
 				}
 				else
 				{
 					CPrintToChat(param1, "[{olive}TS{default}] %T", "The chosen player is not in server now! Choose again!", param1);
-					DisplayShopMenu(param1, EMenuType:eTransferPlayerMenu);
+					DisplayShopMenu(param1, view_as<EMenuType>(eTransferPlayerMenu));
 				}
 			}
 		}
 		case MenuAction_End:
 			delete transfermenu;
 	}
+
+	return 0;
 }
 
-public Action ShowMenuTransferPointList(int client, Menu menu)
+public void ShowMenuTransferPointList(int client, Menu menu)
 {
 	for(int i = 0; i < sizeof(g_iTransferPointList); i++)
 	{
@@ -2066,16 +2017,7 @@ public int Transfer_Point_Menu_Handle(Menu transfermenu, MenuAction action, int 
 		{
 			if( param2 == MenuCancel_ExitBack )
 			{
-				if(GetClientTeam(param1) == L4D_TEAM_SURVIVORS)
-				{
-					g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", param1, g_iCredits[param1]);
-					g_hSurvivorMenu.Display(param1, MENU_TIME_FOREVER);
-				}
-				else if(GetClientTeam(param1) == L4D_TEAM_INFECTED)
-				{
-					g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", param1, g_iCredits[param1]);
-					g_hInfectedMenu.Display(param1, MENU_TIME_FOREVER);
-				}
+				GoMainMenu(param1);
 			}
 		}
 		case MenuAction_Select:
@@ -2090,24 +2032,26 @@ public int Transfer_Point_Menu_Handle(Menu transfermenu, MenuAction action, int 
 				{
 					g_iCredits[param1] -= money;
 					g_iCredits[ChoosenClient] += money;
-					CPrintToChat(param1, "[{olive}TS{default}] %T", "Transfer point to player", param1, money, ChoosenClient);
-					CPrintToChat(ChoosenClient, "[{olive}TS{default}] %T", "Player transfer point to you", ChoosenClient, param1, money);
+					CPrintToChat(param1, "[{olive}TS{default}] %T", "Transfer credit to player", param1, money, ChoosenClient);
+					CPrintToChat(ChoosenClient, "[{olive}TS{default}] %T", "Player transfer credit to you", ChoosenClient, param1, money);
 				}
 				else	
 				{
 					CPrintToChat(param1, "[{olive}TS{default}] %T", "The chosen player is not in server now! Choose again!", param1);
-					DisplayShopMenu(param1, EMenuType:eTransferPlayerMenu);
+					DisplayShopMenu(param1, view_as<EMenuType>(eTransferPlayerMenu));
 				}
 			}
 			else
 			{
-				CPrintToChat(param1, "[{olive}TS{default}] %T", "Failed! Points balance is not enough to transfer.", param1);
-				DisplayShopMenu(param1, EMenuType:eTransferPointMenu);
+				CPrintToChat(param1, "[{olive}TS{default}] %T", "Failed! Credits balance is not enough to transfer.", param1);
+				DisplayShopMenu(param1, view_as<EMenuType>(eTransferPointMenu));
 			}
 		}
 		case MenuAction_End:
 			delete transfermenu;
 	}	
+
+	return 0;
 }
 
 void SaveAllMoney()
@@ -2123,8 +2067,9 @@ void SaveAllMoney()
 void SaveMoney(int client)
 {
 	char sMoney[11];
-	if(g_iCredits[client] > MAX_MONEY) g_iCredits[client] = MAX_MONEY;
+	if(g_iCredits[client] > g_iMaxMoney) g_iCredits[client] = g_iMaxMoney;
 	IntToString(g_iCredits[client], sMoney, sizeof(sMoney));
+	//PrintToChatAll("%N moeny: %s",client,sMoney);
 	SetClientCookie(client, g_hMoneyCookie, sMoney);
 }
 
@@ -2226,7 +2171,8 @@ stock void GiveClientHealth(int client, int iHealthAdd, char[] displayName, bool
 
 stock void KillAllCommonInfected(int client, char[] displayName)
 {
-	for (int i = MaxClients; i <= 2048; i++)
+	int maxents = GetMaxEntities();
+	for (int i = MaxClients+1; i <= maxents; i++)
 	{
 		if (!IsValidEntity(i))
 			continue;
@@ -2245,10 +2191,10 @@ stock void KillAllCommonInfected(int client, char[] displayName)
 stock void KillAllWitches(int client, char[] displayName)
 {
 	int witch = -1;
-	while((witch = FindEntityByClassname(witch, "witch")) != -1)
+	while((witch = FindEntityByClassname(witch, WITCH_NAME)) != -1)
 	{
 		if (!IsValidEntity(witch))
-		continue;	
+			continue;	
 
 		AcceptEntityInput(witch, "Kill");
 	}
@@ -2269,11 +2215,37 @@ stock void FireAllInfected(int client, char[] displayName)
 	PlaySound(client, BUY_Sound2);
 }
 
+stock bool SpawnWitchInClientLocation(int client, char[] displayName)
+{
+	float vecPos[3];
+	GetClientAbsOrigin(client, vecPos);
+	int witch = 0;
+	if( g_bSpawnWitchBride )
+	{
+		witch = L4D2_SpawnWitchBride(vecPos,NULL_VECTOR);
+		if (witch <= 0) return false;
+		CreateTimer(g_fWitchKillTime, KickWitch_Timer, EntIndexToEntRef(witch), TIMER_FLAG_NO_MAPCHANGE);
+	}
+	else 
+	{
+		witch = L4D2_SpawnWitch(vecPos,NULL_VECTOR);
+		if (witch <= 0) return false;
+		CreateTimer(g_fWitchKillTime, KickWitch_Timer, EntIndexToEntRef(witch), TIMER_FLAG_NO_MAPCHANGE);
+	}
+	PrintToTeam(client, L4D_TEAM_INFECTED, displayName, true);
+	PlaySound(client, BUY_Sound2);
+
+	return true;
+}
+
 stock void HealthAllSurvivors(int client, char[] displayName)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || GetClientTeam(i) != L4D_TEAM_SURVIVORS || !IsPlayerAlive(i))
+			continue;
+
+		if (IsIncapacitated(i) && L4D2_GetInfectedAttacker(i) > 0)
 			continue;
 
 		GiveClientHealth(i, 100, "", false);
@@ -2298,19 +2270,38 @@ stock bool IsHandingFromLedge(int client)
 	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge"));
 }
 
-bool CanClientBuy(int client, char[] ShopItemName = "")
+bool CanSurvivorBuy(int client, char[] ShopItemName = "")
 {
 	if(!IsClientInGame(client)) return false;
 
-	if(GetClientTeam(client) != L4D_TEAM_SURVIVORS || IsPlayerAlive(client) == false)
+
+	if(GetClientTeam(client) != L4D_TEAM_SURVIVORS)
 	{
-		CPrintToChat(client, "%T", "Alive Survivor First", client);
+		CPrintToChat(client, "%T", "You are not in survivor team", client);
+		return false;
+	}
+	
+	if(g_bEnable == false) 
+	{
+		CPrintToChat(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
+		return false;
+	}
+	
+	if(IsPlayerAlive(client) == false && strcmp(ShopItemName, "Respawn", false) != 0)
+	{
+		CPrintToChat(client, "%T", "Death can't buy", client);
 		return false;
 	}
 
-	if(IsSurvivorPinned(client) && strcmp(ShopItemName, "Slay Infected") != 0)
+	if(IsSurvivorPinned(client) && strcmp(ShopItemName, "Slay_Infected", false) != 0)
 	{
 		CPrintToChat(client, "%T", "Can't buy when being attacked", client);
+		return false;
+	}
+	
+	if (g_fSurvivorBuyTime[client] > GetEngineTime())
+	{
+		CPrintToChat(client, "%T", "Survivor Can not buy so quickly", client, g_fSurvivorShopColdDown);
 		return false;
 	}
 
@@ -2323,12 +2314,32 @@ bool CanInfectedBuy(int client)
 	
 	if (GetClientTeam(client) != L4D_TEAM_INFECTED)
 	{
-		CPrintToChat(client, "%T", "You are not in infected team", client);
+		CPrintToChat(client, "%T", "You are not in Infected Ieam", client);
 		return false;
 	}
+
+	if(g_bEnable == false) 
+	{
+		CPrintToChat(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
+		return false;
+	}
+	
+	if (g_bInfectedShopEnable == false)
+	{
+		CPrintToChat(client, "[TS] %T", "Infected Shop is disabled", client);
+		CPrintToChat(client, "%T", "Left Money", client, g_iCredits[client]);
+		return false;
+	}
+
+	if ( g_iInfectedShopTime != 0 && bLimitInfectedBuy == true)
+	{
+		CPrintToChat(client, "[TS] %T", "Please wait until survivors leave the safe room.", client, g_iInfectedShopTime);
+		return false;
+	}
+
 	if (g_fInfectedBuyTime[client] > GetEngineTime())
 	{
-		CPrintToChat(client, "%T", "Can not buy so quickly", client, g_fInfectedShopColdDown);
+		CPrintToChat(client, "%T", "Infected Can not buy so quickly", client, g_fInfectedShopColdDown);
 		return false;
 	}
 	
@@ -2404,20 +2415,42 @@ void PrintToTeam (int client, int team, char[] displayName, bool bSpecial = fals
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
 {
-	if(g_bEnable && g_iCanJump[client] > 0)
+	if(g_bEnable)
 	{
-		int fCurFlags = GetEntityFlags(client);
-		if(fCurFlags & FL_ONGROUND)
+		switch (GetClientTeam(client))
 		{
-			Landed(client);
-		}
-		else if(!(g_iLastButtons[client] & IN_JUMP) && (buttons & IN_JUMP) && !(fCurFlags & FL_ONGROUND))
-		{
-			ReJump(client);
+			case L4D_TEAM_SURVIVORS:
+			{
+				if(IsPlayerAlive(client) && g_iCanJump[client] > 0)
+				{
+					int fCurFlags = GetEntityFlags(client);
+					if(fCurFlags & FL_ONGROUND)
+					{
+						Landed(client);
+					}
+					else if(!(g_iLastButtons[client] & IN_JUMP) && (buttons & IN_JUMP) && !(fCurFlags & FL_ONGROUND))
+					{
+						ReJump(client);
+					}
+					
+					g_iLastButtons[client] = buttons;
+				}
+			}
+			case L4D_TEAM_INFECTED:
+			{
+				if(FreezeTimer != null && InfectedImmuneEverything_Timer[client] == null && IsPlayerAlive(client) && !IsPlayerGhost(client))
+				{
+					if(buttons & IN_ATTACK)
+						buttons ^= IN_ATTACK; // remove attack 1
+					if(buttons & IN_ATTACK2)
+						buttons ^= IN_ATTACK2; // remove attack 2
+				}
+			}
 		}
 		
-		g_iLastButtons[client] = buttons;
 	}
+
+	return Plugin_Continue;
 }
 
 void Landed(int client) {
@@ -2469,29 +2502,42 @@ void ForceDamageEntity(int causer, int damage, int victim)
 
 bool TeleportToNearestTeammate (int client, char[] displayName)
 {
-	int iTarget = 0; 
-	float fMinDistance = 0.0;
+	int target = 0, IncapTarget= 0;
 	float clientOrigin[3];
 	float targetOrigin[3];
-	float fDistance = 0.0;
+	float fDistance, fMinDistance = 0.0, fMinIncapDistance = 0.0;
 	GetClientAbsOrigin(client, clientOrigin);
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(client != i && IsClientInGame(i) && GetClientTeam(i) == L4D_TEAM_SURVIVORS && IsPlayerAlive(i))
 		{
+			if(IsHandingFromLedge(i)) continue;
+
 			GetClientAbsOrigin(i, targetOrigin);
 			fDistance = GetVectorDistance(clientOrigin, targetOrigin, true);
-			if (fDistance < fMinDistance || fMinDistance == 0.0)
+			if(IsIncapacitated(i))
 			{
-				iTarget = i;
-				fMinDistance = fDistance;
+				if (fMinIncapDistance == 0.0 || fMinIncapDistance > fDistance)
+				{
+					fMinIncapDistance = fDistance;
+					IncapTarget = i;
+				} 
+			}
+			else
+			{
+				if (fMinDistance == 0.0 || fMinDistance > fDistance)
+				{
+					fMinDistance = fDistance;
+					target = i;
+				} 
 			}
 		}
 	}
 
-	if(iTarget == 0) return false;
+	if(target == 0) target = IncapTarget;
+	if(target == 0) return false;
 
-	GetClientAbsOrigin(iTarget, targetOrigin);
+	GetClientAbsOrigin(target, targetOrigin);
 	TeleportEntity( client, targetOrigin, NULL_VECTOR, NULL_VECTOR);
 
 	PrintToTeam(client, L4D_TEAM_SURVIVORS, displayName, true);
@@ -2517,23 +2563,28 @@ bool IsFireworkcrate(const char[] classname)
 
 void CreateDeadEyesGlow(int client, char[] displayName)
 {
-	g_bDeadEyeEffect = true;
+	delete DeadEyeTimer;
+	DeadEyeTimer = CreateTimer(float(g_iDeadEyeTime), Timer_DeadEyeOut);
 
 	for( int i = 1; i <= MaxClients; i++ ) 
 		CreateInfectedModelGlow(i);
 
-	int entity;
+	int entity = -1;
 	entity = INVALID_ENT_REFERENCE;
-	while ((entity = FindEntityByClassname(entity, INFECTED_NAME)) != INVALID_ENT_REFERENCE)
+	while ((entity = FindEntityByClassname(entity, INFECTED_NAME)) != -1)
 	{
+		if (!IsValidEntity(entity))
+			continue;	
+		
 		RequestFrame(OnNextFrame, EntIndexToEntRef(entity));
 	}
-	/*while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != INVALID_ENT_REFERENCE)
+	while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != -1)
 	{
+		if (!IsValidEntity(entity))
+			continue;	
+		
 		RequestFrame(OnNextFrame, EntIndexToEntRef(entity));
-	}*/
-
-	CreateTimer(float(g_iDeadEyeTime), Timer_DeadEyeOut, _ ,TIMER_FLAG_NO_MAPCHANGE);
+	}
 
 	PrintToTeam(client, 0, displayName, true);
 	CPrintToChatAll("[{olive}TS{default}] %t", "Dead-Eyes Effect", g_iDeadEyeTime);
@@ -2542,7 +2593,7 @@ void CreateDeadEyesGlow(int client, char[] displayName)
 
 public void CreateInfectedModelGlow(int client)
 {
-	if (g_bDeadEyeEffect == false ||
+	if (DeadEyeTimer == null ||
 	!client || 
 	!IsClientInGame(client) || 
 	GetClientTeam(client) != L4D_TEAM_INFECTED ||
@@ -2619,7 +2670,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	if (!IsValidEntityIndex(entity))
 		return;
 
-	if (g_bDeadEyeEffect == false)
+	if (DeadEyeTimer == null)
 		return;
 
 	if (StrEqual(classname, INFECTED_NAME) || StrEqual(classname, WITCH_NAME))
@@ -2650,13 +2701,13 @@ public void OnNextFrame(int entityRef)
 			AcceptEntityInput(entity, "StartGlowing");
 		}
 	}
-	/*else if (strcmp(szClass, WITCH_NAME) == 0)
+	else if (strcmp(szClass, WITCH_NAME) == 0 && GetEntProp(entity, Prop_Send, "m_iGlowType") == 0 )
 	{
-			SetEntProp(entity, Prop_Send, "m_nGlowRange", 3000);
-			SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
-			SetEntProp(entity, Prop_Send, "m_glowColorOverride", 255 + 0 + 0);
-			AcceptEntityInput(entity, "StartGlowing");
-	}*/
+		SetEntProp(entity, Prop_Send, "m_nGlowRange", 3124);
+		SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
+		SetEntProp(entity, Prop_Send, "m_glowColorOverride", 255 + 0 + 0);
+		AcceptEntityInput(entity, "StartGlowing");
+	}
 }
 
 bool IsPlayerGhost(int client)
@@ -2666,10 +2717,12 @@ bool IsPlayerGhost(int client)
 
 public Action Timer_DeadEyeOut(Handle timer)
 {
-	g_bDeadEyeEffect = false;
 	PlaySoundToAll(DEAD_EYES_Sound2);
 	RemoveAllModelGlow();
 	CPrintToChatAll("[{olive}TS{default}] %t", "Dead-Eyes Effect Time Out");
+	DeadEyeTimer = null;
+
+	return Plugin_Continue;
 }
 
 
@@ -2678,16 +2731,23 @@ void RemoveAllModelGlow()
 	for( int i = 1; i <= MaxClients; i++ )
 		RemoveInfectedModelGlow(i);
 
-	int entity;
-	while ((entity = FindEntityByClassname(entity, INFECTED_NAME)) != INVALID_ENT_REFERENCE)
+	int entity = -1;
+	while ((entity = FindEntityByClassname(entity, INFECTED_NAME)) != -1)
 	{
+		if (!IsValidEntity(entity))
+			continue;	
+		
 		SetEntProp(entity, Prop_Send, "m_iGlowType", 0);
 	}
 
-	/*while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != INVALID_ENT_REFERENCE)
+	while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != -1)
 	{
-		SetEntProp(entity, Prop_Send, "m_iGlowType", 0);
-	}*/
+		if (!IsValidEntity(entity))
+			continue;	
+		
+		if(GetEntProp(entity, Prop_Send, "m_iGlowType") == 3 && GetEntProp(entity, Prop_Send, "m_nGlowRange") == 3124)
+			SetEntProp(entity, Prop_Send, "m_iGlowType", 0);
+	}
 }
 
 void PlaySoundToClient(int client, char[] sSoundName)
@@ -2789,29 +2849,54 @@ void CheatCommand(int client, char[] command, char[] arguments = "", char[] extr
 
 public Action Timer_NoImmuneDamage(Handle timer, int client)
 {
-	InfectedImmuneDamage[client] = false;
 	if(IsClientInGame(client))
 	{
-		PrintToChat(client, "%T", "Immune Everything Timer",client);
+		CPrintToChat(client, "%T", "Immune Everything Timer",client);
 		DeleteLight(client);
 		ResetGlow(client);
+		FreezeInfected(client);
 	}
+
+	SDKUnhook(client, SDKHook_OnTakeDamage, InfectedOnTakeDamage);
+	SDKUnhook(client, SDKHook_TraceAttack, OnImmuneShoot);
+	InfectedImmuneEverything_Timer[client] = null;
+	return Plugin_Continue;
 }
 
-public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damageType)
+public Action InfectedOnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damageType)
 {
-	if (victim <= 0 || victim > MaxClients || !IsClientInGame(victim) || IsFakeClient(victim) || GetClientTeam(victim) != L4D_TEAM_INFECTED) return Plugin_Continue;
-	if (InfectedImmuneDamage[victim] == true)
+	if (!IsClientInGame(victim) || GetClientTeam(victim) != L4D_TEAM_INFECTED) return Plugin_Continue;
+	
+	if (InfectedImmuneEverything_Timer[victim] != null)
+	{
+		return Plugin_Handled;
+	}
+	else
+	{
+		SDKUnhook(victim, SDKHook_OnTakeDamage, InfectedOnTakeDamage);
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action OnImmuneShoot(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
+{
+	if (!IsClientInGame(victim) || GetClientTeam(victim) != L4D_TEAM_INFECTED) return Plugin_Continue;
+
+	if (InfectedImmuneEverything_Timer[victim] != null)
 	{
 		if (attacker && attacker <= MaxClients && IsClientInGame(attacker))
 		{
 			if (!IsFakeClient(attacker)) EmitSoundToClient(attacker, IMMUNE_EVERYTHING_Sound1);
 			EmitSoundToClient(victim, IMMUNE_EVERYTHING_Sound1);
 		}
-		
 		return Plugin_Handled;
 	}
-	
+	else
+	{
+		SDKUnhook(victim, SDKHook_TraceAttack, OnImmuneShoot);
+	}
+
 	return Plugin_Continue;
 }
 
@@ -2829,31 +2914,58 @@ int CountTankInServer()
 	return count;
 }
 
+int CountWitchInServer()
+{
+	int count = 0, entity = -1;
+	while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != -1)
+	{
+		if (!IsValidEntity(entity))
+			continue;	
+		
+		count ++;
+	}
+
+	return count;
+}
+
 bool TeleportToNearestSurvivor (int client, char[] displayName)
 {
-	int iTarget = 0; 
-	float fMinDistance = 0.0;
+	int target = 0, IncapTarget= 0;
 	float clientOrigin[3];
 	float targetOrigin[3];
-	float fDistance = 0.0;
+	float fDistance, fMinDistance = 0.0, fMinIncapDistance = 0.0;
 	GetClientAbsOrigin(client, clientOrigin);
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && GetClientTeam(i) == L4D_TEAM_SURVIVORS && IsPlayerAlive(i))
 		{
+			if(IsHandingFromLedge(i)) continue;
+
 			GetClientAbsOrigin(i, targetOrigin);
 			fDistance = GetVectorDistance(clientOrigin, targetOrigin, true);
-			if (fDistance < fMinDistance || fMinDistance == 0.0)
+			if(IsIncapacitated(i))
 			{
-				iTarget = i;
-				fMinDistance = fDistance;
+				if (fMinIncapDistance == 0.0 || fMinIncapDistance > fDistance)
+				{
+					fMinIncapDistance = fDistance;
+					IncapTarget = i;
+				} 
+			}
+			else
+			{
+				if (fMinDistance == 0.0 || fMinDistance > fDistance)
+				{
+					fMinDistance = fDistance;
+					target = i;
+				} 
 			}
 		}
 	}
+	
+	if(target == 0) target = IncapTarget;
+	if(target == 0) return false;
 
-	if(iTarget == 0) return false;
-
-	GetClientAbsOrigin(iTarget, targetOrigin);
+	GetClientAbsOrigin(target, targetOrigin);
 	TeleportEntity( client, targetOrigin, NULL_VECTOR, NULL_VECTOR);
 
 	PrintToTeam(client, 0, displayName, true);
@@ -2864,37 +2976,46 @@ bool TeleportToNearestSurvivor (int client, char[] displayName)
 
 public Action L4D2_OnStagger(int target, int source)
 {
-	if (InfectedImmuneDamage[target] == true)
+	if (!IsClientInGame(target) || GetClientTeam(target) != L4D_TEAM_INFECTED) return Plugin_Continue;
+	
+	if (FreezeTimer != null || InfectedImmuneEverything_Timer[target] != null)
+	{
 		return Plugin_Handled;
+	}
 	
 	return Plugin_Continue;
 }
 
 public Action L4D_OnShovedBySurvivor(int client, int victim, const float vecDir[3])
 {
-	if (IsClientInGame(victim) && GetClientTeam(victim) == L4D_TEAM_INFECTED && InfectedImmuneDamage[victim] == true)
+	if (!IsClientInGame(victim) || GetClientTeam(victim) != L4D_TEAM_INFECTED) return Plugin_Continue;
+	
+	if (FreezeTimer != null || InfectedImmuneEverything_Timer[victim] != null)
+	{
 		return Plugin_Handled;
+	}
 	
 	return Plugin_Continue;
 }
 
 public Action L4D2_OnEntityShoved(int client, int entity, int weapon, float vecDir[3], bool bIsHighPounce)
 {
-	if(entity > 0 && entity <= MaxClients && IsClientInGame(entity) && GetClientTeam(entity) == L4D_TEAM_INFECTED)
+	if(entity <= 0 || entity > MaxClients || !IsClientInGame(entity) || GetClientTeam(entity) != L4D_TEAM_INFECTED) return Plugin_Continue;
+	
+	if (FreezeTimer != null || InfectedImmuneEverything_Timer[entity] != null)
 	{
-		if (InfectedImmuneDamage[entity] == true)
-			return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 
 	return Plugin_Continue;
 }
 
-void TurnFlashlightOn(int client)
+void TurnFlashlightOn(int client, bool freeze = false)
 {
 	if (!IsClientInGame(client)) return;
 	if (GetClientTeam(client) != L4D_TEAM_INFECTED) return;
 	if (!IsPlayerAlive(client)) return;
-	if (IsFakeClient(client)) return;
+	if (IsPlayerGhost(client)) return;
 
 	DeleteLight(client);
 
@@ -2907,7 +3028,7 @@ void TurnFlashlightOn(int client)
 	vAngles = view_as<float>(  { -45.0, -45.0, 90.0 });
 
 	// Light_Dynamic
-	entity = MakeLightDynamic(vOrigin, vAngles, client);
+	entity = MakeLightDynamic(vOrigin, vAngles, client, freeze);
 	if(entity == -1) return;
 	g_iLightIndex[client] = EntIndexToEntRef(entity);
 }
@@ -2925,7 +3046,7 @@ void DeleteEntity(int entity)
 		AcceptEntityInput(entity, "Kill");
 }
 
-int MakeLightDynamic(const float vOrigin[3], const float vAngles[3], int client)
+int MakeLightDynamic(const float vOrigin[3], const float vAngles[3], int client, bool freeze = false)
 {
 	int entity = CreateEntityByName("light_dynamic");
 	if( entity == -1)
@@ -2934,7 +3055,10 @@ int MakeLightDynamic(const float vOrigin[3], const float vAngles[3], int client)
 	}
 
 	char sTemp[16];
-	Format(sTemp, sizeof(sTemp), "155 0 255 155");
+	if(freeze)
+		Format(sTemp, sizeof(sTemp), "0 128 255 192");
+	else
+		Format(sTemp, sizeof(sTemp), "155 0 255 155");
 	DispatchKeyValue(entity, "_light", sTemp);
 	DispatchKeyValue(entity, "brightness", "1");
 	DispatchKeyValueFloat(entity, "spotlight_radius", 0.0);
@@ -2959,7 +3083,1151 @@ void ResetGlow(int client) {
 	}
 }
 
-void SetGodframedGlow(client) {	
+void SetGodframedGlow(int client) {	
 	SetEntityRenderMode(client, view_as<RenderMode>(3) );
 	SetEntityRenderColor(client, 155, 0, 255, 180);
+}
+
+/***
+// 購買
+// return: 1為關閉menu, 2為繼續顯示menu, 4代表不能購買
+****/
+int BuyItem(int client, int team, EMenuType eMenutype, int index)
+{
+	int itemMoney;
+	if(team == L4D_TEAM_SURVIVORS)
+	{
+		if(eMenutype == view_as<EMenuType>(eSurvivorSpecialMenu))
+		{
+			if(!CanSurvivorBuy(client, survivorSpecialMenu[index][0]))
+				return 6;
+		}
+		else if(!CanSurvivorBuy(client))
+			return 6;
+		
+		switch(eMenutype)
+		{
+			case (view_as<EMenuType>(eWeaponMenu)):
+			{
+				itemMoney = StringToInt(weaponsMenu[index][2]);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				GiveFunction(client, weaponsMenu[index][0], weaponsMenu[index][1]);
+				Checkout(client, L4D_TEAM_SURVIVORS, itemMoney, view_as<EMenuType>(eWeaponMenu), index, weaponsMenu[index][1]);
+				return 2;
+			}
+			case (view_as<EMenuType>(eMeleeMenu)):
+			{
+				itemMoney = StringToInt(meleeMenu[index][2]);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				GiveFunction(client, meleeMenu[index][0], meleeMenu[index][1]);
+				Checkout(client, L4D_TEAM_SURVIVORS, itemMoney, view_as<EMenuType>(eMeleeMenu), index, meleeMenu[index][1]);
+				return 2;
+			}
+			case (view_as<EMenuType>(eMedicThrowableMenu)):
+			{
+				itemMoney = StringToInt(medicThrowableMenu[index][2]);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				if(strcmp(medicThrowableMenu[index][0], "health_100", false) == 0)
+					GiveClientHealth(client, 100, medicThrowableMenu[index][1]);
+				else
+					GiveFunction(client, medicThrowableMenu[index][0], medicThrowableMenu[index][1]);
+				
+				Checkout(client, L4D_TEAM_SURVIVORS, itemMoney, view_as<EMenuType>(eMedicThrowableMenu), index, medicThrowableMenu[index][1]);
+				return 2;
+			}
+			case (view_as<EMenuType>(eOtherMenu)):
+			{
+				itemMoney = StringToInt(otherMenu[index][2]);
+				int iSlot0 = GetPlayerWeaponSlot(client, 0);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				if(strcmp(otherMenu[index][0], "laser_sight", false) == 0 || strcmp(otherMenu[index][0], "incendiary_ammo", false) == 0 || strcmp(otherMenu[index][0], "explosive_ammo", false) == 0 )
+				{
+					if(iSlot0 <= 0 )
+					{
+						CPrintToChat(client, "[{olive}TS{default}] %T", "Must have primary weapon", client);
+						return 6;
+					}
+					
+					GiveUpgrade(client, otherMenu[index][0], otherMenu[index][1]);
+				}
+				else if(strcmp(otherMenu[index][0], "ammo", false) == 0)
+				{
+					if(iSlot0 <= 0 )
+					{
+						CPrintToChat(client, "[{olive}TS{default}] %T", "Must have primary weapon", client);
+						return 6;
+					}
+					
+					GiveClientAmmo(client, iSlot0, otherMenu[index][1]);
+				}
+				else if (strcmp(otherMenu[index][0], "gascan", false) == 0)
+				{
+					if(g_bGascanMap == false)
+					{
+						CPrintToChat(client, "[{olive}TS{default}] %T", "Can't buy gascan in current map", client);	
+						return 6;
+					}
+						
+					GiveFunction(client, otherMenu[index][0], otherMenu[index][1]);
+				}
+				else if (strcmp(otherMenu[index][0], "cola_bottles", false) == 0)
+				{
+					if(g_bColaMap == false)
+					{
+						CPrintToChat(client, "[{olive}TS{default}] %T", "Can't buy cola in current map", client);	
+						return 6;
+					}
+					
+					GiveFunction(client, otherMenu[index][0], otherMenu[index][1]);
+				}
+				else
+				{
+					GiveFunction(client, otherMenu[index][0], otherMenu[index][1]);
+				}
+				
+				Checkout(client, L4D_TEAM_SURVIVORS, itemMoney, view_as<EMenuType>(eOtherMenu), index, otherMenu[index][1]);
+				return 2;
+			}
+			case (view_as<EMenuType>(eSurvivorSpecialMenu)):
+			{
+				itemMoney = StringToInt(survivorSpecialMenu[index][2]);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				if(strcmp(survivorSpecialMenu[index][0], "Fire", false) == 0)
+				{
+					CreateFires(client, survivorSpecialMenu[index][1]);
+				}
+				else if(strcmp(survivorSpecialMenu[index][0], "Teleport", false) == 0)
+				{
+					if (IsHandingFromLedge(client))
+					{
+						CPrintToChat(client, "%T", "Can't buy when handing from ledge", client);
+						return 6;
+					}
+					
+					if( !TeleportToNearestTeammate(client, survivorSpecialMenu[index][1]))
+					{
+						CPrintToChat(client, "%T", "No Any Other Survivors", client);
+						return 6;
+					}
+					
+					//teleport successfully
+				}
+				else if(strcmp(survivorSpecialMenu[index][0], "Kill_Commons", false) == 0)
+				{
+					KillAllCommonInfected(client, survivorSpecialMenu[index][1]);
+				}
+				else if(strcmp(survivorSpecialMenu[index][0], "Heal_Survivors", false) == 0)
+				{
+					HealthAllSurvivors(client, survivorSpecialMenu[index][1]);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Jump+1", false) == 0)
+				{
+					if(g_iCanJump[client] >= g_iMaxJumpLimit)
+					{
+						CPrintToChat(client, "%T", "Jump Limit", client);
+						return 6;
+					}
+					
+					if (bFinaleEscapeStarted)
+					{
+						CPrintToChat(client, "%T", "Can't buy after final rescue starts", client);
+						return 6;
+					}
+
+					g_iCanJump[client]++;
+					PrintToTeam(client, L4D_TEAM_SURVIVORS, survivorSpecialMenu[index][1], true);
+					PlaySound(client, BUY_Sound2);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Infinite_Ammo", false) == 0)
+				{
+					if(InfiniteAmmo_Timer[client] != null)
+					{
+						CPrintToChat(client, "%T", "Already Buy", client);
+						return 6;
+					}
+					
+					delete InfiniteAmmo_Timer[client];
+					InfiniteAmmo_Timer[client] = CreateTimer(float(g_iInfiniteAmmoTime), Timer_NoInfiniteAmmo, client);
+					PrintToTeam(client, L4D_TEAM_SURVIVORS, survivorSpecialMenu[index][1], true);
+					PlaySound(client, BUY_Sound2);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Fire_Infeceted", false) == 0)
+				{
+					FireAllInfected(client, survivorSpecialMenu[index][1]);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Kill_Witches", false) == 0)
+				{
+					KillAllWitches(client, survivorSpecialMenu[index][1]);
+				}	
+				else if (strcmp(survivorSpecialMenu[index][0], "Slay_Infected", false) == 0)
+				{
+					int infectedattacker = L4D2_GetInfectedAttacker(client);
+					if(infectedattacker <= 0)
+					{
+						CPrintToChat(client, "%T", "You are not being attacked", client);
+						return 6;
+					}
+					
+					ForcePlayerSuicide(infectedattacker);
+					PrintToTeam(client, 0, survivorSpecialMenu[index][1], true);
+					PlaySound(client, BUY_Sound2);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Dead_Eyes", false) == 0)
+				{
+					if (DeadEyeTimer != null)
+					{
+						CPrintToChat(client, "%T", "Someone Already Buy", client);
+						return 6;
+					}
+					
+					CreateDeadEyesGlow(client, survivorSpecialMenu[index][1]);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Respawn", false) == 0)
+				{
+					if (IsPlayerAlive(client))
+					{
+						CPrintToChat(client, "%T", "You are not dead", client);
+						return 6;
+					}
+					
+					if( !RespawnPlayer(client, survivorSpecialMenu[index][1]) )
+					{
+						CPrintToChat(client, "%T", "No Any Other Survivors", client);
+						return 6;
+					}
+					
+					//respawn successfully
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "Freeze_Infected", false) == 0)
+				{
+					if (FreezeTimer != null)
+					{
+						CPrintToChat(client, "%T", "Someone Already Buy", client);
+						return 6;
+					}
+					
+					FreezeAllInfectedPlayer(client, survivorSpecialMenu[index][1]);
+				}
+				else if (strcmp(survivorSpecialMenu[index][0], "No_FF", false) == 0)
+				{
+					if(g_bClientNo_FF[client] == true)
+					{
+						CPrintToChat(client, "%T", "Already Buy", client);
+						return 6;
+					}
+					
+					g_bClientNo_FF[client] = true;
+					PrintToTeam(client, L4D_TEAM_SURVIVORS, survivorSpecialMenu[index][1], true);
+					PlaySound(client, BUY_Sound2);
+				}
+				
+				Checkout(client, L4D_TEAM_SURVIVORS, itemMoney, view_as<EMenuType>(eSurvivorSpecialMenu), index, survivorSpecialMenu[index][1]);
+				return 1;
+			}
+			default:
+			{
+				return 5;
+			}
+		}
+	}
+	else if(team == L4D_TEAM_INFECTED)
+	{
+		if(!CanInfectedBuy(client))
+			return 6;
+		
+		switch(eMenutype)
+		{
+			case (view_as<EMenuType>(eInfectedSpawnMenu)):
+			{
+				itemMoney = StringToInt(infectedSpawnMenu[index][2]);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				if (strcmp(infectedSpawnMenu[index][0], "Suicide", false) == 0)
+				{
+					if (!IsPlayerAlive(client) || IsPlayerGhost(client))
+					{
+						CPrintToChat(client, "%T", "Alive Infected First", client);
+						return 6;
+					}
+
+					ForcePlayerSuicide(client);
+					PrintToTeam(client, L4D_TEAM_INFECTED, infectedSpawnMenu[index][1]);
+					PlaySound(client, BUY_Sound1);
+				}
+				else
+				{
+					if (IsPlayerAlive(client) && !IsPlayerGhost(client))
+					{
+						CPrintToChat(client, "%T", "Dead Infected First", client);
+						return 6;
+					}
+					
+					if (strcmp(infectedSpawnMenu[index][0], "Tank", false) == 0 && CountTankInServer() >= g_iInfectedShopTankLimit )
+					{
+						CPrintToChat(client, "%T", "Tank Limit Reached", client);
+						return 6;
+					}
+
+					InfectedSpawnFunction(client, infectedSpawnMenu[index][0]);
+					if (!IsPlayerAlive(client)) //fail to spawn
+					{
+						CPrintToChat(client, "%T", "Can not Spawn Infected", client);
+						return 6;
+					}
+			
+					PrintToTeam(client, L4D_TEAM_INFECTED, infectedSpawnMenu[index][1]);
+					PlaySound(client, BUY_Sound1);
+				}
+				
+				Checkout(client, L4D_TEAM_INFECTED, itemMoney, view_as<EMenuType>(eInfectedSpawnMenu), index, infectedSpawnMenu[index][1]);
+				return 1;
+			}
+			case (view_as<EMenuType>(eInfectedSpecialMenu)):
+			{
+				itemMoney = StringToInt(infectedSpecialMenu[index][2]);
+				if( g_iCredits[client] - itemMoney < 0)
+				{
+					CPrintToChat(client, "[{olive}TS{default}] %T", "Not enough money", client, g_iCredits[client], itemMoney);
+					return 6;
+				}
+				
+				if (strcmp(infectedSpecialMenu[index][0], "Horde", false) == 0)
+				{
+					CheatCommand(client, "director_force_panic_event");
+					PrintToTeam(client, 0, infectedSpecialMenu[index][1], true);
+				}
+				else if (strcmp(infectedSpecialMenu[index][0], "Witch", false) == 0)
+				{
+					if (!IsPlayerAlive(client) || GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_TANK)
+					{
+						CPrintToChat(client, "%T", "Alive/Ghost Infected Except Tank First", client);
+					}
+
+					if( CountWitchInServer() >= g_iInfectedShopWitchLimit)
+					{
+						CPrintToChat(client, "%T", "Witch Limit Reached", client);
+						return 6;
+					}
+					
+					if( !(GetEntityFlags(client) & FL_ONGROUND) || GetEntityMoveType(client) == MOVETYPE_LADDER )
+					{
+						CPrintToChat(client, "%T", "Please Stand on the ground", client);
+						return 6;
+					}
+					
+					if ( CanBeSeenBySurvivors(client) || IsTooClose(client))
+					{
+						CPrintToChat(client, "%T", "Too close or can be seen", client);
+						return 6;
+					}
+					
+					if ( !SpawnWitchInClientLocation(client, infectedSpecialMenu[index][1]))
+					{
+						CPrintToChat(client, "%T", "Witch Spawn Error at this location", client);
+						return 6;
+					}
+
+					//successfully spawn witch
+				}
+				else
+				{
+					if (!IsPlayerAlive(client) || IsPlayerGhost(client) || GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_TANK)
+					{
+						CPrintToChat(client, "%T", "Alive Infected Except Tank First", client);
+						return 6;
+					}
+					
+					if (strcmp(infectedSpecialMenu[index][0], "Health", false) == 0)
+					{
+						SetEntityHealth(client, GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+						PrintToTeam(client, L4D_TEAM_INFECTED, infectedSpecialMenu[index][1], true);
+						PlaySound(client, BUY_Sound2);
+					}
+					else if (strcmp(infectedSpecialMenu[index][0], "Immune", false) == 0)
+					{
+						if(InfectedImmuneEverything_Timer[client] != null) 
+						{
+							CPrintToChat(client, "%T", "Already Buy", client);
+							return 6;
+						}
+						
+						UnFreezeInfected(client);
+						delete InfectedImmuneEverything_Timer[client];
+						InfectedImmuneEverything_Timer[client] = CreateTimer(float(g_iImmuneDamageTime), Timer_NoImmuneDamage, client);
+						SetGodframedGlow(client);
+						TurnFlashlightOn(client);
+						SDKHook(client, SDKHook_OnTakeDamage, InfectedOnTakeDamage);
+						SDKHook(client, SDKHook_TraceAttack, OnImmuneShoot);
+						CPrintToChat(client, "%T", "Immune Everything Now", client, g_iImmuneDamageTime);
+						PrintToTeam(client, L4D_TEAM_INFECTED, infectedSpecialMenu[index][1], true);
+						PlaySound(client, BUY_Sound2);
+					}
+					else if (strcmp(infectedSpecialMenu[index][0], "Teleport", false) == 0)
+					{
+						if( !TeleportToNearestSurvivor(client, infectedSpecialMenu[index][1]))
+						{
+							CPrintToChat(client, "%T", "No Any Other Survivors", client);
+							return 6;
+						}
+					}
+				}
+				
+				Checkout(client, L4D_TEAM_INFECTED, itemMoney, view_as<EMenuType>(eInfectedSpecialMenu), index, infectedSpecialMenu[index][1]);
+				return 2;
+			}
+			default:
+			{
+				return 5;
+			}
+		}
+	}
+	
+	return 5;
+}
+
+//結帳
+void Checkout(int client, int team, int itemMoney, EMenuType eMenutype, int index, const char[] displayName)
+{
+	g_iCredits[client] -= itemMoney; //扣錢
+	//冷卻
+	if(team == L4D_TEAM_SURVIVORS) g_fSurvivorBuyTime[client] = GetEngineTime() + g_fSurvivorShopColdDown;
+	else if(team == L4D_TEAM_INFECTED) g_fInfectedBuyTime[client] = GetEngineTime() + g_fInfectedShopColdDown;
+	//紀錄
+	g_iLastBuyMenu[client] = eMenutype;
+	g_iLastBuyIndex[client] = index;
+	strcopy(g_sLastBuyName[client], sizeof(g_sLastBuyName[]), displayName);
+}
+
+bool CanBeSeenBySurvivors(int infected)
+{
+	for (int client = 1; client <= MaxClients; ++client)
+	{
+		if (IsAliveSurvivor(client) && IsVisibleTo(client, infected))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool IsAliveSurvivor(int client)
+{
+    return IsClientInGame(client)
+        && GetClientTeam(client) == L4D_TEAM_SURVIVORS
+        && IsPlayerAlive(client);
+}
+
+static bool IsVisibleTo(int player1, int player2)
+{
+	// check FOV first
+	// if his origin is not within a 60 degree cone in front of us, no need to raytracing.
+	float pos1_eye[3], pos2_eye[3], eye_angle[3], vec_diff[3], vec_forward[3];
+	GetClientEyePosition(player1, pos1_eye);
+	GetClientEyeAngles(player1, eye_angle);
+	GetClientEyePosition(player2, pos2_eye);
+	MakeVectorFromPoints(pos1_eye, pos2_eye, vec_diff);
+	NormalizeVector(vec_diff, vec_diff);
+	GetAngleVectors(eye_angle, vec_forward, NULL_VECTOR, NULL_VECTOR);
+	if (GetVectorDotProduct(vec_forward, vec_diff) < 0.5) // cos 60
+	{
+		return false;
+	}
+
+	// in FOV
+	Handle hTrace;
+	bool ret = false;
+	float pos2_feet[3], pos2_chest[3];
+	GetClientAbsOrigin(player2, pos2_feet);
+	pos2_chest[0] = pos2_feet[0];
+	pos2_chest[1] = pos2_feet[1];
+	pos2_chest[2] = pos2_feet[2] + 45.0;
+
+	if (GetEntProp(player2, Prop_Send, "m_zombieClass") != ZC_JOCKEY)
+	{
+		hTrace = TR_TraceRayFilterEx(pos1_eye, pos2_eye, MASK_VISIBLE, RayType_EndPoint, TraceFilter, player1);
+		if (!TR_DidHit(hTrace) || TR_GetEntityIndex(hTrace) == player2)
+		{
+			CloseHandle(hTrace);
+			return true;
+		}
+		CloseHandle(hTrace);
+	}
+
+	hTrace = TR_TraceRayFilterEx(pos1_eye, pos2_feet, MASK_VISIBLE, RayType_EndPoint, TraceFilter, player1);
+	if (!TR_DidHit(hTrace) || TR_GetEntityIndex(hTrace) == player2)
+	{
+		CloseHandle(hTrace);
+		return true;
+	}
+	CloseHandle(hTrace);
+
+	hTrace = TR_TraceRayFilterEx(pos1_eye, pos2_chest, MASK_VISIBLE, RayType_EndPoint, TraceFilter, player1);
+	if (!TR_DidHit(hTrace) || TR_GetEntityIndex(hTrace) == player2)
+	{
+		CloseHandle(hTrace);
+		return true;
+	}
+	CloseHandle(hTrace);
+
+	return ret;
+}
+
+static bool TraceFilter(int entity, int mask, int self)
+{
+	return entity != self;
+}
+
+bool IsTooClose(int client)
+{
+	float fInfLocation[3], fSurvLocation[3], fVector[3];
+	GetClientAbsOrigin(client, fInfLocation);
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && GetClientTeam(i)==2 && IsPlayerAlive(i))
+		{
+			GetClientAbsOrigin(i, fSurvLocation);
+			MakeVectorFromPoints(fInfLocation, fSurvLocation, fVector);
+			if (GetVectorLength(fVector, true) < Pow(g_fWitchSpawnSafetyRange,2.0)) return true;
+		}
+	}
+	return false;
+}
+
+public Action KickWitch_Timer(Handle timer, int ref)
+{
+	if(IsValidEntRef(ref))
+	{
+		int entity = EntRefToEntIndex(ref);
+		if(IsWitch(entity))
+		{
+			bool bKill = true;
+			float clientOrigin[3];
+			float witchOrigin[3];
+			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", witchOrigin);
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i) && GetClientTeam(i) == L4D_TEAM_SURVIVORS && IsPlayerAlive(i))
+				{
+					GetClientAbsOrigin(i, clientOrigin);
+					if (GetVectorDistance(clientOrigin, witchOrigin, true) < Pow(g_SpawnRange.FloatValue,2.0))
+					{
+						bKill = false;
+						break;
+					}
+				}
+			}
+
+			if(bKill) AcceptEntityInput(ref, "kill"); //remove witch
+			else CreateTimer(g_fWitchKillTime, KickWitch_Timer, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+bool IsWitch(int entity)
+{
+    if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
+    {
+        char strClassName[64];
+        GetEdictClassname(entity, strClassName, sizeof(strClassName));
+        return strcmp(strClassName, WITCH_NAME, false) == 0;
+    }
+    return false;
+}
+
+void GoMainMenu(int client)
+{
+	switch(GetClientTeam(client))
+	{
+		case L4D_TEAM_SPECTATOR:
+		{
+			g_hSpectatorMenu.SetTitle("%T", "Shop Menu Title", client, g_iCredits[client]);
+			g_hSpectatorMenu.Display(client, MENU_TIME_FOREVER);
+		}
+		case L4D_TEAM_SURVIVORS:
+		{
+			g_hSurvivorMenu.SetTitle("%T", "Shop Menu Title", client, g_iCredits[client]);
+			g_hSurvivorMenu.Display(client, MENU_TIME_FOREVER);
+		}
+		case L4D_TEAM_INFECTED:
+		{
+			g_hInfectedMenu.SetTitle("%T", "Infected Menu Title", client, g_iCredits[client]);
+			g_hInfectedMenu.Display(client, MENU_TIME_FOREVER);
+		}
+	}
+}
+
+/**
+ * Converts the string to lower case.
+ *
+ * @param input         Input string.
+ */
+void StringToLowerCase(char[] input)
+{
+	for (int i = 0; i < strlen(input); i++)
+	{
+		input[i] = CharToLower(input[i]);
+	}
+}
+
+public Action PluginStart(Handle timer)
+{
+	ClearDefault();
+
+	delete PlayerLeftStartTimer; PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
+
+	return Plugin_Continue;
+}
+
+int iCountDownTime;
+public Action Timer_PlayerLeftStart(Handle Timer)
+{
+	if (L4D_HasAnySurvivorLeftSafeArea())
+	{
+		iCountDownTime = g_iInfectedShopTime;
+		if(iCountDownTime > 0)
+		{
+			delete CountDownTimer; CountDownTimer = CreateTimer(1.0, Timer_CountDown, _, TIMER_REPEAT);
+		}
+		
+		PlayerLeftStartTimer = null;
+		return Plugin_Stop;
+	}
+	return Plugin_Continue;
+}
+
+public Action Timer_CountDown(Handle timer)
+{
+	if(iCountDownTime <= 0) 
+	{
+		bLimitInfectedBuy = false;
+		CountDownTimer = null;
+		return Plugin_Stop;
+	}
+	iCountDownTime--;
+	return Plugin_Continue;
+}
+
+void ClearDefault()
+{
+	g_iRoundStart = 0;
+	g_iPlayerSpawn = 0;
+	bLimitInfectedBuy = true;
+}
+
+void ResetTimer()
+{
+	delete PlayerLeftStartTimer;
+	delete CountDownTimer;
+	delete DeadEyeTimer;
+	delete FreezeTimer;
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		delete InfiniteAmmo_Timer[i];
+		delete InfectedImmuneEverything_Timer[i];
+	}
+}
+
+void CreateShortCutStringMap()
+{
+	int size;
+
+	g_smWeaponShortCut = CreateTrie();
+	size = sizeof(weaponsMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(weaponsMenu[index][0]);
+		g_smWeaponShortCut.SetValue(weaponsMenu[index][0], index);
+	}
+
+	g_smMeleeShortCut = CreateTrie();
+	size = sizeof(meleeMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(meleeMenu[index][0]);
+		g_smMeleeShortCut.SetValue(meleeMenu[index][0], index);
+	}
+
+	g_smMedicThrowableShortCut = CreateTrie();
+	size = sizeof(medicThrowableMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(medicThrowableMenu[index][0]);
+		g_smMedicThrowableShortCut.SetValue(medicThrowableMenu[index][0], index);
+	}
+
+	g_smOtherShortCut = CreateTrie();
+	size = sizeof(otherMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(otherMenu[index][0]);
+		g_smOtherShortCut.SetValue(otherMenu[index][0], index);
+	}
+
+	g_smSurvivorSpecialShortCut = CreateTrie();
+	size = sizeof(survivorSpecialMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(survivorSpecialMenu[index][0]);
+		g_smSurvivorSpecialShortCut.SetValue(survivorSpecialMenu[index][0], index);
+	}
+
+	g_smInfectedSpawnShortCut = CreateTrie();
+	size = sizeof(infectedSpawnMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(infectedSpawnMenu[index][0]);
+		g_smInfectedSpawnShortCut.SetValue(infectedSpawnMenu[index][0], index);
+	}
+
+	g_smInfectedSpecialShortCut = CreateTrie();
+	size = sizeof(infectedSpecialMenu);
+	for( int index = 0 ; index < size ; ++index )
+	{
+		StringToLowerCase(infectedSpecialMenu[index][0]);
+		g_smInfectedSpecialShortCut.SetValue(infectedSpecialMenu[index][0], index);
+	}
+}
+
+bool RespawnPlayer(int client, char[] displayName)
+{
+	//check if there are any alive survivor in server
+	int iAliveSurvivor = GetRandomAliveSurvivor();
+	if(iAliveSurvivor == 0)
+		return false;
+	
+	L4D_RespawnPlayer(client);
+	
+	float teleportOrigin[3];
+	GetClientAbsOrigin(iAliveSurvivor, teleportOrigin);
+	/*
+	int userid = GetClientUserId(client);
+	DataPack hPack = new DataPack();
+	hPack.WriteCell(userid);
+	hPack.WriteFloat(teleportOrigin[0]);
+	hPack.WriteFloat(teleportOrigin[1]);
+	hPack.WriteFloat(teleportOrigin[2]);
+	
+	RequestFrame(Respawn_OnNextFrame, hPack); //first time teleport*/
+	
+	TeleportEntity( client, teleportOrigin, NULL_VECTOR, NULL_VECTOR);
+	StripWeapons( client );
+	GiveItems( client );
+	
+	PrintToTeam(client, 0, displayName, true);
+	
+	PlaySound(client, BUY_Sound2);
+	
+	return true;
+}
+/*
+public void Respawn_OnNextFrame(DataPack hPack)
+{
+	float nPos[3];
+	hPack.Reset();
+	int client = GetClientOfUserId(hPack.ReadCell());
+	nPos[0] = hPack.ReadFloat();
+	nPos[1] = hPack.ReadFloat();
+	nPos[2] = hPack.ReadFloat();
+	delete hPack;
+
+	if(!client || !IsClientInGame(client)) return;
+	
+	TeleportEntity( client, nPos, NULL_VECTOR, NULL_VECTOR);
+
+	StripWeapons( client );
+	GiveItems( client );
+}
+*/
+void StripWeapons(int client) // strip all items from client
+{
+	int itemIdx;
+	for (int x = 0; x <= 4; x++)
+	{
+		if((itemIdx = GetPlayerWeaponSlot(client, x)) != -1)
+		{  
+			RemovePlayerItem(client, itemIdx);
+			AcceptEntityInput(itemIdx, "Kill");
+		}
+	}
+}
+
+void GiveItems(int client) // give client weapon
+{
+	int flags = GetCommandFlags("give");
+	SetCommandFlags("give", flags & ~FCVAR_CHEAT);
+	
+	FakeClientCommand( client, "give pistol" );
+
+	int iRandom = GetRandomInt(1,4);
+	switch ( iRandom )
+	{
+		case 1: FakeClientCommand(client, "give smg");
+		case 2: FakeClientCommand(client, "give smg_silenced");
+		case 3: FakeClientCommand(client, "give pumpshotgun");
+		case 4: FakeClientCommand(client, "give shotgun_chrome");
+		default: {}//nothing
+	}
+	
+	SetCommandFlags( "give", flags);
+}
+
+int GetRandomAliveSurvivor()
+{
+	int iClientCount, iClients[MAXPLAYERS+1];
+	int iIncapClientCount, iIncapClients[MAXPLAYERS+1];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && GetClientTeam(i) == L4D_TEAM_SURVIVORS && IsPlayerAlive(i))
+		{
+			if(IsHandingFromLedge(i)) continue;
+
+			if(IsIncapacitated(i))
+				iIncapClients[iIncapClientCount++] = i;
+			else
+				iClients[iClientCount++] = i;
+		}
+	}
+
+	if (iClientCount != 0) return iClients[GetRandomInt(0, iClientCount - 1)];
+	
+	return (iIncapClientCount == 0) ? 0 : iClients[GetRandomInt(0, iClientCount - 1)];
+}
+
+void FreezeAllInfectedPlayer(int client, char[] displayName)
+{
+	delete FreezeTimer;
+	iCountDown = g_iFreezeTime;
+	FreezeTimer = CreateTimer(1.0, Timer_FreezeCount,_ ,TIMER_REPEAT);
+
+	for( int i = 1; i <= MaxClients; i++ )
+		FreezeInfected(i);
+	
+	PrintToTeam(client, 0, displayName, true);
+	CPrintToChatAll("[{olive}TS{default}] %t", "Freeze-Infected Effect", g_iFreezeTime);
+	PlaySound(client, BUY_Sound2);
+}
+
+public Action Timer_FreezeCount(Handle timer)
+{
+	if(--iCountDown <= 0)
+	{
+		CPrintToChatAll("[{olive}TS{default}] %t", "Freeze-Infected Effect Time Out");
+		for( int i = 1; i <= MaxClients; i++ ) {
+			UnFreezeInfected(i);
+			DeleteLight(i);
+		}
+
+		FreezeTimer = null;
+		return Plugin_Stop;
+	}
+
+	for( int i = 1; i <= MaxClients; i++ )
+		FreezeInfected(i, true);
+
+	return Plugin_Continue;
+}
+
+void FreezeInfected(int client, bool bPrint = true)
+{
+	if( FreezeTimer == null ||
+		!client ||
+		!IsClientInGame(client) || 
+		GetClientTeam(client) != L4D_TEAM_INFECTED || 
+		!IsPlayerAlive(client) ||
+		IsPlayerGhost(client) ) return;
+	
+	if(InfectedImmuneEverything_Timer[client] != null) return;
+
+	if(L4D2_GetSurvivorVictim (client) > 0) ReleaseVictim(client);
+	
+	ToggleFreezePlayer(client, true);
+	if (g_iLightIndex[client] == 0) TurnFlashlightOn(client, true);
+	
+	if(bPrint && !IsFakeClient(client))
+	{
+		//PrintHintText(client, "%T", "You Got Freeze-Infected Effect", client, iCountDown);
+		PrintCenterText(client, "%T", "You Got Freeze-Infected Effect", client, iCountDown);
+	}
+	
+	PlaySound(client, FREEZE_Sound);
+}
+
+void RemoveAllFreezeState()
+{
+	for( int i = 1; i <= MaxClients; i++ )
+		UnFreezeInfected(i);
+}
+
+void UnFreezeInfected(int client)
+{
+	if( !client ||
+		!IsClientInGame(client) ) return;
+		
+	ToggleFreezePlayer(client, false);
+}
+
+void ToggleFreezePlayer(int client, int freeze)
+{
+	SetEntityMoveType(client, freeze ? MOVETYPE_NONE : MOVETYPE_WALK);
+}
+
+/*
+// Credit to Timocop on VScript function
+void StaggerClient(int iUserID, const float fPos[3])
+{
+	static int iScriptLogic = INVALID_ENT_REFERENCE;
+	if( iScriptLogic == INVALID_ENT_REFERENCE || !IsValidEntity(iScriptLogic) )
+	{
+		iScriptLogic = EntIndexToEntRef(CreateEntityByName("logic_script"));
+		if( iScriptLogic == INVALID_ENT_REFERENCE || !IsValidEntity(iScriptLogic) )
+		{
+			LogError("Could not create 'logic_script");
+			return;
+		}
+
+		DispatchSpawn(iScriptLogic);
+	}
+
+	static char sBuffer[96];
+	Format(sBuffer, sizeof(sBuffer), "GetPlayerFromUserID(%d).Stagger(Vector(%d,%d,%d))", iUserID, RoundFloat(fPos[0]), RoundFloat(fPos[1]), RoundFloat(fPos[2]));
+	SetVariantString(sBuffer);
+	AcceptEntityInput(iScriptLogic, "RunScriptCode");
+	AcceptEntityInput(iScriptLogic, "Kill");
+
+	PrintToChatAll("(%N).Stagger(Vector(%d,%d,%d))", GetClientOfUserId(iUserID), RoundFloat(fPos[0]), RoundFloat(fPos[1]), RoundFloat(fPos[2]));
+}
+*/
+void Notify_GetCredit(int client, const char[] sWord, int money)
+{
+	switch(g_iNotifyKillInfectedType)
+	{
+		case 0: {/*nothing*/}
+		case 1: {
+			CPrintToChat(client, "[{olive}TS{default}] %T", sWord, client, money);
+		}
+		case 2: {
+			PrintHintText(client, "[TS] %T", sWord, client, money);
+		}
+		case 3: {
+			PrintCenterText(client, "[TS] %T", sWord, client, money);
+		}
+	}
+}
+
+
+//credit to BHaType: Release Victim Extended Version (https://forums.alliedmods.net/showthread.php?p=2676902)
+void LoadGamedata()
+{
+	GameData hData = new GameData(GAMEDATE_FILE);
+	if(hData == null)
+	{
+		SetFailState("Unable to find %s.txt gamedata file.", GAMEDATE_FILE);
+	}
+
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(hData, SDKConf_Signature, "CTerrorPlayer::OnPummelEnded");
+	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
+	g_hCharger = EndPrepSDKCall();
+
+	if( g_hCharger == null)
+		SetFailState("Could not find \"CTerrorPlayer::OnPummelEnded\" signature.");
+	
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(hData, SDKConf_Signature, "CTerrorPlayer::ReleaseTongueVictim");
+	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+	g_hSmoker = EndPrepSDKCall();
+
+	if( g_hSmoker == null)
+		SetFailState("Could not find \"CTerrorPlayer::ReleaseTongueVictim\" signature.");
+	
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(hData, SDKConf_Signature, "CTerrorPlayer::OnPounceEnded");
+	g_hHunter = EndPrepSDKCall();
+
+	if( g_hHunter == null)
+		SetFailState("Could not find \"CTerrorPlayer::OnPounceEnded\" signature.");
+	
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(hData, SDKConf_Signature, "CTerrorPlayer::OnRideEnded");
+	PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
+	g_hJockey = EndPrepSDKCall();
+
+	if( g_hJockey == null)
+		SetFailState("Could not find \"CTerrorPlayer::OnRideEnded\" signature.");
+	
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(hData, SDKConf_Signature, "CBaseAbility::StartActivationTimer");
+	PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+	g_hReset = EndPrepSDKCall();
+
+	if( g_hReset == null)
+		SetFailState("Could not find \"CBaseAbility::StartActivationTimer\" signature.");
+	
+	delete hData;
+}
+
+void ReleaseVictim(int client)
+{
+	int iClass = GetEntData(client, g_iZombieClass), index;
+	
+	switch (iClass)
+	{
+		case 6: index = GetEntData(client, g_iCharger);
+		case 3: index = GetEntData(client, g_iHunter);
+		case 5: index = GetEntData(client, g_iJockey);
+		case 1: 
+		{
+			int iEntity = GetEntPropEnt(client, Prop_Send, "m_customAbility");
+			
+			if (iEntity <= MaxClients)
+				return;
+			
+			index = GetEntData(iEntity, g_iSmoker);
+		}
+	}
+
+	if (index <= 0 || (iClass == 1 && index != 3))
+		return;
+	
+	Release(client, iClass);
+}
+
+void Release (int client, int iClass)
+{
+	switch (iClass)
+	{
+		case 6: SDKCall(g_hCharger, client, true, client);
+		case 3: SDKCall(g_hHunter, client);
+		case 5: SDKCall(g_hJockey, client, client);
+		case 1: SDKCall(g_hSmoker, client, true);
+	}
+	
+	float vOrigin[3];
+	GetClientAbsOrigin(client, vOrigin);
+	vOrigin[2] += 5.0;
+	
+	SpoofEffect(vOrigin);
+	
+	CreateTimer(0.05, tFly, GetClientUserId(client));
+		
+	CreateTimer(0.2, tReset, GetClientUserId(client)); 
+}
+
+void SpoofEffect(float vOrigin[3])
+{
+	int entity = CreateEntityByName("info_particle_system");
+	
+	if (entity == -1)
+	{
+		LogError("Invalid entity");
+		return;
+	}
+	
+	DispatchKeyValue(entity, "effect_name", "gen_hit1_c");
+	//fireworks_flare_trail_01
+	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
+	DispatchSpawn(entity);
+	ActivateEntity(entity);
+
+	AcceptEntityInput(entity, "start");
+	
+	SetVariantString("OnUser1 !self:Kill::4.0:1");
+	AcceptEntityInput(entity, "AddOutput");
+	AcceptEntityInput(entity, "FireUser1");
+}
+
+public Action tFly (Handle timer, int client)
+{
+	if ((client = GetClientOfUserId(client)) == 0 || !IsClientInGame(client))
+		return Plugin_Continue;
+		
+	StoreToAddress(GetEntityAddress(client) + view_as<Address>(11481), 1, NumberType_Int32);
+	
+	float vAngles[3], vDirection[3], vCurrent[3], vResult[3];
+	
+	GetClientEyeAngles(client, vAngles);
+	
+	GetAngleVectors(vAngles, vDirection, NULL_VECTOR, NULL_VECTOR);
+	ScaleVector(vDirection, 100.0);
+	GetEntDataVector(client, g_iVelocity, vCurrent);
+	
+	vResult[0] = vCurrent[0] + vDirection[0];
+	vResult[1] = vCurrent[1] + vDirection[1];
+	vResult[2] = 100.0;
+	
+	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vResult);
+	
+	CreateTimer(0.2, tReset, GetClientUserId(client)); 
+
+	return Plugin_Continue;
+}
+
+public Action tReset (Handle timer, int client)
+{
+	if ((client = GetClientOfUserId(client)) == 0 || !IsClientInGame(client))
+		return Plugin_Continue;
+		
+	StoreToAddress(GetEntityAddress(client) + view_as<Address>(11481), 0, NumberType_Int32);
+	
+	int iEntity = GetEntPropEnt(client, Prop_Send, "m_customAbility");
+	
+	if (iEntity > MaxClients)
+	{
+		switch (GetEntData(client, g_iZombieClass))
+		{
+			case 6: SDKCall(g_hReset, iEntity, g_flCharger, 0.0);
+			case 5: SDKCall(g_hReset, iEntity, g_flJockey, 0.0);
+			case 1: SDKCall(g_hReset, iEntity, g_flSmoker, 0.0);
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+public Action SurvivorOnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damageType)
+{
+	if (!IsClientInGame(victim) || GetClientTeam(victim) != L4D_TEAM_SURVIVORS) return Plugin_Continue;
+	if (attacker == victim || attacker <= 0 || attacker > MaxClients || !IsClientInGame(attacker) || GetClientTeam(attacker) != L4D_TEAM_SURVIVOR) return Plugin_Continue;
+	
+	if (g_bClientNo_FF[attacker] == true || g_bClientNo_FF[victim] == true)
+	{
+		return Plugin_Handled;
+	}
+	
+	return Plugin_Continue;
 }

@@ -1,23 +1,29 @@
-Killing zombies and infected to earn points, use !buy to purchase weapons and items.
+L4D2 Human and Zombie Shop by HarryPoter
+(Survivor) Killing zombies and infected to earn credits + 
+(Infected) Doing Damage to survivors to earn credits
 
 -Require-
 1. Sm 1.10 or above
 2. To unlock all melee weapons in all campaigns, you MUST use the [Mission and Weapons - Info Editor]("https://forums.alliedmods.net/showthread.php?t=310586") plugin which supersedes the extension.
-3. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?t=321696
+3. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?p=2684862
 4. [INC] Multi Colors: https://forums.alliedmods.net/showthread.php?t=247770
 
 -ChangeLog-
-v3.5
+v4.1
 -Remke code
 -Translation Support
 -Add The last stand two melee
 -Unlock All weapons including M60, Grenade_Launcher, and CSS weapons
 -Unlock All items including cola, gnome and fireworkcrate
 -Add Infected Shop
--Add Special items
--You can earn points by killing survivors as an infected.
--You can earn points by helping each other as a survivor.
+-Add Survivor/Infected Special items
+-You can earn credits by doing damage to survivors as an infected.
+-You can earn credits by helping each other as a survivor.
 -Save player's money with Cookies, it means that money can be saved to database across client connections, map changes and even server restarts.
+-Add short buy commands, directly buy item.
+-Repeat purchase item you bought last time.
+-Choose location and spawn Witch.
+-Buy time cooldown, can't buy quickly.
 
 v1.0
 -original Post: https://forums.alliedmods.net/showthread.php?t=322108
@@ -57,8 +63,8 @@ sm_shop_help_teammate_save "30"
 // Giving money for killing a hunter
 sm_shop_hunterkilled "20"
 
-// Cold Down Time in seconds an infected player can not buy again after he buys item. (0=off).
-sm_shop_infected_cooltime_block "20.0"
+// Cold Down Time in seconds an infected player can not buy again after player buys item. (0=off).
+sm_shop_infected_cooltime_block "30.0"
 
 // If 1, Enable shop for infected.
 sm_shop_infected_enable "1"
@@ -72,8 +78,23 @@ sm_shop_infected_survivor_killed "100"
 // Tank limit on the field before infected can buy a tank. (0=Can't buy Tank)
 sm_shop_infected_tank_limit "1"
 
+// Amount of seconds before a witch is kicked. (only remove witches bought by player in this plugin)
+sm_shop_infected_witch_lifespan "250"
+
+// Witch limit on the field before infected can buy a witch. (0=Can't buy Witch)
+sm_shop_infected_witch_limit "4"
+
+// How far away from survivors an infected can buy and spawn witch.
+sm_shop_infected_witch_spawn_safety_range "1150"
+
 // Giving money for killing a jockey
 sm_shop_jockeykilled "25"
+
+// Changes how 'You got credits by killing infected' Message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+sm_shop_kill_infected_announce_type "1"
+
+// Maximum money limit. (Money saved when map change/leaving server)
+sm_shop_max_moeny_limit "32000"
 
 // Numbers of real survivor and infected player require to active this plugin.
 sm_shop_player_require "4"
@@ -81,16 +102,19 @@ sm_shop_player_require "4"
 // Giving money for killing a smoker
 sm_shop_smokerkilled "20"
 
-// How long could Dead-Eyes state last for special item.
+// How long could Dead-Eyes state last for survivor special item.
 sm_shop_special_dead_eyes_time "60"
+
+// How long could Freeze-Infected state last for survivor special item.
+sm_shop_special_freeze_time "6"
 
 // How long could Immune Everything last for infected special item.
 sm_shop_special_immune_everything_time "8"
 
-// How long could infinite ammo state last for special item.
+// How long could infinite ammo state last for survivor special item.
 sm_shop_special_infinite_ammo_time "15"
 
-// Max Air Jump Limit for special item.
+// Max Air Jump Limit for survivor special item.
 sm_shop_special_max_jump_limit "3"
 
 // Giving money for killing a spitter
@@ -99,8 +123,11 @@ sm_shop_spitterkilled "10"
 // Giving money to each alive survivor for mission accomplished award (non-final).
 sm_shop_stage_complete "400"
 
-// If 1, decrease money if survivor friendly fire each other.
+// If 1, decrease money if survivor friendly fire each other. (1 hp = 1 dollar)
 sm_shop_survivor_TK_enable "1"
+
+// Cold Down Time in seconds a survivor player can not buy again after player buys item. (0=off).
+sm_shop_survivor_cooltime_block "5.0"
 
 // Giving one dollar money for hurting tank per X hp
 sm_shop_tank_hurt "40"
@@ -112,62 +139,181 @@ sm_shop_witchkilled "80"
 sm_shop_zombiekilled "1"
 
 -Command-
-**shop and buy
-"sm_shop"
-"sm_buy"
-"sm_b"
-"sm_points"
-"sm_point"
-"sm_skill"
-"sm_skills"
-"sm_money"
-"sm_purchase"
-"itempointshelp"
-"sm_market"
-"sm_usepoint"
-"sm_usepoints"
+**shop and buy (Short name available)
+	say "buy [item_name]"
+	say "b [item_name]"
+	say "shop [item_name]"
+	say "item [item_name]"
+	"sm_shop [item_name]"
+	"sm_buy [item_name]"
+	"sm_b [item_name]"
+	"sm_money [item_name]"
+	"sm_purchase [item_name]"
+	"sm_market [item_name]"
+	"sm_item [item_name]"
+	"sm_items [item_name]"
+	"sm_credit [item_name]"
+	"sm_credits [item_name]"
+	
+	For example:
+	say "!buy" or "b" to open shop menu
+	say "!buy rifle_ak47" or "b rifle_ak47" to directly buy Ak47 weapon
 
-**donate money to another player (Or use "Points Transfer" in shop menu )
-"sm_pay <name> <money>"
-"sm_donate <name> <money>"
+	****short command list
+	I won't add more short names to list, don't ask.
+	Weapon
+	{
+		"!buy pistol" 			-> Pistol
+		"!buy pistol_magnum"	-> Magnum
+		"!buy pumpshotgun"		-> Pumpshotgun
+		"!buy shotgun_chrome"	-> Chrome Shotgun
+		"!buy smg"				-> Smg
+		"!buy smg_silenced"		-> Silenced Smg
+		"!buy smg_mp5"			-> MP5
+		"!buy rifle"			-> Rifle
+		"!buy rifle_ak47"		-> AK47
+		"!buy rifle_desert"		-> Desert Rifle
+		"!buy rifle_sg552"		-> SG552
+		"!buy shotgun_spas"		-> Spas Shotgun
+		"!buy autoshotgun"		-> Autoshotgun
+		"!buy hunting_rifle"	-> Hunting Rifle
+		"!buy sniper_military"	-> Military Sniper
+		"!buy sniper_scout"		-> SCOUT
+		"!buy sniper_awp"		-> AWP
+		"!buy rifle_m60"		-> M60 Machine Gun
+		"!buy grenade_launcher"	-> Grenade Launcher
+	}
+
+	Melee
+	{
+		"!buy chainsaw"			-> Chainsaw
+		"!buy baseball_bat"		-> Baseball Bat
+		"!buy cricket_bat"		-> Cricket Bat
+		"!buy crowbar"			-> Crowbar
+		"!buy electric_guitar"	-> Electric Guitar
+		"!buy fireaxe"			-> Fire Axe
+		"!buy frying_pan"		-> Frying Pan
+		"!buy katana"			-> Katana
+		"!buy machete"			-> Machete
+		"!buy tonfa"			-> Tonfa
+		"!buy golfclub"			-> Golf Club
+		"!buy knife"			-> Knife
+		"!buy pitchfork"		-> Pitchfork
+		"!buy shovel"			-> Shovel
+	}
+
+	Medic and Throwable
+	{
+		"!buy health_100"		-> Health+100
+		"!buy defibrillator"	-> Defibrillator
+		"!buy first_aid_kit"	-> First Aid Kit
+		"!buy pain_pills"		-> Pain Pill
+		"!buy adrenaline"		-> Adrenaline
+		"!buy pipe_bomb"		-> Pipe Bomb
+		"!buy molotov"			-> Molotov
+		"!buy vomitjar"			-> Vomitjar
+	}
+
+	Other
+	{
+		"!buy ammo"								-> Ammo
+		"!buy laser_sight"						-> Laser Sight
+		"!buy incendiary_ammo"					-> Incendiary Ammo
+		"!buy explosive_ammo"					-> Explosive Ammo
+		"!buy weapon_upgradepack_incendiary"	-> Incendiary Pack
+		"!buy weapon_upgradepack_explosive"		-> Explosive Pack
+		"!buy propanetank"						-> Propane Tank
+		"!buy oxygentank"						-> Oxygen Tank
+		"!buy fireworkcrate"					-> Firework Crate
+		"!buy gascan"							-> Gascan
+		"!buy cola_bottles"						-> Cola Bottles
+		"!buy gnome"							-> Gnome
+	}
+
+	Survivor Special
+	{
+		"!buy Fire"				-> Fire Yourself
+		"!buy Fire_Infeceted"	-> All Infected Gets On Fire
+		"!buy Teleport"			-> Teleport to teammate
+		"!buy Infinite_Ammo"	-> Infinite Ammo
+		"!buy Dead_Eyes"		-> Dead-Eyes
+		"!buy Kill_Commons"		-> Kill Commons
+		"!buy Kill_Witches"		-> Kill Witches
+		"!buy Jump+1"			-> Jump+1
+		"!buy Heal_Survivors"	-> Heal Survivors
+		"!buy No_FF"			-> No Friendly Fire
+		"!buy Slay_Infected"	-> Slay Infected Attacker
+		"!buy Respawn"			-> Respawn Alive
+		"!buy Freeze_Infected"	-> Freeze-Infected
+	}
+
+	Infected Spawn
+	{
+		"!buy Suicide" 	-> Suicide
+		"!buy Smoker" 	-> Smoker
+		"!buy Boomer" 	-> Boomer
+		"!buy Hunter" 	-> Hunter
+		"!buy Spitter" 	-> Spitter
+		"!buy Jockey" 	-> Jockey
+		"!buy Charger" 	-> Charger
+		"!buy Tank" 	-> Tank
+	}
+
+	Infected Special
+	{
+		"!buy Health" 	-> Full Health
+		"!buy Teleport" -> Teleport to survivor
+		"!buy Immune" 	-> Immune Everything
+		"!buy Horde" 	-> Zombie Horde
+		"!buy Witch" 	-> Witch
+	}
+
+**repeat purchase item you bought last time
+	"sm_repeatbuy"
+	"sm_lastbuy"
+
+**donate money to another player (Or use "Credits Transfer" in shop menu )
+	"sm_pay <name> <money>"
+	"sm_donate <name> <money>"
 	
 **See all players' or specific player's deposit
-"sm_inspectbank [name]"
-"sm_checkbank [name]"
-"sm_lookbank [name]"
-"sm_allbank [name]"
+	"sm_inspectbank [name]"
+	"sm_checkbank [name]"
+	"sm_lookbank [name]"
+	"sm_allbank [name]"
 
-**Adm gives money (ADMFLAG_BAN)
-"sm_givemoney <name> <money>"
+**Adm gives/reduces money (ADMFLAG_BAN)
+	"sm_givemoney <name> <+-money>"
+	"sm_givecredit <name> <+-money>"
 
-**Adm removes all money (ADMFLAG_BAN)
-"sm_clearmoney <name>"
-"sm_deductmoney <name>"
+**Adm removes player's all money (ADMFLAG_BAN)
+	"sm_clearmoney <name>"
+	"sm_deductmoney <name>"
 
--How to set the item money-
-in scripting\L4D2_Buy_Store.sp line 131~231
+-How to modify the item price-
+in scripting\L4D2_Buy_Store.sp line 161~266
 [code]
 static char weaponsMenu[][][] = 
 {
-	{"pistol",			"Pistol", 			"100"},
-	{"pistol_magnum",	"Magnum", 			"150"},
-	{"pumpshotgun",		"Pumpshotgun", 		"200"},
-	{"shotgun_chrome",	"Chrome Shotgun", 	"210"},
-	{"smg",				"Smg", 				"200"},
-	{"smg_silenced", 	"Silenced Smg", 	"210"},
-	{"smg_mp5",			"MP5", 				"230"},
-	{"rifle", 			"Rifle", 			"300"},
-	{"rifle_ak47", 		"AK47", 			"320"},
-	{"rifle_desert",	"Desert Rifle", 	"350"},
+	{"pistol",			"Pistol", 			"50"},
+	{"pistol_magnum",	"Magnum", 			"100"},
+	{"pumpshotgun",		"Pumpshotgun", 		"180"},
+	{"shotgun_chrome",	"Chrome Shotgun", 	"200"},
+	{"smg",				"Smg", 				"180"},
+	{"smg_silenced", 	"Silenced Smg", 	"200"},
+	{"smg_mp5",			"MP5", 				"250"},
+	{"rifle", 			"Rifle", 			"280"},
+	{"rifle_ak47", 		"AK47", 			"300"},
+	{"rifle_desert",	"Desert Rifle", 	"320"},
 	{"rifle_sg552", 	"SG552", 			"350"},
-	{"shotgun_spas",	"Spas Shotgun", 	"350"},
-	{"autoshotgun", 	"Autoshotgun", 		"350"},
-	{"hunting_rifle", 	"Hunting Rifle", 	"400"},
-	{"sniper_military", "Military Sniper", 	"450"},
-	{"sniper_scout", 	"SCOUT", 			"500"},
-	{"sniper_awp", 		"AWP",				"600"},
+	{"shotgun_spas",	"Spas Shotgun", 	"330"},
+	{"autoshotgun", 	"Autoshotgun", 		"330"},
+	{"hunting_rifle", 	"Hunting Rifle", 	"300"},
+	{"sniper_military", "Military Sniper", 	"350"},
+	{"sniper_scout", 	"SCOUT", 			"400"},
+	{"sniper_awp", 		"AWP",				"500"},
 	{"rifle_m60", 		"M60 Machine Gun", 	"1000"},
-	{"grenade_launcher","Grenade Launcher",	"1000"}
+	{"grenade_launcher","Grenade Launcher",	"1250"}
 };
 
 static char meleeMenu[][][] = 
@@ -194,17 +340,17 @@ static char medicThrowableMenu[][][] =
 	{"defibrillator",	"Defibrillator", 	"250"},
 	{"first_aid_kit",	"First Aid Kit", 	"250"},
 	{"pain_pills", 		"Pain Pill", 		"100"},
-	{"adrenaline",	 	"Adrenaline", 		"150"},
+	{"adrenaline",	 	"Adrenaline", 		"125"},
 	{"pipe_bomb", 		"Pipe Bomb", 		"150"},
 	{"molotov", 		"Molotov", 			"200"},
-	{"vomitjar", 		"Vomitjar", 		"300"}
+	{"vomitjar", 		"Vomitjar", 		"225"}
 };
 
 static char otherMenu[][][] =
 {
 	{"ammo",		 					"Ammo", 	 			"250"},
-	{"laser_sight",						"Laser Sight", 			"60"},
-	{"incendiary_ammo",					"Incendiary Ammo", 		"100"},
+	{"laser_sight",						"Laser Sight", 			"50"},
+	{"incendiary_ammo",					"Incendiary Ammo", 		"75"},
 	{"explosive_ammo",					"Explosive Ammo", 		"100"},
 	{"weapon_upgradepack_incendiary",	"Incendiary Pack", 		"200"},
 	{"weapon_upgradepack_explosive",	"Explosive Pack", 		"200"},
@@ -216,44 +362,43 @@ static char otherMenu[][][] =
 	{"gnome",							"Gnome", 				"2000"},
 };
 
-static char specialMenu[][][] =
+static char survivorSpecialMenu[][][] =
 {
-	{"Fire", 			"Fire Yourself", 				"500"},
-	{"Fire Infeceted", 	"All Infected Gets On Fire", 	"750"},
-	{"Teleport", 		"Teleport to teammate", 		"1000"},
-	{"Infinite Ammo",	"Infinite Ammo", 				"1250"},
-	{"Kill Commons", 	"Kill Commons", 				"1500"},
-	{"Kill Witches", 	"Kill Witches", 				"1750"},
-	{"Dead Eyes",		"Dead-Eyes", 					"2000"},
+	{"Fire", 			"Fire Yourself", 				"200"},
+	{"Fire_Infeceted", 	"All Infected Gets On Fire", 	"500"},
+	{"Teleport", 		"Teleport to teammate", 		"750"},
+	{"Infinite_Ammo",	"Infinite Ammo", 				"1000"},
+	{"No_FF", 			"No Friendly Fire", 			"1250"},
+	{"Dead_Eyes",		"Dead-Eyes", 					"1500"},
+	{"Kill_Commons", 	"Kill Commons", 				"1750"},
+	{"Heal_Survivors",	"Heal Survivors", 				"2000"},
 	{"Jump+1", 			"Jump+1", 						"2250"},
-	{"Heal Survivors",	"Heal Survivors", 				"2500"},
-	{"Slay Infected", 	"Slay Infected Attacker", 		"3000"},
+	{"Slay_Infected", 	"Slay Infected Attacker", 		"2500"},
+	{"Kill_Witches", 	"Kill Witches", 				"2750"},
+	{"Respawn", 		"Respawn Alive", 				"3000"},
+	{"Freeze_Infected", "Freeze-Infected", 				"3250"},
 };
 
 static char infectedSpawnMenu[][][] =
 {
 	{"Suicide",		"Suicide", 			"0"},
 	{"Smoker",		"Smoker", 			"350"},
-	{"Boomer",		"Boomer", 			"150"},
+	{"Boomer",		"Boomer", 			"250"},
 	{"Hunter",		"Hunter", 			"200"},
-	{"Spitter",		"Spitter", 			"350"},
-	{"Jockey",		"Jockey", 			"250"},
-	{"Charger",		"Charger", 			"300"},
-	{"Tank",		"Tank", 			"3000"}
+	{"Spitter",		"Spitter", 			"400"},
+	{"Jockey",		"Jockey", 			"300"},
+	{"Charger",		"Charger", 			"350"},
+	{"Tank",		"Tank", 			"2500"}
 };
 
 static char infectedSpecialMenu[][][] =
 {
-	{"Health",		"Full Health", 				"500"},
+	{"Health",		"Full Health", 				"350"},
+	{"Horde",		"Zombie Horde", 			"750"},
+	{"Witch",		"Witch", 					"1000"},
 	{"Teleport",	"Teleport to survivor", 	"1250"},
-	{"Immune",		"Immune Everything", 		"1300"}
+	{"Immune",		"Immune Everything", 		"1500"},
 };
-[/code]
-
--How to set player maximum money-
-in scripting\L4D2_Buy_Store.sp line 32
-[code]
-#define MAX_MONEY            16000
 [/code]
 
 -Updating translation-
@@ -261,3 +406,5 @@ in scripting\L4D2_Buy_Store.sp line 32
 * Traditional Chinese by HarryPotter
 * Simplified Chinese by Target
 * Spanish by gamer_kanelita
+* Russian by maclarens
+* Portuguese by Mi.Cura

@@ -1,0 +1,58 @@
+"Games"
+{
+	"left4dead2"
+	{
+		"Signatures"
+		{
+			"CTerrorPlayer::OnRideEnded"
+			{
+				// * CTerrorPlayer::OnRideEnded(CTerrorPlayer *this, CTerrorPlayer *)
+				// * 55 8B EC 83 EC 30 53 56 57 68
+				
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x30\x53\x56\x57\x68"
+				"linux"	"@_ZN13CTerrorPlayer11OnRideEndedEPS_"
+			}
+			
+			"CTerrorPlayer::OnPummelEnded"
+			{
+				// * CTerrorPlayer::OnPummelEnded(CTerrorPlayer *this, bool, CTerrorPlayer *)
+				// * 55 8B EC 8B 15 ? ? ? ? 53 56 8B F1 8B 86 58 3E 00 00
+				
+				"library"	"server"
+				"windows"    "\x55\x8B\xEC\x8B\x15\x2A\x2A\x2A\x2A\x53\x56\x8B\xF1\x8B\x86\x58\x3E\x00\x00"
+				"linux"	"@_ZN13CTerrorPlayer13OnPummelEndedEbPS_"
+			}
+			
+			"CTerrorPlayer::OnPounceEnded"
+			{
+				// * CTerrorPlayer::OnPounceEnded(CTerrorPlayer *this)
+				// * 55 8B EC 51 53 8B D9 80 BB 8C 3E 00 00 00
+				
+				"library"    "server"
+				"windows"    "\x55\x8B\xEC\x51\x53\x8B\xD9\x80\xBB\x8C\x3E\x00\x00\x00"
+				"linux"	"@_ZN13CTerrorPlayer13OnPounceEndedEv"
+			}
+
+			"CTerrorPlayer::ReleaseTongueVictim"
+			{
+				// * CTerrorPlayer::ReleaseTongueVictim(CTerrorPlayer *this, bool)
+				// * 53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 28 8B 81 D4 33 00 00
+				
+				"library"	"server"
+				"windows"    "\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x83\xEC\x28\x8B\x81\xD4\x33\x00\x00"
+				"linux"	"@_ZN13CTerrorPlayer19ReleaseTongueVictimEb"
+			}
+			
+			"CBaseAbility::StartActivationTimer"
+			{
+				// * CBaseAbility::StartActivationTimer(CBaseAbility *this, float, float)
+				// * 55 8B EC F3 0F 10 4D 0C 0F 2E 0D
+				
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x4D\x0C\x0F\x2E\x0D"
+				"linux"		"@_ZN12CBaseAbility20StartActivationTimerEff"
+			}
+		}
+	}
+}
