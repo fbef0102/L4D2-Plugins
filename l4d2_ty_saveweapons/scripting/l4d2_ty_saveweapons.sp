@@ -63,7 +63,7 @@ static char survivor_models[8][] =
 };
 
 ConVar g_hGameMode, g_hFullHealth, g_hGameTimeBlock, 
-	g_hSaveBot, g_hSaveHealth, g_hSaveCharacter;
+	g_hSaveBot, g_hSaveHealth, g_hSaveCharacter, g_hCvarReviveHealth;
 
 char sg_slot0[MAXPLAYERS+1][64];			/* slot0 weapon */
 char sg_slot1[MAXPLAYERS+1][64];			/* slot1 weapon*/
@@ -100,13 +100,14 @@ char 	g_sModelInfo[MAXPLAYERS+1][64]; 						//client character model
 bool g_bGiveWeaponBlock, g_bMapTransition;
 int ammoOffset, g_iCountDownTime;	
 Handle PlayerLeftStartTimer = null, CountDownTimer = null;
+int g_iReviveTempHealth = 30;
 
 public Plugin myinfo =
 {
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.6",
+	version = "5.7",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
@@ -145,6 +146,8 @@ public void OnPluginStart()
 	g_hSaveBot.AddChangeHook(ConVarChanged_Cvars);
 	g_hSaveHealth.AddChangeHook(ConVarChanged_Cvars);
 	g_hSaveCharacter.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarReviveHealth = FindConVar("survivor_revive_health");
+	g_hCvarReviveHealth.AddChangeHook(ConVarChanged_Cvars);
 	
 	HookEvent("round_start",  			Event_RoundStart,	 	EventHookMode_PostNoCopy);
 	HookEvent("player_spawn", 			Event_PlayerSpawn, 		EventHookMode_PostNoCopy);
@@ -153,6 +156,7 @@ public void OnPluginStart()
 	HookEvent("mission_lost", 			Event_RoundEnd,			EventHookMode_PostNoCopy); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
 	HookEvent("finale_vehicle_leaving", Event_RoundEnd,			EventHookMode_PostNoCopy); //救援載具離開之時  (沒有觸發round_end)
 	HookEvent("map_transition", 		Event_MapTransition, 	EventHookMode_PostNoCopy);
+	HookEvent("player_bot_replace", evtBotReplacedPlayer);
 
 	HxCleaningAll();
 }
@@ -259,6 +263,7 @@ void GetCvars()
 	g_bSaveBot = g_hSaveBot.BoolValue;
 	g_bSaveHealth = g_hSaveHealth.BoolValue;
 	g_bSaveCharacter = g_hSaveCharacter.BoolValue;
+	g_iReviveTempHealth = g_hCvarReviveHealth.IntValue;
 }
 
 void IsAllowed()
@@ -307,10 +312,8 @@ public void OnGamemode(const char[] output, int caller, int activator, float del
 
 public void OnClientPutInServer(int client)
 {
-	if (g_iCurrentMode == 1 && IsClientInGame(client) && g_bGiveWeaponBlock == false && g_bGiven[client] == false)
+	if (g_iCurrentMode == 1 && IsClientInGame(client) && g_bGiveWeaponBlock == false)
 	{
-		if(IsFakeClient(client) && !g_bSaveBot) return;
-		
 		CreateTimer(1.0, HxTimerRestore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
@@ -322,24 +325,30 @@ public Action HxTimerRestore(Handle timer, int userid)
 	int client = GetClientOfUserId(userid);
 	if (client && IsClientInGame(client))
 	{
+		if(g_bGiven[client]) return Plugin_Stop;
+
 		int iTeam = GetClientTeam(client);
+		bool fakebot = IsFakeClient(client);
 		if (iTeam == 2)
 		{
 			if (IsPlayerAlive(client))
 			{
+				if(fakebot && !g_bSaveBot) return Plugin_Stop;
+				if(fakebot && HasIdlePlayer(client)) return Plugin_Continue;
+
 				HxGiveC(client);
 				return Plugin_Stop;
 			}
 		}
 		else if(iTeam == 3 || iTeam == 4) //just in case
 		{
-			if (IsPlayerAlive(client))
+			if (fakebot || IsPlayerAlive(client))
 			{
 				return Plugin_Stop;
 			}
 		}
 		
-		if(iTeam == 1 && IsFakeClient(client)) 
+		if(iTeam == 1 && fakebot) 
 			return Plugin_Stop;
 
 		return Plugin_Continue;
@@ -376,8 +385,6 @@ public Action tmrStart(Handle timer)
 		{
 			if (IsClientInGame(i))
 			{
-				if(IsFakeClient(i) && !g_bSaveBot) continue;
-
 				CreateTimer(1.0, HxTimerRestore, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
 		}
@@ -445,6 +452,19 @@ public void Event_MapTransition(Event event, const char[] name, bool dontBroadca
 				}
 			}
 		}
+		else
+		{
+			for (int client = 1; client <= MaxClients; client++)
+			{
+				if (IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
+				{
+					if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1)
+					{
+						CreateTimer(0.1, Timer_AdjustHealth, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE); //fixed missing second slot weapon
+					}
+				}
+			}
+		}
 		CreateTimer(1.0, Timer_Event_MapTransition, _, TIMER_FLAG_NO_MAPCHANGE); //delay is necessary for waiting all afk human players to take over bot
 	}
 }
@@ -461,6 +481,12 @@ public Action Timer_Event_MapTransition(Handle timer)
 			HxSaveC(i);
 		}
 	}
+}
+
+public void evtBotReplacedPlayer(Event event, const char[] name, bool dontBroadcast) 
+{
+	int bot = GetClientOfUserId(event.GetInt("bot"));
+	if(bot && IsClientInGame(bot) && GetClientTeam(bot) == 2 && IsPlayerAlive(bot)) g_bGiven[bot] = true;
 }
 
 void HxGiveC(int client)
@@ -630,7 +656,7 @@ void HxSaveC(int client)
 		if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) 
 		{
 			g_iHealthInfo[client][iHealth]       =  1;	
-			g_iHealthInfo[client][iHealthTemp]   = 30;
+			g_iHealthInfo[client][iHealthTemp]   = g_iReviveTempHealth;
 			g_iHealthInfo[client][iHealthTime]   =  0;
 			g_iHealthInfo[client][iGoingToDie]   =  1;
 		}
@@ -881,4 +907,46 @@ void HxCleaningAll()
 	{
 		HxCleaning(i);
 	}
+}
+
+public Action Timer_AdjustHealth(Handle timer, int UserId)
+{
+	int client = GetClientOfUserId(UserId);
+	if( client && IsClientInGame(client) )
+	{
+		AdjustHealth(client);
+	}
+	return Plugin_Continue;
+}
+
+void AdjustHealth(int client)
+{
+	// This code internally calls "revive_success" event!
+	int iflags = GetCommandFlags("give");
+	int bits = GetUserFlagBits(client);
+	SetCommandFlags("give", iflags & ~FCVAR_CHEAT);
+	SetUserFlagBits(client, ADMFLAG_ROOT); // to prevent conflict with AdminCheats crazy plugin ^_^
+	FakeClientCommand(client,"give health");
+	SetUserFlagBits(client, bits);
+	SetCommandFlags("give", iflags);
+	
+	SetEntityMoveType(client, MOVETYPE_WALK);
+	
+	SetEntProp(client, Prop_Send, "m_iHealth", 1, 1);
+	SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 1.0 * g_iReviveTempHealth);
+	SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
+}
+
+bool HasIdlePlayer(int bot)
+{
+	if(HasEntProp(bot, Prop_Send, "m_humanSpectatorUserID"))
+	{
+		int client = GetClientOfUserId(GetEntProp(bot, Prop_Send, "m_humanSpectatorUserID"));		
+		if(client > 0 && client <= MaxClients && IsClientInGame(client) && !IsFakeClient(client) && IsClientObserver(client))
+		{
+			return true;
+		}
+	}
+	
+	return false;
 }
