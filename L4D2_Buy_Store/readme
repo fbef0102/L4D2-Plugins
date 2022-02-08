@@ -164,10 +164,10 @@ sm_shop_zombiekilled "1"
 	Weapon
 	{
 		"!buy pistol" 			-> Pistol
-		"!buy pistol_magnum"	-> Magnum
+		"!buy pistol_magnum"		-> Magnum
 		"!buy pumpshotgun"		-> Pumpshotgun
-		"!buy shotgun_chrome"	-> Chrome Shotgun
-		"!buy smg"				-> Smg
+		"!buy shotgun_chrome"		-> Chrome Shotgun
+		"!buy smg"			-> Smg
 		"!buy smg_silenced"		-> Silenced Smg
 		"!buy smg_mp5"			-> MP5
 		"!buy rifle"			-> Rifle
@@ -176,12 +176,12 @@ sm_shop_zombiekilled "1"
 		"!buy rifle_sg552"		-> SG552
 		"!buy shotgun_spas"		-> Spas Shotgun
 		"!buy autoshotgun"		-> Autoshotgun
-		"!buy hunting_rifle"	-> Hunting Rifle
-		"!buy sniper_military"	-> Military Sniper
+		"!buy hunting_rifle"		-> Hunting Rifle
+		"!buy sniper_military"		-> Military Sniper
 		"!buy sniper_scout"		-> SCOUT
 		"!buy sniper_awp"		-> AWP
 		"!buy rifle_m60"		-> M60 Machine Gun
-		"!buy grenade_launcher"	-> Grenade Launcher
+		"!buy grenade_launcher"		-> Grenade Launcher
 	}
 
 	Melee
@@ -190,7 +190,7 @@ sm_shop_zombiekilled "1"
 		"!buy baseball_bat"		-> Baseball Bat
 		"!buy cricket_bat"		-> Cricket Bat
 		"!buy crowbar"			-> Crowbar
-		"!buy electric_guitar"	-> Electric Guitar
+		"!buy electric_guitar"		-> Electric Guitar
 		"!buy fireaxe"			-> Fire Axe
 		"!buy frying_pan"		-> Frying Pan
 		"!buy katana"			-> Katana
@@ -205,8 +205,8 @@ sm_shop_zombiekilled "1"
 	Medic and Throwable
 	{
 		"!buy health_100"		-> Health+100
-		"!buy defibrillator"	-> Defibrillator
-		"!buy first_aid_kit"	-> First Aid Kit
+		"!buy defibrillator"		-> Defibrillator
+		"!buy first_aid_kit"		-> First Aid Kit
 		"!buy pain_pills"		-> Pain Pill
 		"!buy adrenaline"		-> Adrenaline
 		"!buy pipe_bomb"		-> Pipe Bomb
@@ -216,34 +216,34 @@ sm_shop_zombiekilled "1"
 
 	Other
 	{
-		"!buy ammo"								-> Ammo
-		"!buy laser_sight"						-> Laser Sight
-		"!buy incendiary_ammo"					-> Incendiary Ammo
-		"!buy explosive_ammo"					-> Explosive Ammo
+		"!buy ammo"				-> Ammo
+		"!buy laser_sight"			-> Laser Sight
+		"!buy incendiary_ammo"			-> Incendiary Ammo
+		"!buy explosive_ammo"			-> Explosive Ammo
 		"!buy weapon_upgradepack_incendiary"	-> Incendiary Pack
-		"!buy weapon_upgradepack_explosive"		-> Explosive Pack
-		"!buy propanetank"						-> Propane Tank
-		"!buy oxygentank"						-> Oxygen Tank
-		"!buy fireworkcrate"					-> Firework Crate
-		"!buy gascan"							-> Gascan
-		"!buy cola_bottles"						-> Cola Bottles
-		"!buy gnome"							-> Gnome
+		"!buy weapon_upgradepack_explosive"	-> Explosive Pack
+		"!buy propanetank"			-> Propane Tank
+		"!buy oxygentank"			-> Oxygen Tank
+		"!buy fireworkcrate"			-> Firework Crate
+		"!buy gascan"				-> Gascan
+		"!buy cola_bottles"			-> Cola Bottles
+		"!buy gnome"				-> Gnome
 	}
 
 	Survivor Special
 	{
-		"!buy Fire"				-> Fire Yourself
+		"!buy Fire"		-> Fire Yourself
 		"!buy Fire_Infeceted"	-> All Infected Gets On Fire
-		"!buy Teleport"			-> Teleport to teammate
+		"!buy Teleport"		-> Teleport to teammate
 		"!buy Infinite_Ammo"	-> Infinite Ammo
-		"!buy Dead_Eyes"		-> Dead-Eyes
-		"!buy Kill_Commons"		-> Kill Commons
-		"!buy Kill_Witches"		-> Kill Witches
-		"!buy Jump+1"			-> Jump+1
+		"!buy Dead_Eyes"	-> Dead-Eyes
+		"!buy Kill_Commons"	-> Kill Commons
+		"!buy Kill_Witches"	-> Kill Witches
+		"!buy Jump+1"		-> Jump+1
 		"!buy Heal_Survivors"	-> Heal Survivors
-		"!buy No_FF"			-> No Friendly Fire
+		"!buy No_FF"		-> No Friendly Fire
 		"!buy Slay_Infected"	-> Slay Infected Attacker
-		"!buy Respawn"			-> Respawn Alive
+		"!buy Respawn"		-> Respawn Alive
 		"!buy Freeze_Infected"	-> Freeze-Infected
 	}
 
@@ -295,23 +295,23 @@ in scripting\L4D2_Buy_Store.sp line 161~266
 [code]
 static char weaponsMenu[][][] = 
 {
-	{"pistol",			"Pistol", 			"50"},
-	{"pistol_magnum",	"Magnum", 			"100"},
+	{"pistol",		"Pistol", 		"50"},
+	{"pistol_magnum",	"Magnum", 		"100"},
 	{"pumpshotgun",		"Pumpshotgun", 		"180"},
 	{"shotgun_chrome",	"Chrome Shotgun", 	"200"},
-	{"smg",				"Smg", 				"180"},
+	{"smg",			"Smg", 			"180"},
 	{"smg_silenced", 	"Silenced Smg", 	"200"},
-	{"smg_mp5",			"MP5", 				"250"},
-	{"rifle", 			"Rifle", 			"280"},
-	{"rifle_ak47", 		"AK47", 			"300"},
+	{"smg_mp5",		"MP5", 			"250"},
+	{"rifle", 		"Rifle", 		"280"},
+	{"rifle_ak47", 		"AK47", 		"300"},
 	{"rifle_desert",	"Desert Rifle", 	"320"},
-	{"rifle_sg552", 	"SG552", 			"350"},
+	{"rifle_sg552", 	"SG552", 		"350"},
 	{"shotgun_spas",	"Spas Shotgun", 	"330"},
 	{"autoshotgun", 	"Autoshotgun", 		"330"},
 	{"hunting_rifle", 	"Hunting Rifle", 	"300"},
-	{"sniper_military", "Military Sniper", 	"350"},
-	{"sniper_scout", 	"SCOUT", 			"400"},
-	{"sniper_awp", 		"AWP",				"500"},
+	{"sniper_military", 	"Military Sniper", 	"350"},
+	{"sniper_scout", 	"SCOUT", 		"400"},
+	{"sniper_awp", 		"AWP",			"500"},
 	{"rifle_m60", 		"M60 Machine Gun", 	"1000"},
 	{"grenade_launcher","Grenade Launcher",	"1250"}
 };
@@ -321,17 +321,17 @@ static char meleeMenu[][][] =
 	{"chainsaw",		"Chainsaw", 		"300"},
 	{"baseball_bat",	"Baseball Bat", 	"250"},
 	{"cricket_bat", 	"Cricket Bat", 		"250"},
-	{"crowbar", 		"Crowbar", 			"250"},
-	{"electric_guitar", "Electric Guitar", 	"250"},
+	{"crowbar", 		"Crowbar", 		"250"},
+	{"electric_guitar", 	"Electric Guitar", 	"250"},
 	{"fireaxe", 		"Fire Axe", 		"250"},
 	{"frying_pan", 		"Frying Pan", 		"250"},
-	{"katana", 			"Katana", 			"250"},
-	{"machete", 		"Machete", 			"250"},
-	{"tonfa", 			"Tonfa", 			"250"},
+	{"katana", 		"Katana", 		"250"},
+	{"machete", 		"Machete", 		"250"},
+	{"tonfa", 		"Tonfa", 		"250"},
 	{"golfclub", 		"Golf Club", 		"250"},
-	{"knife", 			"Knife", 			"250"},
+	{"knife", 		"Knife", 		"250"},
 	{"pitchfork", 		"Pitchfork", 		"250"},
-	{"shovel", 			"Shovel", 			"250"}
+	{"shovel", 		"Shovel", 		"250"}
 };
 
 static char medicThrowableMenu[][][] =
@@ -342,41 +342,41 @@ static char medicThrowableMenu[][][] =
 	{"pain_pills", 		"Pain Pill", 		"100"},
 	{"adrenaline",	 	"Adrenaline", 		"125"},
 	{"pipe_bomb", 		"Pipe Bomb", 		"150"},
-	{"molotov", 		"Molotov", 			"200"},
+	{"molotov", 		"Molotov", 		"200"},
 	{"vomitjar", 		"Vomitjar", 		"225"}
 };
 
 static char otherMenu[][][] =
 {
-	{"ammo",		 					"Ammo", 	 			"250"},
-	{"laser_sight",						"Laser Sight", 			"50"},
-	{"incendiary_ammo",					"Incendiary Ammo", 		"75"},
-	{"explosive_ammo",					"Explosive Ammo", 		"100"},
+	{"ammo",		 		"Ammo", 	 		"250"},
+	{"laser_sight",				"Laser Sight", 			"50"},
+	{"incendiary_ammo",			"Incendiary Ammo", 		"75"},
+	{"explosive_ammo",			"Explosive Ammo", 		"100"},
 	{"weapon_upgradepack_incendiary",	"Incendiary Pack", 		"200"},
 	{"weapon_upgradepack_explosive",	"Explosive Pack", 		"200"},
-	{"propanetank", 	 				"Propane Tank", 		"80"},
-	{"oxygentank",	 					"Oxygen Tank", 			"80"},
-	{"fireworkcrate",					"Firework Crate", 		"300"},
-	{"gascan",  						"Gascan",				"1000"},
-	{"cola_bottles",  					"Cola Bottles",			"1500"},
-	{"gnome",							"Gnome", 				"2000"},
+	{"propanetank", 	 		"Propane Tank", 		"80"},
+	{"oxygentank",	 			"Oxygen Tank", 			"80"},
+	{"fireworkcrate",			"Firework Crate", 		"300"},
+	{"gascan",  				"Gascan",			"1000"},
+	{"cola_bottles",  			"Cola Bottles",			"1500"},
+	{"gnome",				"Gnome", 			"2000"},
 };
 
 static char survivorSpecialMenu[][][] =
 {
-	{"Fire", 			"Fire Yourself", 				"200"},
+	{"Fire", 		"Fire Yourself", 		"200"},
 	{"Fire_Infeceted", 	"All Infected Gets On Fire", 	"500"},
-	{"Teleport", 		"Teleport to teammate", 		"750"},
-	{"Infinite_Ammo",	"Infinite Ammo", 				"1000"},
-	{"No_FF", 			"No Friendly Fire", 			"1250"},
-	{"Dead_Eyes",		"Dead-Eyes", 					"1500"},
-	{"Kill_Commons", 	"Kill Commons", 				"1750"},
-	{"Heal_Survivors",	"Heal Survivors", 				"2000"},
-	{"Jump+1", 			"Jump+1", 						"2250"},
-	{"Slay_Infected", 	"Slay Infected Attacker", 		"2500"},
-	{"Kill_Witches", 	"Kill Witches", 				"2750"},
-	{"Respawn", 		"Respawn Alive", 				"3000"},
-	{"Freeze_Infected", "Freeze-Infected", 				"3250"},
+	{"Teleport", 		"Teleport to teammate", 	"750"},
+	{"Infinite_Ammo",	"Infinite Ammo", 		"1000"},
+	{"No_FF", 		"No Friendly Fire", 		"1250"},
+	{"Dead_Eyes",		"Dead-Eyes", 			"1500"},
+	{"Kill_Commons", 	"Kill Commons", 		"1750"},
+	{"Heal_Survivors",	"Heal Survivors", 		"2000"},
+	{"Jump+1", 		"Jump+1", 			"2250"},
+	{"Slay_Infected", 	"Slay Infected Attacker", 	"2500"},
+	{"Kill_Witches", 	"Kill Witches", 		"2750"},
+	{"Respawn", 		"Respawn Alive", 		"3000"},
+	{"Freeze_Infected", 	"Freeze-Infected", 		"3250"},
 };
 
 static char infectedSpawnMenu[][][] =
@@ -393,10 +393,10 @@ static char infectedSpawnMenu[][][] =
 
 static char infectedSpecialMenu[][][] =
 {
-	{"Health",		"Full Health", 				"350"},
-	{"Horde",		"Zombie Horde", 			"750"},
-	{"Witch",		"Witch", 					"1000"},
-	{"Teleport",	"Teleport to survivor", 	"1250"},
+	{"Health",		"Full Health", 			"350"},
+	{"Horde",		"Zombie Horde", 		"750"},
+	{"Witch",		"Witch", 			"1000"},
+	{"Teleport",		"Teleport to survivor", 	"1250"},
 	{"Immune",		"Immune Everything", 		"1500"},
 };
 [/code]
