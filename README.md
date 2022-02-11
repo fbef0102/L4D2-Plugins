@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2022/2/10)
+>All plugins in here only apply to L4D2 (last edited:2022/2/11)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -40,6 +40,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d2_ty_saveweapons</b>: L4D2 coop save weapon when map transition if more than 4 players
 * <b>l4d2_skill_detect</b>: Detects and reports skeets, crowns, levels, highpounces, etc.
 * <b>l4d2_supply_woodbox</b>: CSO Random Supply Boxes in l4d2
+* <b>l4d2_biletheworld</b>: Vomit Jars hit Survivors, Boomer Explosions slime Infected.
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
