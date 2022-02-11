@@ -5,16 +5,18 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
+#define ENTITY_SAFE_LIMIT 2000 //don't create model glow when entity index is above this
 
-ConVar g_hCvarColor, g_hCvarColor2, g_hCommandAccess;
+ConVar g_hCvarColorGhost, g_hCvarColorAlive, g_hCommandAccess;
 
-int g_iCvarColor, g_iCvarColor2;
+int g_iCvarColorGhost, g_iCvarColorAlive;
 char g_sCommandAccesslvl[16];
 
-bool bSpecCheatActive[MAXPLAYERS + 1]; //spectatpr open watch
+bool g_bMapStarted;
+static bool bSpecCheatActive[MAXPLAYERS + 1]; //spectatpr open watch
 int g_iModelIndex[MAXPLAYERS+1];			// Player Model entity reference
 
+bool g_bLateLoad;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
 {
 	EngineVersion test = GetEngineVersion();
@@ -24,7 +26,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
 		return APLRes_SilentFailure;
 	}
-
+	
+	g_bLateLoad = late;
 	return APLRes_Success; 
 }
 
@@ -33,20 +36,20 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
-    version = "2.0",
+    version = "2.1",
     url = "https://steamcommunity.com/id/fbef0102/"
 }
 
 public void OnPluginStart()
 {
-	g_hCvarColor =	CreateConVar(	"l4d2_specting_cheat_ghost_color",		"255 255 255",		"Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
-	g_hCvarColor2 =	CreateConVar(	"l4d2_specting_cheat_alive_color",		"255 0 0",			"Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
-	g_hCommandAccess = 	CreateConVar(	"l4d2_specting_cheat_use_command_flag", "z", "Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)", FCVAR_NOTIFY);
+	g_hCvarColorGhost =	CreateConVar(	"l4d2_specting_cheat_ghost_color",		"255 255 255",		"Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
+	g_hCvarColorAlive =	CreateConVar(	"l4d2_specting_cheat_alive_color",		"255 0 0",			"Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
+	g_hCommandAccess = 	CreateConVar(	"l4d2_specting_cheat_use_command_flag", "z", 				"Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)", FCVAR_NOTIFY);
 
 	GetCvars();
-	g_hCvarColor.AddChangeHook(ConVarChanged_Glow);
-	g_hCvarColor2.AddChangeHook(ConVarChanged_Glow_2);
-	g_hCommandAccess.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarColorGhost.AddChangeHook(ConVarChanged_Glow_Ghost);
+	g_hCvarColorAlive.AddChangeHook(ConVarChanged_Glow_Alive);
+	g_hCommandAccess.AddChangeHook(ConVarChanged_Access);
 
 	//Autoconfig for plugin
 	AutoExecConfig(true, "l4d2_specting_cheat");
@@ -70,11 +73,32 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_hellocheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_areyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_fuckyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
+	
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		bSpecCheatActive[i] = false;
+	}
+	
+	if(g_bLateLoad)
+	{
+		g_bMapStarted = true;
+		CreateAllModelGlow();
+	}
 }
 
 public void OnPluginEnd() //unload插件的時候
 {
 	RemoveAllModelGlow();
+}
+
+public void OnMapStart()
+{
+	g_bMapStarted = true;
+}
+
+public void OnMapEnd()
+{
+	g_bMapStarted = false;
 }
 
 public Action ToggleSpecCheatCmd(int client, int args) 
@@ -86,6 +110,12 @@ public Action ToggleSpecCheatCmd(int client, int args)
 	{
 		bSpecCheatActive[client] = !bSpecCheatActive[client];
 		PrintToChat(client, "\x01[\x04WatchMode\x01]\x03 Watch Cheater Mode \x01 is now \x05%s\x01.", (bSpecCheatActive[client] ? "On" : "Off"));
+		
+		if(bSpecCheatActive[client] == false)
+		{
+			RemoveAllModelGlow();
+			CreateAllModelGlow();
+		}
 	}
 	else
 	{
@@ -98,10 +128,8 @@ public Action ToggleSpecCheatCmd(int client, int args)
 public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	if( client && IsClientInGame(client) && !IsFakeClient(client))
-	{
-		bSpecCheatActive[client] = false;
-	}
+	
+	bSpecCheatActive[client] = false;
 }
 
 public void L4D_OnEnterGhostState(int client)
@@ -127,8 +155,15 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-
+	int oldteam = event.GetInt("oldteam");
+	
 	RemoveInfectedModelGlow(client);
+	
+	if(client && IsClientInGame(client) && !IsFakeClient(client) && oldteam == L4D_TEAM_SPECTATOR && bSpecCheatActive[client])
+	{
+		RemoveAllModelGlow();
+		CreateAllModelGlow();
+	}
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -141,18 +176,23 @@ public void CreateInfectedModelGlow(int client)
 	if (!client || 
 	!IsClientInGame(client) || 
 	GetClientTeam(client) != L4D_TEAM_INFECTED || 
-	!IsPlayerAlive(client)) return;
+	!IsPlayerAlive(client) ||
+	g_bMapStarted == false) return;
 
 	///////設定發光物件//////////
+	// Spawn dynamic prop entity
+	int entity = CreateEntityByName("prop_dynamic_ornament");
+	
+	if (CheckIfEntityMax( entity ) == false)
+		return;
+		
+	// Delete previous glow first just in case
+	RemoveInfectedModelGlow(client);
+	
 	// Get Client Model
 	char sModelName[64];
 	GetEntPropString(client, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
 	//PrintToChatAll("%N: %s",client,sModelName);
-	
-	// Spawn dynamic prop entity
-	int entity = CreateEntityByName("prop_dynamic_ornament");
-	if (CheckIfEntityMax( entity ) == false)
-		return;
 
 	// Set new fake model
 	//PrecacheModel(sModelName);
@@ -165,9 +205,9 @@ public void CreateInfectedModelGlow(int client)
 	SetEntProp(entity, Prop_Send, "m_nGlowRange", 4500);
 	SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
 	if(IsPlayerGhost(client))
-		SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColor);
+		SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColorGhost);
 	else
-		SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColor2);
+		SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColorAlive);
 	AcceptEntityInput(entity, "StartGlowing");
 
 	// Set model invisible
@@ -177,7 +217,6 @@ public void CreateInfectedModelGlow(int client)
 	// Set model attach to client, and always synchronize
 	SetVariantString("!activator");
 	AcceptEntityInput(entity, "SetAttached", client);
-	AcceptEntityInput(entity, "TurnOn");
 	///////發光物件完成//////////
 	
 	g_iModelIndex[client] = EntIndexToEntRef(entity);
@@ -221,7 +260,7 @@ int GetColor(char[] sTemp)
 	return color;
 }
 
-public void ConVarChanged_Glow(Handle convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChanged_Glow_Ghost(Handle convar, const char[] oldValue, const char[] newValue) {
 	GetCvars();
 
 	int entity;
@@ -233,13 +272,13 @@ public void ConVarChanged_Glow(Handle convar, const char[] oldValue, const char[
 			if( entity && (entity = EntRefToEntIndex(entity)) != INVALID_ENT_REFERENCE )
 			{
 				SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
-				SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColor);
+				SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColorGhost);
 			}
 		}
 	}
 }
 
-public void ConVarChanged_Glow_2(Handle convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChanged_Glow_Alive(Handle convar, const char[] oldValue, const char[] newValue) {
 	GetCvars();
 	
 	int entity;
@@ -251,13 +290,13 @@ public void ConVarChanged_Glow_2(Handle convar, const char[] oldValue, const cha
 			if( entity && (entity = EntRefToEntIndex(entity)) != INVALID_ENT_REFERENCE )
 			{
 				SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
-				SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColor2);
+				SetEntProp(entity, Prop_Send, "m_glowColorOverride", g_iCvarColorAlive);
 			}
 		}
 	}
 }
 
-public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChanged_Access(Handle convar, const char[] oldValue, const char[] newValue) {
 	GetCvars();
 
 	for(int i = 1; i <= MaxClients; i++)
@@ -265,6 +304,10 @@ public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char
 		if(IsClientInGame(i) && !IsFakeClient(i))
 		{
 			if(HasAccess(i, g_sCommandAccesslvl) == false) bSpecCheatActive[i] = false;
+			
+			
+			RemoveAllModelGlow();
+			CreateAllModelGlow();
 		}
 	}
 }
@@ -272,10 +315,10 @@ public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char
 void GetCvars()
 {
 	char sColor[16],sColor2[16];
-	g_hCvarColor.GetString(sColor, sizeof(sColor));
-	g_iCvarColor = GetColor(sColor);
-	g_hCvarColor2.GetString(sColor2, sizeof(sColor2));
-	g_iCvarColor2 = GetColor(sColor2);
+	g_hCvarColorGhost.GetString(sColor, sizeof(sColor));
+	g_iCvarColorGhost = GetColor(sColor);
+	g_hCvarColorAlive.GetString(sColor2, sizeof(sColor2));
+	g_iCvarColorAlive = GetColor(sColor2);
 	g_hCommandAccess.GetString(g_sCommandAccesslvl,sizeof(g_sCommandAccesslvl));
 }
 
@@ -296,6 +339,16 @@ void RemoveAllModelGlow()
 	for (int i = 1; i <= MaxClients; i++) 
 	{
 		RemoveInfectedModelGlow(i);
+	}
+}
+
+void CreateAllModelGlow()
+{
+	if (g_bMapStarted == false) return;
+	
+	for (int i = 1; i <= MaxClients; i++) 
+	{
+		CreateInfectedModelGlow(i);
 	}
 }
 
