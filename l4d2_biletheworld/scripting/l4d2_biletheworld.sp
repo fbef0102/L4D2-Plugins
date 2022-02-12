@@ -204,7 +204,7 @@ void VomitSplash(bool BoomerDeath, float pos[3], int client)
 			}
 			
 			L4D_CTerrorPlayer_OnVomitedUpon(i, client);
-			HurtEntity(client, client, g_fVomitJarSurvivorHP);
+			if(i!=client) HurtEntity(client, client, g_fVomitJarSurvivorHP);
 		}
 	}
 }
