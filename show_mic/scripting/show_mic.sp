@@ -4,8 +4,8 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <basecomm>
-#include <glow>
 #include <ThirdPersonShoulder_Detect>
+#include <left4dhooks>
 
 #define UPDATESPEAKING_TIME_INTERVAL 0.5
 #define Model_Head "models/extras/info_speech.mdl"
@@ -14,17 +14,18 @@ int g_iHatIndex[MAXPLAYERS+1];			// Player hat entity reference
 bool ClientSpeakingTime[MAXPLAYERS+1];
 bool g_bExternalCvar[MAXPLAYERS+1];		// If thirdperson view was detected (thirdperson_shoulder cvar)
 bool g_bExternalState[MAXPLAYERS+1];	// If thirdperson view was detected
-static char SpeakingPlayers[512];
+char SpeakingPlayers[512], SpeakingInfectedPlayers[512], SpeakingSurvivorPlayers[512], SpeakingSpectatorPlayers[512];
 ConVar hSV_Alltalk;
 ConVar hSV_VoiceEnable;
 int iSV_Alltalk;
+bool bSV_VoiceEnable;
 
 public Plugin myinfo = 
 {
 	name = "[L4D2] Voice Announce + Show MIC Hat.",
 	author = "SupermenCJ & Harry Potter ",
 	description = "Voice Announce in centr text + create hat to Show Who is speaking.",
-	version = "1.5",
+	version = "1.6",
 	url = "https://steamcommunity.com/id/fbef0102/"
 }
 
@@ -51,6 +52,7 @@ public void OnPluginStart()
 
 	GetCvars();
 	hSV_Alltalk.AddChangeHook(ConVarChanged_Cvars);
+	hSV_VoiceEnable.AddChangeHook(ConVarChanged_Cvars);
 	
 	HookEvent("round_end", 			Event_RoundEnd);
 	HookEvent("player_death", 		Event_PlayerDeath);
@@ -67,6 +69,7 @@ public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char
 void GetCvars()
 {
 	iSV_Alltalk = hSV_Alltalk.IntValue;
+	bSV_VoiceEnable = hSV_VoiceEnable.BoolValue;
 }
 
 public void OnPluginEnd()
@@ -80,13 +83,18 @@ public void OnMapStart()
 	PrecacheModel(Model_Head, true);
 }
 
+public void OnClientDisconnect(int client)
+{
+	ClientSpeakingTime[client] = false;
+}
+
 public void OnClientSpeakingStart(int client)
 {
 	if (!IsClientInGame(client)) return;
 
 	if (BaseComm_IsClientMuted(client) 
 		|| GetClientListeningFlags(client) == 1
-		|| hSV_VoiceEnable.BoolValue == false)
+		|| bSV_VoiceEnable == false)
 	{
 		return;
 	}
@@ -103,7 +111,7 @@ public void OnClientSpeaking(int client)
 
 	if (BaseComm_IsClientMuted(client) 
 		|| GetClientListeningFlags(client) == 1
-		|| hSV_VoiceEnable.BoolValue == false)
+		|| bSV_VoiceEnable == false)
 	{
 		RemoveHat(client);
 		ClientSpeakingTime[client] = false;
@@ -118,27 +126,97 @@ public void OnClientSpeakingEnd(int client)
 
 public Action UpdateSpeaking(Handle timer)
 {
-	int iCount;
-	SpeakingPlayers[0] = '\0';
-	
-	for (int i = 1; i <= MaxClients; i++)
+	if(iSV_Alltalk == 1)
 	{
-		if (ClientSpeakingTime[i])
+		int iCount = 0;
+		SpeakingPlayers[0] = '\0';
+
+		for (int i = 1; i <= MaxClients; i++)
 		{
-			if(IsClientInGame(i))
+			if (ClientSpeakingTime[i] && IsClientInGame(i) && !IsFakeClient(i))
 			{
 				Format(SpeakingPlayers, sizeof(SpeakingPlayers), "%s%N\n", SpeakingPlayers, i);
 				iCount++;
 			}
-			else ClientSpeakingTime[i] = false;
+		}
+
+		if (iCount > 0)
+		{
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i) && !IsFakeClient(i))
+				{
+					SetGlobalTransTarget(i);
+					PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingPlayers);
+				}
+			}
 		}
 	}
-
-	if (iCount > 0)
+	else
 	{
+		int sur = 0, inf = 0, spec = 0, iCount = 0, team;
+		SpeakingSurvivorPlayers[0] = '\0';
+		SpeakingInfectedPlayers[0] = '\0';
+		SpeakingSpectatorPlayers[0] = '\0';
+		SpeakingPlayers[0] = '\0';
+
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if(IsClientInGame(i)) PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingPlayers);
+			if (ClientSpeakingTime[i] && IsClientInGame(i) && !IsFakeClient(i))
+			{
+				team = GetClientTeam(i);
+				if(team == 2)
+				{
+					Format(SpeakingSurvivorPlayers, sizeof(SpeakingSurvivorPlayers), "%s%N\n", SpeakingSurvivorPlayers, i);
+					sur++;
+				}
+				else if(team == 3)
+				{
+					Format(SpeakingInfectedPlayers, sizeof(SpeakingInfectedPlayers), "%s%N\n", SpeakingInfectedPlayers, i);
+					inf++;
+				}
+				else if(team == 1)
+				{
+					Format(SpeakingSpectatorPlayers, sizeof(SpeakingSpectatorPlayers), "%s%N\n", SpeakingSpectatorPlayers, i);
+					spec++;
+				}
+
+				Format(SpeakingPlayers, sizeof(SpeakingPlayers), "%s%N\n", SpeakingPlayers, i);
+				iCount++;
+			}
+		}
+
+		if(iCount > 0)
+		{
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i) && !IsFakeClient(i))
+				{
+					if(GetClientListeningFlags(i) == VOICE_LISTENALL)
+					{
+						SetGlobalTransTarget(i);
+						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingPlayers);
+						continue;
+					}
+
+					team = GetClientTeam(i);
+					if(team == 2 && sur > 0)
+					{
+						SetGlobalTransTarget(i);
+						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingSurvivorPlayers);
+					}
+					else if(team == 3 && inf > 0)
+					{
+						SetGlobalTransTarget(i);
+						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingInfectedPlayers);
+					}
+					else if(team == 1 && spec > 0)
+					{
+						SetGlobalTransTarget(i);
+						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingSpectatorPlayers);
+					}
+				}
+			}
 		}
 	}
 }
@@ -183,8 +261,8 @@ void CreateHat(int client)
 		
 		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(entity, 255, 255, 255, 100);
-		
-		L4D2_SetEntGlow(entity, L4D2Glow_Constant, 2000, 1, {200, 200, 200}, false);
+
+		L4D2_SetEntityGlow(entity, L4D2Glow_Constant, 2000, 1, {200, 200, 200}, false);
 		
 		g_iHatIndex[client] = EntIndexToEntRef(entity);
 		SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
@@ -207,6 +285,7 @@ public Action Hook_SetTransmit(int entity, int client)
 		
 	if(iSV_Alltalk == 0)
 	{
+		if( GetClientListeningFlags(client) == VOICE_LISTENALL ) return Plugin_Continue;
 		if( GetClientTeam(client) != 2 ) return Plugin_Handled;
 	}
 	
@@ -256,9 +335,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	if( !client || GetClientTeam(client) != 2 )
-		return;
-
+	
 	RemoveHat(client);
 }
 

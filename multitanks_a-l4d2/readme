@@ -12,6 +12,9 @@ v2.1
 v1.4
 -original Post: https://forums.alliedmods.net/showthread.php?p=2567007
 
+-Require-
+1. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?p=2684862
+
 -ConVar-
 cfg\sourcemod\multitanks_a.cfg
 // Enable/Disable Announcements when tank spawns.

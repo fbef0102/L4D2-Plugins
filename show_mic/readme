@@ -1,21 +1,19 @@
 Voice Announce in centr text + create hat to Show Who is speaking.
 
--Image-
-see show_mic.jpg
-
 -Require-
 1. SM 1.10 or above
 2. Meta 1.11 or above
-3. ThirdPersonShoulder_Detect: https://forums.alliedmods.net/showthread.php?p=2529779
-4. VoiceHook:
+3. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?p=2684862
+4. ThirdPersonShoulder_Detect: https://forums.alliedmods.net/showthread.php?p=2529779
+5. VoiceHook:
   * windows: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Windows%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.dll
   * linux: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Linux%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.so
 
 -ChangeLog-
-v1.5
+v1.6
 -Remake code
 -Detect Thirdpserson
--MIC Model hat on player's head
+-MIC Model hat on player's head (Only survivors can see)
 
 v1.1
 Original Post: https://forums.alliedmods.net/showpost.php?p=2671963&postcount=7
