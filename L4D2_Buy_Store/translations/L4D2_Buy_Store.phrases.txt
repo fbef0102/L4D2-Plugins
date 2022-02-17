@@ -279,7 +279,7 @@
 		"#format"		"{1:d}"
 		"en"	"You get {1} credits by reviving teammate. (type !buy to purchase)"
 		"pt"	"Você ganhou {1} créditos por reviver um amigo. (Digite !buy para comprar itens)"
-		"zho"	"不惜粉身碎骨! 拯救隊友復活 獲得{1} 元. (輸入 !buy 購物商品)"
+		"zho"	"不惜粉身碎骨! 拯救隊友復活 獲得 {1} 元. (輸入 !buy 購物商品)"
 		"chi"	"拯救队友复活 获得 {1} 元. (输入 !buy 购物商品)"
 		"es"	"Obtienes {1} puntos reviviendo compañero. (Escribe !buy para comprar)"
 		"ru"	"+{green}{1} {default}кредитов за оживление."
