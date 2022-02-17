@@ -377,13 +377,13 @@ void CreateStringMap()
 	g_smModelHeight.SetValue("models/props_junk/gascan001a.mdl", 5.0);
 	g_smModelHeight.SetValue("models/props_junk/explosive_box001.mdl", 5.0);
 	g_smModelHeight.SetValue("models/props_junk/propanecanister001a.mdl", 5.0);
-	g_smModelHeight.SetValue("models/props_equipment/oxygentank01.mdl", 5.0);
-	g_smModelHeight.SetValue("models/props_junk/gnome.mdl", 5.0);
+	g_smModelHeight.SetValue("models/props_equipment/oxygentank01.；mdl", 5.0);
+	g_smModelHeight.SetValue("models/props_junk/gnome.mdl", 10.0);
 	g_smModelHeight.SetValue("models/w_models/weapons/w_cola.mdl", 5.0);
 	g_smModelHeight.SetValue("models/w_models/weapons/50cal.mdl", 55.0);
 	g_smModelHeight.SetValue("models/w_models/weapons/w_minigun.mdl", 55.0);
-	g_smModelHeight.SetValue("models/props/terror/exploding_ammo.mdl", 5.0);
-	g_smModelHeight.SetValue("models/props/terror/incendiary_ammo.mdl", 5.0);
+	g_smModelHeight.SetValue("models/props/terror/exploding_ammo.mdl", 15.0);
+	g_smModelHeight.SetValue("models/props/terror/incendiary_ammo.mdl", 15.0);
 	g_smModelHeight.SetValue("models/w_models/weapons/w_knife_t.mdl", 5.0);
 	g_smModelHeight.SetValue("models/weapons/melee/w_bat.mdl", 5.0);
 	g_smModelHeight.SetValue("models/weapons/melee/w_cricket_bat.mdl", 5.0);
