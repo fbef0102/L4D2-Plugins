@@ -1165,9 +1165,9 @@
 		"es"	"¡El jugador elegido no esta en el servidor ahora! ¡Elige a otro!"
 		"ru"	"Этот игрок не в игре!"
 	}
-	"Failed! credits balance is not enough to transfer."
+	"Failed! Credits balance is not enough to transfer."
 	{
-		"en"	"Failed! credits balance is not enough to transfer!"
+		"en"	"Failed! Credits balance is not enough to transfer!"
 		"pt"	"Tranferência Falhou! Você não tem pontos suficientes!"
 		"zho"	"失敗! 沒有足夠的金錢轉移!"
 		"chi"	"转移失败! 没有足够的金钱转移!"
