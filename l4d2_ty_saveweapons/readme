@@ -1,7 +1,7 @@
 L4D2 coop save weapon when map transition if more than 4 players
 
 -Changelog-
-v5.8
+v5.9
 -Remake code
 -Add the last stand two melee
 -Add ConVar and generate cfg

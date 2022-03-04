@@ -1,11 +1,11 @@
 /**
  * =============================================================================
  * L4D2 coop save weapon
- * Copyright 2021 steamcommunity.com/profiles/76561198026784913
  * Copyright 2011 - 2021 steamcommunity.com/profiles/76561198025355822/
  * Fixed 2015 steamcommunity.com/id/Electr0n
  * Fixed 2016 steamcommunity.com/id/mixjayrus
  * Fixed 2016 user Merudo
+ * Copyright 2022 steamcommunity.com/profiles/76561198026784913
 */
 #pragma semicolon 1
 #pragma newdecls required
@@ -107,7 +107,7 @@ public Plugin myinfo =
 	name = "[L4D2] Save Weapon",
 	author = "MAKS, HarryPotter",
 	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.8",
+	version = "5.9",
 	url = "forums.alliedmods.net/showthread.php?p=2304407"
 };
 
@@ -443,18 +443,26 @@ public void Event_MapTransition(Event event, const char[] name, bool dontBroadca
 			{
 				if (IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
 				{
-					if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
-
-					SetEntProp(client, Prop_Send, "m_currentReviveCount", 0);
-					SetEntProp(client, Prop_Send, "m_isGoingToDie", 0);
-					SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 0);
-					
-					if(GetEntProp(client, Prop_Send, "m_iHealth") + RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") ) < 100)
+					if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1)
 					{
+						SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
 						SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
 						SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
 						SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
 					}
+					else
+					{
+						if(GetEntProp(client, Prop_Send, "m_iHealth") + RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") ) < 100)
+						{
+							SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
+							SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
+							SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
+						}
+					}
+
+					SetEntProp(client, Prop_Send, "m_currentReviveCount", 0);
+					SetEntProp(client, Prop_Send, "m_isGoingToDie", 0);
+					SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 0);
 					
 					// Disable heart beat sound
 					StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
