@@ -33,10 +33,7 @@ l4d2_item_hint_cooldown_time "1.0"
 // How close can a player use 'Look' item hint.
 l4d2_item_hint_use_range "150"
 
-// How close can a player use 'Look' item hint.
-l4d2_item_hint_use_range "150"
-
-// tem Hint Sound. (relative to to sound/, Empty = OFF)
+// Item Hint Sound. (relative to to sound/, Empty = OFF)
 l4d2_item_hint_use_sound "buttons/blip1.wav"
 
 // Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
