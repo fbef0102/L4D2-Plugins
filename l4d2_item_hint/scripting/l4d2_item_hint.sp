@@ -1,4 +1,5 @@
-//Harry @ 2020-2022
+//fdxx, BHaType	@ 2021
+//Harry @ 2022
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -9,7 +10,6 @@
 
 #define MAXENTITIES 2048
 #define MODEL_MARK_FIELD 	"materials/sprites/laserbeam.vmt"
-#define MODEL_MARK_SPRITE 	"materials/vgui/icon_download.vmt"
 #define CLASSNAME_INFO_TARGET         "info_target"
 #define CLASSNAME_ENV_SPRITE          "env_sprite"
 #define ENTITY_WORLDSPAWN             0
@@ -47,6 +47,7 @@ Handle    g_iTargetInstructorTimer[MAXENTITIES+1] = {null};
 Handle    g_hUseEntity;
 StringMap g_smModelToName;
 StringMap g_smModelHeight;
+bool g_bMapStarted;
 
 enum EHintType {
 	eItemHint,
@@ -59,12 +60,11 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "1.9",
+	version     = "2.0",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
 bool bLate;
-
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	EngineVersion test = GetEngineVersion();
@@ -218,9 +218,10 @@ public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char
 
 void GetCvars()
 {
-	g_fItemHintCoolDown         = g_hItemHintCoolDown.FloatValue;
+	g_fItemHintCoolDown = g_hItemHintCoolDown.FloatValue;
 	g_fItemUseHintRange = g_hItemUseHintRange.FloatValue;
 	g_hItemUseSound.GetString(g_sItemUseSound, sizeof(g_sItemUseSound));
+	if (strlen(g_sItemUseSound) > 0 && g_bMapStarted) PrecacheSound(g_sItemUseSound);
 	g_iItemAnnounceType = g_hItemAnnounceType.IntValue;
 	g_fItemGlowTimer      = g_hItemGlowTimer.FloatValue;
 	g_iItemGlowRange 	= g_hItemGlowRange.IntValue;
@@ -235,6 +236,7 @@ void GetCvars()
 	g_fSpotMarkCoolDown = g_hSpotMarkCoolDown.FloatValue;
 	g_fSpotMarkUseRange = g_hSpotMarkUseRange.FloatValue;
 	g_hSpotMarkUseSound.GetString(g_sSpotMarkUseSound, sizeof(g_sSpotMarkUseSound));
+	if (strlen(g_sSpotMarkUseSound) > 0 && g_bMapStarted) PrecacheSound(g_sSpotMarkUseSound);
 	g_fSpotMarkGlowTimer = g_hSpotMarkGlowTimer.FloatValue;
 	FormatEx(g_sKillDelay, sizeof(g_sKillDelay), "OnUser1 !self:Kill::%.2f:-1", g_fSpotMarkGlowTimer);
 	g_hSpotMarkCvarColor.GetString(g_sSpotMarkCvarColor, sizeof(g_sSpotMarkCvarColor));
@@ -242,7 +244,7 @@ void GetCvars()
 	g_iSpotMarkCvarColorArray = ConvertRGBToIntArray(g_sSpotMarkCvarColor);
 	g_hSpotMarkSpriteModel.GetString(g_sSpotMarkSpriteModel, sizeof(g_sSpotMarkSpriteModel));
 	TrimString(g_sSpotMarkSpriteModel);
-	if ( strlen(g_sSpotMarkSpriteModel) > 0 ) PrecacheModel(g_sSpotMarkSpriteModel, true);
+	if ( strlen(g_sSpotMarkSpriteModel) > 0 && g_bMapStarted) PrecacheModel(g_sSpotMarkSpriteModel, true);
 	g_bSpotMarkInstructorHint = g_hSpotMarkInstructorHint.BoolValue;
 	g_hSpotMarkInstructorColor.GetString(g_sSpotMarkInstructorColor, sizeof(g_sSpotMarkInstructorColor));
 	TrimString(g_sSpotMarkInstructorColor);
@@ -251,6 +253,7 @@ void GetCvars()
 	g_fInfectedMarkCoolDown = g_hInfectedMarkCoolDown.FloatValue;
 	g_fInfectedMarkUseRange = g_hInfectedMarkUseRange.FloatValue;
 	g_hInfectedMarkUseSound.GetString(g_sInfectedMarkUseSound, sizeof(g_sInfectedMarkUseSound));
+	if (strlen(g_sInfectedMarkUseSound) > 0 && g_bMapStarted) PrecacheSound(g_sInfectedMarkUseSound);
 	g_iInfectedMarkAnnounceType = g_hInfectedMarkAnnounceType.IntValue;
 	g_fInfectedMarkGlowTimer = g_hInfectedMarkGlowTimer.FloatValue;
 	g_iInfectedMarkGlowRange = g_hInfectedMarkGlowRange.IntValue;
@@ -377,7 +380,7 @@ void CreateStringMap()
 	g_smModelHeight.SetValue("models/props_junk/gascan001a.mdl", 5.0);
 	g_smModelHeight.SetValue("models/props_junk/explosive_box001.mdl", 5.0);
 	g_smModelHeight.SetValue("models/props_junk/propanecanister001a.mdl", 5.0);
-	g_smModelHeight.SetValue("models/props_equipment/oxygentank01.；mdl", 5.0);
+	g_smModelHeight.SetValue("models/props_equipment/oxygentank01.mdl", 5.0);
 	g_smModelHeight.SetValue("models/props_junk/gnome.mdl", 10.0);
 	g_smModelHeight.SetValue("models/w_models/weapons/w_cola.mdl", 5.0);
 	g_smModelHeight.SetValue("models/w_models/weapons/50cal.mdl", 55.0);
@@ -402,13 +405,18 @@ void CreateStringMap()
 int g_iFieldModelIndex;
 public void OnMapStart()
 {
+	g_bMapStarted = true;
 	if (strlen(g_sItemUseSound) > 0) PrecacheSound(g_sItemUseSound);
 	if (strlen(g_sSpotMarkUseSound) > 0) PrecacheSound(g_sSpotMarkUseSound);
+	if (strlen(g_sInfectedMarkUseSound) > 0) PrecacheSound(g_sInfectedMarkUseSound);
 	g_iFieldModelIndex = PrecacheModel(MODEL_MARK_FIELD, true);
+	if ( strlen(g_sSpotMarkSpriteModel) > 0 ) PrecacheModel(g_sSpotMarkSpriteModel, true);
+
 }
 
 public void OnMapEnd()
 {
+	g_bMapStarted = false;
 	RemoveAllGlow_Timer();
 }
 
@@ -562,7 +570,23 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 								{
 									NotifyMessage(client, sItemName, view_as<EHintType>(eItemHint));
 									
-									if (strlen(g_sItemUseSound) > 0) EmitSoundToAll(g_sItemUseSound, client);
+									if (strlen(g_sItemUseSound) > 0)
+									{
+										for (int target = 1; target <= MaxClients; target++)
+										{
+											if (!IsClientInGame(target))
+												continue;
+
+											if (IsFakeClient(target))
+												continue;
+
+											if (GetClientTeam(target) == TEAM_INFECTED)
+												continue;
+
+											EmitSoundToClient(target, g_sItemUseSound, client);
+										}
+									}
+									
 									g_fItemHintCoolDownTime[client] = GetEngineTime() + g_fItemHintCoolDown;
 									CreateEntityModelGlow(iEntity, sEntModelName);
 									
@@ -826,7 +850,21 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	g_fInfectedMarkCoolDownTime[client] = GetEngineTime() + g_fInfectedMarkCoolDown;
 
 	if (strlen(g_sInfectedMarkUseSound) > 0)
-		EmitSoundToAll(g_sInfectedMarkUseSound, client);
+	{
+		for (int target = 1; target <= MaxClients; target++)
+		{
+			if (!IsClientInGame(target))
+				continue;
+
+			if (IsFakeClient(target))
+				continue;
+
+			if (GetClientTeam(target) == TEAM_INFECTED)
+				continue;
+
+			EmitSoundToClient(target, g_sInfectedMarkUseSound, client);
+		}
+	}
 	
 	static char sItemName[64];
 	StringToLowerCase(sModelName);
@@ -909,8 +947,24 @@ void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
 	if (fieldDuration < 0.11)    // Prevent rounding to 0 which makes the beam don't disappear
 		fieldDuration = 0.11;    // less than 0.11 reads as 0 in L4D1
 
+	int targets[MAXPLAYERS+1];
+	int targetCount;
+	for (int target = 1; target <= MaxClients; target++)
+	{
+		if (!IsClientInGame(target))
+			continue;
+
+		if (IsFakeClient(target))
+			continue;
+
+		if (GetClientTeam(target) == TEAM_INFECTED)
+			continue;
+
+		targets[targetCount++] = target;
+	}
+
 	TE_SetupBeamRingPoint(vBeamPos, 75.0, 100.0, g_iFieldModelIndex, 0, 0, 0, fieldDuration, 2.0, 0.0, color, 0, 0);
-	TE_SendToAll();
+	TE_Send(targets, targetCount);
 
 	float vSpritePos[3];
 	vSpritePos = vEndPos;
@@ -922,7 +976,21 @@ void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
 	g_fSpotMarkCoolDownTime[client] = GetEngineTime() + g_fSpotMarkCoolDown;
 
 	if (strlen(g_sSpotMarkUseSound) > 0)
-		EmitSoundToAll(g_sSpotMarkUseSound, client);
+	{
+		for (int target = 1; target <= MaxClients; target++)
+		{
+			if (!IsClientInGame(target))
+				continue;
+
+			if (IsFakeClient(target))
+				continue;
+
+			if (GetClientTeam(target) == TEAM_INFECTED)
+				continue;
+
+			EmitSoundToClient(target, g_sSpotMarkUseSound, client);
+		}
+	}
 
 	if ( strlen(g_sSpotMarkSpriteModel) == 0 ) return; //disable spot marker info target
 
@@ -995,9 +1063,25 @@ public Action TimerField(Handle timer, DataPack pack)
 
 	if (fieldDuration < 0.11) // Prevent rounding to 0 which makes the beam don't disappear
 		fieldDuration = 0.11; // less than 0.11 reads as 0 in L4D1
-		
+
+	int targets[MAXPLAYERS+1];
+	int targetCount;
+	for (int target = 1; target <= MaxClients; target++)
+	{
+		if (!IsClientInGame(target))
+			continue;
+
+		if (IsFakeClient(target))
+			continue;
+
+		if (GetClientTeam(target) == TEAM_INFECTED)
+			continue;
+
+		targets[targetCount++] = target;
+	}
+
 	TE_SetupBeamRingPoint(vBeamPos, 75.0, 100.0, g_iFieldModelIndex, 0, 0, 0, fieldDuration, 2.0, 0.0, color, 0, 0);
-	TE_SendToAll();
+	TE_Send(targets, targetCount);
 
 	DataPack pack2;
 	CreateDataTimer(1.0, TimerField, pack2, TIMER_FLAG_NO_MAPCHANGE);
@@ -1257,7 +1341,7 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 	{
 		case view_as<EHintType>(eItemHint):
 		{
-			if( Create_info_target_instructor_hint(iEntity, vOrigin, sTargetName, g_fItemGlowTimer) )
+			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fItemGlowTimer) )
 			{
 				FormatEx(sCaption, sizeof sCaption, "%s", sItemName);
 				Create_env_instructor_hint(iEntity, view_as<EHintType>(eItemHint), vOrigin, sTargetName, g_sItemInstructorIcon, sCaption, g_sItemInstructorColor, g_fItemGlowTimer, float(g_iItemGlowRange));
@@ -1265,7 +1349,7 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		}
 		case view_as<EHintType>(eSpotMarker):
 		{
-			if( Create_info_target_instructor_hint(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
+			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
 			{
 				FormatEx(sCaption, sizeof sCaption, "%N Marked something here", client);
 				Create_env_instructor_hint(iEntity, view_as<EHintType>(eSpotMarker), vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
@@ -1274,16 +1358,19 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 	}
 }
 
-bool Create_info_target_instructor_hint(int iEntity, const float vOrigin[3], const char[] sTargetName, float duration)
+bool Create_info_target(int iEntity, const float vOrigin[3], const char[] sTargetName, float duration)
 {
-	int entity = CreateEntityByName("info_target_instructor_hint");
+	int entity = CreateEntityByName(CLASSNAME_INFO_TARGET);
 	if (!CheckIfEntityMax(entity)) return false;
 	
 	DispatchKeyValue(entity, "targetname", sTargetName);
+	DispatchKeyValue(entity, "spawnflags", "1"); //Only visible to survivors
 	DispatchSpawn(entity);
 	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
 	SetVariantString("!activator");
 	AcceptEntityInput(entity, "SetParent", iEntity);    // We need parent the entity to an info_target_instructor_hint, otherwise it won't follow moveable item such as gascan
+	
+	SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
 
 	if (iEntity > 0)
 	{
