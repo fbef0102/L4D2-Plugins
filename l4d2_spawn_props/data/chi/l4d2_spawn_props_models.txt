@@ -205,6 +205,7 @@ models/lighthouse/checkpoint_door_lighthouse02.mdl TAG- 终点安全门 - 灯塔
 models/props_doors/doorfreezer01.mdl TAG- 无敌铁门 
 models/props_unique/subwaycar_all_onetexture_enddoor.mdl TAG- 地铁车门 - 有门把 (Tank可打破)
 models/props_unique/subwaycar_all_onetexture_sidedoor.mdl TAG- 地铁车门 - 无门把 (Tank可打破)
+models/props/cs_militia/bar01.mdl TAG- 酒吧柜台
 models/props_furniture/desk1.mdl TAG- 家具桌子
 models/props_interiors/furniture_desk01a.mdl TAG- 家具桌子 (可打破)
 models/props_furniture/heavy_table.mdl TAG- 长木桌 1
@@ -751,6 +752,7 @@ models/props_fairgrounds/anvil_case_32.mdl TAG- 舞会箱
 models/props_fairgrounds/anvil_case_64.mdl TAG- 舞会箱 - 较长
 models/props_fairgrounds/anvil_case_casters_32.mdl TAG- 舞会箱 - 有滚轮 (好用)
 models/props_fairgrounds/anvil_case_casters_64.mdl TAG- 舞会箱 - 较长 - 有滚轮 (好用)
+models/props_crates/static_crate_40.mdl TAG- 军用箱 (好用)
 models/props/cs_militia/boxes_garage_lower.mdl TAG- 三个箱子 (好用)
 models/props_junk/cardboard_box03_static.mdl TAG- 纸箱 a (固态)
 models/props_junk/cardboard_box04_static.mdl TAG- 纸箱 b (固态)
