@@ -47,7 +47,7 @@ models/props_vehicles/hmmwv.mdl TAG- 180軍用汽車
 models/props_vehicles/hmmwv_supply.mdl TAG- 180軍用汽車 - 打開車門
 models/props_vehicles/humvee.mdl TAG- 軍用悍馬車 - 無車窗
 models/props_vehicles/humvee_lighton.mdl TAG- 軍用悍馬車 - 無車窗 - 開燈
-models/props_vehicles/longnose_truck.mdl TAG- 卡車頭 - 白色 - 無車窗
+models/props_vehicles/longnose_truck.mdl TAG- 卡車頭 - 白色
 models/props_vehicles/semi_truck3.mdl TAG- 卡車頭 - 紅色 - 無車窗
 models/props_vehicles/m119howitzer_01.mdl TAG- 大炮
 models/props_vehicles/news_van.mdl TAG- 新聞車 - 無車窗
@@ -609,8 +609,6 @@ models/props_c17/consolebox01a.mdl TAG- 控制台盒
 models/props_interiors/water_cooler.mdl TAG- 飲水機 - 辦公室
 models/props_interiors/stove02.mdl TAG- 火爐
 models/props/cs_office/microwave_static.mdl TAG- 微波爐 (固態)
-models/props_industrial/wire_spool_01.mdl TAG- 電纜線捲
-models/props_industrial/wire_spool_02.mdl TAG- 電纜線捲 - 沒線
 models/props_collectables/mushrooms_glowing.mdl TAG- 發光的蘑菇
 models/lighthouse/props/wood_chunks02.mdl TAG- 三塊木頭
 models/lighthouse/props/wood_chunks03.mdl TAG- 一塊折斷木頭
@@ -787,6 +785,8 @@ models/props_exteriors/chimney5.mdl TAG- 一管煙囪
 models/props_exteriors/chimney4.mdl TAG- 兩管煙囪
 models/props_exteriors/chimney2.mdl TAG- 三管煙囪
 models/props_industrial/barrel_fuel.mdl TAG- 燃油桶
+models/props_industrial/wire_spool_01.mdl TAG- 電纜線捲
+models/props_industrial/wire_spool_02.mdl TAG- 電纜線捲 - 沒線
 models/props_interiors/luggagescale.mdl TAG- 指示牌 - 行李車
 models/props_street/stopsign01.mdl TAG- Stop警告標誌
 models/props_exteriors/park_sign.mdl TAG- 公園提示牌
@@ -813,6 +813,8 @@ models/props_fortifications/fortification_indoor_01.mdl TAG- 行李推疊堡壘
 models/props_fortifications/sandbags_line2.mdl TAG- 建築沙袋 - 6層
 models/props_fortifications/sandbags_corner3.mdl TAG- 建築沙袋 - 4層 - 弧型
 models/props_fortifications/sandbags_corner2.mdl TAG- 建築沙袋 - 6層 - 弧型
+models/props_exteriors/sandbags_curved.mdl TAG- 白色沙袋 - 6層 - 弧型
+models/props_exteriors/sandbags_straight.mdl TAG- 白色沙袋 - 6層
 models/props/cs_office/vending_machine.mdl TAG- 自動販賣機 - 飲料
 models/props_equipment/snack_machine.mdl TAG- 自動販賣機 - 點心
 models/props_debris/dead_cow.mdl TAG- 死牛
