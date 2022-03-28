@@ -5,6 +5,7 @@ models/props_vehicles/airport_catering_truck.mdl TAG- 機場餐飲卡車
 models/props_vehicles/airport_fuel_truck.mdl TAG- 機場加油車
 models/props_vehicles/ambulance.mdl TAG- 救護車
 models/props_vehicles/army_truck.mdl TAG- 軍隊卡車
+models/props/de_nuke/truck_nuke.mdl TAG- 送貨卡車
 models/props_vehicles/boat_fishing.mdl TAG- 釣魚船
 models/props_vehicles/boat_fishing02_static.mdl TAG- 救援船
 models/props_vehicles/boat_rescue_tug_sunshine.mdl TAG- virgil的船(穿透)
