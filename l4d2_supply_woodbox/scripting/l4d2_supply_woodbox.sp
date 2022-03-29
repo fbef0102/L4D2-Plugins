@@ -72,7 +72,7 @@ public Plugin myinfo =
 	name = "[L4D2] CSO Random Supply Boxes drop", 
 	author = "Lux & HarryPotter", 
 	description = "CSO Random Supply Boxes in l4d2", 
-	version = "1.0", 
+	version = "1.1", 
 	url = "https://steamcommunity.com/id/fbef0102/"
 };
 
@@ -278,7 +278,8 @@ void IsAllowed()
 		g_bCvarAllow = true;
 		HookEvents();
 
-		if(PlayerLeftStartTimer == null) PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
+		delete PlayerLeftStartTimer;
+		PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
@@ -302,28 +303,28 @@ bool IsAllowedGameMode()
 	if( g_hCvarMPGameMode == null )
 		return false;
 
+	if( g_bMapStarted == false )
+		return false;
+
+	g_iCurrentMode = 0;
+
+	int entity = CreateEntityByName("info_gamemode");
+	if( IsValidEntity(entity) )
+	{
+		DispatchSpawn(entity);
+		HookSingleEntityOutput(entity, "OnCoop", OnGamemode, true);
+		HookSingleEntityOutput(entity, "OnSurvival", OnGamemode, true);
+		HookSingleEntityOutput(entity, "OnVersus", OnGamemode, true);
+		HookSingleEntityOutput(entity, "OnScavenge", OnGamemode, true);
+		ActivateEntity(entity);
+		AcceptEntityInput(entity, "PostSpawnActivate");
+		if( IsValidEntity(entity) ) // Because sometimes "PostSpawnActivate" seems to kill the ent.
+			RemoveEdict(entity); // Because multiple plugins creating at once, avoid too many duplicate ents in the same frame
+	}
+
 	int iCvarModesTog = g_hCvarModesTog.IntValue;
 	if( iCvarModesTog != 0 )
 	{
-		if( g_bMapStarted == false )
-			return false;
-
-		g_iCurrentMode = 0;
-
-		int entity = CreateEntityByName("info_gamemode");
-		if( IsValidEntity(entity) )
-		{
-			DispatchSpawn(entity);
-			HookSingleEntityOutput(entity, "OnCoop", OnGamemode, true);
-			HookSingleEntityOutput(entity, "OnSurvival", OnGamemode, true);
-			HookSingleEntityOutput(entity, "OnVersus", OnGamemode, true);
-			HookSingleEntityOutput(entity, "OnScavenge", OnGamemode, true);
-			ActivateEntity(entity);
-			AcceptEntityInput(entity, "PostSpawnActivate");
-			if( IsValidEntity(entity) ) // Because sometimes "PostSpawnActivate" seems to kill the ent.
-				RemoveEdict(entity); // Because multiple plugins creating at once, avoid too many duplicate ents in the same frame
-		}
-
 		if( g_iCurrentMode == 0 )
 			return false;
 
@@ -373,10 +374,11 @@ void HookEvents()
 {
 	HookEntityOutput("prop_physics", "OnBreak", eBreakBreakable);
 	HookEvent("round_start", Event_RoundStart);
+	HookEvent("survival_round_start", Event_SurvivalRoundStart,		EventHookMode_PostNoCopy); //生存模式之下計時開始之時
 	HookEvent("round_end",			Event_RoundEnd,		EventHookMode_PostNoCopy);
-	HookEvent("map_transition", Event_RoundEnd); //戰役過關到下一關的時候 (沒有觸發round_end)
-	HookEvent("mission_lost", Event_RoundEnd); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
-	HookEvent("finale_vehicle_leaving", Event_RoundEnd); //救援載具離開之時  (沒有觸發round_end)
+	HookEvent("map_transition", Event_RoundEnd,		EventHookMode_PostNoCopy);//戰役過關到下一關的時候 (沒有觸發round_end)
+	HookEvent("mission_lost", Event_RoundEnd,		EventHookMode_PostNoCopy);//戰役滅團重來該關卡的時候 (之後有觸發round_end)
+	HookEvent("finale_vehicle_leaving", Event_RoundEnd,		EventHookMode_PostNoCopy);//救援載具離開之時  (沒有觸發round_end)
 	HookEvent("finale_start", evtFinaleStart);
 }
 
@@ -384,17 +386,24 @@ void UnhookEvents()
 {
 	UnhookEntityOutput("prop_physics", "OnBreak", eBreakBreakable);
 	UnhookEvent("round_start", Event_RoundStart);
+	UnhookEvent("survival_round_start", Event_SurvivalRoundStart,		EventHookMode_PostNoCopy); //生存模式之下計時開始之時
 	UnhookEvent("round_end",			Event_RoundEnd,		EventHookMode_PostNoCopy);
-	UnhookEvent("map_transition", Event_RoundEnd); //戰役過關到下一關的時候 (沒有觸發round_end)
-	UnhookEvent("mission_lost", Event_RoundEnd); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
-	UnhookEvent("finale_vehicle_leaving", Event_RoundEnd); //救援載具離開之時  (沒有觸發round_end)
+	UnhookEvent("map_transition", Event_RoundEnd,		EventHookMode_PostNoCopy); //戰役過關到下一關的時候 (沒有觸發round_end)
+	UnhookEvent("mission_lost", Event_RoundEnd,			EventHookMode_PostNoCopy);//戰役滅團重來該關卡的時候 (之後有觸發round_end)
+	UnhookEvent("finale_vehicle_leaving", Event_RoundEnd,	EventHookMode_PostNoCopy);//救援載具離開之時  (沒有觸發round_end)
 	UnhookEvent("finale_start", evtFinaleStart);
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
 	g_bFinaleStarted = false;
-	if(PlayerLeftStartTimer == null) PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
+	delete PlayerLeftStartTimer;
+	PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
+}
+
+public void Event_SurvivalRoundStart(Event event, const char[] name, bool dontBroadcast) 
+{
+	GameStart();
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
@@ -939,17 +948,15 @@ int GetColor(char[] sTemp)
 
 public Action Timer_PlayerLeftStart(Handle Timer)
 {
-	if(!g_bCvarAllow)
+	if(!g_bCvarAllow || g_iCurrentMode == 2 )
 	{
 		PlayerLeftStartTimer = null;
 		return Plugin_Stop;
 	}
 
-	if (L4D_HasAnySurvivorLeftSafeArea())
+	if (L4D_HasAnySurvivorLeftSafeArea()) //生存模式之下 always true
 	{
-		g_iBoxCount = 0;
-		int SpawnTime = GetRandomInt(g_iCvarSupplyBoxMinTime, g_iCvarSupplyBoxMaxTime);
-		SupplyBoxDropTimer = CreateTimer(float(SpawnTime), Timer_SupplyBoxDrop);
+		GameStart();
 		PlayerLeftStartTimer = null;
 		return Plugin_Stop;
 	}
@@ -1088,4 +1095,11 @@ public Action GetMeleeTable(Handle timer)
 {
 	GetMeleeClasses();
 	return Plugin_Continue;
+}
+
+void GameStart()
+{
+	g_iBoxCount = 0;
+	int SpawnTime = GetRandomInt(g_iCvarSupplyBoxMinTime, g_iCvarSupplyBoxMaxTime);
+	SupplyBoxDropTimer = CreateTimer(float(SpawnTime), Timer_SupplyBoxDrop);
 }
