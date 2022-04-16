@@ -2790,7 +2790,7 @@ stock void InfectedSpawnFunction(int client, char[] infected_name)
 	}
 	
 	
-	int anyclient = GetRandomClient();
+	int anyclient = my_GetRandomClient();
 	if(anyclient == 0)
 	{
 		return;
@@ -2823,7 +2823,7 @@ void SetLifeState (int client, bool ready)
 		SetEntProp(client, Prop_Send, "m_lifeState", 0, 1);
 }
 
-int GetRandomClient()
+int my_GetRandomClient()
 {
 	int iClientCount, iClients[MAXPLAYERS+1];
 	for (int i = 1; i <= MaxClients; i++)

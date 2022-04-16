@@ -566,7 +566,7 @@ public Action Timer_SupplyBoxDrop(Handle hTimer)
 		return Plugin_Stop;
 	}
 
-	int anyclient = GetRandomClient();
+	int anyclient = my_GetRandomClient();
 	if(anyclient > 0)
 	{
 		int DropNum = GetRandomInt(g_iCvarSupplyBoxMinDrop, g_iCvarSupplyBoxMaxDrop);
@@ -973,7 +973,7 @@ void ResetTimer()
 	}
 }
 
-int GetRandomClient()
+int my_GetRandomClient()
 {
 	int iClientCount, iClients[MAXPLAYERS+1];
 	for (int i = 1; i <= MaxClients; i++)
