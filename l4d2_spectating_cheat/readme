@@ -1,6 +1,8 @@
 A spectator who watching the survivor at first person view can now see the infected model glows though the wall
 (抓透視外掛神器)
 
+看這影片展示 Video: https://www.bilibili.com/video/BV1Xq4y1a7ie
+
 -ChangeLog-
 v2.1
 - Alive SI glow color
@@ -8,7 +10,7 @@ v2.1
 - Admin Flag to toggle Speatator watching cheat
 
 v1.0
-- Original Request paid work by Target (https://steamcommunity.com/id/Target7/)
+- Original Request paid work by Target_7
 
 -Convar-
 cfg\sourcemod\l4d2_specting_cheat.cfg
@@ -32,3 +34,4 @@ l4d2_specting_cheat_use_command_flag "z"
 !hellocheat
 !areyoucheat
 !fuckyoucheat
+!zzz
