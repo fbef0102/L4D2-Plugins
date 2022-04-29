@@ -1,0 +1,19 @@
+﻿"Phrases"
+{
+	"Information"
+	{
+		"de"	"Tipp"
+	}
+	"Refuelling"
+	{
+		"de"	"Man kann die Kettensäge mit Benzin nachtanken, mit Tank in der Hand auf Säge zielen und 'Schiessen' drücken"
+	}
+	"Full"
+	{
+		"de"	"Kettensäge ist vollgetankt"
+	}
+	"Drop"
+	{
+		"de"	"Man kann die Kettensäge fallenlassen - drück NACHLADEN"
+	}
+}

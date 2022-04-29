@@ -1,0 +1,19 @@
+﻿"Phrases"
+{
+	"Information"
+	{
+		"es"	"Nota"
+	}
+	"Refuelling"
+	{
+		"es"	"Puedes rellenar una motosierra, apunta sobre ella y pulsa RATON1 mientras llevas una lata de gasolina"
+	}
+	"Full"
+	{
+		"es"	"El depósito de la motosierra está lleno"
+	}
+	"Drop"
+	{
+		"es"	"Puedes soltar una motosierra pulsando el botón de recargar"
+	}
+}
