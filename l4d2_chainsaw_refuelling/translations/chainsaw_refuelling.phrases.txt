@@ -1,0 +1,19 @@
+﻿"Phrases"
+{
+	"Information"
+	{
+		"en"	"Hint"
+	}
+	"Refuelling"
+	{
+		"en"	"You can refuel a chainsaws, aim for it and press MOUSE1 while carrying a gastank"
+	}
+	"Full"
+	{
+		"en"	"Chainsaw tank is already full"
+	}
+	"Drop"
+	{
+		"en"	"You can drop a chainsaw by pressing the reload button"
+	}
+}

@@ -1,0 +1,19 @@
+﻿"Phrases"
+{
+	"Information"
+	{
+		"da"	"Tip"
+	}
+	"Refuelling"
+	{
+		"da"	"Du kan genopfylde en motorsav der ligger på jorden eller hvis en på dit hold holder den, sigt mod den og tryk på mouse1 mens du holder en benzindunk"
+	}
+	"Full"
+	{
+		"da"	"Motorsaven er allerede fyldt"
+	}
+	"Drop"
+	{
+		"da"	"Du kan smide en motorsav på reload knappen"
+	}
+}

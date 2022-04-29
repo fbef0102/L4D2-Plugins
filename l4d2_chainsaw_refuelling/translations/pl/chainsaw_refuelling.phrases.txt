@@ -1,0 +1,19 @@
+﻿"Phrases"
+{
+	"Information"
+	{
+		"pl"	"Podpowiedź"
+	}
+	"Refuelling"
+	{
+		"pl"	"Możesz napełnić piłę łancuchową, wyceluj w nią i naciśnij MOUSE1 trzymając karnister"
+	}
+	"Full"
+	{
+		"pl"	"Zbiornik piły łancuchowej jest już pełny"
+	}
+	"Drop"
+	{
+		"pl"	"Możesz upuścić piłę łancuchową naciskając przycisk przeładowania"
+	}
+}
