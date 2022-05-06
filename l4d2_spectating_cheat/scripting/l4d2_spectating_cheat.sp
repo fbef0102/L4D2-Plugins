@@ -7,9 +7,11 @@
 
 #define ENTITY_SAFE_LIMIT 2000 //don't create model glow when entity index is above this
 
-ConVar g_hCvarColorGhost, g_hCvarColorAlive, g_hCommandAccess;
+ConVar g_hCvarColorGhost, g_hCvarColorAlive, g_hCommandAccess, g_hDefaultValue;
 
 int g_iCvarColorGhost, g_iCvarColorAlive;
+bool g_bDefaultValue;
+
 char g_sCommandAccesslvl[16];
 
 bool g_bMapStarted;
@@ -36,7 +38,7 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
-    version = "2.1",
+    version = "2.2",
     url = "https://steamcommunity.com/id/fbef0102/"
 }
 
@@ -45,11 +47,13 @@ public void OnPluginStart()
 	g_hCvarColorGhost =	CreateConVar(	"l4d2_specting_cheat_ghost_color",		"255 255 255",		"Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCvarColorAlive =	CreateConVar(	"l4d2_specting_cheat_alive_color",		"255 0 0",			"Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCommandAccess = 	CreateConVar(	"l4d2_specting_cheat_use_command_flag", "z", 				"Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)", FCVAR_NOTIFY);
+	g_hDefaultValue = 	CreateConVar(	"l4d2_specting_cheat_default_valve", 	"0", 				"Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarColorGhost.AddChangeHook(ConVarChanged_Glow_Ghost);
 	g_hCvarColorAlive.AddChangeHook(ConVarChanged_Glow_Alive);
 	g_hCommandAccess.AddChangeHook(ConVarChanged_Access);
+	g_hDefaultValue.AddChangeHook(ConVarChanged_Cvars);
 
 	//Autoconfig for plugin
 	AutoExecConfig(true, "l4d2_specting_cheat");
@@ -77,7 +81,7 @@ public void OnPluginStart()
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		bSpecCheatActive[i] = false;
+		bSpecCheatActive[i] = g_bDefaultValue;
 	}
 	
 	if(g_bLateLoad)
@@ -130,7 +134,7 @@ public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroa
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
-	bSpecCheatActive[client] = false;
+	bSpecCheatActive[client] = g_bDefaultValue;
 }
 
 public void L4D_OnEnterGhostState(int client)
@@ -313,6 +317,10 @@ public void ConVarChanged_Access(Handle convar, const char[] oldValue, const cha
 	}
 }
 
+public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue) {
+	GetCvars();
+}
+
 void GetCvars()
 {
 	char sColor[16],sColor2[16];
@@ -321,6 +329,7 @@ void GetCvars()
 	g_hCvarColorAlive.GetString(sColor2, sizeof(sColor2));
 	g_iCvarColorAlive = GetColor(sColor2);
 	g_hCommandAccess.GetString(g_sCommandAccesslvl,sizeof(g_sCommandAccesslvl));
+	g_bDefaultValue = g_hDefaultValue.BoolValue;
 }
 
 bool IsPlayerGhost(int client)
