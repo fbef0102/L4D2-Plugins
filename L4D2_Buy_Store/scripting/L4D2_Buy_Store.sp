@@ -664,8 +664,8 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	ExplodeString(sArgs, " ", sTempArray, sizeof(sTempArray), sizeof(sTempArray[]));
 	if( strncmp(sTempArray[0], "b", 1, false) == 0 || 
 		strncmp(sTempArray[0], "buy", 3, false) == 0 || 
-		strncmp(sTempArray[0], "shop", 3, false) == 0 ||
-		strncmp(sTempArray[0], "item", 3, false) == 0 )
+		strncmp(sTempArray[0], "shop", 4, false) == 0 ||
+		strncmp(sTempArray[0], "item", 4, false) == 0 )
 	{
 		FakeClientCommand(client, "sm_buy %s", sTempArray[1]);
 		//PrintToChatAll("sm_buy %s", sTempArray[1]);
