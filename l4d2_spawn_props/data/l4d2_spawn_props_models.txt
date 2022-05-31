@@ -917,6 +917,8 @@ models/props/cs_militia/footlocker01_closed.mdl TAG- 鎖住箱
 models/props_junk/cinderblock01a.mdl TAG- 方形瓷磚
 models/props_junk/dumpster.mdl TAG- 垃圾箱 - 綠色
 models/props_junk/dumpster_2.mdl TAG- 垃圾箱 - 白色
+models/props/de_nuke/crate_extralarge.mdl TAG- 木材箱 - 特大號
+models/props/cs_militia/crate_extralargemill.mdl TAG- 木材箱 - 特大號 - 磨損
 models/props_highway/plywood_01.mdl TAG- 小木板 (好用)
 models/props_interiors/handrail_hospital01_16.mdl TAG- 木板條 - 更短
 models/props_interiors/handrail_hospital01_32.mdl TAG- 木板條 - 短
