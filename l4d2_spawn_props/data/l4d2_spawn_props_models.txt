@@ -745,6 +745,7 @@ models/props_wasteland/prison_switchbox001a.mdl TAG- 水管 - 轉換器
 models/props_fortifications/orange_cone001_reference.mdl TAG- 三角錐
 models/props_unique/mopbucket01.mdl TAG- 桶 - 拖把擠水用
 models/props_urban/tire001.mdl TAG- 輪胎
+models/props/de_prodigy/tirestack.mdl TAG- 輪胎堆
 models/props_windows/window_stained_glass_broken01_reference.mdl TAG- 教堂玻璃
 models/props/cs_militia/caseofbeer01.mdl TAG- 啤酒箱
 models/props_interiors/waterbottle.mdl TAG- 水桶
