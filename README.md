@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2022/5/6)
+>All plugins in here only apply to L4D2 (last edited:2022/6/10)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -42,6 +42,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>l4d2_supply_woodbox</b>: CSO Random Supply Boxes in l4d2
 * <b>l4d2_biletheworld</b>: Vomit Jars hit Survivors, Boomer Explosions slime Infected.
 * <b>l4d2_chainsaw_refuelling</b>: Allow refuelling of a chainsaw
+* <b>l4d2_karma_kill</b>: Very Very loudly announces the predicted event of a player leaving the map and or life through height or drown.
 # Scripting Compiler
 * [sourcemod 1.10 compiler](https://github.com/fbef0102/L4D2-Plugins/releases/download/v1.0/sourcemod_1.10_Compiler.zip): sourcemod v1.10.0.6502 scripting
 # Others
