@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name = "L4D2 Survivor and Infected Buy Shop", 
 	author = "(Survivor) Killing zombies and infected to earn credits + (Infected) Doing Damage to survivors to earn credits", 
 	description ="Human and Zombie Shop by HarryPoter", 
-	version = "4.1", 
+	version = "4.2", 
 	url = "http://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -517,9 +517,10 @@ public void OnPluginEnd()
 	for( int i = 1; i <= MaxClients; i++ ) {
 		g_iCredits[i] = 0;
 		UnFreezeInfected(i);
-		RemoveInfectedModelGlow(i);
 		DeleteLight(i);
 	}
+
+	RemoveAllModelGlow();
 
 	delete g_smWeaponShortCut;
 	delete g_smMeleeShortCut;
@@ -1257,6 +1258,11 @@ public void witch_killed(Event event, const char[] name, bool dontBroadcast)
 	g_iCredits[client] += g_iWitchKilled;
 }
 
+public void L4D_OnEnterGhostState(int client)
+{
+	CreateInfectedModelGlow(client);
+}
+
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 { 
 	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
@@ -1269,7 +1275,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	FreezeInfected(client, false);
 	
 	//dead-eye effect
-	RemoveInfectedModelGlow(client); //有可能特感變成坦克復活
 	CreateInfectedModelGlow(client);
 		
 	if(client && IsClientInGame(client) && GetClientTeam(client) == L4D_TEAM_INFECTED)
@@ -2567,7 +2572,9 @@ void CreateDeadEyesGlow(int client, char[] displayName)
 	DeadEyeTimer = CreateTimer(float(g_iDeadEyeTime), Timer_DeadEyeOut);
 
 	for( int i = 1; i <= MaxClients; i++ ) 
+	{
 		CreateInfectedModelGlow(i);
+	}
 
 	int entity = -1;
 	entity = INVALID_ENT_REFERENCE;
@@ -2598,6 +2605,8 @@ public void CreateInfectedModelGlow(int client)
 	!IsClientInGame(client) || 
 	GetClientTeam(client) != L4D_TEAM_INFECTED ||
 	!IsPlayerAlive(client)) return;
+
+	RemoveInfectedModelGlow(client); // just in case
 	
 	///////設定發光物件//////////
 	// Get Client Model
