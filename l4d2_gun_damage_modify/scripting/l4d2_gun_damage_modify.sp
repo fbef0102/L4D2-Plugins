@@ -446,7 +446,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 
 stock bool IsClientAndInGame(int client)
 {
-	if (0 < client && client < MaxClients)
+	if (0 < client && client <= MaxClients)
 	{	
 		return IsClientInGame(client);
 	}

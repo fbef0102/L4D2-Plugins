@@ -29,7 +29,7 @@ public Plugin myinfo =
     name = "Bot SI skeet/level damage fix",
     author = "Tabun & HarryPotter",
     description = "Makes AI SI take (and do) damage like human SI.",
-    version = "1.2",
+    version = "1.3",
     url = "nope"
 }
 
@@ -55,17 +55,19 @@ public void OnPluginStart()
     if (bLateLoad) {
         for (int i = 1; i < MaxClients + 1; i++) {
             if (IsClientAndInGame(i)) {
-                SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
+                OnClientPutInServer(i);
             }
         }
     }
 }
 
 
-public void OnClientPostAdminCheck(int client)
+public void OnClientPutInServer(int client)
 {
     // hook bots spawning
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+    bIsPouncing[client] = false; 
+    iHunterSkeetDamage[client] = 0;
 }
 
 public void OnClientDisconnect(int client)
@@ -200,7 +202,7 @@ public bool IsGrounded(int client)
 
 bool IsClientAndInGame(int index)
 {
-    if (index > 0 && index < MaxClients)
+    if (index > 0 && index <= MaxClients)
     {
         return IsClientInGame(index);
     }
