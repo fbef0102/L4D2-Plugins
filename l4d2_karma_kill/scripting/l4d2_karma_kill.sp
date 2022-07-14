@@ -7,7 +7,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "3.8"
+#define PLUGIN_VERSION "3.9"
 
 bool TEST_DEBUG = false;
 
@@ -766,7 +766,7 @@ public Action Timer_CheckVictim(Handle timer, DataPack DP)
 
 		TR_GetEndPosition(fEndPredictedOrigin);
 
-		//TR_EnumerateEntities(fOrigin, fEndPredictedOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
+		TR_EnumerateEntities(fOrigin, fEndPredictedOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
 
 		if (IsServerDebugMode())
 		{
@@ -800,7 +800,7 @@ public Action Timer_CheckVictim(Handle timer, DataPack DP)
 	// No height? Maybe we can find some useful trigger_hurt.
 	else
 	{
-		//TR_EnumerateEntities(fOrigin, fEndOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
+		TR_EnumerateEntities(fOrigin, fEndOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
 
 		int iSize = GetArraySize(aEntities);
 		delete aEntities;
@@ -1005,6 +1005,7 @@ public Action event_playerDeathPre(Handle event, const char[] name, bool dontBro
 public Action event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
 	// SlowTime creates an entity, and round_start can be called before a map starts ( and before entities can be created )
+
 	if (g_bMapStarted)
 		SlowTime("0.0", "0.0", "0.0", 0.0, 1.0);
 
@@ -1821,7 +1822,7 @@ public Action Timer_CheckCharge(Handle timer, any client)
 
 		TR_GetEndPosition(fEndPredictedOrigin);
 
-		//TR_EnumerateEntities(fOrigin, fEndPredictedOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
+		TR_EnumerateEntities(fOrigin, fEndPredictedOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
 
 		if (IsServerDebugMode())
 		{
@@ -1830,7 +1831,7 @@ public Action Timer_CheckCharge(Handle timer, any client)
 		}
 	}
 
-	//TR_EnumerateEntities(fOrigin, fEndOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
+	TR_EnumerateEntities(fOrigin, fEndOrigin, PARTITION_SOLID_EDICTS | PARTITION_TRIGGER_EDICTS | PARTITION_STATIC_PROPS, RayType_EndPoint, TraceEnum_TriggerHurt, aEntities);
 
 	int iSize = GetArraySize(aEntities);
 	delete aEntities;
@@ -2045,21 +2046,7 @@ void AnnounceKarma(int client, int victim, int type, bool bBird, bool bKillConfi
 	}
 
 	// Major changes might make this unnecessary anymore.
-	/*
-	// Prevent jockey and charger bug where both are attached, and both make a karma...
-	if (client > 0 && GetEntPropEnt(client, Prop_Send, "m_carryVictim") == victim)
-	{
-	    int Jockey = GetEntPropEnt(victim, Prop_Send, "m_jockeyAttacker");
 
-	    if (Jockey != -1)
-	    {
-	        SetEntPropEnt(Jockey, Prop_Send, "m_jockeyVictim", -1);
-	        SetEntPropEnt(victim, Prop_Send, "m_jockeyAttacker", -1);
-
-	        DettachKarmaFromVictim(victim, KT_Jockey);
-	    }
-	}
-	*/
 	if (!bKillConfirmed)
 	{
 		// Ensuring the bKillConfirmed karma event will fire by removing unrelated karma artists.
@@ -2596,9 +2583,6 @@ stock void ClearAllPinners(int victim)
 		if (GetEntPropEnt(i, Prop_Send, "m_tongueVictim") == victim)
 			SetEntPropEnt(i, Prop_Send, "m_tongueVictim", -1);
 
-		if (GetEntPropEnt(i, Prop_Send, "m_jockeyVictim") == victim)
-			SetEntPropEnt(i, Prop_Send, "m_jockeyVictim", -1);
-
 		if (GetEntPropEnt(i, Prop_Send, "m_pummelVictim") == victim)
 			SetEntPropEnt(i, Prop_Send, "m_pummelVictim", -1);
 
@@ -2608,9 +2592,13 @@ stock void ClearAllPinners(int victim)
 
 	SetEntPropEnt(victim, Prop_Send, "m_pounceAttacker", -1);
 	SetEntPropEnt(victim, Prop_Send, "m_tongueOwner", -1);
-	SetEntPropEnt(victim, Prop_Send, "m_jockeyAttacker", -1);
 	SetEntPropEnt(victim, Prop_Send, "m_pummelAttacker", -1);
 	SetEntPropEnt(victim, Prop_Send, "m_carryAttacker", -1);
+
+	if (GetEntPropEnt(victim, Prop_Send, "m_jockeyAttacker") != -1)
+	{
+		L4D2_Jockey_EndRide(victim, GetEntPropEnt(victim, Prop_Send, "m_jockeyAttacker"));
+	}
 
 	// Detach from chargers.
 	AcceptEntityInput(victim, "ClearParent");

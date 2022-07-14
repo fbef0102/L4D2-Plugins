@@ -1,14 +1,14 @@
 Very Very loudly announces the predicted event of a player leaving the map and or life through height or drown.
 
 -Changelog-
-v3.8
+v3.9
 -Remove <autoexecconfig>
 -Remove <updater>
--Remove TR_EnumerateEntities
 
 -Original Post: https://forums.alliedmods.net/showthread.php?t=336225
 
 -Require-
+sourcemod 1.11 or above, otherwise server would crash
 left4dhooks: https://forums.alliedmods.net/showthread.php?p=2684862
 multicolors: https://forums.alliedmods.net/showthread.php?t=247770
 
