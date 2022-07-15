@@ -60,7 +60,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.0",
+	version     = "2.1",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -470,6 +470,11 @@ public void Event_SpawnerGiveItem(Event event, const char[] name, bool dontBroad
 	}
 }
 
+public void L4D_OnEnterGhostState(int client)
+{
+	RemoveEntityModelGlow(client);
+}
+
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 { 
 	RemoveEntityModelGlow(GetClientOfUserId(event.GetInt("userid")));
@@ -482,7 +487,10 @@ public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	RemoveEntityModelGlow(GetClientOfUserId(event.GetInt("userid")));
+	//infected
+	int infected = GetClientOfUserId(event.GetInt("userid"));
+	if(infected && IsClientInGame(infected))
+		RemoveEntityModelGlow(infected);
 }
 
 public void Event_WitchKilled(Event event, const char[] name, bool dontBroadcast)
@@ -879,7 +887,7 @@ void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
 	if (bIsAimInfeced) return;
 	if (GetEngineTime() < g_fSpotMarkCoolDownTime[client]) return; // cool down not yet
 
-	bool  hit;
+	bool hit = false;
 	float vStartPos[3], vEndPos[3];
 	GetClientAbsOrigin(client, vStartPos);
 
@@ -887,10 +895,21 @@ void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
 
 	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim))
 	{
-		hit = true;
-		GetClientAbsOrigin(clientAim, vEndPos);
+		switch(GetClientTeam(clientAim))
+		{
+			case TEAM_SPECTATOR: hit = false;
+			case TEAM_INFECTED: {
+				if(IsPlayerGhost(clientAim))
+					hit = false;
+			}
+			default:{
+				hit = true;
+				GetClientAbsOrigin(clientAim, vEndPos);
+			}
+		}
 	}
-	else
+	
+	if(hit == false)
 	{
 		float vPos[3];
 		GetClientEyePosition(client, vPos);
@@ -1164,8 +1183,26 @@ public bool TraceFilter(int entity, int contentsMask, int client)
 	if (entity == client)
 		return false;
 
-	if (entity == ENTITY_WORLDSPAWN || 1 <= entity <= MaxClients)
+	if (entity == ENTITY_WORLDSPAWN)
 		return true;
+
+
+	if (1 <= entity <= MaxClients && IsClientInGame(entity))
+	{
+		switch(GetClientTeam(entity))
+		{
+			case TEAM_SPECTATOR: return false;
+			case TEAM_INFECTED: {
+				if(IsPlayerGhost(entity))
+					return false;
+			}
+			default:{
+				return true;
+			}
+		}
+
+		return true;
+	}
 
 	return false;
 }
@@ -1368,13 +1405,13 @@ bool Create_info_target(int iEntity, const float vOrigin[3], const char[] sTarge
 	DispatchSpawn(entity);
 	TeleportEntity(entity, vOrigin, NULL_VECTOR, NULL_VECTOR);
 	SetVariantString("!activator");
-	AcceptEntityInput(entity, "SetParent", iEntity);    // We need parent the entity to an info_target_instructor_hint, otherwise it won't follow moveable item such as gascan
+	AcceptEntityInput(entity, "SetParent", iEntity);    // We need parent the info_target to an entity, otherwise it won't follow moveable item such as gascan, pill and throwable
 	
 	SDKHook(entity, SDKHook_SetTransmit, Hook_SetTransmit);
 
 	if (iEntity > 0)
 	{
-		//delete previous info_target_instructor_hint first
+		//delete previous info_target first
 		RemoveTargetInstructor(iEntity);
 		delete g_iTargetInstructorTimer[iEntity];
 
