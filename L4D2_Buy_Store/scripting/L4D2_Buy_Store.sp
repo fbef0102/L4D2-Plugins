@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name = "L4D2 Survivor and Infected Buy Shop", 
 	author = "(Survivor) Killing zombies and infected to earn credits + (Infected) Doing Damage to survivors to earn credits", 
 	description ="Human and Zombie Shop by HarryPoter", 
-	version = "4.2", 
+	version = "4.3", 
 	url = "http://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -2195,7 +2195,7 @@ stock void KillAllCommonInfected(int client, char[] displayName)
 
 stock void KillAllWitches(int client, char[] displayName)
 {
-	int witch = -1;
+	int witch = MaxClients + 1;
 	while((witch = FindEntityByClassname(witch, WITCH_NAME)) != -1)
 	{
 		if (!IsValidEntity(witch))
@@ -2576,8 +2576,7 @@ void CreateDeadEyesGlow(int client, char[] displayName)
 		CreateInfectedModelGlow(i);
 	}
 
-	int entity = -1;
-	entity = INVALID_ENT_REFERENCE;
+	int entity = MaxClients + 1;
 	while ((entity = FindEntityByClassname(entity, INFECTED_NAME)) != -1)
 	{
 		if (!IsValidEntity(entity))
@@ -2585,6 +2584,8 @@ void CreateDeadEyesGlow(int client, char[] displayName)
 		
 		RequestFrame(OnNextFrame, EntIndexToEntRef(entity));
 	}
+
+	entity = MaxClients + 1;
 	while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != -1)
 	{
 		if (!IsValidEntity(entity))
@@ -2740,7 +2741,7 @@ void RemoveAllModelGlow()
 	for( int i = 1; i <= MaxClients; i++ )
 		RemoveInfectedModelGlow(i);
 
-	int entity = -1;
+	int entity = MaxClients + 1;
 	while ((entity = FindEntityByClassname(entity, INFECTED_NAME)) != -1)
 	{
 		if (!IsValidEntity(entity))
@@ -2749,6 +2750,7 @@ void RemoveAllModelGlow()
 		SetEntProp(entity, Prop_Send, "m_iGlowType", 0);
 	}
 
+	entity = MaxClients + 1;
 	while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != -1)
 	{
 		if (!IsValidEntity(entity))
@@ -2925,7 +2927,7 @@ int CountTankInServer()
 
 int CountWitchInServer()
 {
-	int count = 0, entity = -1;
+	int count = 0, entity = MaxClients + 1;
 	while ((entity = FindEntityByClassname(entity, WITCH_NAME)) != -1)
 	{
 		if (!IsValidEntity(entity))
