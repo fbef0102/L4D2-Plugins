@@ -3,9 +3,9 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "1.3"
+#define PLUGIN_VERSION "1.4"
 #define MODEL_CAR1			"models/props_vehicles/taxi_cab.mdl"
-#define MODEL_CAR3			"models/props_vehicles/police_car.mdl"
+#define MODEL_CAR2			"models/props_vehicles/police_car.mdl"
 #define MODEL_GLASS			"models/props_vehicles/police_car_glass.mdl"
 #define MODEL_PROPANE 	"models/props_junk/propanecanister001a.mdl"
 #define MODEL_LIGHTBAR 	"models/props_vehicles/police_car_lightbar.mdl.mdl"
@@ -43,15 +43,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success; 
 }
 
-public void OnMapStart()
-{
-	PrecacheModel(MODEL_CAR1);
-	PrecacheModel(MODEL_CAR3);
-	PrecacheModel(MODEL_GLASS);
-	PrecacheModel(MODEL_PROPANE);
-	PrecacheModel(MODEL_LIGHTBAR);
-}
-
 public void OnPluginStart()
 {
 	CreateConVar("l4d_flying_car_version", PLUGIN_VERSION, "", 0|FCVAR_DONTRECORD);
@@ -64,39 +55,32 @@ public void OnPluginStart()
 	l4d_flying_car_random_model = CreateConVar("l4d_flying_car_random_model", "1", "Choose model randomly instead using custom one? 0:disable, 1:enable", 0, true, 0.0, true, 1.0);
 	
 	AutoExecConfig(true, "l4d_flying_car");
-	HookEvent("round_freeze_end", event_roundfreeze_end, EventHookMode_PostNoCopy);
 }
 
-/*
-public Action test2(int client, int args)
-{
-	CreateLightbar(client);
-}
-*/
+bool g_bValidMap;
+public void OnMapStart()
+{	
+	g_bValidMap = false;
 
-public void event_roundfreeze_end(Event event, const char[] name, bool dontBroadcast)
-{
-	if ( !GetConVarBool(l4d_flying_car_enable) )
-		return;
+	char sMap[64];
+	GetCurrentMap(sMap, sizeof(sMap));
+	if( strcmp(sMap, "c8m5_rooftop") == 0 )
+		g_bValidMap = true;
 	
-	//check map:
-	char buffer[32];
-	GetCurrentMap(buffer, sizeof(buffer));
-	if ( strcmp(buffer, "l4d_hospital05_rooftop")==0 ){}
-	else if ( strcmp(buffer, "l4d_vs_hospital05_rooftop")==0 ){}
-	else if ( strcmp(buffer, "c8m5_rooftop")==0 ){}
-	else return;
-	
-	HookEvent("finale_escape_start", event_finale_escape_start, EventHookMode_PostNoCopy);
-	HookEvent("finale_vehicle_leaving", event_finale_vehicle_leaving, EventHookMode_PostNoCopy);
-	HookEvent("finale_vehicle_ready", event_finale_vehicle_ready, EventHookMode_PostNoCopy);
+	if(g_bValidMap)
+	{
+		PrecacheModel(MODEL_CAR1);
+		PrecacheModel(MODEL_CAR2);
+		PrecacheModel(MODEL_GLASS);
+		PrecacheModel(MODEL_PROPANE);
+		PrecacheModel(MODEL_LIGHTBAR);
+	}
 }
 
 public void event_finale_escape_start(Handle event, const char[] name, bool dontBroadcast)
 {
-	if ( !GetConVarBool(l4d_flying_car_enable) )
+	if ( !GetConVarBool(l4d_flying_car_enable) || !g_bValidMap)
 	{
-		UnhookEvent("finale_vehicle_leaving", event_finale_vehicle_leaving);
 		return;
 	}
 	
@@ -105,7 +89,7 @@ public void event_finale_escape_start(Handle event, const char[] name, bool dont
 	
 	//creating a car without glasses:
 	int car = CreateEntityByName("prop_dynamic");
-	if ( !IsValidEntity(car) )
+	if ( car <= MaxClients || !IsValidEntity(car) )
 		return;
 	
 	g_iCar = EntIndexToEntRef(car);
@@ -115,7 +99,7 @@ public void event_finale_escape_start(Handle event, const char[] name, bool dont
 		switch(GetRandomInt(1, 2))
 		{
 			case 1: SetEntityModel(car, MODEL_CAR1);
-			case 2: SetEntityModel(car, MODEL_CAR3);
+			case 2: SetEntityModel(car, MODEL_CAR2);
 		}
 	}
 	else
@@ -123,14 +107,15 @@ public void event_finale_escape_start(Handle event, const char[] name, bool dont
 		switch( GetConVarInt(l4d_flying_car_model) )
 		{
 			case 1: SetEntityModel(car, MODEL_CAR1);
-			case 2: SetEntityModel(car, MODEL_CAR3);
+			case 2: SetEntityModel(car, MODEL_CAR2);
 		}
 	}
 	
 	//creating glasses:
 	int glass = CreateEntityByName("prop_dynamic");
-	if ( !IsValidEntity(glass) )
+	if ( glass <= MaxClients || !IsValidEntity(glass) )
 		return;
+
 	SetEntityModel(glass, MODEL_GLASS);
 	
 	//bugfix: glasses fading...
@@ -216,7 +201,8 @@ public void event_finale_escape_start(Handle event, const char[] name, bool dont
 	if ( GetConVarBool(l4d_flying_car_ignite) )
 	{
 		int particle = CreateEntityByName("info_particle_system");
-		if ( !IsValidEdict(particle) ) return;
+		if ( particle <= MaxClients || !IsValidEdict(particle) ) return;
+
 		g_iFlame = EntIndexToEntRef(particle); //make it global
 		DispatchKeyValue(particle, "effect_name", "env_fire_medium");
 		DispatchSpawn(particle);
@@ -227,11 +213,11 @@ public void event_finale_escape_start(Handle event, const char[] name, bool dont
 		TeleportEntity(particle, view_as<float>({50.0, 0.0, 15.0}), view_as<float>({0.0, 0.0, 0.0}), NULL_VECTOR);
 	}
 }
+
 public void event_finale_vehicle_ready(Handle event, const char[] name, bool dontBroadcast)
 {
-	if ( !GetConVarBool(l4d_flying_car_enable) )
+	if ( !GetConVarBool(l4d_flying_car_enable) || !g_bValidMap)
 	{
-		UnhookEvent("finale_vehicle_leaving", event_finale_vehicle_leaving);
 		return;
 	}
 	
@@ -251,8 +237,10 @@ public void event_finale_vehicle_ready(Handle event, const char[] name, bool don
 
 public void event_finale_vehicle_leaving(Handle event, const char[] name, bool dontBroadcast)
 {
-	if ( !GetConVarBool(l4d_flying_car_enable) )
+	if ( !GetConVarBool(l4d_flying_car_enable) || !g_bValidMap)
+	{
 		return;
+	}
 	
 	int car = EntRefToEntIndex(g_iCar);
 	if ( !IsValidEntity(car) )
@@ -302,11 +290,11 @@ public Action RandomExplosions(Handle timer)
 	{
 		//create a new explosion...
 		explosion = CreateEntityByName("prop_physics");
-		if ( !IsValidEntity(explosion) )
+		if ( explosion <= MaxClients || !IsValidEntity(explosion) )
 		{
-			//LogError("Fatal error creating explosion entity! Timer will continue!");
 			return Plugin_Continue;
 		}
+		
 		g_iExplosion = EntIndexToEntRef(explosion); //make it global
 		DispatchKeyValue(explosion, "physdamagescale", "0.0");
 		DispatchKeyValue(explosion, "model", MODEL_PROPANE);
