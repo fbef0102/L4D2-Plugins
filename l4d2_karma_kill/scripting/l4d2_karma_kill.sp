@@ -7,7 +7,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "3.9"
+#define PLUGIN_VERSION "4.0"
 
 bool TEST_DEBUG = false;
 
@@ -586,7 +586,7 @@ public void Plugins_OnJockeyJumpPost(int victim, int jockey, float fForce)
 	victimTimer[victim].timer = CreateDataTimer(CHARGE_CHECKING_INTERVAL, Timer_CheckVictim, victimTimer[victim].dp, TIMER_REPEAT);
 
 	victimTimer[victim].dp.WriteFloat(JOCKEY_JUMP_SECONDS_NEEDED_AGAINST_LEDGE_HANG_PER_FORCE * (fForce / 500.0));
-	victimTimer[victim].dp.WriteCell(GetClientUserId(victim));
+	victimTimer[victim].dp.WriteCell(victim);
 	victimTimer[victim].dp.WriteCell(INVALID_HANDLE);
 }
 
@@ -648,7 +648,7 @@ public void L4D2_OnPlayerFling_Post(int victim, int attacker, const float vecDir
 		victimTimer[victim].timer = CreateDataTimer(CHARGE_CHECKING_INTERVAL, Timer_CheckVictim, victimTimer[victim].dp, TIMER_REPEAT);
 
 		victimTimer[victim].dp.WriteFloat(FLING_SECONDS_NEEDED_AGAINST_LEDGE_HANG);
-		victimTimer[victim].dp.WriteCell(GetClientUserId(victim));
+		victimTimer[victim].dp.WriteCell(victim);
 		victimTimer[victim].dp.WriteCell(INVALID_HANDLE);
 	}
 }
@@ -658,12 +658,16 @@ public Action Timer_CheckVictim(Handle timer, DataPack DP)
 	DP.Reset();
 
 	float secondsLeft = DP.ReadFloat();
-	int   client      = GetClientOfUserId(DP.ReadCell());
+	int   client      = DP.ReadCell();
 
 	Handle hIgnoreTimer = DP.ReadCell();
 
-	if (client == 0)
+	if (!IsClientInGame(client))
+	{
+		victimTimer[client].timer = INVALID_HANDLE;
+		victimTimer[client].dp    = null;
 		return Plugin_Stop;
+	}
 
 	if (!IsPlayerAlive(client))
 	{
@@ -859,7 +863,7 @@ public void L4D_TankClaw_OnPlayerHit_Post(int tank, int claw, int victim)
 	victimTimer[victim].timer = CreateDataTimer(CHARGE_CHECKING_INTERVAL, Timer_CheckVictim, victimTimer[victim].dp, TIMER_REPEAT);
 
 	victimTimer[victim].dp.WriteFloat(PUNCH_SECONDS_NEEDED_AGAINST_LEDGE_HANG);
-	victimTimer[victim].dp.WriteCell(GetClientUserId(victim));
+	victimTimer[victim].dp.WriteCell(victim);
 	victimTimer[victim].dp.WriteCell(INVALID_HANDLE);
 }
 
@@ -1361,7 +1365,7 @@ public void OnPlayersSwapped(int oldPlayer, int newPlayer)
 		victimTimer[newPlayer].timer = CreateDataTimer(CHARGE_CHECKING_INTERVAL, Timer_CheckVictim, victimTimer[newPlayer].dp, TIMER_REPEAT);
 
 		victimTimer[newPlayer].dp.WriteFloat(secondsLeft);
-		victimTimer[newPlayer].dp.WriteCell(GetClientUserId(newPlayer));
+		victimTimer[newPlayer].dp.WriteCell(newPlayer);
 		victimTimer[newPlayer].dp.WriteCell(INVALID_HANDLE);
 	}
 	if (ledgeTimer[oldPlayer] != INVALID_HANDLE)
@@ -1588,7 +1592,7 @@ public Action event_ChargerImpact(Handle event, const char[] name, bool dontBroa
 		victimTimer[victim].timer = CreateDataTimer(CHARGE_CHECKING_INTERVAL, Timer_CheckVictim, victimTimer[victim].dp, TIMER_REPEAT);
 
 		victimTimer[victim].dp.WriteFloat(IMPACT_SECONDS_NEEDED_AGAINST_LEDGE_HANG);
-		victimTimer[victim].dp.WriteCell(GetClientUserId(victim));
+		victimTimer[victim].dp.WriteCell(victim);
 		victimTimer[victim].dp.WriteCell(INVALID_HANDLE);
 	}
 
@@ -1693,7 +1697,7 @@ public Action Timer_CheckJockeyRideLedge(Handle timer, any client)
 	victimTimer[client].timer = CreateDataTimer(1.0, Timer_CheckVictim, victimTimer[client].dp, TIMER_REPEAT);
 
 	victimTimer[client].dp.WriteFloat(0.0);
-	victimTimer[client].dp.WriteCell(GetClientUserId(client));
+	victimTimer[client].dp.WriteCell(client);
 	victimTimer[client].dp.WriteCell(ledgeTimer[client]);
 
 	// AnnounceKarma deletes this timer to avoid infinite karma spam.
@@ -1736,7 +1740,7 @@ public Action event_tongueGrabOrRelease(Handle event, const char[] name, bool do
 	victimTimer[victim].timer = CreateDataTimer(CHARGE_CHECKING_INTERVAL, Timer_CheckVictim, victimTimer[victim].dp, TIMER_REPEAT);
 
 	victimTimer[victim].dp.WriteFloat(SMOKE_SECONDS_NEEDED_AGAINST_LEDGE_HANG);
-	victimTimer[victim].dp.WriteCell(GetClientUserId(victim));
+	victimTimer[victim].dp.WriteCell(victim);
 	victimTimer[victim].dp.WriteCell(INVALID_HANDLE);
 
 	return Plugin_Continue;
