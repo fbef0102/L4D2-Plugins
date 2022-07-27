@@ -240,8 +240,8 @@ static char survivorSpecialMenu[][][] =
 	{"Jump+1", 			"Jump+1", 						"2250"},
 	{"Slay_Infected", 	"Slay Infected Attacker", 		"2500"},
 	{"Kill_Witches", 	"Kill Witches", 				"2750"},
-	{"Respawn", 		"Respawn Alive", 				"3000"},
-	{"Freeze_Infected", "Freeze-Infected", 				"3250"},
+	{"Respawn", 		"Respawn Alive", 				"3250"},
+	{"Freeze_Infected", "Freeze-Infected", 				"3500"},
 };
 
 static char infectedSpawnMenu[][][] =
@@ -2630,7 +2630,7 @@ public void CreateInfectedModelGlow(int client)
 	SetEntProp(entity, Prop_Send, "m_nGlowRange", 4500);
 	SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
 	if(IsPlayerGhost(client))
-		SetEntProp(entity, Prop_Send, "m_glowColorOverride", 255 + 255 * 256 + 255 * 65536);
+		SetEntProp(entity, Prop_Send, "m_glowColorOverride", 0 + 0 * 256 + 255 * 65536);
 	else
 		SetEntProp(entity, Prop_Send, "m_glowColorOverride", 255 + 0 + 0);
 	AcceptEntityInput(entity, "StartGlowing");
@@ -2641,8 +2641,9 @@ public void CreateInfectedModelGlow(int client)
 	
 	// Set model attach to client, and always synchronize
 	SetVariantString("!activator");
+	AcceptEntityInput(entity, "SetParent", client);
+	SetVariantString("!activator");
 	AcceptEntityInput(entity, "SetAttached", client);
-	AcceptEntityInput(entity, "TurnOn");
 	///////發光物件完成//////////
 	
 	g_iModelIndex[client] = EntIndexToEntRef(entity);
@@ -2707,7 +2708,7 @@ public void OnNextFrame(int entityRef)
 		{	
 			SetEntProp(entity, Prop_Send, "m_nGlowRange", 3000);
 			SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
-			SetEntProp(entity, Prop_Send, "m_glowColorOverride", 200 + 200 * 256 + 0);
+			SetEntProp(entity, Prop_Send, "m_glowColorOverride", 255 + 155 * 256 + 0);
 			AcceptEntityInput(entity, "StartGlowing");
 		}
 	}
@@ -2715,7 +2716,7 @@ public void OnNextFrame(int entityRef)
 	{
 		SetEntProp(entity, Prop_Send, "m_nGlowRange", 3124);
 		SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
-		SetEntProp(entity, Prop_Send, "m_glowColorOverride", 255 + 0 + 0);
+		SetEntProp(entity, Prop_Send, "m_glowColorOverride", 155 + 0 + 255 * 65536);
 		AcceptEntityInput(entity, "StartGlowing");
 	}
 }
@@ -3433,7 +3434,8 @@ int BuyItem(int client, int team, EMenuType eMenutype, int index)
 				
 				if (strcmp(infectedSpecialMenu[index][0], "Horde", false) == 0)
 				{
-					CheatCommand(client, "director_force_panic_event");
+					CheatCommand(client, "z_spawn", "mob", "auto");
+					CheatCommand(client, "z_spawn", "mob", "auto");
 					PrintToTeam(client, 0, infectedSpecialMenu[index][1], true);
 				}
 				else if (strcmp(infectedSpecialMenu[index][0], "Witch", false) == 0)
@@ -3900,17 +3902,21 @@ void GiveItems(int client) // give client weapon
 	int flags = GetCommandFlags("give");
 	SetCommandFlags("give", flags & ~FCVAR_CHEAT);
 	
-	FakeClientCommand( client, "give pistol" );
+	FakeClientCommand(client, "give pistol_magnum");
 
 	int iRandom = GetRandomInt(1,4);
 	switch ( iRandom )
 	{
-		case 1: FakeClientCommand(client, "give smg");
-		case 2: FakeClientCommand(client, "give smg_silenced");
-		case 3: FakeClientCommand(client, "give pumpshotgun");
-		case 4: FakeClientCommand(client, "give shotgun_chrome");
+		case 1: FakeClientCommand(client, "give rifle_m60");
+		case 2: FakeClientCommand(client, "give grenade_launcher");
+		case 3: FakeClientCommand(client, "give autoshotgun");
+		case 4: FakeClientCommand(client, "give sniper_awp");
 		default: {}//nothing
 	}
+
+	FakeClientCommand( client, "give vomitjar" );
+	FakeClientCommand( client, "give first_aid_kit" );
+	FakeClientCommand( client, "give adrenaline" );
 	
 	SetCommandFlags( "give", flags);
 }
