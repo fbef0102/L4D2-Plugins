@@ -5,9 +5,10 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define GETVERSION "1.6"
+#define GETVERSION "1.7"
 #define ARRAY_SIZE 2048
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn entity when it's index is above this
+#define EXLOPDE_INTERVAL 8.0
 
 #define TEST_DEBUG 		0
 #define TEST_DEBUG_LOG 	0
@@ -26,17 +27,17 @@ static const char DAMAGE_FIRE_HUGE[] = 	"fire_window_hotel2";
 static const char FIRE_SOUND[] = 			"ambient/fire/fire_med_loop1.wav";
 static bool   g_bConfigLoaded;
 
-bool g_bLowWreck[ARRAY_SIZE+1] = false;
-bool g_bMidWreck[ARRAY_SIZE+1] = false;
-bool g_bHighWreck[ARRAY_SIZE+1] = false;
-bool g_bCritWreck[ARRAY_SIZE+1] = false;
-bool g_bExploded[ARRAY_SIZE+1] = false;
-bool g_bHooked[ARRAY_SIZE+1] = false;
-int g_iEntityDamage[ARRAY_SIZE+1] = 0;
-int g_iParticle[ARRAY_SIZE+1] = -1;
+bool g_bLowWreck[ARRAY_SIZE+1];
+bool g_bMidWreck[ARRAY_SIZE+1];
+bool g_bHighWreck[ARRAY_SIZE+1];
+bool g_bCritWreck[ARRAY_SIZE+1];
+bool g_bExploded[ARRAY_SIZE+1];
+bool g_bHooked[ARRAY_SIZE+1];
+int g_iEntityDamage[ARRAY_SIZE+1];
+int g_iParticle[ARRAY_SIZE+1] = {-1};
 bool g_bDisabled = false;
 int g_iPlayerSpawn, g_iRoundStart;
-
+float g_GameExplodeTime;
 
 ConVar g_cvarMaxHealth;
 ConVar g_cvarRadius;
@@ -148,6 +149,8 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
+	g_GameExplodeTime = 0.0;
+
 	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
 		CreateTimer(0.5, TimerStart, _, TIMER_FLAG_NO_MAPCHANGE);
 	g_iRoundStart = 1;
@@ -165,9 +168,11 @@ public Action TimerStart(Handle timer)
 	g_bConfigLoaded = true;
 	ResetPlugin();
 
-	if(g_bDisabled) return;
+	if(g_bDisabled) return Plugin_Continue;
 
 	FindMapCars();
+
+	return Plugin_Continue;
 }
 
 //Thanks to AtomicStryker
@@ -196,14 +201,14 @@ void FindMapCars()
 		GetEdictClassname(i, classname, sizeof(classname));
 		GetEntPropString(i, Prop_Data, "m_ModelName", model, sizeof(model));
 
-		if(strcmp(classname, "prop_physics")  == 0 || strcmp(classname, "prop_physics_override") == 0)
+		if(strncmp(classname, "prop_physics", 12) == 0)
 		{
 			if(StrContains(model, "vehicle", false) != -1)
 			{
 				g_bHooked[i] = true;
 				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 			}
-			else if (strcmp(model, "models/props/cs_assault/forklift.mdl", false) == 0 || strcmp(model, "models/props_fairgrounds/bumpercar.mdl", false) == 0)
+			else if (strcmp(model, "models/props/cs_assault/forklift.mdl", false) == 0)
 			{
 				g_bHooked[i] = true;
 				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
@@ -378,14 +383,19 @@ public void OnTakeDamagePost(int victim, int attacker, int inflictor, float dama
 		}
 		else if(tdamage > MaxDamageHandle * 5 && !g_bExploded[victim])
 		{
-			g_bExploded[victim] = true;
-			float carPos[3];
-			GetEntPropVector(victim, Prop_Data, "m_vecOrigin", carPos);
-			CreateExplosion(carPos);
-			EditCar(victim);
-			LaunchCar(victim);
+			if(g_GameExplodeTime < GetEngineTime())
+			{
+				g_bExploded[victim] = true;
+				float carPos[3];
+				GetEntPropVector(victim, Prop_Data, "m_vecOrigin", carPos);
+				CreateExplosion(carPos);
+				EditCar(victim);
+				LaunchCar(victim);
 
-			SDKUnhook(victim, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+				SDKUnhook(victim, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+				g_GameExplodeTime = GetEngineTime() + EXLOPDE_INTERVAL;
+			}
 		}
 	}
 }
@@ -424,12 +434,12 @@ void LaunchCar(int car)
 
 public Action timerNormalVelocity(Handle timer, any entityRef)
 {
-	if(g_bDisabled) return;
+	if(g_bDisabled) return Plugin_Continue;
 
 	int car = EntRefToEntIndex(entityRef);
 
 	if (car == INVALID_ENT_REFERENCE)
-		return;
+		return Plugin_Continue;
 
 	if(IsValidEntity(car))
 	{
@@ -437,11 +447,13 @@ public Action timerNormalVelocity(Handle timer, any entityRef)
 		SetEntPropVector(car, Prop_Data, "m_vecVelocity", vel);
 		TeleportEntity(car, NULL_VECTOR, NULL_VECTOR, vel);
 	}
+
+	return Plugin_Continue;
 }
 
 public Action timerRemoveCarFire(Handle timer, int ref)
 {
-	if(g_bDisabled) return;
+	if(g_bDisabled) return Plugin_Continue;
 
 	int car;
 	if(ref && (car = EntRefToEntIndex(ref)) != INVALID_ENT_REFERENCE)
@@ -454,6 +466,8 @@ public Action timerRemoveCarFire(Handle timer, int ref)
 			AcceptEntityInput(car, "Kill");
 		}
 	}
+
+	return Plugin_Continue;
 }
 
 void CreateExplosion(float carPos[3])
@@ -621,6 +635,8 @@ public Action timerStop(Handle timer, int ref)
 		AcceptEntityInput(ref, "Stop");
 		AcceptEntityInput(ref, "kill");
 	}
+
+	return Plugin_Continue;
 }
 
 public Action timerTurnOff(Handle timer, int ref)
@@ -630,6 +646,8 @@ public Action timerTurnOff(Handle timer, int ref)
 		AcceptEntityInput(ref, "TurnOff");
 		AcceptEntityInput(ref, "kill");
 	}
+
+	return Plugin_Continue;
 }
 
 public Action timerDeleteParticles(Handle timer, int ref)
@@ -638,6 +656,8 @@ public Action timerDeleteParticles(Handle timer, int ref)
 	{
 		AcceptEntityInput(ref, "kill");
 	}
+
+	return Plugin_Continue;
 }
 
 void FlingPlayer(int target, float vector[3], int attacker)
