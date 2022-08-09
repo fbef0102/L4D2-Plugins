@@ -1000,6 +1000,7 @@ models/deadbodies/dead_male_torso_01.mdl TAG- 死去平民 - 男性 - 一半屍�
 models/deadbodies/dead_pilot.mdl TAG- 飛行員屍體 - 躺著
 models/deadbodies/dead_military_male01.mdl TAG- 軍人屍體 - 站立 (穿透)
 models/deadbodies/dead_male_suit_01.mdl TAG- 男西裝屍體 - 站立 (穿透)
+models/deadbodies/chm_fallensurvivor.mdl TAG- 墮落生還者 - 站立 (穿透)
 models/deadbodies/default/pose_d.mdl TAG- 男側躺屍體（穿透）
 models/deadbodies/default/pose_a.mdl TAG- 趴著的女屍 c11m2
 models/deadbodies/default/pose_b.mdl TAG- 垂頭坐屍體 c11m3
