@@ -5,10 +5,10 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define GETVERSION "1.7"
+#define GETVERSION "1.8"
 #define ARRAY_SIZE 2048
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn entity when it's index is above this
-#define EXLOPDE_INTERVAL 8.0
+#define EXLOPDE_INTERVAL 6.0
 
 #define TEST_DEBUG 		0
 #define TEST_DEBUG_LOG 	0
@@ -133,6 +133,11 @@ public void OnMapStart()
 		PrecacheModel("sprites/muzzleflash4.vmt");
 		PrecacheModel("models/props_vehicles/cara_82hatchback_wrecked.mdl");
 		PrecacheModel("models/props_vehicles/cara_95sedan_wrecked.mdl");
+
+		PrecacheSound(FIRE_SOUND);
+		PrecacheSound(EXPLOSION_SOUND);
+		PrecacheSound(EXPLOSION_SOUND2);
+		PrecacheSound(EXPLOSION_SOUND3);
 	}
 }
 
@@ -371,7 +376,6 @@ public void OnTakeDamagePost(int victim, int attacker, int inflictor, float dama
 		}
 		else if(tdamage >= MaxDamageHandle * 3 && tdamage < MaxDamageHandle * 4 && !g_bHighWreck[victim])
 		{
-			PrecacheSound(FIRE_SOUND);
 			EmitSoundToAll(FIRE_SOUND, victim);
 			AttachParticle(victim, DAMAGE_FIRE_SMALL);
 			g_bHighWreck[victim] = true;
@@ -395,6 +399,15 @@ public void OnTakeDamagePost(int victim, int attacker, int inflictor, float dama
 				SDKUnhook(victim, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 
 				g_GameExplodeTime = GetEngineTime() + EXLOPDE_INTERVAL;
+			}
+			else
+			{
+				if(!g_bCritWreck[victim])
+				{
+					EmitSoundToAll(FIRE_SOUND, victim);
+					AttachParticle(victim, DAMAGE_FIRE_HUGE);
+					g_bCritWreck[victim] = true;
+				}
 			}
 		}
 	}
@@ -570,17 +583,14 @@ void CreateExplosion(float carPos[3])
 	{
 		case 1:
 		{
-			PrecacheSound(EXPLOSION_SOUND);
 			EmitSoundToAll(EXPLOSION_SOUND);
 		}
 		case 2:
 		{
-			PrecacheSound(EXPLOSION_SOUND2);
 			EmitSoundToAll(EXPLOSION_SOUND2);
 		}
 		case 3:
 		{
-			PrecacheSound(EXPLOSION_SOUND3);
 			EmitSoundToAll(EXPLOSION_SOUND3);
 		}
 	}
