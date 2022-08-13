@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION		"2.7"
+#define PLUGIN_VERSION		"2.8"
 
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -19,34 +19,35 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
+#define MAXENTITIES                   2048
 #define DATABASE_CONFIG 	"l4d2gifts"
 #define TAG_GIFT			"[GIFTS]"
 #define	MAX_GIFTS			20
 #define MAX_STRING_WIDTH	64
 #define MAX_TYPEGIFTS		3
+#define TYPE_STANDARD		1
 #define TYPE_SPECIAL		2
-#define TYPE_SPECIAL2		1
+#define STRING_STANDARD		"standard"
+#define STRING_SPECIAL		"special"
 #define MAX_SPECIALITEMS	53
 #define MAX_SPECIALITEMS2	9
 
 #define TEAM_SURVIVOR		2
 #define TEAM_INFECTED		3
 
-#define COLOR_CYAN  		"0 255 255 255"
-#define COLOR_LIGHT_GREEN 	"144 238 144 255"
-#define COLOR_PURPLE 		"128 0 128 255"
-#define COLOR_PINK 			"250 88 130 255"
-#define COLOR_RED 			"255 0 0 255"
-#define COLOR_ORANGE 		"254 100 46 255"
-#define COLOR_YELLOW 		"255 255 0 255"
-
 #define AURA_CYAN  			"0 255 255"
 #define AURA_BLUE  			"0 0 255"
-#define AURA_GREEN 			"144 238 144"
-#define AURA_PINK 			"250 88 130"
+#define AURA_GREEN 			"0 255 0"
+#define AURA_PINK 			"255 0 150"
 #define AURA_RED 			"255 0 0"
-#define AURA_ORANGE 		"254 100 46"
+#define AURA_ORANGE 		"255 155 0"
 #define AURA_YELLOW 		"255 255 0"
+#define AURA_PURPLE 		"155 0 255"
+#define AURA_WHITE			"255 255 255"
+#define AURA_LIME			"128 255 0"
+#define AURA_MAROON			"128 0 0"
+#define AURA_TEAL			"0 128 128"
+#define AURA_GREY			"50 50 50"
 
 #define	MAX_WEAPONS2		29
 
@@ -195,9 +196,7 @@ char g_sTypeModel[MAX_GIFTS][10];
 char g_sTypeGift[MAX_GIFTS][10];
 float g_fScale[MAX_GIFTS];
 
-int g_GifLife[2040];
-char g_sGifType[2040][10];
-int g_GifEntIndex[2040];
+char g_sGifType[MAXENTITIES + 1][10];
 
 bool bGiftEnable;
 float fGiftLife;
@@ -229,6 +228,7 @@ public Plugin myinfo =
 	url = "https://forums.alliedmods.net/showthread.php?t=302731"
 }
 
+bool g_bLate;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
 {
 	EngineVersion test = GetEngineVersion();
@@ -239,6 +239,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		return APLRes_SilentFailure;
 	}
 	
+	g_bLate = late;
 	return APLRes_Success; 
 }
 
@@ -252,9 +253,19 @@ public void OnPluginStart()
 		SetFailState("Cannot find the file 'data/l4d2_gifts.cfg'");
 	}
 	
-	if(!LoadConfigGifts(false))
+	if(g_bLate)
 	{
-		SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
+		if(!LoadConfigGifts(true))
+		{
+			SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
+		}
+	}
+	else
+	{
+		if(!LoadConfigGifts(false))
+		{
+			SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
+		}
 	}
 	
 	if(g_iCountGifts == 0 )
@@ -349,7 +360,7 @@ public void CheckPrecacheModel(char[] Model)
 {
 	if (!IsModelPrecached(Model))
 	{
-		PrecacheModel(Model, false);
+		PrecacheModel(Model, true);
 	}
 }
 
@@ -389,24 +400,24 @@ public Action Command_Gift(int client, int args)
 	
 	if(args < 1)
 	{
-		DropGift(client, "special");
+		DropGift(client, STRING_STANDARD);
 	}
 	else
 	{
 		char arg1[10];
 		GetCmdArg(1, arg1, sizeof(arg1));
 		
-		if(StrEqual(arg1, "special", false))
+		if(StrEqual(arg1, STRING_STANDARD, false))
 		{
-			DropGift(client, "special");
+			DropGift(client, STRING_STANDARD);
 		}
-		else if(StrEqual(arg1, "special2", false))
+		else if(StrEqual(arg1, STRING_SPECIAL, false))
 		{
-			DropGift(client, "special2");
+			DropGift(client, STRING_SPECIAL);
 		}
 		else
 		{
-			ReplyToCommand(client, "[SM] Usage: sm_gift <special or special2>");
+			ReplyToCommand(client, "[SM] Usage: sm_gift <standard or special>");
 		}
 	}
 	return Plugin_Handled;
@@ -429,7 +440,7 @@ public Action Command_GiftCollected(int client, int args)
 	
 
 	PrintToChat(client, "%s %T", TAG_GIFT, "Number of gifts collected", client);
-	PrintToChat(client, "Special: %T", "In current map: %d | In current round: %d", client, CurrentGiftsForMap[client][TYPE_SPECIAL], CurrentGiftsForRound[client][TYPE_SPECIAL]);
+	PrintToChat(client, "Special: %T", "In current map: %d | In current round: %d", client, CurrentGiftsForMap[client][TYPE_STANDARD], CurrentGiftsForRound[client][TYPE_STANDARD]);
 	PrintToChat(client, "Total: %T", "In current map: %d | In current round: %d", client, CurrentGiftsTotalForMap[client], CurrentGiftsTotalForRound[client]);
 
 	return Plugin_Handled;
@@ -464,7 +475,7 @@ public bool LoadConfigGifts(bool precache)
 	
 	if(!FileToKeyValues(hFile, sPath_gifts) )
 	{
-		CloseHandle(hFile);
+		delete hFile;
 		return false;
 	}
 	
@@ -499,16 +510,17 @@ public bool LoadConfigGifts(bool precache)
 	} 
 	while (KvGotoNextKey(hFile));
 	
-	CloseHandle(hFile);
+	delete hFile;
 
 	if(precache)
 	{
 		PrecacheModelGifts();
 	}
+
 	return true;
 }
 
-public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
 	g_bIsOpenSafeRoom = false;
@@ -532,7 +544,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 	}
 }
 
-public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
 	g_bIsOpenSafeRoom = false;
@@ -543,12 +555,12 @@ public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	gifts_collected_round = 0;
 }
 
-public Action Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast) 
+public void Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast) 
 {
 	g_bFinalHasStart = true;
 }
 
-public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!bGiftEnable)
 		return;
@@ -567,16 +579,16 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	
 	if (attacker != victim && IsValidClient(victim) && GetClientTeam(victim) == 3)
 	{
-		if(Infected_Admitted(victim) == 8)
+		if(GetZombieClass(victim) == 8)
 		{
-			if (GetRandomInt(1, 100) < iGiftChance2)
+			if (GetRandomInt(1, 100) <= iGiftChance2)
 			{
-				DropGift(victim, "special2");
+				DropGift(victim, STRING_SPECIAL);
 			}
 		}
 		else
 		{
-			if (GetRandomInt(1, 100) < iGiftChance)
+			if (GetRandomInt(1, 100) <= iGiftChance)
 			{
 				DropGift(victim);
 			}
@@ -586,7 +598,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	}
 }
 
-public Action OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
+public void OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!bGiftEnable)
 		return;
@@ -596,15 +608,15 @@ public Action OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 
 	//int attacker = GetClientOfUserId(event.GetInt("userid"));
 	int witch = event.GetInt("witchid");
-	if (GetRandomInt(1, 100) < iGiftChance2)
+	if (GetRandomInt(1, 100) <= iGiftChance2)
 	{
-		DropGift(witch, "special2");
+		DropGift(witch, STRING_SPECIAL);
 	}
 }
 
 void NotifyGift(int client, int type, int gift = -1)
 {
-	if(type == TYPE_SPECIAL)
+	if(type == TYPE_STANDARD)
 	{
 		if(gift == -1 || !IsValidEntity(gift))
 		{
@@ -635,7 +647,7 @@ void NotifyGift(int client, int type, int gift = -1)
 		PlaySound(client,SND_REWARD2);
 		AddCollect(client, type);
 	}
-	else if(type == TYPE_SPECIAL2)
+	else if(type == TYPE_SPECIAL)
 	{
 		if(gift == -1 || !IsValidEntity(gift))
 		{
@@ -694,13 +706,13 @@ int GetRandomIndexGift(const char[] sType)
 	return GiftsIndex[random];
 }
 
-int DropGift(int client, char[] type = "special")
+int DropGift(int client, char[] type = STRING_STANDARD)
 {	
 	float gifPos[3];
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", gifPos);
 	gifPos[2] += 10.0;
 	
-	int gift = -1; //prop_physics_override
+	int gift = -1;
 	int random = GetRandomIndexGift(type);
 	
 	if(StrEqual(g_sTypeModel[random], "physics"))
@@ -715,35 +727,30 @@ int DropGift(int client, char[] type = "special")
 	if( CheckIfEntityMax(gift) )
 	{
 		DispatchKeyValue(gift, "model", g_sModel[random]);
+		// char sScale[4];
+		// Format(sScale, sizeof(sScale), "%.1f", g_fScale[random]);
+		// DispatchKeyValue(gift, "modelscale", "0.5");
 		
-		if(StrEqual(g_sTypeGift[random], "special")/* || StrEqual(g_sTypeGift[random], "special2")*/)
+		Format(g_sGifType[gift], sizeof(g_sGifType[]), "%s", g_sTypeGift[random]);
+		DispatchKeyValueVector(gift, "origin", gifPos);
+		DispatchKeyValue(gift, "spawnflags", "8448"); // "Don`t take physics damage" + "Generate output on +USE" + "Force Server Side"
+
+		DispatchSpawn(gift);
+		SetEntPropFloat(gift, Prop_Send, "m_flModelScale", g_fScale[random]);
+		if(StrEqual(g_sTypeGift[random], STRING_STANDARD) || StrEqual(g_sTypeGift[random], STRING_SPECIAL))
 		{
 			int color = GetRandomInt(1, 7);
 			switch(color)
 			{
-				case 1:
-					DispatchKeyValue(gift, "rendercolor", COLOR_CYAN);
-				case 2:
-					DispatchKeyValue(gift, "rendercolor", COLOR_LIGHT_GREEN);
-				case 3:
-					DispatchKeyValue(gift, "rendercolor", COLOR_PURPLE);
-				case 4:
-					DispatchKeyValue(gift, "rendercolor", COLOR_PINK);
-				case 5:
-					DispatchKeyValue(gift, "rendercolor", COLOR_RED);
-				case 6:
-					DispatchKeyValue(gift, "rendercolor", COLOR_ORANGE);
-				case 7:
-					DispatchKeyValue(gift, "rendercolor", COLOR_YELLOW);
+				case 1: SetEntityRenderColor(gift, 0, 255, 255, 255); //COLOR_CYAN
+				case 2: SetEntityRenderColor(gift, 144, 238, 144), 255; //COLOR_LIGHT_GREEN
+				case 3: SetEntityRenderColor(gift, 128, 0, 128, 255); //COLOR_PURPLE
+				case 4: SetEntityRenderColor(gift, 255, 88, 130, 255); //COLOR_PINK
+				case 5: SetEntityRenderColor(gift, 255, 0, 0, 255); //COLOR_RED
+				case 6: SetEntityRenderColor(gift, 254, 100, 46, 255); //COLOR_ORANGE
+				case 7: SetEntityRenderColor(gift, 255, 255, 0, 255); //COLOR_YELLOW
 			}
 		}
-		
-		Format(g_sGifType[gift], sizeof(g_sGifType[]), "%s", g_sTypeGift[random]);
-		DispatchKeyValueVector(gift, "origin", gifPos);
-		SetEntProp(gift, Prop_Send, "m_nSolidType", 6);
-		DispatchSpawn(gift);
-		
-		SetEntPropFloat(gift, Prop_Send, "m_flModelScale", g_fScale[random]);
 		
 		int rmdAura = GetRandomInt(1, 7);
 		int color[3];
@@ -752,43 +759,72 @@ int DropGift(int client, char[] type = "special")
 			case 1:
 			{
 				GetColor(AURA_CYAN, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 			case 2:
 			{
 				GetColor(AURA_BLUE, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 			case 3:
 			{
 				GetColor(AURA_GREEN, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 			case 4:
 			{
 				GetColor(AURA_PINK, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 			case 5:
 			{
 				GetColor(AURA_RED, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 			case 6:
 			{
 				GetColor(AURA_ORANGE, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 			case 7:
 			{
 				GetColor(AURA_YELLOW, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 0, 0, color, false);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+			}
+			case 8:
+			{
+				GetColor(AURA_PURPLE, color);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+			}
+			case 9:
+			{
+				GetColor(AURA_WHITE, color);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+			}
+			case 10:
+			{
+				GetColor(AURA_LIME, color);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+			}
+			case 11:
+			{
+				GetColor(AURA_MAROON, color);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+			}
+			case 12:
+			{
+				GetColor(AURA_TEAL, color);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+			}
+			case 13:
+			{
+				GetColor(AURA_GREY, color);
+				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
 			}
 		}
-		g_GifLife[gift] = 0;
-		g_GifEntIndex[gift] = EntIndexToEntRef(gift);
+
 		CreateTimer(fGiftLife, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_FLAG_NO_MAPCHANGE);
-		CreateTimer(1.5, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(1.0, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	return gift;
@@ -800,6 +836,8 @@ public Action ColdDown( Handle timer, any ref)
 	{
 		SDKHook(gift, SDKHook_Touch, OnTouch);
 	}
+
+	return Plugin_Continue;
 }
 
 public void OnTouch(int gift, int other)
@@ -815,15 +853,15 @@ public void OnTouch(int gift, int other)
 			!GetEntProp(other, Prop_Send, "m_isIncapacitated"))
 		{
 
-			if (StrEqual(g_sGifType[gift], "special"))
+			if (StrEqual(g_sGifType[gift], STRING_STANDARD))
 			{
 				//Points for Gifts Special
-				NotifyGift(other, TYPE_SPECIAL, gift);
+				NotifyGift(other, TYPE_STANDARD, gift);
 			}
-			else if (StrEqual(g_sGifType[gift], "special2"))
+			else if (StrEqual(g_sGifType[gift], STRING_SPECIAL))
 			{
 				//PoiNotifyGift(nts for Gifts Special
-				NotifyGift(other, TYPE_SPECIAL2, gift);
+				NotifyGift(other, TYPE_SPECIAL, gift);
 			}
 			gifts_collected_map += 1;
 			gifts_collected_round += 1;
@@ -867,16 +905,9 @@ bool IsValidClient(int client)
 	return true;
 }
 
-int Infected_Admitted(int client)
+int GetZombieClass(int client)
 {
-	int class = GetEntProp(client, Prop_Send, "m_zombieClass");
-	
-	if(class == 1 || class == 2 || class == 3 || class == 4 || class == 5 || class == 6 || class == 7 || class == 8)
-	{
-		return class;
-	}
-	
-	return -1;
+	return GetEntProp(client, Prop_Send, "m_zombieClass");
 }
 
 public Action Timer_GiftLife( Handle timer, any ref)
@@ -885,6 +916,8 @@ public Action Timer_GiftLife( Handle timer, any ref)
 	{
 		AcceptEntityInput(ref, "kill");
 	}
+
+	return Plugin_Continue;
 }
 
 public void AddCollect(int client, int type)

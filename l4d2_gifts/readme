@@ -1,7 +1,7 @@
 Drop gifts (touch gift to earn reward) when a special infected or a witch/tank killed by survivor.
 
 -53 items that S.I. drops-
-in scripting/l4d2_gifts.sp line 94~162
+in scripting/l4d2_gifts.sp line 95~163
 [code]
 	{"grenade_launcher","榴彈發射器"},
 	{"rifle_m60", "M60機關槍"},
@@ -74,13 +74,15 @@ in scripting/l4d2_gifts.sp line 94~162
 2. To unlock all melee weapons in all campaigns, you MUST use the [Mission and Weapons - Info Editor]("https://forums.alliedmods.net/showthread.php?t=310586") plugin which supersedes the extension.
 
 -ChangeLog-
-v2.7
+v2.8
 -Remake Code
 -Remove rotation, and some static models
--add L4D2 "The Last Stand" two melee: pitchfork、shovel
+-Add L4D2 "The Last Stand" two melee: pitchfork、shovel
 -Add All weapons、melee、items
 -Add laser、firework crate、ammo、incendiary ammo、explosive_ammo
 -Use left4dhooks instead
+-Remove points
+-Add glow flashing
 
 v1.3.6.1
 -original Post: https://forums.alliedmods.net/showthread.php?t=302731
