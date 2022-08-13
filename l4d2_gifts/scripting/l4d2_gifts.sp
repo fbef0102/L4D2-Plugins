@@ -29,8 +29,6 @@
 #define TYPE_SPECIAL		2
 #define STRING_STANDARD		"standard"
 #define STRING_SPECIAL		"special"
-#define MAX_SPECIALITEMS	53
-#define MAX_SPECIALITEMS2	9
 
 #define TEAM_SURVIVOR		2
 #define TEAM_INFECTED		3
@@ -92,7 +90,7 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 
 #define MODEL_GNOME			"models/props_junk/gnome.mdl"
 
-static char weapons_name[MAX_SPECIALITEMS][2][50] = 
+static char weapons_name_standard[][][] = 
 {
 	{"grenade_launcher","榴彈發射器"},
 	{"rifle_m60", "M60機關槍"},
@@ -149,7 +147,7 @@ static char weapons_name[MAX_SPECIALITEMS][2][50] =
 	{"ammo","彈藥補給"}
 };
 
-static char weapons_name2[MAX_SPECIALITEMS2][2][50] = 
+static char weapons_name_special[][][] = 
 {
 	{"rifle_m60", "殲滅者 M60"},
 	{"first_aid_kit","治療包"},
@@ -161,6 +159,7 @@ static char weapons_name2[MAX_SPECIALITEMS2][2][50] =
 	{"grenade_launcher","榴彈發射器"},
 	{"ammo","補給彈藥"},
 };
+
 
 //WeaponName/AmmoOffset/AmmoGive
 static char weapon_ammo[][][] =
@@ -407,11 +406,11 @@ public Action Command_Gift(int client, int args)
 		char arg1[10];
 		GetCmdArg(1, arg1, sizeof(arg1));
 		
-		if(StrEqual(arg1, STRING_STANDARD, false))
+		if(strcmp(arg1, STRING_STANDARD, false) == 0)
 		{
 			DropGift(client, STRING_STANDARD);
 		}
-		else if(StrEqual(arg1, STRING_SPECIAL, false))
+		else if(strcmp(arg1, STRING_SPECIAL, false) == 0)
 		{
 			DropGift(client, STRING_SPECIAL);
 		}
@@ -623,27 +622,25 @@ void NotifyGift(int client, int type, int gift = -1)
 			return;
 		}
 
-		int index;
 		int iSlot0 = GetPlayerWeaponSlot(client, 0);
-		if(iSlot0 <= 0 )
-		{	
-			index = GetURandomIntRange(0,MAX_SPECIALITEMS-1-4);
-			GiveWeapon(client, weapons_name[index][0]);
-		}
-		else
+		int index = GetURandomIntRange(0,sizeof(weapons_name_standard)-1);
+		if( strcmp(weapons_name_standard[index][0], "laser_sight") == 0 || 
+			strcmp(weapons_name_standard[index][0], "incendiary_ammo") == 0 || 
+			strcmp(weapons_name_standard[index][0], "explosive_ammo") == 0)
 		{
-			index = GetURandomIntRange(0,MAX_SPECIALITEMS-1);
-			if( StrEqual(weapons_name[index][0], "laser_sight") || StrEqual(weapons_name[index][0], "incendiary_ammo") || StrEqual(weapons_name[index][0], "explosive_ammo") )
-				GiveUpgrade(client, weapons_name[index][0]);
-			else if( StrEqual(weapons_name[index][0], "ammo") )
-				GiveClientAmmo(client, iSlot0);
-			else if ( StrEqual(weapons_name[index][0], "health_100") )
-				GiveClientHealth(client, 100);
-			else
-				GiveWeapon(client, weapons_name[index][0]);
+			if(iSlot0 > MaxClients) GiveUpgrade(client, weapons_name_standard[index][0]);
 		}
-		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name[index][1]);
-		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name[index][1]);
+		else if( strcmp(weapons_name_standard[index][0], "ammo") == 0)
+		{
+			if(iSlot0 > MaxClients) GiveClientAmmo(client, iSlot0);
+		}
+		else if ( strcmp(weapons_name_standard[index][0], "health_100") == 0)
+			GiveClientHealth(client, 100);
+		else
+			GiveWeapon(client, weapons_name_standard[index][0]);
+
+		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name_standard[index][1]);
+		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name_standard[index][1]);
 		PlaySound(client,SND_REWARD2);
 		AddCollect(client, type);
 	}
@@ -654,26 +651,25 @@ void NotifyGift(int client, int type, int gift = -1)
 			return;
 		}
 
-		int index;
 		int iSlot0 = GetPlayerWeaponSlot(client, 0);
-		if(iSlot0 <= 0 )
-		{	
-			index = GetURandomIntRange(0,MAX_SPECIALITEMS2-1-1);
-			GiveWeapon(client, weapons_name2[index][0]);
-		}
-		else
+		int index = GetURandomIntRange(0, sizeof(weapons_name_special)-1);
+		if( strcmp(weapons_name_special[index][0], "laser_sight") == 0 || 
+			strcmp(weapons_name_special[index][0], "incendiary_ammo") == 0 || 
+			strcmp(weapons_name_special[index][0], "explosive_ammo") == 0)
 		{
-			index = GetURandomIntRange(0,MAX_SPECIALITEMS2-1);
-			if( StrEqual(weapons_name2[index][0], "ammo") )
-				GiveClientAmmo(client, iSlot0);
-			else if ( StrEqual(weapons_name2[index][0], "health_100") )
-				GiveClientHealth(client, 100);
-			else
-				GiveWeapon(client, weapons_name2[index][0]);
+			if(iSlot0 > MaxClients) GiveUpgrade(client, weapons_name_special[index][0]);
 		}
+		else if( strcmp(weapons_name_special[index][0], "ammo") == 0 )
+		{
+			if(iSlot0 > MaxClients) GiveClientAmmo(client, iSlot0);
+		}
+		else if ( strcmp(weapons_name_special[index][0], "health_100") == 0 )
+			GiveClientHealth(client, 100);
+		else
+			GiveWeapon(client, weapons_name_special[index][0]);
 
-		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name2[index][1]);
-		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name2[index][1]);
+		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name_special[index][1]);
+		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name_special[index][1]);
 		PlaySound(client,SND_REWARD1);
 		AddCollect(client, type);
 	}
@@ -695,7 +691,7 @@ int GetRandomIndexGift(const char[] sType)
 	
 	for(int i=0; i < g_iCountGifts; i++)
 	{
-		if(StrEqual(g_sTypeGift[i], sType))
+		if(strcmp(g_sTypeGift[i], sType) == 0)
 		{
 			GiftsIndex[count] = i;
 			count++;
@@ -715,11 +711,11 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 	int gift = -1;
 	int random = GetRandomIndexGift(type);
 	
-	if(StrEqual(g_sTypeModel[random], "physics"))
+	if(strcmp(g_sTypeModel[random], "physics") == 0)
 	{
 		gift = CreateEntityByName("prop_physics_override");
 	}
-	else if(StrEqual(g_sTypeModel[random], "static"))
+	else if(strcmp(g_sTypeModel[random], "static") == 0)
 	{
 		gift = CreateEntityByName("prop_dynamic_override");
 	}
@@ -737,7 +733,7 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 
 		DispatchSpawn(gift);
 		SetEntPropFloat(gift, Prop_Send, "m_flModelScale", g_fScale[random]);
-		if(StrEqual(g_sTypeGift[random], STRING_STANDARD) || StrEqual(g_sTypeGift[random], STRING_SPECIAL))
+		if(strcmp(g_sTypeGift[random], STRING_STANDARD) == 0 || strcmp(g_sTypeGift[random], STRING_SPECIAL) == 0)
 		{
 			int color = GetRandomInt(1, 7);
 			switch(color)
@@ -853,12 +849,12 @@ public void OnTouch(int gift, int other)
 			!GetEntProp(other, Prop_Send, "m_isIncapacitated"))
 		{
 
-			if (StrEqual(g_sGifType[gift], STRING_STANDARD))
+			if (strcmp(g_sGifType[gift], STRING_STANDARD) == 0)
 			{
 				//Points for Gifts Special
 				NotifyGift(other, TYPE_STANDARD, gift);
 			}
-			else if (StrEqual(g_sGifType[gift], STRING_SPECIAL))
+			else if (strcmp(g_sGifType[gift], STRING_SPECIAL) == 0)
 			{
 				//PoiNotifyGift(nts for Gifts Special
 				NotifyGift(other, TYPE_SPECIAL, gift);
@@ -978,7 +974,7 @@ stock void GiveClientAmmo(int client, int iSlot0)
 	GetEdictClassname(iSlot0, slot0ClassName, sizeof(slot0ClassName));
 	int weaponAmmoOffset, ammoMax;
 	for( int i = 0 ; i < sizeof(weapon_ammo) ; ++i) {
-		if (StrEqual(slot0ClassName, weapon_ammo[i][0]))
+		if (strcmp(slot0ClassName, weapon_ammo[i][0]) == 0)
 		{
 			weaponAmmoOffset = StringToInt(weapon_ammo[i][1]);
 			ammoMax = GetEntData(client, ammoOffset+(weaponAmmoOffset*4)) + StringToInt(weapon_ammo[i][2]);

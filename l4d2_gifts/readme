@@ -1,7 +1,7 @@
 Drop gifts (touch gift to earn reward) when a special infected or a witch/tank killed by survivor.
 
 -53 items that S.I. drops-
-in scripting/l4d2_gifts.sp line 95~163
+in scripting/l4d2_gifts.sp line 93~161
 [code]
 	{"grenade_launcher","榴彈發射器"},
 	{"rifle_m60", "M60機關槍"},
