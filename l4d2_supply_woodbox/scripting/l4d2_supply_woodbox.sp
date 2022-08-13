@@ -72,8 +72,8 @@ public Plugin myinfo =
 	name = "[L4D2] CSO Random Supply Boxes drop", 
 	author = "Lux & HarryPotter", 
 	description = "CSO Random Supply Boxes in l4d2", 
-	version = "1.1", 
-	url = "https://steamcommunity.com/id/fbef0102/"
+	version = "1.2", 
+	url = "https://steamcommunity.com/profiles/76561198026784913"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -372,7 +372,6 @@ public void OnGamemode(const char[] output, int caller, int activator, float del
 // ====================================================================================================
 void HookEvents()
 {
-	HookEntityOutput("prop_physics", "OnBreak", eBreakBreakable);
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("survival_round_start", Event_SurvivalRoundStart,		EventHookMode_PostNoCopy); //生存模式之下計時開始之時
 	HookEvent("round_end",			Event_RoundEnd,		EventHookMode_PostNoCopy);
@@ -384,7 +383,6 @@ void HookEvents()
 
 void UnhookEvents()
 {
-	UnhookEntityOutput("prop_physics", "OnBreak", eBreakBreakable);
 	UnhookEvent("round_start", Event_RoundStart);
 	UnhookEvent("survival_round_start", Event_SurvivalRoundStart,		EventHookMode_PostNoCopy); //生存模式之下計時開始之時
 	UnhookEvent("round_end",			Event_RoundEnd,		EventHookMode_PostNoCopy);
@@ -419,132 +417,117 @@ public void evtFinaleStart(Event event, const char[] name, bool dontBroadcast)
 //function
 public void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay)
 {
-	if (!IsValidEntity(Caller))
-	return;
+	float fPos[3];		
+	GetEntPropVector(Caller, Prop_Send, "m_vecOrigin", fPos);
+	fPos[2] += 17.5;
 	
-	char sPropBuf[64];
+	SetEntProp(Caller, Prop_Send, "m_glowColorOverride", 0);
+	SetEntProp(Caller, Prop_Send, "m_nGlowRange", 1);
+	SetEntProp(Caller, Prop_Send, "m_iGlowType", 0);
 	
-	GetEntPropString(Caller, Prop_Data, "m_ModelName", sPropBuf,  sizeof(sPropBuf));
-	if (strcmp(sPropBuf, BOX_1) == 0 || strcmp(sPropBuf, BOX_2) == 0 || strcmp(sPropBuf, BOX_3) == 0)
-	{
-		char targetname[128];
-		GetEntPropString(Caller, Prop_Data, "m_iName", targetname, sizeof(targetname));
-
-		if ( strcmp(targetname, "supplybox") == 0)
-		{
-			float fPos[3];		
-			GetEntPropVector(Caller, Prop_Send, "m_vecOrigin", fPos);
-			fPos[2] += 17.5;
-			
-			SetEntProp(Caller, Prop_Send, "m_glowColorOverride", 0);
-			SetEntProp(Caller, Prop_Send, "m_nGlowRange", 1);
-			SetEntProp(Caller, Prop_Send, "m_iGlowType", 0);
-			
-			int iDrops = GetRandomInt(g_iItemMin, g_iItemMax);
-			int iItemChance;
-			int iChanceMax = g_iDropItemChance_Other;
-			for (int i = 1; i <= iDrops; i++) {
-				iItemChance = GetRandomInt(1, iChanceMax);
-				if(0 < iItemChance && iItemChance <= g_iDropItemChance_Weapon) {
-					int iWeapon;
-					switch (GetRandomInt(1, 13)) {
-						case 1: {
-							iWeapon = SpawnItem("weapon_rifle", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-						}				
-						case 2: {
-							iWeapon = SpawnItem("weapon_rifle_ak47", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-						}
-						case 3: {
-							iWeapon = SpawnItem("weapon_rifle_desert", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-						}
-						case 4: {
-							iWeapon = SpawnItem("weapon_rifle_m60", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomM60Ammo);
-						}
-						case 5: {
-							iWeapon = SpawnItem("weapon_grenade_launcher", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomGLAmmo);
-						}
-						case 6: {
-							iWeapon = SpawnItem("weapon_rifle_sg552", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-						}
-						case 7: {
-							iWeapon = SpawnItem("weapon_autoshotgun", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomShotgunAmmo);
-						}
-						case 8: {
-							iWeapon = SpawnItem("weapon_shotgun_spas", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomShotgunAmmo);
-						}
-						case 9: {
-							iWeapon = SpawnItem("weapon_sniper_awp", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
-						}
-						case 10: {
-							iWeapon = SpawnItem("weapon_sniper_scout", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
-						}
-						case 11: {
-							iWeapon = SpawnItem("weapon_sniper_military", fPos);
-							if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
-						}
-						case 12: {
-							if(iWeapon != -1) SpawnItem("weapon_pistol_magnum", fPos);
-						}
-						case 13: {
-							if(iWeapon != -1) SpawnItem("weapon_chainsaw", fPos);
-						}
-					}
+	int iDrops = GetRandomInt(g_iItemMin, g_iItemMax);
+	int iItemChance;
+	int iChanceMax = g_iDropItemChance_Other;
+	for (int i = 1; i <= iDrops; i++) {
+		iItemChance = GetRandomInt(1, iChanceMax);
+		if(0 < iItemChance && iItemChance <= g_iDropItemChance_Weapon) {
+			int iWeapon;
+			switch (GetRandomInt(1, 13)) {
+				case 1: {
+					iWeapon = SpawnItem("weapon_rifle", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
+				}				
+				case 2: {
+					iWeapon = SpawnItem("weapon_rifle_ak47", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
 				}
-				else if(g_iDropItemChance_Weapon < iItemChance && iItemChance <= g_iDropItemChance_Melee) {
-					SpawnItem("weapon_melee", fPos, true);
+				case 3: {
+					iWeapon = SpawnItem("weapon_rifle_desert", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
 				}
-				else if(g_iDropItemChance_Melee < iItemChance && iItemChance <= g_iDropItemChance_Medic) {
-					switch (GetRandomInt(1, 7)) {
-						case 1:
-							SpawnItem("weapon_first_aid_kit", fPos);
-						case 2:
-							SpawnItem("weapon_first_aid_kit", fPos);
-						case 3:
-							SpawnItem("weapon_first_aid_kit", fPos);
-						case 4:
-							SpawnItem("weapon_pain_pills", fPos);
-						case 5:
-							SpawnItem("weapon_pain_pills", fPos);	
-						case 6:
-							SpawnItem("weapon_adrenaline", fPos);	
-						case 7:
-							SpawnItem("weapon_defibrillator", fPos);
-					}
+				case 4: {
+					iWeapon = SpawnItem("weapon_rifle_m60", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomM60Ammo);
 				}
-				else if(g_iDropItemChance_Medic < iItemChance && iItemChance <= g_iDropItemChance_Throwable) {
-					switch (GetRandomInt(1, 3)) {
-						case 1:
-							SpawnItem("weapon_pipe_bomb", fPos);
-						case 2:
-							SpawnItem("weapon_molotov", fPos);
-						case 3:
-							SpawnItem("weapon_vomitjar", fPos);		
-					}
+				case 5: {
+					iWeapon = SpawnItem("weapon_grenade_launcher", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomGLAmmo);
 				}
-				else if(g_iDropItemChance_Throwable < iItemChance && iItemChance <= g_iDropItemChance_Other) {
-					switch (GetRandomInt(1, 3)) {
-						case 1:
-							SpawnItem("weapon_upgradepack_explosive", fPos);
-						case 2:
-							SpawnItem("weapon_upgradepack_incendiary", fPos);
-						case 3:
-							SpawnItem(FIREWORKCRATE_MODEL, fPos, true);	
-						case 4:
-							SpawnItem(PROPANETANK_MODEL, fPos, true);	
-						case 5:
-							SpawnItem(OXYGENTANK_MODEL, fPos, true);				
-					}
+				case 6: {
+					iWeapon = SpawnItem("weapon_rifle_sg552", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
 				}
+				case 7: {
+					iWeapon = SpawnItem("weapon_autoshotgun", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomShotgunAmmo);
+				}
+				case 8: {
+					iWeapon = SpawnItem("weapon_shotgun_spas", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomShotgunAmmo);
+				}
+				case 9: {
+					iWeapon = SpawnItem("weapon_sniper_awp", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
+				}
+				case 10: {
+					iWeapon = SpawnItem("weapon_sniper_scout", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
+				}
+				case 11: {
+					iWeapon = SpawnItem("weapon_sniper_military", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
+				}
+				case 12: {
+					if(iWeapon != -1) SpawnItem("weapon_pistol_magnum", fPos);
+				}
+				case 13: {
+					if(iWeapon != -1) SpawnItem("weapon_chainsaw", fPos);
+				}
+			}
+		}
+		else if(g_iDropItemChance_Weapon < iItemChance && iItemChance <= g_iDropItemChance_Melee) {
+			SpawnItem("weapon_melee", fPos, true);
+		}
+		else if(g_iDropItemChance_Melee < iItemChance && iItemChance <= g_iDropItemChance_Medic) {
+			switch (GetRandomInt(1, 7)) {
+				case 1:
+					SpawnItem("weapon_first_aid_kit", fPos);
+				case 2:
+					SpawnItem("weapon_first_aid_kit", fPos);
+				case 3:
+					SpawnItem("weapon_first_aid_kit", fPos);
+				case 4:
+					SpawnItem("weapon_pain_pills", fPos);
+				case 5:
+					SpawnItem("weapon_pain_pills", fPos);	
+				case 6:
+					SpawnItem("weapon_adrenaline", fPos);	
+				case 7:
+					SpawnItem("weapon_defibrillator", fPos);
+			}
+		}
+		else if(g_iDropItemChance_Medic < iItemChance && iItemChance <= g_iDropItemChance_Throwable) {
+			switch (GetRandomInt(1, 3)) {
+				case 1:
+					SpawnItem("weapon_pipe_bomb", fPos);
+				case 2:
+					SpawnItem("weapon_molotov", fPos);
+				case 3:
+					SpawnItem("weapon_vomitjar", fPos);		
+			}
+		}
+		else if(g_iDropItemChance_Throwable < iItemChance && iItemChance <= g_iDropItemChance_Other) {
+			switch (GetRandomInt(1, 3)) {
+				case 1:
+					SpawnItem("weapon_upgradepack_explosive", fPos);
+				case 2:
+					SpawnItem("weapon_upgradepack_incendiary", fPos);
+				case 3:
+					SpawnItem(FIREWORKCRATE_MODEL, fPos, true);	
+				case 4:
+					SpawnItem(PROPANETANK_MODEL, fPos, true);	
+				case 5:
+					SpawnItem(OXYGENTANK_MODEL, fPos, true);				
 			}
 
 			if(--g_iBoxCount < 0) g_iBoxCount = 0;
@@ -698,8 +681,9 @@ bool SpawnBox(float fPos[3], float fAng[3] = NULL_VECTOR)
 		SetEntProp(iBox, Prop_Send, "m_glowColorOverride", g_iCvarColor);
 		AcceptEntityInput(iBox, "StartGlowing");
 	}
-	CreateTimer(g_fSupplyBoxLife, KillBox_Timer, EntIndexToEntRef(iBox), TIMER_FLAG_NO_MAPCHANGE);
 
+	CreateTimer(g_fSupplyBoxLife, KillBox_Timer, EntIndexToEntRef(iBox), TIMER_FLAG_NO_MAPCHANGE);
+	HookSingleEntityOutput(iBox, "OnBreak", eBreakBreakable);
 
 	return true;
 }
@@ -992,7 +976,7 @@ bool CheckIfEntityMax(int entity)
 
 	if(	entity > ENTITY_SAFE_LIMIT)
 	{
-		AcceptEntityInput(entity, "Kill");
+		RemoveEntity(entity);
 		return false;
 	}
 	return true;
