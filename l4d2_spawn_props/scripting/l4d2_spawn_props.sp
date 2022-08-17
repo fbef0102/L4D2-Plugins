@@ -5,7 +5,7 @@
 #pragma newdecls required
 #define DEBUG 0
 
-#define GETVERSION "3.4"
+#define GETVERSION "3.5"
 #define ARRAY_SIZE 5000
 #define MAX_PATHS 20
 
@@ -24,17 +24,17 @@ char FolderNames[][] = {
 
 TopMenu g_TopMenuHandle;
 
-int g_iCategory[MAXPLAYERS+1]				= 0;
-int g_iSubCategory[MAXPLAYERS+1]			= 0;
-int g_iFileCategory[MAXPLAYERS+1]			= 0;
-int g_iMoveCategory[MAXPLAYERS+1]			= 0;
-int g_iLastObject[MAXPLAYERS+1]			= -1;
-int g_iLastGrabbedObject[MAXPLAYERS+1]	= -1;
+int g_iCategory[MAXPLAYERS+1]				= {0};
+int g_iSubCategory[MAXPLAYERS+1]			= {0};
+int g_iFileCategory[MAXPLAYERS+1]			= {0};
+int g_iMoveCategory[MAXPLAYERS+1]			= {0};
+int g_iLastObject[MAXPLAYERS+1]			= {-1};
+int g_iLastGrabbedObject[MAXPLAYERS+1]	= {-1};
 
-bool g_bSpawned[ARRAY_SIZE]				= false;
-bool g_bGrabbed[ARRAY_SIZE]				= false;
-bool g_bGrab[MAXPLAYERS+1]				= false;
-bool g_bUnsolid[ARRAY_SIZE]				= false;
+bool g_bSpawned[ARRAY_SIZE]				= {false};
+bool g_bGrabbed[ARRAY_SIZE]				= {false};
+bool g_bGrab[MAXPLAYERS+1]				= {false};
+bool g_bUnsolid[ARRAY_SIZE]				= {false};
 bool g_bLoaded							= false;
 
 float g_vecEntityAngles[ARRAY_SIZE][3];
@@ -43,14 +43,14 @@ float g_vecLastEntityAngles[MAXPLAYERS+1][3];
 char g_sPath[128];
 
 // Global variables to hold menu position
-int g_iRotateMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iMoveMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iVehiclesMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iFoliageMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iInteriorMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iExteriorMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iDecorMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iMiscMenuPosition[MAXPLAYERS+1]		= 0;
+int g_iRotateMenuPosition[MAXPLAYERS+1]			= {0};
+int g_iMoveMenuPosition[MAXPLAYERS+1]			= {0};
+int g_iVehiclesMenuPosition[MAXPLAYERS+1]		= {0};
+int g_iFoliageMenuPosition[MAXPLAYERS+1]		= {0};
+int g_iInteriorMenuPosition[MAXPLAYERS+1]		= {0};
+int g_iExteriorMenuPosition[MAXPLAYERS+1]		= {0};
+int g_iDecorMenuPosition[MAXPLAYERS+1]			= {0};
+int g_iMiscMenuPosition[MAXPLAYERS+1]			= {0};
 
 ConVar g_cvarPhysics;
 ConVar g_cvarDynamic;
@@ -155,7 +155,7 @@ public Action CmdDebugProp(int client, int args)
 {
 	char name[256];
 	int Object = g_iLastObject[client];
-	if(Object > 0 && IsValidEntity(Object))
+	if(Object > MaxClients && IsValidEntity(Object))
 	{
 		GetEntPropString(Object, Prop_Data, "m_iName", name, sizeof(name));
 		PrintToChat(client, "prop: %s", name);
@@ -413,7 +413,7 @@ public void OnAdminMenuReady(Handle topmenu)
 }
 
 //Admin Category Name
-public int Category_Handler(TopMenu topmenu, TopMenuAction action, TopMenuObject topobj_id, int param, char[] buffer, int maxlength)
+public void Category_Handler(TopMenu topmenu, TopMenuAction action, TopMenuObject topobj_id, int param, char[] buffer, int maxlength)
 {
 	if(action == TopMenuAction_DisplayTitle)
 	{
@@ -442,7 +442,7 @@ public void AdminMenu_Delete(TopMenu topmenu, TopMenuAction action, TopMenuObjec
 	}
 }
 
-Menu BuildDeleteMenu(int client)
+void BuildDeleteMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Delete);
 	menu.SetTitle("%T", "Select the delete task", client);
@@ -454,7 +454,7 @@ Menu BuildDeleteMenu(int client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-Menu BuildDeleteAllAskMenu(int client)
+void BuildDeleteAllAskMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_DA_Ask);
 	menu.SetTitle("%T", "Are you sure(Delete All)?", client);	
@@ -495,6 +495,8 @@ public int MenuHandler_DA_Ask(Menu menu, MenuAction action, int param1, int para
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_Delete(Menu menu, MenuAction action, int param1, int param2)
@@ -533,6 +535,8 @@ public int MenuHandler_Delete(Menu menu, MenuAction action, int param1, int para
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 /*
@@ -571,7 +575,7 @@ public void AdminMenu_Spawn(TopMenu topmenu, TopMenuAction action, TopMenuObject
 	}
 }
 
-Menu BuildSpawnMenu(int client)
+void BuildSpawnMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Spawn);
 	menu.SetTitle("%T", "Select the spawn method", client);
@@ -641,6 +645,8 @@ public int MenuHandler_Spawn(Menu menu, MenuAction action, int param1, int param
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 /*
@@ -661,7 +667,7 @@ public void AdminMenu_Save(TopMenu topmenu, TopMenuAction action, TopMenuObject 
 	}
 }
 
-Menu BuildSaveMenu(int client)
+void BuildSaveMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Save);
 	menu.SetTitle("%T", "Select The Save Method", client);
@@ -673,7 +679,7 @@ Menu BuildSaveMenu(int client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-Menu BuildRoutingMenu(int client)
+void BuildRoutingMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_PathDiff);
 	menu.SetTitle("%T", "Select Path Difficulty", client);
@@ -719,6 +725,8 @@ public int MenuHandler_PathDiff(Menu menu, MenuAction action, int param1, int pa
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_Save(Menu menu, MenuAction action, int param1, int param2)
@@ -755,6 +763,8 @@ public int MenuHandler_Save(Menu menu, MenuAction action, int param1, int param2
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 /*
@@ -776,7 +786,7 @@ public void AdminMenu_Load(TopMenu topmenu, TopMenuAction action, TopMenuObject 
 	}
 }
 
-Menu BuildLoadAskMenu(int client)
+void BuildLoadAskMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Load_Ask);
 	menu.SetTitle("%T", "Are you sure?", client);
@@ -786,7 +796,7 @@ Menu BuildLoadAskMenu(int client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-Menu BuildLoadPropsMenu(int client)
+void BuildLoadPropsMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_Load_Props);
 	menu.SetTitle("%T", "Choose a map number please", client);
@@ -827,6 +837,8 @@ public int MenuHandler_Load_Props(Menu menu, MenuAction action, int param1, int 
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_Load_Ask(Menu menu, MenuAction action, int param1, int param2)
@@ -858,6 +870,8 @@ public int MenuHandler_Load_Ask(Menu menu, MenuAction action, int param1, int pa
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 /*
@@ -865,41 +879,41 @@ public int MenuHandler_Load_Ask(Menu menu, MenuAction action, int param1, int pa
 						Build Secondary Menus							    |
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
 */
-Menu BuildPhysicsCursorMenu(int client)
+void BuildPhysicsCursorMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_PhysicsCursor);
 	CheckSecondaryMenuCategories(menu, client);
 }
 
-Menu BuildPhysicsPositionMenu(int client)
+void BuildPhysicsPositionMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_PhysicsPosition);
 	CheckSecondaryMenuCategories(menu, client);
 }
 
-Menu BuildDynamicCursorMenu(int client)
+void BuildDynamicCursorMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_DynamicCursor);
 	CheckSecondaryMenuCategories(menu, client);
 }
 
-Menu BuildDynamicPositionMenu(int client)
+void BuildDynamicPositionMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_DynamicPosition);
 	CheckSecondaryMenuCategories(menu, client);
 }
-Menu BuildStaticCursorMenu(int client)
+void BuildStaticCursorMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_StaticCursor);
 	CheckSecondaryMenuCategories(menu, client);
 }
-Menu BuildStaticPositionMenu(int client)
+void BuildStaticPositionMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_StaticPosition);
 	CheckSecondaryMenuCategories(menu, client);
 }
 
-Menu CheckSecondaryMenuCategories(Menu menu, int client)
+void CheckSecondaryMenuCategories(Menu menu, int client)
 {	
 	if(g_cvarVehicles.BoolValue)
 	{
@@ -930,7 +944,7 @@ Menu CheckSecondaryMenuCategories(Menu menu, int client)
 	menu.Display(client, MENU_TIME_FOREVER);	
 }
 
-Menu BuildEditPropMenu(int client)
+void BuildEditPropMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_EditProp);
 	menu.SetTitle("%T", "Select an action:", client);
@@ -987,6 +1001,8 @@ public int MenuHandler_PhysicsCursor(Menu menu, MenuAction action, int param1, i
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_PhysicsPosition(Menu menu, MenuAction action, int param1, int param2)
@@ -1035,6 +1051,8 @@ public int MenuHandler_PhysicsPosition(Menu menu, MenuAction action, int param1,
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_DynamicCursor(Menu menu, MenuAction action, int param1, int param2)
@@ -1083,6 +1101,8 @@ public int MenuHandler_DynamicCursor(Menu menu, MenuAction action, int param1, i
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_DynamicPosition(Menu menu, MenuAction action, int param1, int param2)
@@ -1131,6 +1151,9 @@ public int MenuHandler_DynamicPosition(Menu menu, MenuAction action, int param1,
 			delete menu;
 		}
 	}
+
+	return 0;
+
 }
 
 public int MenuHandler_StaticCursor(Menu menu, MenuAction action, int param1, int param2)
@@ -1179,6 +1202,9 @@ public int MenuHandler_StaticCursor(Menu menu, MenuAction action, int param1, in
 			delete menu;
 		}
 	}
+
+	return 0;
+
 }
 
 public int MenuHandler_StaticPosition(Menu menu, MenuAction action, int param1, int param2)
@@ -1227,6 +1253,9 @@ public int MenuHandler_StaticPosition(Menu menu, MenuAction action, int param1, 
 			delete menu;
 		}
 	}
+
+	return 0;
+
 }
 
 public int MenuHandler_EditProp(Menu menu, MenuAction action, int param1, int param2)
@@ -1258,9 +1287,11 @@ public int MenuHandler_EditProp(Menu menu, MenuAction action, int param1, int pa
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
-Menu DisplayVehiclesMenu(int client)
+void DisplayVehiclesMenu(int client)
 {
 	g_iSubCategory[client] =  1;
 	Menu menu = new Menu(MenuHandler_DoAction);
@@ -1271,7 +1302,7 @@ Menu DisplayVehiclesMenu(int client)
 	menu.DisplayAt(client, g_iVehiclesMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu DisplayFoliageMenu(int client)
+void DisplayFoliageMenu(int client)
 {
 	g_iSubCategory[client] =  2;
 	Menu menu = new Menu(MenuHandler_DoAction);
@@ -1282,7 +1313,7 @@ Menu DisplayFoliageMenu(int client)
 	menu.DisplayAt(client, g_iFoliageMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu DisplayInteriorMenu(int client)
+void DisplayInteriorMenu(int client)
 {
 	g_iSubCategory[client] =  3;
 	Menu menu = new Menu(MenuHandler_DoAction);
@@ -1293,7 +1324,7 @@ Menu DisplayInteriorMenu(int client)
 	menu.DisplayAt(client, g_iInteriorMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu DisplayExteriorMenu(int client)
+void DisplayExteriorMenu(int client)
 {
 	g_iSubCategory[client] =  4;
 	Menu menu = new Menu(MenuHandler_DoAction);
@@ -1304,7 +1335,7 @@ Menu DisplayExteriorMenu(int client)
 	menu.DisplayAt(client, g_iExteriorMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu DisplayDecorativeMenu(int client)
+void DisplayDecorativeMenu(int client)
 {
 	g_iSubCategory[client] =  5;
 	Menu menu = new Menu(MenuHandler_DoAction);
@@ -1315,7 +1346,7 @@ Menu DisplayDecorativeMenu(int client)
 	menu.DisplayAt(client, g_iDecorMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu DisplayMiscMenu(int client)
+void DisplayMiscMenu(int client)
 {
 	g_iSubCategory[client] =  6;
 	Menu menu = new Menu(MenuHandler_DoAction);
@@ -1326,7 +1357,7 @@ Menu DisplayMiscMenu(int client)
 	menu.DisplayAt(client, g_iMiscMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu SetFileCategory(Menu menu, int client)
+void SetFileCategory(Menu menu, int client)
 {
 	File file;
 	char FileName[256];
@@ -1406,7 +1437,7 @@ Menu SetFileCategory(Menu menu, int client)
 	CloseHandle(file);
 }
 
-Menu DisplayRotateMenu(int client)
+void DisplayRotateMenu(int client)
 {
 	g_iMoveCategory[client] = 1;
 	Menu menu = new Menu(MenuHandler_PropPosition);
@@ -1444,7 +1475,7 @@ Menu DisplayRotateMenu(int client)
 	menu.DisplayAt(client, g_iRotateMenuPosition[client], MENU_TIME_FOREVER);
 }
 
-Menu DisplayMoveMenu(int client)
+void DisplayMoveMenu(int client)
 {
 	g_iMoveCategory[client] = 2;
 	Menu menu = new Menu(MenuHandler_PropPosition);
@@ -1731,6 +1762,8 @@ public int MenuHandler_DoAction(Menu menu, MenuAction action, int param1, int pa
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_PropPosition(Menu menu, MenuAction action, int param1, int param2)
@@ -1749,7 +1782,7 @@ public int MenuHandler_PropPosition(Menu menu, MenuAction action, int param1, in
 					{
 						PrintToChat(param1, "[SM] The last object is not valid anymore or you haven't spawned anything yet");
 						DisplayRotateMenu(param1);
-						return;
+						return 0;
 					}
 					int Object = g_iLastObject[param1];
 					
@@ -1880,7 +1913,7 @@ public int MenuHandler_PropPosition(Menu menu, MenuAction action, int param1, in
 					{
 						PrintToChat(param1, "[SM] The last object is not valid anymore or you haven't spawned anything yet");
 						DisplayMoveMenu(param1);
-						return;
+						return 0;
 					}
 					
 					int Object = g_iLastObject[param1];
@@ -1978,6 +2011,8 @@ public int MenuHandler_PropPosition(Menu menu, MenuAction action, int param1, in
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 public bool TraceRayDontHitSelf(int entity, int mask, any data)
@@ -1999,7 +2034,7 @@ void DeleteLookingEntity(int client)
 	if(TR_DidHit(null))
 	{
 		int Object = TR_GetEntityIndex(null);
-		if(Object > 0 && IsValidEntity(Object) && IsValidEdict(Object))
+		if(Object > MaxClients && IsValidEntity(Object))
 		{
 			char class[256];
 			GetEdictClassname(Object, class, sizeof(class));
@@ -2014,15 +2049,15 @@ void DeleteLookingEntity(int client)
 				g_vecEntityAngles[Object][1] = 0.0;
 				g_vecEntityAngles[Object][2] = 0.0;
 
-				char m_ModelName[PLATFORM_MAX_PATH];
+				static char m_ModelName[PLATFORM_MAX_PATH];
 				GetEntPropString(Object, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
 				PrintToChat(client, "[SM] %T", "Object Model", client, Object, m_ModelName);
 
-				float position[3];
+				static float position[3];
 				GetEntPropVector(Object, Prop_Send, "m_vecOrigin", position);
 				PrintToChat(client, "[SM] %T", "Object Position", client, Object, position[0], position[1], position[2]);
 
-				float angle[3];
+				static float angle[3];
 				GetEntPropVector(Object, Prop_Data, "m_angRotation", angle);
 				PrintToChat(client, "[SM] %T", "Object Angle", client, Object, angle[0], angle[1], angle[2]);
 
@@ -2045,45 +2080,59 @@ void DeleteLookingEntity(int client)
 			}
 		}
 	}
-	else
+
+	int Object = GetClientAimTarget(client, false);
+	if(Object == -2)
 	{
-		int Object = GetClientAimTarget(client, false);
-		if(Object == -2)
+		PrintToChat(client, "[SM] %T","This plugin won't work in this game",client);
+		SetFailState("Unhandled Behaviour");
+	}
+	if(Object > MaxClients && IsValidEntity(Object))
+	{
+		char class[256];
+		GetEdictClassname(Object, class, sizeof(class));
+		if(strcmp(class, "prop_physics") == 0
+		|| strcmp(class, "prop_dynamic") == 0
+		|| strcmp(class, "prop_physics_override") == 0
+		|| strcmp(class, "prop_dynamic_override") == 0)
 		{
-			PrintToChat(client, "[SM] %T","This plugin won't work in this game",client);
-			SetFailState("Unhandled Behaviour");
-		}
-		if(Object > 0 && IsValidEntity(Object))
-		{
-			char class[256];
-			GetEdictClassname(Object, class, sizeof(class));
-			if(strcmp(class, "prop_physics") == 0
-			|| strcmp(class, "prop_dynamic") == 0
-			|| strcmp(class, "prop_physics_override") == 0
-			|| strcmp(class, "prop_dynamic_override") == 0)
+			g_bSpawned[Object] = false;
+			g_bUnsolid[Object] = false;
+			g_vecEntityAngles[Object][0] = 0.0;
+			g_vecEntityAngles[Object][1] = 0.0;
+			g_vecEntityAngles[Object][2] = 0.0;
+
+			static char m_ModelName[PLATFORM_MAX_PATH];
+			GetEntPropString(Object, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
+			PrintToChat(client, "[SM] %T", "Object Model", client, Object, m_ModelName);
+
+			static float position[3];
+			GetEntPropVector(Object, Prop_Send, "m_vecOrigin", position);
+			PrintToChat(client, "[SM] %T", "Object Position", client, Object, position[0], position[1], position[2]);
+
+			static float angle[3];
+			GetEntPropVector(Object, Prop_Data, "m_angRotation", angle);
+			PrintToChat(client, "[SM] %T", "Object Angle", client, Object, angle[0], angle[1], angle[2]);
+
+			AcceptEntityInput(Object, "KillHierarchy");
+			PrintToChat(client, "[SM] %T", "Successfully removed an object", client, Object);
+
+			PrintToChat(client, "[SM] %T", "Successfully removed an object", client, Object);
+			if(Object == g_iLastObject[client])
 			{
-				g_bSpawned[Object] = false;
-				g_bUnsolid[Object] = false;
-				g_vecEntityAngles[Object][0] = 0.0;
-				g_vecEntityAngles[Object][1] = 0.0;
-				g_vecEntityAngles[Object][2] = 0.0;
-				AcceptEntityInput(Object, "KillHierarchy");
-				PrintToChat(client, "[SM] %T", "Successfully removed an object", client, Object);
-				if(Object == g_iLastObject[client])
+				g_iLastObject[client] = -1;
+				g_vecLastEntityAngles[client][0] = 0.0;
+				g_vecLastEntityAngles[client][1] = 0.0;
+				g_vecLastEntityAngles[client][2] = 0.0;
+				if(Object == g_iLastGrabbedObject[client])
 				{
-					g_iLastObject[client] = -1;
-					g_vecLastEntityAngles[client][0] = 0.0;
-					g_vecLastEntityAngles[client][1] = 0.0;
-					g_vecLastEntityAngles[client][2] = 0.0;
-					if(Object == g_iLastGrabbedObject[client])
-					{
-						g_iLastGrabbedObject[client] = -1;
-					}
+					g_iLastGrabbedObject[client] = -1;
 				}
-				return;
 			}
+			return;
 		}
 	}
+	
 	PrintToChat(client, "[SM] %T","You are not looking to a valid object",client);
 }
 
@@ -2146,7 +2195,7 @@ void CheatCommand(int client = 0, char[] command, char[] arguments="")
 void DeleteLastProp(int client)
 {
 	int Object = g_iLastObject[client];
-	if(Object > 0 && IsValidEntity(Object))
+	if(Object > MaxClients && IsValidEntity(Object))
 	{
 		char class[256];
 		GetEdictClassname(Object, class, sizeof(class));
@@ -2759,7 +2808,7 @@ public Action CmdRemoveAll(int client, int args)
 	return Plugin_Handled;
 }
 
-Menu BuildDeleteAllCmd(int client)
+void BuildDeleteAllCmd(int client)
 {
 	Menu menu = new Menu(MenuHandler_cmd_Ask);
 	menu.SetTitle("%T", "Are you sure?", client);
@@ -2795,6 +2844,8 @@ public int MenuHandler_cmd_Ask(Menu menu, MenuAction action, int param1, int par
 			delete menu;
 		}
 	}
+
+	return 0;
 }
 
 int GetNextMapNumber(char[] FileName)
