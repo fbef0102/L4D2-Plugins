@@ -519,7 +519,8 @@ models/props_equipment/ticketmachine.mdl TAG- 地鐵售票機
 models/props_urban/outhouse001.mdl TAG- 公共廁所
 models/props_misc/gazebo.mdl TAG- 涼亭
 models/props_misc/triage_tent.mdl TAG- 分診帳篷 - 超大
-models/props_street/mail_dropbox.mdl TAG- 郵箱
+models/props_street/mail_dropbox.mdl TAG- 街道投遞郵箱
+models/props/cs_militia/mailbox01.mdl TAG- 傳統郵箱
 models/props_mill/elevator01_cage.mdl TAG- 升降電梯 - c4m2
 models/lighthouse/diesel_pump.mdl TAG- 柴油泵
 models/props_rooftop/train_signalbox_01.mdl TAG- 火車信號箱
@@ -902,8 +903,6 @@ models/props_fairgrounds/anvil_case_32.mdl TAG- 舞會箱
 models/props_fairgrounds/anvil_case_64.mdl TAG- 舞會箱 - 較長
 models/props_fairgrounds/anvil_case_casters_32.mdl TAG- 舞會箱 - 有滾輪 (好用)
 models/props_fairgrounds/anvil_case_casters_64.mdl TAG- 舞會箱 - 較長 - 有滾輪 (好用)
-models/props_crates/static_crate_40.mdl TAG- 軍用箱 (好用)
-models/props/cs_militia/boxes_garage_lower.mdl TAG- 三個箱子 (好用)
 models/props/cs_office/paperbox_pile_01.mdl TAG- A4紙箱堆
 models/props_junk/cardboard_box03_static.mdl TAG- 紙箱 a (固態)
 models/props_junk/cardboard_box04_static.mdl TAG- 紙箱 b (固態)
@@ -912,11 +911,14 @@ models/props_junk/cardboard_box07_static.mdl TAG- 紙箱 d (固態)
 models/props/cs_assault/washer_box.mdl TAG- 裝洗衣服的箱子
 models/props/cs_assault/box_stack1.mdl TAG- 危險包裝 - 雙層12箱
 models/props/cs_assault/box_stack2.mdl TAG- 危險包裝 - 單層9箱
-models/props/cs_militia/boxes_frontroom.mdl TAG- 雙層箱子 - 上五下三 (好用)
+models/props_crates/static_crate_40.mdl TAG- 軍用箱 (好用)
+models/props/cs_militia/boxes_garage_lower.mdl TAG- 三個箱子 (好用)
+models/props/cs_militia/boxes_frontroom.mdl TAG- 雙層箱子 - 下五上三 (好用)
 models/props/cs_militia/footlocker01_closed.mdl TAG- 鎖住箱
 models/props_junk/cinderblock01a.mdl TAG- 方形瓷磚
 models/props_junk/dumpster.mdl TAG- 垃圾箱 - 綠色
 models/props_junk/dumpster_2.mdl TAG- 垃圾箱 - 白色
+models/props/de_nuke/crate_small.mdl TAG- 木材箱 - 中型
 models/props/de_nuke/crate_extralarge.mdl TAG- 木材箱 - 特大號
 models/props/cs_militia/crate_extralargemill.mdl TAG- 木材箱 - 特大號 - 磨損
 models/props_highway/plywood_01.mdl TAG- 小木板 (好用)
