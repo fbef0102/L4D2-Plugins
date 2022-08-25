@@ -39,7 +39,7 @@ public Plugin myinfo =
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
     version = "2.2",
-    url = "https://steamcommunity.com/id/fbef0102/"
+    url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
 public void OnPluginStart()
@@ -47,7 +47,7 @@ public void OnPluginStart()
 	g_hCvarColorGhost =	CreateConVar(	"l4d2_specting_cheat_ghost_color",		"255 255 255",		"Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCvarColorAlive =	CreateConVar(	"l4d2_specting_cheat_alive_color",		"255 0 0",			"Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCommandAccess = 	CreateConVar(	"l4d2_specting_cheat_use_command_flag", "z", 				"Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)", FCVAR_NOTIFY);
-	g_hDefaultValue = 	CreateConVar(	"l4d2_specting_cheat_default_valve", 	"0", 				"Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hDefaultValue = 	CreateConVar(	"l4d2_specting_cheat_default_value", 	"0", 				"Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarColorGhost.AddChangeHook(ConVarChanged_Glow_Ghost);
@@ -220,6 +220,8 @@ public void CreateInfectedModelGlow(int client)
 	SetEntityRenderColor(entity, 0, 0, 0, 0);
 	
 	// Set model attach to client, and always synchronize
+	SetVariantString("!activator");
+	AcceptEntityInput(entity, "SetParent", client);
 	SetVariantString("!activator");
 	AcceptEntityInput(entity, "SetAttached", client);
 	///////發光物件完成//////////

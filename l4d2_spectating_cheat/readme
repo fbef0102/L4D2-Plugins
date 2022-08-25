@@ -20,7 +20,7 @@ cfg\sourcemod\l4d2_specting_cheat.cfg
 l4d2_specting_cheat_alive_color "255 0 0"
 
 // Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]
-l4d2_specting_cheat_default_valve "0"
+l4d2_specting_cheat_default_value "0"
 
 // Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
 l4d2_specting_cheat_ghost_color "255 255 255"
