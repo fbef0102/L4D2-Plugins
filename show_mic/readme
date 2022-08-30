@@ -6,8 +6,8 @@ Voice Announce in centr text + create hat to Show Who is speaking.
 3. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?p=2684862
 4. ThirdPersonShoulder_Detect: https://forums.alliedmods.net/showthread.php?p=2529779
 5. VoiceHook:
-  * windows: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Windows%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.dll
-  * linux: https://github.com/fbef0102/L4D1-Server4Dead/blob/master/Linux%20Server%20Files/left4dead/addons/sourcemod/extensions/voicehook.ext.so
+  * windows: https://github.com/fbef0102/L4D2-Server4Dead/blob/main/Windows%20Server%20Files/left4dead2/addons/sourcemod/extensions/voicehook.ext.dll
+  * linux: https://github.com/fbef0102/L4D2-Server4Dead/blob/main/Linux%20Server%20Files/left4dead2/addons/sourcemod/extensions/voicehook.ext.so
 
 -ChangeLog-
 v1.6
