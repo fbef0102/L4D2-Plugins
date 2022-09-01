@@ -20,10 +20,10 @@ Original Post: https://forums.alliedmods.net/showpost.php?p=2671963&postcount=7
 
 -Convar-
 cfg\sourcemod\show_mic.cfg
-// If 1, display hat on player's head if player is speaking)
+// If 1, display hat on player's head if player is speaking
 show_mic_center_hat_enable "1"
 
-// If 1, display player speaking message in center text)
+// If 1, display player speaking message in center text
 show_mic_center_text_enable "0"
 
 -Command-
