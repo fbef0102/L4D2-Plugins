@@ -7,6 +7,9 @@
 #include <ThirdPersonShoulder_Detect>
 #include <left4dhooks>
 
+#define PLUGIN_VERSION "1.0"
+#define CVAR_FLAGS	FCVAR_NOTIFY
+
 #define UPDATESPEAKING_TIME_INTERVAL 0.5
 #define Model_Head "models/extras/info_speech.mdl"
 
@@ -17,16 +20,17 @@ bool g_bExternalState[MAXPLAYERS+1];	// If thirdperson view was detected
 char SpeakingPlayers[512], SpeakingInfectedPlayers[512], SpeakingSurvivorPlayers[512], SpeakingSpectatorPlayers[512];
 ConVar hSV_Alltalk;
 ConVar hSV_VoiceEnable;
+ConVar g_hCvarHatEnable, g_hCvarAnnounceEnable;
 int iSV_Alltalk;
-bool bSV_VoiceEnable;
+bool bSV_VoiceEnable, g_bCvarHatEnable, g_bCvarAnnounceEnable;
 
 public Plugin myinfo = 
 {
 	name = "[L4D2] Voice Announce + Show MIC Hat.",
 	author = "SupermenCJ & Harry Potter ",
 	description = "Voice Announce in centr text + create hat to Show Who is speaking.",
-	version = "1.6",
-	url = "https://steamcommunity.com/id/fbef0102/"
+	version = PLUGIN_VERSION,
+	url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
@@ -50,7 +54,14 @@ public void OnPluginStart()
 	hSV_Alltalk = FindConVar("sv_alltalk");
 	hSV_VoiceEnable = FindConVar("sv_voiceenable");
 
+	g_hCvarHatEnable = 	CreateConVar( 		"show_mic_center_hat_enable", "1", 		"If 1, display hat on player's head if player is speaking)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarAnnounceEnable = CreateConVar( 	"show_mic_center_text_enable", "1", 	"If 1, display player speaking message in center text)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	CreateConVar(						 	"show_mic_version",		PLUGIN_VERSION,	"Show Mic plugin version.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	AutoExecConfig(true, "show_mic");
+
 	GetCvars();
+	g_hCvarHatEnable.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarAnnounceEnable.AddChangeHook(ConVarChanged_Cvars);
 	hSV_Alltalk.AddChangeHook(ConVarChanged_Cvars);
 	hSV_VoiceEnable.AddChangeHook(ConVarChanged_Cvars);
 	
@@ -58,7 +69,7 @@ public void OnPluginStart()
 	HookEvent("player_death", 		Event_PlayerDeath);
 	HookEvent("player_team",		Event_PlayerTeam);
 	
-	CreateTimer(UPDATESPEAKING_TIME_INTERVAL, UpdateSpeaking, _, TIMER_REPEAT);
+	CreateTimer(UPDATESPEAKING_TIME_INTERVAL, Timer_UpdateSpeaking, _, TIMER_REPEAT);
 }
 
 public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -68,6 +79,8 @@ public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char
 
 void GetCvars()
 {
+	g_bCvarHatEnable = g_hCvarHatEnable.BoolValue;
+	g_bCvarAnnounceEnable = g_hCvarAnnounceEnable.BoolValue;
 	iSV_Alltalk = hSV_Alltalk.IntValue;
 	bSV_VoiceEnable = hSV_VoiceEnable.BoolValue;
 }
@@ -92,9 +105,10 @@ public void OnClientSpeakingStart(int client)
 {
 	if (!IsClientInGame(client)) return;
 
-	if (BaseComm_IsClientMuted(client) 
-		|| GetClientListeningFlags(client) == 1
-		|| bSV_VoiceEnable == false)
+	if (bSV_VoiceEnable == false
+		|| g_bCvarHatEnable == false 
+		|| BaseComm_IsClientMuted(client) 
+		|| GetClientListeningFlags(client) == 1)
 	{
 		return;
 	}
@@ -109,9 +123,10 @@ public void OnClientSpeaking(int client)
 {
 	if (!IsClientInGame(client)) return;
 
-	if (BaseComm_IsClientMuted(client) 
-		|| GetClientListeningFlags(client) == 1
-		|| bSV_VoiceEnable == false)
+	if (bSV_VoiceEnable == false
+		|| g_bCvarHatEnable == false
+		|| BaseComm_IsClientMuted(client) 
+		|| GetClientListeningFlags(client) == 1)
 	{
 		RemoveHat(client);
 		ClientSpeakingTime[client] = false;
@@ -124,8 +139,10 @@ public void OnClientSpeakingEnd(int client)
 	ClientSpeakingTime[client] = false;
 }
 
-public Action UpdateSpeaking(Handle timer)
+public Action Timer_UpdateSpeaking(Handle timer)
 {
+	if(g_bCvarAnnounceEnable == false) return Plugin_Continue;
+
 	if(iSV_Alltalk == 1)
 	{
 		int iCount = 0;
@@ -219,6 +236,8 @@ public Action UpdateSpeaking(Handle timer)
 			}
 		}
 	}
+
+	return Plugin_Continue;
 }
 
 void CreateHat(int client)
