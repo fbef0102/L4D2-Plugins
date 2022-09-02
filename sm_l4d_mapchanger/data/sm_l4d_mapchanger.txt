@@ -1,9 +1,9 @@
 "ForceMissionChangerSettings"
 {
-	"c1m4_atrium"
+	"c1m4_atrium"    // current map
 	{
-		"next mission map" "c2m1_highway"
-		"next mission name" "黑色嘉年華 Dark Carnival (5 Maps)"
+		"next mission map" "c2m1_highway" // <-- new map in coop/versus/realism
+		"next mission name" "黑色嘉年華 Dark Carnival (5 Maps)" // <-- map name whatever
 	}
 	"c2m5_concert"
 	{
@@ -35,10 +35,13 @@
 		"next mission map" "c8m1_apartment"
 		"next mission name" "No Mercy (5 Maps)"
 	} 
-	"c8m5_rooftop"
+	"c8m5_rooftop"  // current map
 	{
-		"next mission map" "c9m1_alleys"
-		"next mission name" "Crash Course (2 Maps)"
+		"next mission map" "c9m2_lots" 					// <-- new map in coop/versus/realism
+		"next mission name" "Crash Course (2 Maps)" 	// <-- map name whatever
+		
+		"survival_nextmap" "c1m2_streets"			 	// <-- new map in survival mode
+		"survival_nextname" "Dead Center - Streets" 	// <-- map name whatever
 	}
 	"c9m2_lots"
 	{

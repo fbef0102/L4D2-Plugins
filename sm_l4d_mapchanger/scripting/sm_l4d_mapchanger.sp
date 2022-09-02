@@ -3,10 +3,10 @@
 #include <sourcemod>
 #include <sdktools>
 #include <multicolors>
-//#include <l4d2_changelevel>
 #include <left4dhooks>
+//#include <l4d2_changelevel>
 
-#define Version "2.3"
+#define Version "2.4"
 #define MAX_ARRAY_LINE 50
 #define MAX_MAPNAME_LEN 64
 #define MAX_CREC_LEN 2
@@ -14,27 +14,20 @@
 
 #define NEXTLEVEL_Seconds 6.0
 
-ConVar DefM = null;
-ConVar CheckRoundCounterCoop = null;
-ConVar CheckRoundCounterCoopFinal = null;
-ConVar ChDelayVS = null;
-ConVar ChDelayCOOPFinal = null;
-ConVar cvarAnnounce = null;
-ConVar h_GameMode;
+ConVar DefM, CheckRoundCounterCoop, CheckRoundCounterCoopFinal, ChDelayVS, 
+	ChDelaySurvival, CheckRoundCounterSurvival, ChDelayCOOPFinal, cvarAnnounce, h_GameMode;
 
-int iGameMode;
-char FMC_FileSettings[128];
+int g_iCurrentMode;
 char current_map[64];
 char announce_map[64];
 char next_mission_def[64];
-char next_mission_force[64];
-char force_mission_name[64];
-char sNextStageMapName[64];
-int RoundEndCounter = 0;
-bool RoundEndBlock, cvarAnnounceValue;
-float ChDelayVSValue, ChDelayCOOPFinalValue;
+char next_mission_type[16];
+char next_mission_map[64];
+char next_mission_name[64];
+bool cvarAnnounceValue, g_bHasRoundEnd, g_bFinalMap;
+float ChDelayVSValue, ChDelayCOOPFinalValue, ChDelaySurvivalValue;
 int CoopRoundEndCounter = 0;
-int CheckRoundCounterCoopFinalValue, CheckRoundCounterCoopValue;
+int CheckRoundCounterCoopFinalValue, CheckRoundCounterCoopValue, CheckRoundCounterSurvivalValue;
 
 Handle hKVSettings = null;
 
@@ -44,7 +37,7 @@ public Plugin myinfo =
 	author = "Dionys, Harry, Jeremy Villanueva",
 	description = "Force change to next mission when current mission end.",
 	version = Version,
-	url = "https://steamcommunity.com/id/fbef0102/"
+	url = "https://steamcommunity.com/profiles/76561198026784913"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
@@ -71,13 +64,17 @@ public void OnPluginStart()
 	HookEvent("finale_win", Event_FinalWin);
 	HookEvent("mission_lost", Event_MissionLost);
 	
-	DefM = CreateConVar("sm_l4d_fmc_def", "c2m1_highway", "Mission for change by default.", FCVAR_NOTIFY);
+	h_GameMode = FindConVar("mp_gamemode");
+
+	DefM = CreateConVar("sm_l4d_fmc_def", "c2m1_highway", "Mission for change by default. (Empty=Game default behavior)", FCVAR_NOTIFY);
 	CheckRoundCounterCoop = CreateConVar("sm_l4d_fmc_crec_coop_map", "3", "Quantity of rounds (tries) events survivors wipe out before force of changelevel on non-final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
 	CheckRoundCounterCoopFinal = CreateConVar("sm_l4d_fmc_crec_coop_final", "3", "Quantity of rounds (tries) events survivors wipe out before force of changelevel on final maps in coop/realism (0=off)", FCVAR_NOTIFY, true, 0.0);
-	ChDelayVS = CreateConVar("sm_l4d_fmc_chdelayvs", "1.0", "After final map finishes, delay before force of changelevel in versus. (0=off)", FCVAR_NOTIFY, true, 0.0);
-	ChDelayCOOPFinal = CreateConVar("sm_l4d_fmc_ChDelayCOOP_final", "10.0", "After final rescue vehicle leaving, delay before force of changelevel in coop/realism. (0=off)", FCVAR_NOTIFY, true, 0.0);
+	CheckRoundCounterSurvival = CreateConVar("sm_l4d_fmc_crec_survival_map", "5", "Quantity of rounds (tries) events survivors wipe out before force of changelevel in survival. (0=off)", FCVAR_NOTIFY, true, 0.0);
+	ChDelayVS = CreateConVar("sm_l4d_fmc_delay_vs", "13.0", "After final map finishes, delay before force of changelevel in versus. (0=off)", FCVAR_NOTIFY, true, 0.0);
+	ChDelaySurvival = CreateConVar("sm_l4d_fmc_delay_survival", "15.0", "After round ends, delay before force of changelevel in versus. (0=off)", FCVAR_NOTIFY, true, 0.0);
+	ChDelayCOOPFinal = CreateConVar("sm_l4d_fmc_delay_coop_final", "15.0", "After final rescue vehicle leaving, delay before force of changelevel in coop/realism. (0=off)", FCVAR_NOTIFY, true, 0.0);
 	cvarAnnounce = CreateConVar("sm_l4d_fmc_announce", "1", "Enables next mission and how many chances left to advertise to players.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	h_GameMode = FindConVar("mp_gamemode");
+	AutoExecConfig(true, "sm_l4d_mapchanger");
 
 	GetCvars();
 	GameModeCheck();
@@ -85,12 +82,24 @@ public void OnPluginStart()
 	DefM.AddChangeHook(ConVarChanged_Cvars);
 	CheckRoundCounterCoop.AddChangeHook(ConVarChanged_Cvars);
 	CheckRoundCounterCoopFinal.AddChangeHook(ConVarChanged_Cvars);
+	CheckRoundCounterSurvival.AddChangeHook(ConVarChanged_Cvars);
 	ChDelayVS.AddChangeHook(ConVarChanged_Cvars);
+	ChDelaySurvival.AddChangeHook(ConVarChanged_Cvars);
 	ChDelayCOOPFinal.AddChangeHook(ConVarChanged_Cvars);
 	cvarAnnounce.AddChangeHook(ConVarChanged_Cvars);
 
-	AutoExecConfig(true, "sm_l4d_mapchanger");
+	RegConsoleCmd("sm_fmc_nextmap", Cmd_NextMap, "Display Next Map");
+	RegConsoleCmd("sm_fmc", Cmd_NextMap, "Display Next Map");
+
 }
+
+public Action Cmd_NextMap(int client, int args)
+{
+	ReplyToCommand(client, "%T","Announce Map Command", client, announce_map, next_mission_type);
+
+	return Plugin_Handled;
+}
+
 public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	GetCvars();
@@ -98,10 +107,13 @@ public void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char
 
 void GetCvars()
 {
-	DefM.GetString(next_mission_def, 64);
+	DefM.GetString(next_mission_def, sizeof(next_mission_def));
+	
 	CheckRoundCounterCoopValue = CheckRoundCounterCoop.IntValue;
 	CheckRoundCounterCoopFinalValue = CheckRoundCounterCoopFinal.IntValue;
+	CheckRoundCounterSurvivalValue = CheckRoundCounterSurvival.IntValue;
 	ChDelayVSValue = ChDelayVS.FloatValue;
+	ChDelaySurvivalValue = ChDelaySurvival.FloatValue;
 	ChDelayCOOPFinalValue = ChDelayCOOPFinal.FloatValue;
 	cvarAnnounceValue = cvarAnnounce.BoolValue;
 }
@@ -115,18 +127,15 @@ bool g_bMapStarted;
 public void OnMapStart()
 {
 	g_bMapStarted = true;
-	AutoExecConfig(true, "sm_l4d_mapchanger");
-	
 	CoopRoundEndCounter = 0;
-	RoundEndCounter = 0;
-	RoundEndBlock= false;
-
-	PluginInitialization();
 }
 
 public void OnConfigsExecuted()
 {
-	if(g_bMapStarted) PluginInitialization();
+	GameModeCheck();
+
+	GetCvars();
+	PluginInitialization();
 }
 
 public void OnMapEnd()
@@ -138,116 +147,151 @@ public void OnClientPutInServer(int client)
 {
 	// Make the announcement in 20 seconds unless announcements are turned off
 	if(client && !IsFakeClient(client) && cvarAnnounceValue)
-		CreateTimer(15.0, TimerAnnounce, client);
+		CreateTimer(10.0, TimerAnnounce, client, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
-	if(iGameMode == 1)
+	g_bHasRoundEnd = false;
+
+	if( StrEqual(next_mission_name, "none") == false )
 	{
-		int left;
-		if(L4D_IsMissionFinalMap())
+		if(g_iCurrentMode == 1)
 		{
-			if(CheckRoundCounterCoopFinalValue > 0 && CoopRoundEndCounter > 0) 
+			int left;
+			if(g_bFinalMap)
 			{
-				left = CheckRoundCounterCoopFinalValue-CoopRoundEndCounter;//Intentos - Intentos Realizados
-				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("%t","Finale Tries Left",left);
-				if(left == 1)
+				if(CheckRoundCounterCoopFinalValue > 0 && CoopRoundEndCounter > 0) 
 				{
-					if(cvarAnnounceValue) CPrintToChatAll("%t","Finale 1 Try Left",announce_map);
+					left = CheckRoundCounterCoopFinalValue-CoopRoundEndCounter;//Intentos - Intentos Realizados
+					if(left > 0 && cvarAnnounceValue) CPrintToChatAll("%t","Finale Tries Left",left);
+					if(left == 1)
+					{
+						if(cvarAnnounceValue) CPrintToChatAll("%t","Finale 1 Try Left",announce_map);
+					}
+				}
+			}
+			else
+			{
+				if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter > 0) 
+				{
+					left = CheckRoundCounterCoopValue - CoopRoundEndCounter;
+					if(left > 0 && cvarAnnounceValue) CPrintToChatAll("%t","Tries Left", left);
 				}
 			}
 		}
-		else
+		else if(g_iCurrentMode == 3)
 		{
-			if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter > 0) 
+			int left;
+			if(CheckRoundCounterSurvivalValue > 0 && CoopRoundEndCounter > 0) 
 			{
-				left = CheckRoundCounterCoopValue - CoopRoundEndCounter;
+				left = CheckRoundCounterSurvivalValue - CoopRoundEndCounter;
 				if(left > 0 && cvarAnnounceValue) CPrintToChatAll("%t","Tries Left", left);
 			}
 		}
 	}
 }
 
-public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
 {
-	if (RoundEndBlock == false)
+	if(g_bHasRoundEnd == true) return;
+	g_bHasRoundEnd = true;
+
+	if(StrEqual(next_mission_map, "none") == false)
 	{
-		RoundEndCounter += 1;
-		RoundEndBlock = true;
-		CreateTimer(0.5, TimerRoundEndBlock);
-	}
-
-	if( ChDelayVSValue > 0 && iGameMode == 2 && StrEqual(next_mission_force, "none") != true && RoundEndCounter >= 4 && L4D_IsMissionFinalMap())
-	{
-		CreateTimer(ChDelayVSValue, TimerChDelayVS);
-		RoundEndCounter = 0;
-	}
-}
-
-
-public Action Event_FinalWin(Event event, const char[] name, bool dontBroadcast) 
-{
-	if(ChDelayCOOPFinalValue > 0 && iGameMode == 1 && StrEqual(next_mission_force, "none") != true)
-		CreateTimer(ChDelayCOOPFinalValue, TimerChDelayCOOPFinal);
-}
-
-public Action Event_MissionLost(Event event, const char[] name, bool dontBroadcast) 
-{
-	if(iGameMode == 1)
-	{
-		CoopRoundEndCounter += 1;//Intentos Realizados +1
-		if(L4D_IsMissionFinalMap())
+		if(g_iCurrentMode == 2 && InSecondHalfOfRound() && g_bFinalMap)
 		{
-			if(StrEqual(next_mission_force, "none") != true && CheckRoundCounterCoopFinalValue > 0 && CoopRoundEndCounter >= CheckRoundCounterCoopFinalValue)
+			if( ChDelayVSValue > 0 )
 			{
-				CPrintToChatAll("%t","Force Pass Campaign No Tries Left", CheckRoundCounterCoopFinalValue);
-				CreateTimer(NEXTLEVEL_Seconds, TimerChDelayCOOPFinal);
+				CreateTimer(ChDelayVSValue, Timer_ChangeMap, TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
-		else
+		else if(g_iCurrentMode == 3)
 		{
-			if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter >= CheckRoundCounterCoopValue)
+			CoopRoundEndCounter++;
+			
+			if(CheckRoundCounterSurvivalValue > 0 && CoopRoundEndCounter >= CheckRoundCounterSurvivalValue)
 			{
-				CPrintToChatAll("%t","Force Pass Map No Tries Left", CheckRoundCounterCoopValue);
-				CreateTimer(NEXTLEVEL_Seconds, TimerChDelayCOOPMap);
-			}		
+				if( ChDelaySurvivalValue > 0)
+				{
+					CPrintToChatAll("%t","Force Pass Map No Tries Left", CheckRoundCounterSurvivalValue);
+					CreateTimer(ChDelaySurvivalValue, Timer_ChangeMap, TIMER_FLAG_NO_MAPCHANGE);
+				}
+			}
 		}
 	}
+}
+
+
+public void Event_FinalWin(Event event, const char[] name, bool dontBroadcast) 
+{
+	if(ChDelayCOOPFinalValue > 0 && g_iCurrentMode == 1 && StrEqual(next_mission_map, "none") == false)
+		CreateTimer(ChDelayCOOPFinalValue, Timer_ChangeMap, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public void Event_MissionLost(Event event, const char[] name, bool dontBroadcast) 
+{
+	if(StrEqual(next_mission_map, "none") == false)
+	{
+		if(g_iCurrentMode == 1)
+		{
+			CoopRoundEndCounter += 1;//Intentos Realizados +1
+			if(g_bFinalMap)
+			{
+				if(CheckRoundCounterCoopFinalValue > 0 && CoopRoundEndCounter >= CheckRoundCounterCoopFinalValue)
+				{
+					CPrintToChatAll("%t","Force Pass Campaign No Tries Left", CheckRoundCounterCoopFinalValue);
+					CreateTimer(NEXTLEVEL_Seconds, Timer_ChangeMap, TIMER_FLAG_NO_MAPCHANGE);
+				}
+			}
+			else
+			{
+				if(CheckRoundCounterCoopValue > 0 && CoopRoundEndCounter >= CheckRoundCounterCoopValue)
+				{
+					CPrintToChatAll("%t","Force Pass Map No Tries Left", CheckRoundCounterCoopValue);
+					CreateTimer(NEXTLEVEL_Seconds, Timer_ChangeMap, TIMER_FLAG_NO_MAPCHANGE);
+				}		
+			}
+		}
+		}
 }
 
 public Action TimerAnnounce(Handle timer, any client)
 {
 	if(IsClientInGame(client))
 	{
-		if (L4D_IsMissionFinalMap())
+		if (g_iCurrentMode != 3)
 		{
-			CPrintToChat(client, "%t","Announce Map", announce_map);
+			if( g_bFinalMap ) CPrintToChat(client, "%T","Announce Map", client, announce_map);
+		}
+		else
+		{
+			CPrintToChat(client, "%T","Announce Map", client, announce_map);
 		}
 	}
+
+	return Plugin_Continue;
 }
 
-public Action TimerRoundEndBlock(Handle timer)
+public Action Timer_ChangeMap(Handle timer)
 {
-	RoundEndBlock = false;
+	ServerCommand("changelevel %s", next_mission_map);
+	//L4D2_ChangeLevel(next_mission_map);
+
+	CreateTimer(5.0, Timer_CheckChangeMap, TIMER_FLAG_NO_MAPCHANGE);
+
+	return Plugin_Continue;
 }
 
-public Action TimerChDelayVS(Handle timer)
+public Action Timer_CheckChangeMap(Handle timer)
 {
-	ServerCommand("changelevel %s", next_mission_force);
-	//L4D2_ChangeLevel(next_mission_force);
-}
+	CPrintToChatAll("%t", "Unable to Change Map", next_mission_name, next_mission_map);
 
-public Action TimerChDelayCOOPFinal(Handle timer)
-{
-	ServerCommand("changelevel %s", next_mission_force);
-	//L4D2_ChangeLevel(next_mission_force);
-}
+	FormatEx(announce_map, sizeof(announce_map), "%s", next_mission_map);
+	FormatEx(next_mission_type, sizeof(next_mission_type), "invalid map");
+	next_mission_map = "none";
 
-public Action TimerChDelayCOOPMap(Handle timer)
-{
-	ServerCommand("changelevel %s", sNextStageMapName);
-	//L4D2_ChangeLevel(sNextStageMapName);
+	return Plugin_Continue;
 }
 
 void ClearKV(Handle kvhandle)
@@ -267,68 +311,148 @@ void ClearKV(Handle kvhandle)
 
 void PluginInitialization()
 {
+	GameModeCheck();
 	ClearKV(hKVSettings);
 	
-	BuildPath(Path_SM, FMC_FileSettings, 128, "data/sm_l4d_mapchanger.txt");
+	char FMC_FileSettings[128];
+	BuildPath(Path_SM, FMC_FileSettings, sizeof(FMC_FileSettings), "data/sm_l4d_mapchanger.txt");
+	if( !FileExists(FMC_FileSettings) )
+	{
+		SetFailState("data/sm_l4d_mapchanger.txt does not exits !!!");
+	}
 
 	if(!FileToKeyValues(hKVSettings, FMC_FileSettings))
 		SetFailState("Force Mission Changer settings not found! Shutdown.");
 	
-	next_mission_force = "none";
-	GetCurrentMap(current_map, 64);
+	next_mission_map = "none";
+	announce_map = "none";
+	GetCurrentMap(current_map, sizeof(current_map));
 
+	g_bFinalMap = L4D_IsMissionFinalMap();
 	KvRewind(hKVSettings);
-	if(KvJumpToKey(hKVSettings, current_map))
+
+	if(g_iCurrentMode == 1)
 	{
-		KvGetString(hKVSettings, "next mission map", next_mission_force, 64, next_mission_def);//Force Next Campaign,Def Next Map
-		//LogMessage("next_mission map: %s",next_mission_force);
-		KvGetString(hKVSettings, "next mission name", force_mission_name, 64, "none");
-		//LogMessage("next mission name: %s",force_mission_name);
+		if(!g_bFinalMap)
+		{
+			int ent = FindEntityByClassname(-1, "info_changelevel");
+			if(ent == -1)
+			{
+				ent = FindEntityByClassname(-1, "trigger_changelevel");
+			}
+
+			if(ent != -1)
+			{
+				FormatEx(announce_map, sizeof(announce_map), "Empty");
+				FormatEx(next_mission_type, sizeof(next_mission_type), "next level not found");
+			}
+			else
+			{
+				GetEntPropString(ent, Prop_Data, "m_mapName", next_mission_map, sizeof(next_mission_map)); // Get Prop Name
+				FormatEx(announce_map, sizeof(announce_map), "%s", next_mission_map);
+				FormatEx(next_mission_type, sizeof(next_mission_type), "next level");
+			}
+			//LogMessage("sm_l4d_mapchanger: Next stage: %s", next_mission_map);
+		}
+		
+		if(KvJumpToKey(hKVSettings, current_map))
+		{
+			KvGetString(hKVSettings, "next mission map", next_mission_map, sizeof(next_mission_map), "none");//Force Next Campaign,Def Next Map
+			//LogMessage("next_mission map: %s",next_mission_map);
+			KvGetString(hKVSettings, "next mission name", next_mission_name, sizeof(next_mission_name), "none");
+			//LogMessage("next mission name: %s",next_mission_name);
+		}
+	}
+	else if(g_iCurrentMode == 2)
+	{
+		if(KvJumpToKey(hKVSettings, current_map))
+		{
+			KvGetString(hKVSettings, "next mission map", next_mission_map, sizeof(next_mission_map), "none");//Force Next Campaign,Def Next Map
+			//LogMessage("next_mission map: %s",next_mission_map);
+			KvGetString(hKVSettings, "next mission name", next_mission_name, sizeof(next_mission_name), "none");
+			//LogMessage("next mission name: %s",next_mission_name);
+		}
+	}
+	else if(g_iCurrentMode == 3)
+	{
+		if(KvJumpToKey(hKVSettings, current_map))
+		{
+			KvGetString(hKVSettings, "survival_nextmap", next_mission_map, sizeof(next_mission_map), "none");
+			KvGetString(hKVSettings, "survival_nextname", next_mission_name, sizeof(next_mission_name), "none");
+		}
 	}
 	KvRewind(hKVSettings);
 		
-	if (StrEqual(next_mission_force, "none") != true)
+	if (StrEqual(next_mission_map, "none") == false)
 	{
-		if (!IsMapValid(next_mission_force))
-			next_mission_force = next_mission_def;
+		if (!IsMapValid(next_mission_map))
+		{
+			FormatEx(announce_map, sizeof(announce_map), "%s", next_mission_map);
+			FormatEx(next_mission_type, sizeof(next_mission_type), "invalid map");
+			next_mission_map = "none";
+			return;
+		}
 
-		if (StrEqual(force_mission_name, "none") != true)
-			announce_map = force_mission_name;
+		if (StrEqual(next_mission_name, "none") == false)
+		{
+			FormatEx(announce_map, sizeof(announce_map), "%s", next_mission_name);
+			FormatEx(next_mission_type, sizeof(next_mission_type), "next map");
+		}
 		else
-			announce_map = next_mission_force;
+		{
+			FormatEx(announce_map, sizeof(announce_map), "%s", next_mission_map);
+			FormatEx(next_mission_type, sizeof(next_mission_type), "next map");
+		}
 	}
 	else
 	{
-		announce_map = next_mission_def;
-		next_mission_force = next_mission_def;
-	}
+		if(StrEqual(announce_map, "Empty")) return;
 
-	if(L4D_IsMissionFinalMap() == false && iGameMode == 1)
-	{
-		int ent = FindEntityByClassname(-1, "info_changelevel");
-		if(ent == -1)
+		if(strlen(next_mission_def) > 0)
 		{
-			ent = FindEntityByClassname(-1, "trigger_changelevel");
+			FormatEx(announce_map, sizeof(announce_map), "%s", next_mission_def);
+			FormatEx(next_mission_type, sizeof(next_mission_type), "default");
+			next_mission_map = next_mission_def;
 		}
-
-		if(ent == -1)
-			sNextStageMapName = next_mission_def;
 		else
-			GetEntPropString(ent, Prop_Data, "m_mapName", sNextStageMapName, sizeof(sNextStageMapName)); // Get Prop Name
-		//LogMessage("sm_l4d_mapchanger: Next stage: %s", sNextStageMapName);
+		{
+			FormatEx(announce_map, sizeof(announce_map), "none", next_mission_def);
+			FormatEx(next_mission_type, sizeof(next_mission_type), "none");
+		}
 	}
 }
 
 void GameModeCheck()
 {
-	static char GameName[16];
-	h_GameMode.GetString(GameName, sizeof(GameName));
-	if (StrEqual(GameName, "survival", false))
-		iGameMode = 3;
-	else if (StrEqual(GameName, "versus", false) || StrEqual(GameName, "teamversus", false) || StrEqual(GameName, "scavenge", false) || StrEqual(GameName, "teamscavenge", false) || StrEqual(GameName, "mutation12", false) || StrEqual(GameName, "mutation13", false) || StrEqual(GameName, "mutation15", false) || StrEqual(GameName, "mutation11", false))
-		iGameMode = 2;
-	else if (StrEqual(GameName, "coop", false) || StrEqual(GameName, "realism", false) || StrEqual(GameName, "mutation3", false) || StrEqual(GameName, "mutation9", false) || StrEqual(GameName, "mutation1", false) || StrEqual(GameName, "mutation7", false) || StrEqual(GameName, "mutation10", false) || StrEqual(GameName, "mutation2", false) || StrEqual(GameName, "mutation4", false) || StrEqual(GameName, "mutation5", false) || StrEqual(GameName, "mutation14", false))
-		iGameMode = 1;
-	else
-		iGameMode = 1;
+	if(!g_bMapStarted) return; 
+
+	int entity = CreateEntityByName("info_gamemode");
+	if( IsValidEntity(entity) )
+	{
+		DispatchSpawn(entity);
+		HookSingleEntityOutput(entity, "OnCoop", OnGamemode, true);
+		HookSingleEntityOutput(entity, "OnSurvival", OnGamemode, true);
+		HookSingleEntityOutput(entity, "OnVersus", OnGamemode, true);
+		HookSingleEntityOutput(entity, "OnScavenge", OnGamemode, true);
+		ActivateEntity(entity);
+		AcceptEntityInput(entity, "PostSpawnActivate");
+		if( IsValidEntity(entity) ) // Because sometimes "PostSpawnActivate" seems to kill the ent.
+			RemoveEdict(entity); // Because multiple plugins creating at once, avoid too many duplicate ents in the same frame
+	}
+}
+
+public void OnGamemode(const char[] output, int caller, int activator, float delay)
+{
+	if( strcmp(output, "OnCoop") == 0 )
+		g_iCurrentMode = 1;
+	else if( strcmp(output, "OnSurvival") == 0 )
+		g_iCurrentMode = 3;
+	else if( strcmp(output, "OnVersus") == 0 )
+		g_iCurrentMode = 2;
+	else if( strcmp(output, "OnScavenge") == 0 )
+		g_iCurrentMode = 2;
+}
+
+bool InSecondHalfOfRound() {
+    return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
 }
