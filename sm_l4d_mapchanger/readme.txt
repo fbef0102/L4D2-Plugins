@@ -63,4 +63,6 @@ sm_l4d_fmc_delay_survival "15.0"
 sm_l4d_fmc_delay_vs "13.0"
 
 -Command-
-None
+** Display Next Map
+	* sm_fmc_nextmap
+	* sm_fmc
