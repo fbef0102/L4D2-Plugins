@@ -11,7 +11,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * [[INC] Multi Colors](https://forums.alliedmods.net/showthread.php?t=247770)
 
 # Plugins
-* <b>[sm_l4d_mapchanger](/sm_l4d_mapchanger)</b>: Force change to next mission when current mission end.
 * <b>[l4d2_tank_props_glow](/l4d2_tank_props_glow)</b>: When a Tank punches a Hittable it adds a Glow to the hittable which all infected players can see.
 * <b>[hunter_growl_sound_fix](/hunter_growl_sound_fix)</b>: Fix silence Hunter produces growl sound when player MIC on
 * <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
