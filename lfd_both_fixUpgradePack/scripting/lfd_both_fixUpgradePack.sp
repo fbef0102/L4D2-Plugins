@@ -27,7 +27,7 @@ public Plugin myinfo =
 	author = "bullet28, V10, Silvers, Harry",
 	description = "Fixes upgrade packs pickup bug when using survivor model change + remove upgrade pack",
 	version = "1.4",
-	url = "https://steamcommunity.com/id/fbef0102/"
+	url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
@@ -100,11 +100,11 @@ public void OnClientPostAdminCheck(int client) {
 	ResetUsedUpgrades(client);
 }
 
-public Action EventRoundStart(Event event, const char[] name, bool dontBroadcast) {
+public void EventRoundStart(Event event, const char[] name, bool dontBroadcast) {
 	ResetAllUsedUpgrades();
 }
 
-public Action OnBotSwap(Event event, const char[] name, bool dontBroadcast)
+public void OnBotSwap(Event event, const char[] name, bool dontBroadcast)
 {
 	int bot = GetClientOfUserId(GetEventInt(event, "bot"));
 	int player = GetClientOfUserId(GetEventInt(event, "player"));
@@ -152,26 +152,42 @@ void ResetUsedUpgrades(int client) {
 }
 
 public void OnEntityCreated(int entity, const char[] classname) {
-	if (strcmp(classname, "upgrade_ammo_explosive") == 0 || strcmp(classname, "upgrade_ammo_incendiary") == 0 ) {
-		
-		SDKHook(entity, SDKHook_Use, OnUpgradeUse);
-		
-		int index;
-		for (int i = 1; i <= MaxClients; i++) {
-			if(isPlayerSurvivor(i) && (index = FindValueInArray(usedUpgrades[i], entity)) != -1)
-				RemoveFromArray(usedUpgrades[i],index);
+
+	if (!IsValidEntityIndex(entity))
+		return;
+
+	switch(classname[0])
+	{
+		case 'u':
+		{
+			if (strcmp(classname, "upgrade_ammo_explosive") == 0 || strcmp(classname, "upgrade_ammo_incendiary") == 0)
+			{
+				SDKHook(entity, SDKHook_SpawnPost, SpawnPost);
+			}
 		}
-		
-		bDeleteEntity[entity] = false;
 	}
 }
 
-public Action OnUpgradeUse(int entity, int activator, int caller, UseType type, float value) {
-	if (!isValidEntity(entity)) return Plugin_Continue;
+void SpawnPost(int entity)
+{
+    if( !IsValidEntity(entity) ) return;
 
-	char classname[32];
+    RequestFrame(nextFrame, EntIndexToEntRef(entity));
+}
+
+void nextFrame(int entity)
+{
+    // Validate
+    if( (entity = EntRefToEntIndex(entity)) != INVALID_ENT_REFERENCE )
+    {
+		SDKHook(entity, SDKHook_Use, OnUpgradeUse);
+    }
+} 
+
+public Action OnUpgradeUse(int entity, int activator, int caller, UseType type, float value) {
+	
+	static char classname[32];
 	GetEntityClassname(entity, classname, sizeof(classname));
-	if (StrContains(classname, "upgrade_ammo_") == -1) return Plugin_Continue;
 
 	SetEntData(entity, g_UpgradePackCanUseCount, 4, 1, true);
 
@@ -204,9 +220,7 @@ public Action OnUpgradeUse(int entity, int activator, int caller, UseType type, 
 	return Plugin_Continue;
 }
 
-public Action PostThinkMultiply(int client) {
-	SDKUnhook(client, SDKHook_PostThink, PostThinkMultiply);
-
+public void PostThinkMultiply(int client) {
 	if (isPlayerAliveSurvivor(client)) {
 		int primaryItem = GetPlayerWeaponSlot(client, 0);
 		if (primaryItem != -1) {
@@ -217,6 +231,8 @@ public Action PostThinkMultiply(int client) {
 			}
 		}
 	}
+
+	SDKUnhook(client, SDKHook_PostThink, PostThinkMultiply);
 }
 
 void SetUsedBySurvivor(int client, int entity) {
@@ -278,11 +294,6 @@ public Action Timer_RemoveEntity(Handle timer, int ref)
 	return Plugin_Continue;
 }
 
-
-bool isValidEntity(int entity) {
-	return entity > 0 && entity <= 2048 && IsValidEdict(entity) && IsValidEntity(entity);
-}
-
 bool isPlayerValid(int client) {
 	return client > 0 && client <= MaxClients && IsClientInGame(client);
 }
@@ -293,4 +304,10 @@ bool isPlayerSurvivor(int client) {
 
 bool isPlayerAliveSurvivor(int client) {
 	return isPlayerSurvivor(client) && IsPlayerAlive(client);
+}
+
+
+bool IsValidEntityIndex(int entity)
+{
+    return (MaxClients+1 <= entity <= GetMaxEntities());
 }
