@@ -12,7 +12,7 @@ If you want any modify or request, free to use or pay me money to do it.
 
 # Plugins
 > __Note__  
-**[>>Click me to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin#%E7%A7%81%E4%BA%BA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8-private-plugins-list)**
+**[>>Click here to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin#%E7%A7%81%E4%BA%BA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8-private-plugins-list)**
 * <b>[l4d2_tank_props_glow](/l4d2_tank_props_glow)</b>: When a Tank punches a Hittable it adds a Glow to the hittable which all infected players can see.
 * <b>[hunter_growl_sound_fix](/hunter_growl_sound_fix)</b>: Fix silence Hunter produces growl sound when player MIC on
 * <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
