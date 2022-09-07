@@ -11,6 +11,8 @@ If you want any modify or request, free to use or pay me money to do it.
 * [[INC] Multi Colors](https://forums.alliedmods.net/showthread.php?t=247770)
 
 # Plugins
+> __Note__  
+**[>>Click me to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin#%E7%A7%81%E4%BA%BA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8-private-plugins-list)**
 * <b>[l4d2_tank_props_glow](/l4d2_tank_props_glow)</b>: When a Tank punches a Hittable it adds a Glow to the hittable which all infected players can see.
 * <b>[hunter_growl_sound_fix](/hunter_growl_sound_fix)</b>: Fix silence Hunter produces growl sound when player MIC on
 * <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
@@ -44,7 +46,7 @@ If you want any modify or request, free to use or pay me money to do it.
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 # Others
-* <b>[L4D1-Competitive-Plugins](https://github.com/fbef0102/L4D1-Competitive-Plugins)](/)</b>: L4D1 Competitive enhancement
-* <b>[L4D1_2-Plugins](https://github.com/fbef0102/L4D1_2-Plugins)](/)</b>: L4D1/2 general purpose and freaky-fun plugins.
-* <b>[L4D2-Server4Dead](https://github.com/fbef0102/L4D2-Server4Dead)](/)</b>: Setup your own L4D2 Servers.
-* <b>[Game-Private_Plugin](https://github.com/fbef0102/Game-Private_Plugin)](/)</b>: Private Plugin List.
+* <b>[L4D1-Competitive-Plugins](https://github.com/fbef0102/L4D1-Competitive-Plugins)</b>: L4D1 Competitive enhancement
+* <b>[L4D1_2-Plugins](https://github.com/fbef0102/L4D1_2-Plugins)</b>: L4D1/2 general purpose and freaky-fun plugins.
+* <b>[L4D2-Server4Dead](https://github.com/fbef0102/L4D2-Server4Dead)</b>: Setup your own L4D2 Servers.
+* <b>[Game-Private_Plugin](https://github.com/fbef0102/Game-Private_Plugin)</b>: Private Plugin List.
