@@ -1,13 +1,10 @@
 Quickswitch Reloading like CS:GO in L4D2
-
--AlliedModders-
-[L4D1/2] CS:GO Quickswitch Reloading (v2.0, 2020-11-10): https://forums.alliedmods.net/showthread.php?t=318820
-
 -Video-
 idea from CS:GO Quickswitch Reloading: https://www.youtube.com/watch?v=VfdfbWhVP-8
 videoshowcase: https://youtu.be/Ur0uNQTZhbU
 
 -Changelog-
+AlliedModders Post: https://forums.alliedmods.net/showthread.php?t=318820
 v 2.1 (2021-4-24)
 - fixed DataPack memory leak issue
 
