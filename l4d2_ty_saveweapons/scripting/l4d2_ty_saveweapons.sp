@@ -969,8 +969,7 @@ bool HasIdlePlayer(int bot)
 {
 	if(HasEntProp(bot, Prop_Send, "m_humanSpectatorUserID"))
 	{
-		int client = GetClientOfUserId(GetEntProp(bot, Prop_Send, "m_humanSpectatorUserID"));		
-		if(client > 0 && client <= MaxClients && IsClientInGame(client) && !IsFakeClient(client) && IsClientObserver(client))
+		if(GetEntProp(bot, Prop_Send, "m_humanSpectatorUserID") > 0)
 		{
 			return true;
 		}
