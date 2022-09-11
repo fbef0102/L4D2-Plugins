@@ -1,7 +1,7 @@
 /**
  * -Relate Valve ConVar-
  * If true, survivor bots will be used as placeholders for survivors who are still changing levels
- * prevent bots from moving, changing weapons, using kits while human survivors are still changing levels
+ * If false, prevent bots from moving, changing weapons, using kits while human survivors are still changing levels
  * need to write down in cfg/server.cfg
  * 
  * sm_cvar sb_transition 0 
