@@ -18,9 +18,9 @@
 #define MODEL_V_SHOVEL "models/weapons/melee/v_shovel.mdl"
 #define MODEL_V_PITCHFORK  "models/weapons/melee/v_pitchfork.mdl"
 
-static g_PlayerSecondaryWeapons[MAXPLAYERS + 1];
+static int g_PlayerSecondaryWeapons[MAXPLAYERS + 1];
 
-// native int Timer_Delete_Weapon(int entity); //from clear_weapon_drop
+native int Timer_Delete_Weapon(int entity); //from clear_weapon_drop
 
 public Plugin myinfo =
 {
@@ -50,7 +50,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	}
 }
 
-public Action OnPlayerUse(Event event, const char[] name, bool dontBroadcast) 
+public void OnPlayerUse(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
@@ -64,7 +64,7 @@ public Action OnPlayerUse(Event event, const char[] name, bool dontBroadcast)
 	g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));
 }
 
-public Action bot_player_replace(Event event, const char[] name, bool dontBroadcast) 
+public void bot_player_replace(Event event, const char[] name, bool dontBroadcast) 
 {
 	int bot = GetClientOfUserId(event.GetInt("bot"));
 	int client = GetClientOfUserId(event.GetInt("player"));
@@ -73,7 +73,7 @@ public Action bot_player_replace(Event event, const char[] name, bool dontBroadc
 	g_PlayerSecondaryWeapons[bot] = -1;
 }
 
-public Action player_bot_replace(Event event, const char[] name, bool dontBroadcast) 
+public void player_bot_replace(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("player"));
 	int bot = GetClientOfUserId(event.GetInt("bot"));
@@ -82,7 +82,7 @@ public Action player_bot_replace(Event event, const char[] name, bool dontBroadc
 	g_PlayerSecondaryWeapons[client] = -1;
 }
 
-public Action OnItemPickUp(Event event, const char[] name, bool dontBroadcast) 
+public void OnItemPickUp(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if(client == 0 || !IsClientInGame(client) || GetClientTeam(client) != 2)
@@ -94,7 +94,7 @@ public Action OnItemPickUp(Event event, const char[] name, bool dontBroadcast)
 	g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));
 }
 
-public Action OnWeaponDrop(Event event, const char[] name, bool dontBroadcast) 
+public void OnWeaponDrop(Event event, const char[] name, bool dontBroadcast) 
 {
 	CreateTimer(0.1, ColdDown, event.GetInt("userid"));
 }
@@ -108,9 +108,11 @@ public Action ColdDown(Handle timer, int client)
 	
 		g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));	
 	}
+
+	return Plugin_Continue;
 }
 
-public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) 
+public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
@@ -139,6 +141,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
 		{
 			GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", melee_name, sizeof(melee_name));
+			DispatchKeyValue(entity, "solid", "6");
 			DispatchKeyValue(entity, "melee_script_name", melee_name);
 		}
 		else return;
@@ -162,7 +165,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		if(clip - 15 <= 0) SetEntProp(entity2, Prop_Send, "m_iClip1", 0);
 		else clip = clip - 15;
 
-		// Timer_Delete_Weapon(entity2);	
+		Timer_Delete_Weapon(entity2);	
 	}
 	else if (strcmp(sWeapon, "weapon_pistol_magnum") == 0)
 	{
@@ -185,5 +188,5 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	{
 		SetEntProp(entity, Prop_Send, "m_iClip1", clip);
 	}
-	// Timer_Delete_Weapon(entity);
+	Timer_Delete_Weapon(entity);
 }
