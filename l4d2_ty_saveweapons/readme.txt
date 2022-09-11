@@ -22,6 +22,12 @@ v4.1
 -Require-
 left4dhooks: https://forums.alliedmods.net/showthread.php?p=2684862
 
+-Relate Valve ConVar-
+* If true, survivor bots will be used as placeholders for survivors who are still changing levels
+* prevent bots from moving, changing weapons, using kits for survivors who are still changing levels
+* need to write down in cfg/server.cfg
+sm_cvar sb_transition 0 
+
 -ConVar-
 cfg/sourcemod/l4d2_ty_saveweapons.cfg
 // Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)
