@@ -1102,10 +1102,10 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	{
 		if (GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_TANK)
 		{
+			g_bDied[client] = false;
+			g_iLastHP[client] = GetEntProp(client, Prop_Data, "m_iHealth");
 			for( int i = 1; i <= MaxClients; i++ )
 			{
-				g_bDied[client] = false;
-				g_iLastHP[client] = GetEntProp(client, Prop_Data, "m_iHealth");
 				g_iDamage[i][client] = 0;
 			}
 		}
