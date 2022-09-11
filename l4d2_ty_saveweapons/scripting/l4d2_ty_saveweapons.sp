@@ -1,5 +1,10 @@
 /**
- * 可搭配sm_cvar sb_transition 0 使用 (戰役模式過關之後，bot不會動原地等著玩家過關之後取代)
+ * -Relate Valve ConVar-
+ * If true, survivor bots will be used as placeholders for survivors who are still changing levels
+ * prevent bots from moving, changing weapons, using kits while human survivors are still changing levels
+ * need to write down in cfg/server.cfg
+ * 
+ * sm_cvar sb_transition 0 
  * 
  * =============================================================================
  * L4D2 coop save weapon
@@ -892,6 +897,7 @@ int HxCreateWeapon(const char[] class_name, const char[] melee_name = "")
 		if (!RealValidEntity(weapon)) weapon = -1;
 		else
 		{
+			DispatchKeyValue(weapon, "solid", "6");
 			DispatchKeyValue(weapon, "melee_script_name", melee_name);
 			DispatchSpawn(weapon);
 		}
