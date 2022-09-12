@@ -4,7 +4,7 @@ They contain several types of weapons or items inside, depending on the cvar you
 video showcase: https://youtu.be/hpGlmwdWH6o
 
 -ChangeLog-
-v1.2
+v1.3
 AlliedModders Post: https://forums.alliedmods.net/showthread.php?t=335862
 -Add convars to turn off this plugin
 -Random box model available
