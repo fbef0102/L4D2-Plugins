@@ -72,7 +72,7 @@ public Plugin myinfo =
 	name = "[L4D2] CSO Random Supply Boxes drop", 
 	author = "Lux & HarryPotter", 
 	description = "CSO Random Supply Boxes in l4d2", 
-	version = "1.2", 
+	version = "1.3", 
 	url = "https://steamcommunity.com/profiles/76561198026784913"
 };
 
@@ -1027,12 +1027,12 @@ bool IsInUse(int entity)
 			return true;
 	}
 	
-	if(HasEntProp(entity, Prop_Data, "m_hOwnerEntity"))
-	{
-		client = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
-		if (IsValidClient(client))
-			return true;
-	}
+	// if(HasEntProp(entity, Prop_Data, "m_hOwnerEntity"))
+	// {
+	// 	client = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	// 	if (IsValidClient(client))
+	// 		return true;
+	// }
 
 	for (int i = 1; i <= MaxClients; i++) 
 	{
