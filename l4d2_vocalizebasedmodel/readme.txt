@@ -3,6 +3,7 @@ Makes AI SI take (and do) damage like human SI.
 -Changelog-
 v1.1
 -Remake Code
+-Late load plugin fix
 
 v1.0
 -Original Post by TBK Duy: https://forums.alliedmods.net/showpost.php?p=2687293&postcount=147
