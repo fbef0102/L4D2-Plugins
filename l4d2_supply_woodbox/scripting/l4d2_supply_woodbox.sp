@@ -378,7 +378,9 @@ void HookEvents()
 	HookEvent("map_transition", Event_RoundEnd,		EventHookMode_PostNoCopy);//戰役過關到下一關的時候 (沒有觸發round_end)
 	HookEvent("mission_lost", Event_RoundEnd,		EventHookMode_PostNoCopy);//戰役滅團重來該關卡的時候 (之後有觸發round_end)
 	HookEvent("finale_vehicle_leaving", Event_RoundEnd,		EventHookMode_PostNoCopy);//救援載具離開之時  (沒有觸發round_end)
-	HookEvent("finale_start", evtFinaleStart);
+	HookEvent("finale_start", 			evtFinaleStart, EventHookMode_PostNoCopy); //final starts, some of final maps won't trigger
+	HookEvent("finale_radio_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, all final maps trigger
+	HookEvent("gauntlet_finale_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, only rushing maps trigger (C5M5, C13M4)	
 }
 
 void UnhookEvents()
@@ -389,7 +391,9 @@ void UnhookEvents()
 	UnhookEvent("map_transition", Event_RoundEnd,		EventHookMode_PostNoCopy); //戰役過關到下一關的時候 (沒有觸發round_end)
 	UnhookEvent("mission_lost", Event_RoundEnd,			EventHookMode_PostNoCopy);//戰役滅團重來該關卡的時候 (之後有觸發round_end)
 	UnhookEvent("finale_vehicle_leaving", Event_RoundEnd,	EventHookMode_PostNoCopy);//救援載具離開之時  (沒有觸發round_end)
-	UnhookEvent("finale_start", evtFinaleStart);
+	UnhookEvent("finale_start", 			evtFinaleStart, EventHookMode_PostNoCopy); //final starts, some of final maps won't trigger
+	UnhookEvent("finale_radio_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, all final maps trigger
+	UnhookEvent("gauntlet_finale_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, only rushing maps trigger (C5M5, C13M4)	
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
