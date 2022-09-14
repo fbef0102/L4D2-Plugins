@@ -247,7 +247,10 @@ public void OnPluginStart()
 	HookEvent("round_start", OnRoundEvents);
 	HookEvent("round_end", OnRoundEvents);
 	
-	HookEvent("finale_start", OnFinaleEvents);
+	HookEvent("finale_start", 			OnFinaleEvents, EventHookMode_PostNoCopy); //final starts, some of final maps won't trigger
+	HookEvent("finale_radio_start", 	OnFinaleEvents, EventHookMode_PostNoCopy); //final starts, all final maps trigger
+	HookEvent("gauntlet_finale_start", 	OnFinaleEvents, EventHookMode_PostNoCopy); //final starts, only rushing maps trigger (C5M5, C13M4)
+	
 	HookEvent("finale_escape_start", OnFinaleEvents);
 	HookEvent("finale_vehicle_leaving", OnFinaleEvents);
 	
@@ -313,7 +316,10 @@ public void OnPluginEnd()
 	UnhookEvent("round_start", OnRoundEvents);
 	UnhookEvent("round_end", OnRoundEvents);
 	
-	UnhookEvent("finale_start", OnFinaleEvents);
+	UnhookEvent("finale_start", 			OnFinaleEvents, EventHookMode_PostNoCopy); //final starts, some of final maps won't trigger
+	UnhookEvent("finale_radio_start", 	OnFinaleEvents, EventHookMode_PostNoCopy); //final starts, all final maps trigger
+	UnhookEvent("gauntlet_finale_start", 	OnFinaleEvents, EventHookMode_PostNoCopy); //final starts, only rushing maps trigger (C5M5, C13M4)
+
 	UnhookEvent("finale_escape_start", OnFinaleEvents);
 	UnhookEvent("finale_vehicle_leaving", OnFinaleEvents);
 	
@@ -364,7 +370,7 @@ public void OnFinaleEvents(Event event, const char[] name, bool dontBroadcast)
 		return;
 	}
 	
-	if (StrEqual(name, "finale_start") || StrEqual(name, "finale_vehicle_leaving"))
+	if (StrEqual(name, "finale_start") || StrEqual(name, "finale_radio_start") || StrEqual(name, "gauntlet_finale_start") ||  StrEqual(name, "finale_vehicle_leaving"))
 	{
 		iFinaleWave = 0;
 	}
@@ -581,6 +587,8 @@ public int TSListHandler(Menu menu, MenuAction action, int param1, int param2)
 			delete pTSList;
 		}
 	}
+
+	return 0;
 }
 
 GameModeStatus GetGameModeInfo()
