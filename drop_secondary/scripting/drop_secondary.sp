@@ -55,8 +55,14 @@ public void OnClientPutInServer(int client)
 
 public void OnWeaponEquipPost(int client, int weapon)
 {
-	if (client <= 0 || client > MaxClients || !IsClientInGame(client) || GetClientTeam(client) != 2 || !IsPlayerAlive(client))
+	if (client <= 0 || client > MaxClients || !IsClientInGame(client))
 		return;
+
+	if(GetClientTeam(client) != 2 || !IsPlayerAlive(client))
+	{
+		g_PlayerSecondaryWeapons[client] = -1;
+		return;
+	}
 
 	if (IsIncapacitated(client)) //倒地不列入
 		return;	
@@ -87,11 +93,18 @@ public void OnWeaponDrop(Event event, const char[] name, bool dontBroadcast)
 public Action ColdDown(Handle timer, int client)
 {
 	client = GetClientOfUserId(client);
-	if(client && IsClientInGame(client) && GetClientTeam(client) == 2)
+	if(client && IsClientInGame(client))
 	{
-		int weapon = GetPlayerWeaponSlot(client, 1);
-	
-		g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));	
+		if(GetClientTeam(client) == 2 && IsPlayerAlive(client))
+		{
+			int weapon = GetPlayerWeaponSlot(client, 1);
+		
+			g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));	
+		}
+		else
+		{
+			g_PlayerSecondaryWeapons[client] = -1;
+		}
 	}
 
 	return Plugin_Continue;
@@ -118,7 +131,7 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	
 	char sWeapon[32];
 	int clip;
-	GetEdictClassname(weapon, sWeapon, 32);
+	GetEntityClassname(weapon, sWeapon, 32);
 	
 	int entity = CreateEntityByName(sWeapon); 
 	if(entity == -1)
