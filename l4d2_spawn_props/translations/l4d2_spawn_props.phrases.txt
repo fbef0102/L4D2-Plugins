@@ -611,4 +611,40 @@
 		"zho"	"上一個生成的物件已不再是物體!"
 		"chi"	"上一个生成的物件已不再是物体!"
 	}
+	"Spawn Items On Cursor"
+	{
+		"en"	"Spawn Items & Weapons On Cursor"
+		"zho"	"生成物品物件在準心位置上"
+		"chi"	"生成物品物件在准心位置上"
+	}
+	"Spawn Items On Origin"
+	{
+		"en"	"Spawn Items & Weapons On Origin"
+		"zho"	"生成物品物件在目前位置上"
+		"chi"	"生成物品物件在目前位置上"
+	}
+	"Weapons"
+	{
+		"en"	"Weapons"
+		"zho"	"武器類"
+		"chi"	"武器类"
+	}
+	"Melees"
+	{
+		"en"	"Melees"
+		"zho"	"近戰類"
+		"chi"	"近战类"
+	}
+	"Items"
+	{
+		"en"	"Items"
+		"zho"	"物品類"
+		"chi"	"物品类"
+	}
+	"Others"
+	{
+		"en"	"Others"
+		"zho"	"其他類"
+		"chi"	"其他类"
+	}
 }
