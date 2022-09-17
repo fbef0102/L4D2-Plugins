@@ -132,7 +132,7 @@ static char g_sWeapons2[MAX_WEAPONS2][] =
 };
 static char g_sWeaponModels2[MAX_WEAPONS2][] =
 {
-	"models/w_models/weapons/w_pistol_a.mdl",
+	"models/w_models/weapons/w_pistol_B.mdl",
 	"models/w_models/weapons/w_desert_eagle.mdl",
 	"models/w_models/weapons/w_rifle_m16a2.mdl",
 	"models/w_models/weapons/w_rifle_ak47.mdl",
@@ -142,8 +142,8 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 	"models/w_models/weapons/w_shotgun_spas.mdl",
 	"models/w_models/weapons/w_shotgun.mdl",
 	"models/w_models/weapons/w_pumpshotgun_A.mdl",
-	"models/w_models/weapons/w_smg_a.mdl",
 	"models/w_models/weapons/w_smg_uzi.mdl",
+	"models/w_models/weapons/w_smg_a.mdl",
 	"models/w_models/weapons/w_smg_mp5.mdl",
 	"models/w_models/weapons/w_sniper_mini14.mdl",
 	"models/w_models/weapons/w_sniper_awp.mdl",
@@ -157,7 +157,7 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 	"models/w_models/weapons/w_eq_bile_flask.mdl",
 	"models/w_models/weapons/w_eq_painpills.mdl",
 	"models/w_models/weapons/w_eq_adrenaline.mdl",
-	"models/w_models/weapons/w_eq_Medkit.mdl0",
+	"models/w_models/weapons/w_eq_Medkit.mdl",
 	"models/w_models/weapons/w_eq_defibrillator.mdl",
 	"models/w_models/weapons/w_eq_explosive_ammopack.mdl",
 	"models/w_models/weapons/w_eq_incendiary_ammopack.mdl",
