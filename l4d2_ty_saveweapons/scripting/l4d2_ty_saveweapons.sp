@@ -24,36 +24,35 @@
 
 static char g_sWeaponModels2[MAX_WEAPONS2][] =
 {
+	"models/w_models/weapons/w_pistol_B.mdl",
+	"models/w_models/weapons/w_desert_eagle.mdl",
 	"models/w_models/weapons/w_rifle_m16a2.mdl",
-	"models/w_models/weapons/w_autoshot_m4super.mdl",
-	"models/w_models/weapons/w_sniper_mini14.mdl",
-	"models/w_models/weapons/w_smg_uzi.mdl",
-	"models/w_models/weapons/w_pumpshotgun_A.mdl",
-	"models/w_models/weapons/w_pistol_a.mdl",
-	"models/w_models/weapons/w_eq_molotov.mdl",
-	"models/w_models/weapons/w_eq_pipebomb.mdl",
-	"models/w_models/weapons/w_eq_medkit.mdl",
-	"models/w_models/weapons/w_eq_painpills.mdl",
-
-	"models/w_models/weapons/w_shotgun.mdl",
-	"models/w_models/weapons/w_desert_rifle.mdl",
-	"models/w_models/weapons/w_grenade_launcher.mdl",
-	"models/w_models/weapons/w_m60.mdl",
 	"models/w_models/weapons/w_rifle_ak47.mdl",
 	"models/w_models/weapons/w_rifle_sg552.mdl",
+	"models/w_models/weapons/w_desert_rifle.mdl",
+	"models/w_models/weapons/w_autoshot_m4super.mdl",
 	"models/w_models/weapons/w_shotgun_spas.mdl",
+	"models/w_models/weapons/w_shotgun.mdl",
+	"models/w_models/weapons/w_pumpshotgun_A.mdl",
+	"models/w_models/weapons/w_smg_uzi.mdl",
 	"models/w_models/weapons/w_smg_a.mdl",
 	"models/w_models/weapons/w_smg_mp5.mdl",
+	"models/w_models/weapons/w_sniper_mini14.mdl",
 	"models/w_models/weapons/w_sniper_awp.mdl",
 	"models/w_models/weapons/w_sniper_military.mdl",
 	"models/w_models/weapons/w_sniper_scout.mdl",
+	"models/w_models/weapons/w_m60.mdl",
+	"models/w_models/weapons/w_grenade_launcher.mdl",
 	"models/weapons/melee/w_chainsaw.mdl",
-	"models/w_models/weapons/w_desert_eagle.mdl",
+	"models/w_models/weapons/w_eq_molotov.mdl",
+	"models/w_models/weapons/w_eq_pipebomb.mdl",
 	"models/w_models/weapons/w_eq_bile_flask.mdl",
+	"models/w_models/weapons/w_eq_painpills.mdl",
+	"models/w_models/weapons/w_eq_adrenaline.mdl",
+	"models/w_models/weapons/w_eq_Medkit.mdl",
 	"models/w_models/weapons/w_eq_defibrillator.mdl",
 	"models/w_models/weapons/w_eq_explosive_ammopack.mdl",
 	"models/w_models/weapons/w_eq_incendiary_ammopack.mdl",
-	"models/w_models/weapons/w_eq_adrenaline.mdl"
 };
 
 static char survivor_names[8][] = { "Nick", "Rochelle", "Coach", "Ellis", "Bill", "Zoey", "Francis", "Louis"};
@@ -174,6 +173,7 @@ public void OnPluginStart()
 public void OnPluginEnd()
 {
 	ResetPlugin();
+	ResetTimer();
 }
 
 bool g_bMapStarted;
@@ -242,6 +242,7 @@ public void OnMapEnd()
 {
 	g_bMapStarted = false;
 	ResetPlugin();
+	ResetTimer();
 
 	if(g_bMapTransition == false)
 	{
@@ -389,6 +390,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 
 public Action tmrStart(Handle timer)
 {
+	ResetPlugin();
+
 	g_bMapTransition = false;
 	if (g_iCurrentMode == 1)
 	{
@@ -401,7 +404,8 @@ public Action tmrStart(Handle timer)
 		}
 	}
 
-	if(PlayerLeftStartTimer == null) PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
+	delete PlayerLeftStartTimer;
+	PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
 	
 	return Plugin_Continue;
 }
@@ -413,7 +417,8 @@ public Action Timer_PlayerLeftStart(Handle Timer)
 		g_iCountDownTime = g_iGameTimeBlock;
 		if(g_iCountDownTime > 0)
 		{
-			if(CountDownTimer == null) CountDownTimer = CreateTimer(1.0, Timer_CountDown, _, TIMER_REPEAT);
+			delete CountDownTimer;
+			CountDownTimer = CreateTimer(1.0, Timer_CountDown, _, TIMER_REPEAT);
 		}
 
 		PlayerLeftStartTimer = null;
@@ -437,6 +442,7 @@ public Action Timer_CountDown(Handle timer)
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	ResetPlugin();
+	ResetTimer();
 }
 
 public void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
@@ -850,7 +856,7 @@ void HxGetSlot1(int client, int iSlot1)
 	char wep_name[64]; wep_name[0] = '\0';
 	if (HasEntProp(iSlot1, Prop_Data, "m_strMapSetScriptName")) //support custom melee
 	{
-		GetEntPropString(iSlot1, Prop_Data, "m_strMapSetScriptName", wep_name, sizeof(wep_name));
+		GetEntPropString(iSlot1, Prop_Data, "m_strMapSetScriptName", wep_name, sizeof(wep_name));		
 		g_bSlot1_IsMelee[client] = true;
 	}
 	else
@@ -929,7 +935,6 @@ void ResetPlugin()
 {
 	g_iRoundStart = 0;
 	g_iPlayerSpawn = 0;
-	ResetTimer();
 }
 
 void ResetTimer()
