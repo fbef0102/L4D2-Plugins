@@ -64,47 +64,46 @@ bool automatic_placement = true;
 bool g_bSpawnWitchBride;
 
 // Global variables to hold menu position
-int g_iSpecialInfectedMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iUInfectedMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iItemMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iWeaponMenuPosition[MAXPLAYERS+1]	= 0;
-int g_iMeleeMenuPosition[MAXPLAYERS+1]	= 0;
+int g_iSpecialInfectedMenuPosition[MAXPLAYERS+1];
+int g_iUInfectedMenuPosition[MAXPLAYERS+1];
+int g_iItemMenuPosition[MAXPLAYERS+1];
+int g_iWeaponMenuPosition[MAXPLAYERS+1];
+int g_iMeleeMenuPosition[MAXPLAYERS+1];
 
 #define ZOMBIESPAWN_Attempts 6
 
 #define	MAX_WEAPONS2		29
 static char g_sWeaponModels2[MAX_WEAPONS2][] =
 {
+	"models/w_models/weapons/w_pistol_B.mdl",
+	"models/w_models/weapons/w_desert_eagle.mdl",
 	"models/w_models/weapons/w_rifle_m16a2.mdl",
-	"models/w_models/weapons/w_autoshot_m4super.mdl",
-	"models/w_models/weapons/w_sniper_mini14.mdl",
-	"models/w_models/weapons/w_smg_uzi.mdl",
-	"models/w_models/weapons/w_pumpshotgun_A.mdl",
-	"models/w_models/weapons/w_pistol_a.mdl",
-	"models/w_models/weapons/w_eq_molotov.mdl",
-	"models/w_models/weapons/w_eq_pipebomb.mdl",
-	"models/w_models/weapons/w_eq_medkit.mdl",
-	"models/w_models/weapons/w_eq_painpills.mdl",
-
-	"models/w_models/weapons/w_shotgun.mdl",
-	"models/w_models/weapons/w_desert_rifle.mdl",
-	"models/w_models/weapons/w_grenade_launcher.mdl",
-	"models/w_models/weapons/w_m60.mdl",
 	"models/w_models/weapons/w_rifle_ak47.mdl",
 	"models/w_models/weapons/w_rifle_sg552.mdl",
+	"models/w_models/weapons/w_desert_rifle.mdl",
+	"models/w_models/weapons/w_autoshot_m4super.mdl",
 	"models/w_models/weapons/w_shotgun_spas.mdl",
+	"models/w_models/weapons/w_shotgun.mdl",
+	"models/w_models/weapons/w_pumpshotgun_A.mdl",
+	"models/w_models/weapons/w_smg_uzi.mdl",
 	"models/w_models/weapons/w_smg_a.mdl",
 	"models/w_models/weapons/w_smg_mp5.mdl",
+	"models/w_models/weapons/w_sniper_mini14.mdl",
 	"models/w_models/weapons/w_sniper_awp.mdl",
 	"models/w_models/weapons/w_sniper_military.mdl",
 	"models/w_models/weapons/w_sniper_scout.mdl",
+	"models/w_models/weapons/w_m60.mdl",
+	"models/w_models/weapons/w_grenade_launcher.mdl",
 	"models/weapons/melee/w_chainsaw.mdl",
-	"models/w_models/weapons/w_desert_eagle.mdl",
+	"models/w_models/weapons/w_eq_molotov.mdl",
+	"models/w_models/weapons/w_eq_pipebomb.mdl",
 	"models/w_models/weapons/w_eq_bile_flask.mdl",
+	"models/w_models/weapons/w_eq_painpills.mdl",
+	"models/w_models/weapons/w_eq_adrenaline.mdl",
+	"models/w_models/weapons/w_eq_Medkit.mdl",
 	"models/w_models/weapons/w_eq_defibrillator.mdl",
 	"models/w_models/weapons/w_eq_explosive_ammopack.mdl",
 	"models/w_models/weapons/w_eq_incendiary_ammopack.mdl",
-	"models/w_models/weapons/w_eq_adrenaline.mdl"
 };
 
 #define MODEL_COLA			"models/w_models/weapons/w_cola.mdl"
@@ -257,7 +256,7 @@ public void OnPluginEnd() {
  * 	Command_SpawnInfected
  * </seealso>
 */
-public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	/* If something spawns and we have just requested something to spawn - assume it is the same thing and make sure it has max health */
 	if (GetClientTeam(client) == 3 && currently_spawning) {
@@ -285,7 +284,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
  * 	Command_SpawnBossesContinuously
  * </seealso>
 */
-public Action Event_BossSpawn(Event event, const char[] name, bool dontBroadcast) {
+public void Event_BossSpawn(Event event, const char[] name, bool dontBroadcast) {
 	if (always_force_bosses.BoolValue == false)
 		if (strcmp(name, "tank_spawn") == 0 && director_force_tank.BoolValue)
 			Do_ForceTank(0, false);
@@ -343,6 +342,8 @@ public Action Timer_RefreshLocation(Handle timer) {
 public Action Timer_TeleportZombie(Handle timer, any entity) {
 	TeleportEntity(entity, last_zombie_spawn_location, NULL_VECTOR, NULL_VECTOR);
 	// PrintToChatAll("Zombie being teleported to int location");
+
+	return Plugin_Continue;
 }
 
 /// Handles the top level "All4Dead" category and how it is displayed on the core admin menu
@@ -351,6 +352,8 @@ public int Menu_CategoryHandler(TopMenu topmenu, TopMenuAction action, TopMenuOb
 		Format(buffer, maxlength, "All4Dead Commands:");
 	else if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "All4Dead Commands");
+
+	return 0;
 }
 /// Handles what happens someone opens the "All4Dead" category from the menu.
 public int Menu_TopItemHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength) {
@@ -386,12 +389,14 @@ public int Menu_TopItemHandler(TopMenu topmenu, TopMenuAction action, TopMenuObj
 		else if (object_id == config_menu)
 			Menu_CreateConfigMenu(client, false);
 	}
+
+	return 0;
 }
 
 // Infected spawning functions
 
 /// Creates the infected spawning menu when it is selected from the top menu and displays it to the client.
-public Action Menu_CreateSpecialInfectedMenu(int client, int args) {
+public void Menu_CreateSpecialInfectedMenu(int client, int args) {
 	Menu menu;
 	menu = new Menu(Menu_SpawnSInfectedHandler);
 	 
@@ -412,7 +417,6 @@ public Action Menu_CreateSpecialInfectedMenu(int client, int args) {
 	menu.AddItem("sc", "Spawn a charger");
 	menu.AddItem("sb", "Spawn a mob");
 	menu.DisplayAt(client, g_iSpecialInfectedMenuPosition[client], MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the spawning menu.
 public int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, int itempos) {
@@ -453,6 +457,8 @@ public int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, 
 	else if (action == MenuAction_Cancel)
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
+
+	return 0;
 }
 
 /// Creates the infected spawning menu when it is selected from the top menu and displays it to the client.
@@ -510,6 +516,8 @@ public int Menu_SpawnUInfectedHandler(Menu menu, MenuAction action, int cindex, 
 	else if (action == MenuAction_Cancel)
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
+	
+	return 0;
 }
 
 /// Sourcemod Action for the SpawnInfected command.
@@ -904,6 +912,8 @@ public int Menu_SpawnItemsHandler(Menu menu, MenuAction action, int cindex, int 
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
 	}
+
+	return 0;
 }
 /// Sourcemod Action for the Do_SpawnItem command.
 public Action Command_SpawnItem(int client, int args) { 
@@ -1042,6 +1052,8 @@ public int Menu_SpawnWeaponHandler(Menu menu, MenuAction action, int cindex, int
 	else if (action == MenuAction_Cancel)
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
+
+	return 0;
 }
 
 /// Creates the melee weapon spawning menu when it is selected from the top menu and displays it to the client.
@@ -1112,12 +1124,14 @@ public int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex
 	else if (action == MenuAction_Cancel)
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
+
+	return 0;
 }
 
 // Additional director commands
 
 /// Creates the director commands menu when it is selected from the top menu and displays it to the client.
-public Action Menu_CreateDirectorMenu(int client, int args) {
+public void Menu_CreateDirectorMenu(int client, int args) {
 	Menu menu = new Menu(Menu_DirectorMenuHandler);
 	menu.SetTitle("Director Commands");
 	menu.ExitBackButton = true;
@@ -1129,7 +1143,6 @@ public Action Menu_CreateDirectorMenu(int client, int args) {
 	if (always_force_bosses.BoolValue) { menu.AddItem("fd", "Stop bosses spawning continuously"); } else { menu.AddItem("fw", "Force bosses to spawn continuously"); }
 	menu.AddItem("mz", "Add more zombies to the horde");	
 	menu.Display( client, MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the director commands menu.
 public int Menu_DirectorMenuHandler(Menu menu, MenuAction action, int cindex, int itempos) {
@@ -1168,6 +1181,8 @@ public int Menu_DirectorMenuHandler(Menu menu, MenuAction action, int cindex, in
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
 	}
+
+	return 0;
 }
 
 /// Sourcemod Action for the AlwaysForceBosses command.
@@ -1370,6 +1385,8 @@ public int Menu_ConfigCommandsHandler(Menu menu, MenuAction action, int cindex, 
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
 	}
+
+	return 0;
 }
 
 /// Sourcemod Action for the Do_EnableNotifications command.
@@ -1524,6 +1541,8 @@ public Action kickbot(Handle timer, any client)
 	{
 		if (IsFakeClient(client)) KickClient(client);
 	}
+
+	return Plugin_Continue;
 }
 
 // ====================================================================================================
