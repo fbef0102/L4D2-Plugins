@@ -4,15 +4,18 @@
 #include <sdktools>
 #include <sdkhooks>
 
-static int g_PlayerSecondaryWeapons[MAXPLAYERS + 1];
+int g_PlayerSecondaryWeapons[MAXPLAYERS + 1]; 		/* slot1 entity */
+bool g_bSlot1_IsMelee[MAXPLAYERS+1];				/* slot1 is melee */
+char g_sSlot1_MeleeName[MAXPLAYERS+1][64];			/* slot1 melee name */
+int ig_slots1_skin[MAXPLAYERS+1]; 					/* slot1 m_nSkin */
 
 public Plugin myinfo =
 {
 	name		= "L4D2 Drop Secondary",
 	author		= "Jahze, Visor, NoBody & HarryPotter",
-	version		= "2.0",
+	version		= "2.1",
 	description	= "Survivor players will drop their secondary weapon when they die",
-	url		= "https://steamcommunity.com/profiles/76561198026784913/"
+	url			= "https://steamcommunity.com/profiles/76561198026784913/"
 };
 
 bool bLate;
@@ -53,36 +56,24 @@ public void OnClientPutInServer(int client)
     SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquipPost);
 }
 
+public void OnClientDisconnect(int client)
+{
+	if(!IsClientInGame(client)) return;
+
+	clear(client);
+}
+
 public void OnWeaponEquipPost(int client, int weapon)
 {
 	if (client <= 0 || client > MaxClients || !IsClientInGame(client))
 		return;
 
-	if(GetClientTeam(client) != 2 || !IsPlayerAlive(client))
-	{
-		g_PlayerSecondaryWeapons[client] = -1;
-		return;
-	}
-
-	if (IsIncapacitated(client)) //倒地不列入
-		return;	
-
-	int slot1_weapon = GetPlayerWeaponSlot(client, 1);
-
-	//PrintToChatAll("%N OnWeaponEquipPost %d", client, slot1_weapon);
-
-	g_PlayerSecondaryWeapons[client] = (slot1_weapon == -1 ? slot1_weapon : EntIndexToEntRef(slot1_weapon));
+	GetSlots1(client);
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
 {
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
-	{
-		int weapon = GetPlayerWeaponSlot(client, 1);
-
-		g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));
-	}
+	CreateTimer(0.1, ColdDown, event.GetInt("userid"));
 }
 
 public void OnWeaponDrop(Event event, const char[] name, bool dontBroadcast) 
@@ -95,16 +86,7 @@ public Action ColdDown(Handle timer, int client)
 	client = GetClientOfUserId(client);
 	if(client && IsClientInGame(client))
 	{
-		if(GetClientTeam(client) == 2 && IsPlayerAlive(client))
-		{
-			int weapon = GetPlayerWeaponSlot(client, 1);
-		
-			g_PlayerSecondaryWeapons[client] = (weapon == -1 ? weapon : EntIndexToEntRef(weapon));	
-		}
-		else
-		{
-			g_PlayerSecondaryWeapons[client] = -1;
-		}
+		GetSlots1(client);
 	}
 
 	return Plugin_Continue;
@@ -117,7 +99,7 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	
 	if(client == 0 || !IsClientInGame(client) || GetClientTeam(client) != 2)
 	{
-		g_PlayerSecondaryWeapons[client] = -1;
+		clear(client);
 		return;
 	}
 	
@@ -125,7 +107,7 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	
 	if(weapon == INVALID_ENT_REFERENCE)
 	{
-		g_PlayerSecondaryWeapons[client] = -1;
+		clear(client);
 		return;
 	}
 	
@@ -133,87 +115,97 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	int clip;
 	GetEntityClassname(weapon, sWeapon, 32);
 	
-	int entity = CreateEntityByName(sWeapon); 
-	if(entity == -1)
-	{
-		g_PlayerSecondaryWeapons[client] = -1;
-		return;
-	}
-
+	int entity; 
 	float origin[3];
 	float ang[3];
-	char melee_name[64];
-	if (strcmp(sWeapon, "weapon_melee") == 0)
-	{
-		if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
-		{
-			GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", melee_name, sizeof(melee_name));
-			DispatchKeyValue(entity, "solid", "6");
-			DispatchKeyValue(entity, "melee_script_name", melee_name);
-		}
-		else
-		{
-			g_PlayerSecondaryWeapons[client] = -1;
-			return;
-		}
-	}
-	else if (strcmp(sWeapon, "weapon_chainsaw") == 0)
-	{
-		clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
-	}
-	else if (strcmp(sWeapon, "weapon_pistol") == 0 && (GetEntProp(weapon, Prop_Send, "m_isDualWielding") > 0))
-	{
-		int entity2 = CreateEntityByName(sWeapon);
-		if(entity2 == -1)
-		{
-			g_PlayerSecondaryWeapons[client] = -1;
-			return;
-		}
-
-		GetClientEyePosition(client,origin);
-		GetClientEyeAngles(client, ang);
-		GetAngleVectors(ang, ang, NULL_VECTOR,NULL_VECTOR);
-		NormalizeVector(ang,ang);
-		ScaleVector(ang, 90.0);
-		
-		DispatchSpawn(entity2);
-		TeleportEntity(entity2, origin, NULL_VECTOR, ang);
-		clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
-		if(clip - 15 <= 0) SetEntProp(entity2, Prop_Send, "m_iClip1", 0);
-		else clip = clip - 15;
-
-		Event hEvent = CreateEvent("weapon_drop");
-		if( hEvent != null )
-		{
-			hEvent.SetInt("userid", userid);
-			hEvent.SetInt("propid", entity2);
-			hEvent.Fire();
-		}
-	}
-	else if (strcmp(sWeapon, "weapon_pistol_magnum") == 0)
-	{
-		clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
-	}
-
-	RemovePlayerItem(client, weapon);
-	RemoveEntity(weapon);
-	
 	GetClientEyePosition(client,origin);
 	GetClientEyeAngles(client, ang);
 	GetAngleVectors(ang, ang, NULL_VECTOR,NULL_VECTOR);
 	NormalizeVector(ang,ang);
 	ScaleVector(ang, 90.0);
-	
-	DispatchSpawn(entity);
-	TeleportEntity(entity, origin, NULL_VECTOR, ang);
+	if (g_bSlot1_IsMelee[client])
+	{
+		entity = CreateEntityByName("weapon_melee");
+		if(entity == -1)
+		{
+			clear(client);
+			return;
+		}
 
-	if (strcmp(sWeapon, "weapon_chainsaw") == 0 || strcmp(sWeapon, "weapon_pistol") == 0 || strcmp(sWeapon, "weapon_pistol_magnum") == 0)
+		DispatchKeyValue(entity, "solid", "6");
+		DispatchKeyValue(entity, "melee_script_name", g_sSlot1_MeleeName[client]);
+	}
+	else
+	{
+		if (strcmp(sWeapon, "weapon_chainsaw") == 0 ||
+			strcmp(sWeapon, "weapon_pistol") == 0 ||
+			strcmp(sWeapon, "weapon_pistol_magnum") == 0)
+		{
+			entity = CreateEntityByName(sWeapon);
+			if(entity == -1)
+			{
+				clear(client);
+				return;
+			}
+
+			if (strcmp(sWeapon, "weapon_chainsaw") == 0 ||
+				strcmp(sWeapon, "weapon_pistol_magnum") == 0)
+			{
+				clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
+			}
+			else if (strcmp(sWeapon, "weapon_pistol") == 0 && (GetEntProp(weapon, Prop_Send, "m_isDualWielding") > 0))
+			{
+				int entity2 = CreateEntityByName(sWeapon); //second pistol
+				if(entity2 == -1)
+				{
+					clear(client);
+					return;
+				}
+				
+				TeleportEntity(entity2, origin, NULL_VECTOR, ang);
+				DispatchSpawn(entity2);
+				clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
+				if(clip - 15 <= 0) SetEntProp(entity2, Prop_Send, "m_iClip1", 0);
+				else clip = clip - 15;
+
+				//create weapon_drop event
+				Event hEvent = CreateEvent("weapon_drop");
+				if( hEvent != null )
+				{
+					hEvent.SetInt("userid", userid);
+					hEvent.SetInt("propid", entity2);
+					hEvent.Fire();
+				}
+			}
+		}
+		else	//unknow weapon
+		{
+			clear(client);
+			LogError("%N has unknow secondary weapon: %s", client, sWeapon);
+			return;
+		}
+	}
+
+	RemovePlayerItem(client, weapon);
+	RemoveEntity(weapon);
+	
+	TeleportEntity(entity, origin, NULL_VECTOR, ang);
+	DispatchSpawn(entity);
+
+	if (!g_bSlot1_IsMelee[client])
 	{
 		SetEntProp(entity, Prop_Send, "m_iClip1", clip);
 	}
 
-	g_PlayerSecondaryWeapons[client] = -1;
+	SetEntProp(entity, Prop_Send, "m_nSkin", ig_slots1_skin[client]); //skin
+	if (HasEntProp(entity, Prop_Data, "m_nWeaponSkin"))
+	{
+		SetEntProp(entity, Prop_Data, "m_nWeaponSkin", ig_slots1_skin[client]); 
+	}
 
+	clear(client);
+
+	//create weapon_drop event
 	Event hEvent = CreateEvent("weapon_drop");
 	if( hEvent != null )
 	{
@@ -226,4 +218,47 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 bool IsIncapacitated(int client)
 {
 	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isIncapacitated"));
+}
+
+void clear(int client)
+{
+	g_PlayerSecondaryWeapons[client] = -1;
+	g_bSlot1_IsMelee[client] = false;
+	g_sSlot1_MeleeName[client][0] = '\0';
+	ig_slots1_skin[client] = 0;
+}
+
+void GetSlots1(int client)
+{
+	if(GetClientTeam(client) != 2 || !IsPlayerAlive(client))
+	{
+		clear(client);
+		return;
+	}
+
+	if (IsIncapacitated(client)) //倒地不列入
+		return;
+
+	int weapon = GetPlayerWeaponSlot(client, 1);
+	if(weapon == -1)
+	{
+		clear(client);
+		return;
+	}
+
+	if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
+	{
+		//PrintToChatAll("%d Is Melee", weapon);
+		g_bSlot1_IsMelee[client] = true;
+		GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", g_sSlot1_MeleeName[client], 64);
+	}
+	else
+	{
+		g_bSlot1_IsMelee[client] = false;
+		g_sSlot1_MeleeName[client][0] = '\0';
+	}
+
+	g_PlayerSecondaryWeapons[client] = EntIndexToEntRef(weapon);
+	ig_slots1_skin[client] = GetEntProp(weapon, Prop_Send, "m_nSkin", 4);
+	//PrintToChatAll("%N slot 1 weapon is %d. skin %d", client, weapon, ig_slots1_skin[client]);
 }
