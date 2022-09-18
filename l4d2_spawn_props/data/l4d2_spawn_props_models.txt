@@ -295,7 +295,8 @@ models/props_interiors/shelvinggrocery01.mdl TAG- 貨架食品櫃 - 7層
 models/props_interiors/shelvingstore01.mdl TAG- 貨架食品櫃 - 4層
 models/props_mall/mall_display_04.mdl TAG- 商場小型展櫃
 models/props_mall/mall_display_03.mdl TAG- 商場海報資訊展覽櫃
-models/props_mall/mall_display_07.mdl TAG- 商場商品櫃
+models/props_mall/mall_display_07.mdl TAG- 商場中型商品櫃
+models/props_mall/mall_display_08.mdl TAG- 商場大型商品櫃
 models/lighthouse/props/wooden_cabinet.mdl TAG- 木櫃小屋
 models/props_unique/guncabinet_no_door_static.mdl TAG- 木製槍櫃 (固態)
 models/props_unique/guncabinet01_main.mdl TAG- 鐵製武器櫃
