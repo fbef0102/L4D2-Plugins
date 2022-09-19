@@ -948,6 +948,14 @@ models/props_industrial/barrel_fuel.mdl TAG- 燃油桶
 models/props_industrial/wire_spool_01.mdl TAG- 電纜線捲
 models/props_industrial/wire_spool_02.mdl TAG- 電纜線捲 - 沒線
 models/props_interiors/ceda_easel01.mdl TAG- CEDA的報告架
+models/props_highway/highway_sign001.mdl TAG- 高速公路道路牌 - 地名 (10號)
+models/props_highway/highway_sign002.mdl TAG- 高速公路道路牌 - 地名 (右上箭頭)
+models/props_highway/highway_sign003.mdl TAG- 高速公路道路牌 - 地名 (右車道)
+models/props_highway/highway_sign004.mdl TAG- 高速公路道路牌 - Exit (右上箭頭)
+models/props_highway/highway_sign005.mdl TAG- 高速公路道路牌 - Exit 35MPH
+models/props_highway/highway_sign006.mdl TAG- 高速公路道路牌 - 右下指示箭頭 (好用)
+models/props_highway/highway_sign007.mdl TAG- 高速公路道路牌 - Exit 1
+models/props_highway/highway_sign009.mdl TAG- 高速公路道路牌 - 10號標誌
 models/props_interiors/luggagescale.mdl TAG- 指示牌 - 行李車
 models/props_street/rent_sign.mdl TAG- 出租標誌
 models/props_signs/sign_street_04.mdl TAG- 街道標誌
