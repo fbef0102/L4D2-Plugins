@@ -266,7 +266,7 @@ public void PD_ev_EntityKilled(Event hEvent, const char[] sEventName, bool bDont
 	}
 }
 
-public Action TankPropTankKilled(Event hEvent, const char[] sEventName, bool bDontBroadcast)
+public void TankPropTankKilled(Event hEvent, const char[] sEventName, bool bDontBroadcast)
 {
 	if (!g_bTankSpawned) {
 		return;
@@ -284,11 +284,15 @@ public Action TankDeadCheck(Handle hTimer)
 		
 		g_bTankSpawned = false;
 	}
+
+	return Plugin_Continue;
 }
 
 public Action TankPropsBeGone(Handle hTimer)
 {
 	UnhookTankProps();
+
+	return Plugin_Continue;
 }
 
 public void PropDamaged(int iVictim, int iAttacker, int iInflictor, float fDamage, int iDamageType)
@@ -469,9 +473,11 @@ public void Hook_PropSpawned(int iEntity)
 	}
 }
 
-bool IsValidEntRef(int iRef)
+bool IsValidEntRef(int entity)
 {
-	return (iRef > 0 && EntRefToEntIndex(iRef) != INVALID_ENT_REFERENCE);
+	if( entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE )
+		return true;
+	return false;
 }
 
 int GetColor(char[] sTemp)
