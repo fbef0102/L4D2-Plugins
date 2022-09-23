@@ -1027,7 +1027,22 @@ models/deadbodies/default/wall_192_c.mdl TAG- 一堆屍體 7
 models/deadbodies/default/oval_128_c.mdl TAG- 一堆屍體 8
 models/deadbodies/bodies128_a.mdl TAG- 一堆屍體 9
 models/deadbodies/default/oval_192_b_burnt.mdl TAG- 一堆焦屍 c2m1
-models/infected/hulk.mdl TAG- Tank模型 (穿透)
-models/infected/hulk_l4d1.mdl TAG- Tank模型 - L4D1 (穿透)
-models/infected/witch.mdl TAG- Witch模型 (穿透)
-models/infected/witch_bride.mdl TAG- Witch模型 - 新娘裝 (穿透)
+models/infected/hunter.mdl TAG- Hunter 模型
+models/infected/boomer.mdl TAG- Boomer 模型
+models/infected/boomette.mdl TAG- Boomer 模型 - 女性
+models/infected/smoker.mdl TAG- Smoker 模型
+models/infected/jockey.mdl TAG- Jockey 模型
+models/infected/charger.mdl TAG- Charger 模型
+models/infected/spitter.mdl TAG- Spitter 模型
+models/infected/hulk.mdl TAG- Tank 模型
+models/infected/hulk_l4d1.mdl TAG- Tank 模型 - L4D1
+models/infected/witch.mdl TAG- Witch 模型
+models/infected/witch_bride.mdl TAG- Witch 模型 - 新娘裝
+models/survivors/survivor_coach.mdl TAG- Coach 模型
+models/survivors/survivor_gambler.mdl TAG- Nick 模型
+models/survivors/survivor_mechanic.mdl TAG- Ellis 模型
+models/survivors/survivor_producer.mdl TAG- Rochelle 模型
+models/survivors/survivor_biker.mdl TAG- Franics 模型
+models/survivors/survivor_manager.mdl TAG- Louis 模型
+models/survivors/survivor_teenangst.mdl TAG- Zoey 模型
+models/survivors/survivor_namvet.mdl TAG- Bill 模型
