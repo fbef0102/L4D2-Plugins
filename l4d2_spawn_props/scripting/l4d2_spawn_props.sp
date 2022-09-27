@@ -5,7 +5,7 @@
 #pragma newdecls required
 #define DEBUG 0
 
-#define GETVERSION "3.6"
+#define GETVERSION "3.7"
 #define MAX_ENTITY 2048
 #define MAX_PATHS 20
 
@@ -3315,7 +3315,7 @@ void SaveMapStripper(int client)
 				{
 					if(g_bUnsolid[entity])
 					{
-						file.WriteLine("	\"solid\" \"0\"");
+						file.WriteLine("	\"solid\" \"1\"");
 					}
 					else
 					{
@@ -3569,7 +3569,7 @@ void SaveRoutingPath(int client, int type)
 				{
 					if(g_bUnsolid[i])
 					{
-						file.WriteLine("	\"solid\" \"0\"");
+						file.WriteLine("	\"solid\" \"1\"");
 					}
 					else
 					{
@@ -3731,7 +3731,7 @@ void SavePluginProps(int client)
 				{
 					if(g_bUnsolid[i])
 					{
-						file.WriteLine("		\"solid\" \"0\"");
+						file.WriteLine("		\"solid\" \"1\"");
 					}
 					else
 					{
