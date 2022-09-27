@@ -7,7 +7,7 @@ Unlimited Map C8 by Harry: https://www.youtube.com/watch?v=UTUjd6hlpt0
 https://github.com/fbef0102/L4D2-Unlimited-Map
 
 -ChangeLog-
-v3.6
+v3.7
 -Remake Code
 -Translation Support
 -some menu has back button
