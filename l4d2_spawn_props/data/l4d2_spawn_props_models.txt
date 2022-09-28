@@ -411,6 +411,7 @@ models/props_urban/gate_wall003_64.mdl TAG- 遮蔽柵欄牆 - 64 單位
 models/props_urban/gate_wall003_128.mdl TAG- 遮蔽柵欄牆 - 128 單位
 models/props_cemetery/cemetery_gate_128.mdl TAG- 鐵絲網圍欄- 帶尖刺
 models/props_urban/concreteblock_wall001.mdl TAG- 泳池圍牆 c2m1
+models/props_collectables/striped_barricade.mdl TAG- 白條形路障
 models/props_unique/wooden_barricade.mdl TAG- 木製路障 - 完美
 models/props_unique/wooden_barricade_break1.mdl TAG- 木製路障 - 損壞程度低
 models/props_unique/wooden_barricade_break2.mdl TAG- 木製路障 - 損壞程度中
@@ -885,6 +886,7 @@ models/props_urban/hotel_stairs001.mdl TAG- 旅館階梯 c2m1
 models/props_urban/fire_escape_wide_upper.mdl TAG- 逃生梯 - 上半部
 models/props_urban/fire_escape_lower.mdl TAG- 逃生梯 - 下半部
 models/props/cs_militia/ladderrung.mdl TAG- 下水道梯 - 8階
+models/props_unique/generator_switch_01.mdl TAG- 電源開關
 models/props/cs_militia/shelves.mdl TAG- AA柱條貨架
 models/props/cs_office/Shelves_metal.mdl TAG- 貨架 - 無擺放
 models/props/cs_office/shelves_metal1.mdl TAG- 貨架 - 擺放 a
