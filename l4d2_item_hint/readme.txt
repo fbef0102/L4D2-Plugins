@@ -12,7 +12,7 @@ AlliedModders Post: https://forums.alliedmods.net/showpost.php?p=2765332&postcou
 -Fixes custom vocalizers that uses SmartLook with capitals.
 -Add Spot Marker, using 'Look' in vocalize menu to mark the area.
 -Add Infected Marker, using 'Look' in vocalize menu to mark the infected.
--Add Instructor hint, display instructor hint on Spot Marker/Infected Marker
+-Add Instructor hint, display instructor hint on Spot Marker/Item Hint
 (player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer, or they can't see)
 (DO NOT modify convar "sv_gameinstructor_disable this force all clients to disable their game instructors.
 -marker priority: Infected maker > Item hint > Spot marker
