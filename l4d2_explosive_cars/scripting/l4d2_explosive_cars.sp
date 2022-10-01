@@ -5,7 +5,7 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define GETVERSION "1.8"
+#define GETVERSION "1.9"
 #define ARRAY_SIZE 2048
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn entity when it's index is above this
 #define EXLOPDE_INTERVAL 6.0
@@ -89,7 +89,7 @@ public void OnPluginStart()
 	g_cvarInfected = CreateConVar("l4d2_explosive_cars_infected", "1", "Should infected trigger the car explosion? (1: Yes 0: No)", FCVAR_NOTIFY);
 	g_cvarTankDamage = CreateConVar("l4d2_explosive_cars_tank", "0", "How much damage do the tank deal to the cars? (0: Default, which is 999 from the engine)", FCVAR_NOTIFY);
 	g_cvarBurnTimeout = CreateConVar("l4d2_explosive_cars_removetime", "60", "Time to wait before removing the exploded car in case it blockes the way. (0: Don't remove)", FCVAR_NOTIFY);
-	g_cvarUnload = CreateConVar("l4d2_explosive_cars_unload", "c1m4_atrium,c5m5_bridge,c14m2_lighthouse", "On which maps should the plugin disable itself? (Example: c5m3_cemetery,c5m5_bridge,cmdd_custom)", FCVAR_NOTIFY);
+	g_cvarUnload = CreateConVar("l4d2_explosive_cars_unload", "c5m5_bridge", "On which maps should the plugin disable itself? separate by commas (no spaces). (Example: c5m3_cemetery,c5m5_bridge)", FCVAR_NOTIFY);
 	g_cvarExplosionDmg = CreateConVar("l4d2_explosive_cars_explosion_damage", "1", "Should cars get damaged by another car's explosion?", FCVAR_NOTIFY);
 	g_cvarFireDmgInterval = CreateConVar("l4d2_explosive_cars_trace_interval", "0.4", "How often should the fire trace left by the explosion hurt?", FCVAR_NOTIFY);
 	
@@ -198,33 +198,41 @@ void FindMapCars()
 	int maxEnts = GetMaxEntities();
 	char classname[128], model[256];
 
-	for (int i = MaxClients; i < maxEnts; i++)
+	for (int entity = MaxClients +1; entity <= maxEnts; entity++)
 	{
-		if (!IsValidEdict(i)||!IsValidEntity(i)) continue;
-		if (g_bHooked[i]) continue;
+		if (!IsValidEdict(entity)||!IsValidEntity(entity)) continue;
+		if (g_bHooked[entity]) continue;
 
-		GetEdictClassname(i, classname, sizeof(classname));
-		GetEntPropString(i, Prop_Data, "m_ModelName", model, sizeof(model));
+		if (!HasEntProp(entity, Prop_Send, "m_hasTankGlow")) {
+			continue;
+		}
+
+		if (GetEntProp(entity, Prop_Send, "m_hasTankGlow", 1) != 1) {
+			continue;
+		}
+
+		GetEdictClassname(entity, classname, sizeof(classname));
+		GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
 
 		if(strncmp(classname, "prop_physics", 12) == 0)
 		{
 			if(StrContains(model, "vehicle", false) != -1)
 			{
-				g_bHooked[i] = true;
-				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+				g_bHooked[entity] = true;
+				SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 			}
 			else if (strcmp(model, "models/props/cs_assault/forklift.mdl", false) == 0)
 			{
-				g_bHooked[i] = true;
-				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+				g_bHooked[entity] = true;
+				SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 			}
 		}
 		else if(strcmp(classname, "prop_car_alarm") == 0)
 		{
 			if(StrContains(model, "vehicle", false) != -1)
 			{
-				g_bHooked[i] = true;
-				SDKHook(i, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+				g_bHooked[entity] = true;
+				SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 			}
 		}
 	}
