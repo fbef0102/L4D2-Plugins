@@ -4,7 +4,7 @@ Cars explode after they take some damage
 1. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?t=321696
 
 -Changelog-
-v1.8
+v1.9
 -Remake code
 -Replace left4downtown with left4dhooks
 -Remove car entity after it explodes
@@ -13,7 +13,7 @@ v1.8
 -Safely explode cars between few secomds to prevent client from crash
 
 v1.0.4
-Original Post: https://forums.alliedmods.net/showthread.php?p=1304463
+Original Post by honorcode23: https://forums.alliedmods.net/showthread.php?p=1304463
 
 -ConVar-
 cfg/sourcemod/l4d2_explosive_cars.cfg
@@ -53,8 +53,8 @@ l4d2_explosive_cars_trace "25"
 // How often should the fire trace left by the explosion hurt?
 l4d2_explosive_cars_trace_interval "0.4"
 
-// On which maps should the plugin disable itself? (Example: c5m3_cemetery,c5m5_bridge,cmdd_custom)
-l4d2_explosive_cars_unload "c1m4_atrium,c5m5_bridge,c14m2_lighthouse"
+// On which maps should the plugin disable itself? separate by commas (no spaces). (Example: c5m3_cemetery,c5m5_bridge,cmdd_custom)
+l4d2_explosive_cars_unload "c5m5_bridge"
 
 -Command-
 None
