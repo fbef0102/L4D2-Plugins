@@ -63,7 +63,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.1",
+	version     = "2.2",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -510,26 +510,30 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 		{
 			if (strncmp(sCmdString, "smartlook #", 11, false) == 0)
 			{
-				int clientAim;
 				bool bIsAimInfeced = false, bIsAimWitch = false, bIsVaildItem = false;
 				static char sItemName[64], sEntModelName[PLATFORM_MAX_PATH];
 
 				// marker priority (infected maker > item hint > spot marker)
-				clientAim = GetClientAimTarget(client, false); //ignore glow model
 
-				if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim))
+				if (g_iInfectedMarkCvarColor != 0)
 				{
-					bIsAimInfeced = true;
+					int clientAim = GetClientViewClient(client); //ignore glow model
 
-					if( CreateInfectedMarker(client, clientAim) == true )
-						return Plugin_Continue;
-				}
-				else if ( IsWitch(clientAim) )
-				{
-					bIsAimWitch = true;
+					if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim))
+					{
+						bIsAimInfeced = true;
+						//PrintToChatAll("look at %N", clientAim);
+						
+						if( CreateInfectedMarker(client, clientAim) == true )
+							return Plugin_Continue;
+					}
+					else if ( IsWitch(clientAim) )
+					{
+						bIsAimWitch = true;
 
-					if( CreateInfectedMarker(client, clientAim, true) == true )
-						return Plugin_Continue;
+						if( CreateInfectedMarker(client, clientAim, true) == true )
+							return Plugin_Continue;
+					}
 				}
 
 				static int iEntity;
@@ -617,7 +621,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 				}
 
 				// client / world / witch
-				CreateSpotMarker(client, clientAim, bIsAimInfeced);
+				CreateSpotMarker(client, bIsAimInfeced);
 			}
 		}
 	}
@@ -806,7 +810,6 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 {
 	if( GetEngineTime() < g_fInfectedMarkCoolDownTime[client]) return true; //colde down not yet
 
-	if (g_iInfectedMarkCvarColor == 0) return false; // disable infected mark
 	if (bIsWitch && g_bInfectedMarkWitch == false) return false; // disable infected mark on witch
 
 	float vStartPos[3], vEndPos[3];
@@ -885,7 +888,7 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	return true;
 }
 
-void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
+void CreateSpotMarker(int client, bool bIsAimInfeced)
 {
 	if (bIsAimInfeced) return;
 	if (GetEngineTime() < g_fSpotMarkCoolDownTime[client]) return; // cool down not yet
@@ -894,42 +897,21 @@ void CreateSpotMarker(int client, int clientAim = 0, bool bIsAimInfeced)
 	float vStartPos[3], vEndPos[3];
 	GetClientAbsOrigin(client, vStartPos);
 
-	if (clientAim == 0) clientAim = GetClientAimTarget(client, true);
+	float vPos[3];
+	GetClientEyePosition(client, vPos);
 
-	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim))
+	float vAng[3];
+	GetClientEyeAngles(client, vAng);
+
+	Handle trace = TR_TraceRayFilterEx(vPos, vAng, MASK_ALL, RayType_Infinite, TraceFilter, client);
+
+	if (TR_DidHit(trace))
 	{
-		switch(GetClientTeam(clientAim))
-		{
-			case TEAM_SPECTATOR: hit = false;
-			case TEAM_INFECTED: {
-				if(IsPlayerGhost(clientAim))
-					hit = false;
-			}
-			default:{
-				hit = true;
-				GetClientAbsOrigin(clientAim, vEndPos);
-			}
-		}
+		hit = true;
+		TR_GetEndPosition(vEndPos, trace);
 	}
 
-	if(hit == false)
-	{
-		float vPos[3];
-		GetClientEyePosition(client, vPos);
-
-		float vAng[3];
-		GetClientEyeAngles(client, vAng);
-
-		Handle trace = TR_TraceRayFilterEx(vPos, vAng, MASK_ALL, RayType_Infinite, TraceFilter, client);
-
-		if (TR_DidHit(trace))
-		{
-			hit = true;
-			TR_GetEndPosition(vEndPos, trace);
-		}
-
-		delete trace;
-	}
+	delete trace;
 
 	if (!hit) // not hit
 		return;
@@ -1549,4 +1531,28 @@ bool HasParentClient(int entity)
 	}
 
 	return false;
+}
+
+int GetClientViewClient(int client) {
+    float m_vecOrigin[3];
+    float m_angRotation[3];
+    GetClientEyePosition(client, m_vecOrigin);
+    GetClientEyeAngles(client, m_angRotation);
+    Handle tr = TR_TraceRayFilterEx(m_vecOrigin, m_angRotation, MASK_ALL, RayType_Infinite, TRDontHitSelf, client);
+    int pEntity = -1;
+    if (TR_DidHit(tr)) {
+        pEntity = TR_GetEntityIndex(tr);
+        delete tr;
+
+        return pEntity;
+    }
+    delete tr;
+
+    return -1;
+}
+
+bool TRDontHitSelf(int entity, int mask, any data) {
+    if (entity == data)
+        return false;
+    return true;
 }
