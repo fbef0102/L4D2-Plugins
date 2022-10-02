@@ -3,7 +3,7 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 -ChangeLog-
 //fdxx, BHaType	@ 2021
 //Harry @ 2022
-v2.1
+v2.3
 AlliedModders Post: https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30
 -Add all gun weapons, melee weapons, minigun, ammo and items.
 -Add cooldown.
