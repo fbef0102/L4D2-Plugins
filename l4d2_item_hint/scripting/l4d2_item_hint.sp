@@ -63,7 +63,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.2",
+	version     = "2.3",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -191,6 +191,7 @@ public void OnPluginStart()
 	HookEvent("player_team", Event_PlayerTeam);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("witch_killed", Event_WitchKilled);
+	HookEvent("mounted_gun_start", Event_MountedGunStart);
 
 	CreateStringMap();
 
@@ -499,6 +500,24 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 public void Event_WitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
 	RemoveEntityModelGlow(event.GetInt("witchid"));
+}
+
+public void Event_MountedGunStart(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	int subject = event.GetInt("subject");
+	//PrintToChatAll("%N is using subject: %d", client, subject);
+	if(client && IsClientInGame(client))
+	{
+		RemoveEntityModelGlow(subject);
+		delete g_iModelTimer[subject];
+
+		RemoveInstructor(subject);
+		delete g_iInstructorTimer[subject];
+
+		RemoveTargetInstructor(subject);
+		delete g_iTargetInstructorTimer[subject];
+	}
 }
 
 public Action Vocalize_Listener(int client, const char[] command, int argc)
