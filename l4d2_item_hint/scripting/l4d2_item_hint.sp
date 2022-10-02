@@ -191,7 +191,6 @@ public void OnPluginStart()
 	HookEvent("player_team", Event_PlayerTeam);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("witch_killed", Event_WitchKilled);
-	HookEvent("mounted_gun_start", Event_MountedGunStart);
 
 	CreateStringMap();
 
@@ -203,6 +202,27 @@ public void OnPluginStart()
 			{
 				OnClientPutInServer(i);
 			}
+		}
+
+		char classname[21];
+		int entity;
+
+		classname = "prop_minigun_l4d1";
+		entity = INVALID_ENT_REFERENCE;
+		while ((entity = FindEntityByClassname(entity, classname)) != INVALID_ENT_REFERENCE)
+		{
+			if(!IsValidEntity(entity)) continue;
+			
+			SDKHook(entity, SDKHook_UsePost, OnUse);
+		}
+
+		classname = "prop_minigun";
+		entity = INVALID_ENT_REFERENCE;
+		while ((entity = FindEntityByClassname(entity, classname)) != INVALID_ENT_REFERENCE)
+		{
+			if(!IsValidEntity(entity)) continue;
+			
+			SDKHook(entity, SDKHook_UsePost, OnUse);
 		}
 	}
 }
@@ -502,24 +522,6 @@ public void Event_WitchKilled(Event event, const char[] name, bool dontBroadcast
 	RemoveEntityModelGlow(event.GetInt("witchid"));
 }
 
-public void Event_MountedGunStart(Event event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	int subject = event.GetInt("subject");
-	//PrintToChatAll("%N is using subject: %d", client, subject);
-	if(client && IsClientInGame(client))
-	{
-		RemoveEntityModelGlow(subject);
-		delete g_iModelTimer[subject];
-
-		RemoveInstructor(subject);
-		delete g_iInstructorTimer[subject];
-
-		RemoveTargetInstructor(subject);
-		delete g_iTargetInstructorTimer[subject];
-	}
-}
-
 public Action Vocalize_Listener(int client, const char[] command, int argc)
 {
 	if (IsRealSur(client) && !IsHandingFromLedge(client) && GetInfectedAttacker(client) == -1)
@@ -717,6 +719,47 @@ bool IsValidEntRef(int entity)
 	if (entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE)
 		return true;
 	return false;
+}
+
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	switch (classname[0])
+	{
+		case 'p':
+		{
+			if( strcmp(classname, "prop_minigun_l4d1") == 0 )
+			{
+				SDKHook(entity, SDKHook_SpawnPost, SpawnPost);
+			}
+			else if( strcmp(classname, "prop_minigun") == 0 )
+			{
+				SDKHook(entity, SDKHook_SpawnPost, SpawnPost);
+			}
+		}
+	}
+}
+
+void SpawnPost(int entity)
+{
+    // Validate
+    if( !IsValidEntity(entity) ) return;
+
+    SDKHook(entity, SDKHook_UsePost, OnUse);
+}
+
+public void OnUse(int weapon, int client, int caller, UseType type, float value)
+{
+	if(client && IsClientInGame(client))
+	{
+		RemoveEntityModelGlow(weapon);
+		delete g_iModelTimer[weapon];
+
+		RemoveInstructor(weapon);
+		delete g_iInstructorTimer[weapon];
+
+		RemoveTargetInstructor(weapon);
+		delete g_iTargetInstructorTimer[weapon];
+	}
 }
 
 public void OnEntityDestroyed(int entity)
