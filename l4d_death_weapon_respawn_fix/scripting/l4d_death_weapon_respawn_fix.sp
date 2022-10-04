@@ -66,6 +66,7 @@ bool g_bCvarEnable;
 
 static int iOffs_m_PrimaryWeaponIDPreDead = -1;
 static int iOffs_m_PrimaryWeaponAmmo = -1;
+bool g_bMissionLost;
 
 public void OnPluginStart()
 {
@@ -86,11 +87,8 @@ public void OnPluginStart()
     g_hAmmoSmg.AddChangeHook(ConVarChanged_Cvars);
     g_hAmmoShotgun.AddChangeHook(ConVarChanged_Cvars);
 
-    HookEvent("round_end",				Event_RoundEnd,		EventHookMode_PostNoCopy); //trigger twice in versus mode, one when all survivors wipe out or make it to saferom, one when first round ends (second round_start begins).
-    HookEvent("map_transition", 		Event_RoundEnd,		EventHookMode_PostNoCopy); //all survivors make it to saferoom, and server is about to change next level in coop mode (does not trigger round_end) 
-    HookEvent("mission_lost", 			Event_RoundEnd,		EventHookMode_PostNoCopy); //all survivors wipe out in coop mode (also triggers round_end)
-    HookEvent("finale_vehicle_leaving", Event_RoundEnd,		EventHookMode_PostNoCopy); //final map final rescue vehicle leaving  (does not trigger round_end)
-
+    HookEvent("mission_lost", 			Event_MissionLost,		EventHookMode_PostNoCopy); //all survivors wipe out in coop mode (also triggers round_end)
+    
     HookEvent("player_death",           Event_PlayerDeath);
 
     GetCvars();
@@ -111,7 +109,12 @@ void GetCvars()
     g_iAmmoSmg			= g_hAmmoSmg.IntValue;
 }
 
-public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+{
+    g_bMissionLost = false;
+}
+
+public void Event_MissionLost(Event event, const char[] name, bool dontBroadcast) 
 {
     if(!g_bCvarEnable) return;
 
@@ -122,6 +125,8 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
             SetPrimaryWeaponIDPreDead(i, 0);
         }
     }
+
+    g_bMissionLost = true;
 }
 
 public void Event_PlayerDeath (Event event, const char[] name, bool dontBroadcast)
@@ -133,6 +138,12 @@ public void Event_PlayerDeath (Event event, const char[] name, bool dontBroadcas
 
     int PrimaryWeaponIDPreDead = GetPrimaryWeaponIDPreDead(victim);
     DebugPrint("%N's primary weapon ID: %d, ammo: %d", victim, PrimaryWeaponIDPreDead, GetPrimaryWeaponAmmo(victim));
+    if(g_bMissionLost)
+    {
+        SetPrimaryWeaponIDPreDead(victim, 0);
+        return;
+    }
+
     if(PrimaryWeaponIDPreDead == WEPID_RIFLE_M60)
     {
         if(iOffiicalCvar_survivor_respawn_with_guns == 0) // 0: Just a pistol
