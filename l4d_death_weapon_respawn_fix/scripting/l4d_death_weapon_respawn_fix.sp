@@ -7,7 +7,7 @@
  * 
  * This plugin tries to fix the following situations
  * 1. If you died with M60, you will respawn with M60 full clip (This is bug)
- * 2. If you died with any weapons and mission lost in coop/realism, you will have T1 weapons after new round starts (Usually happen if changelevel map 2...)
+ * 2. If you died with any weapons and mission lost in coop/realism, you will have T1 weapons after new round starts (Usually happen after changelevel map 2...)
  */
 
 /**
