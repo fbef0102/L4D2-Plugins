@@ -1,7 +1,7 @@
 Survivor players will drop their secondary weapon (including melee) when they die
 
 -Changelog-
-v2.1
+v2.2
 AlliedModder Post: https://forums.alliedmods.net/showpost.php?p=2720089&postcount=26
 -Remake code
 -Support Custom Melee
