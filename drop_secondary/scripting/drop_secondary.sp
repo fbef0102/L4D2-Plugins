@@ -123,27 +123,28 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		return;
 	}
 
-	char sWeapon[32];
-	GetEntityClassname(weapon, sWeapon, sizeof(sWeapon));
+	//char sWeapon[32];
+	//GetEntityClassname(weapon, sWeapon, sizeof(sWeapon));
 
-	if (strcmp(sWeapon, "weapon_melee") == 0)
-	{
-		char sTime[32];
-		FormatTime(sTime, sizeof(sTime), "%H-%M", GetTime()); 
-		char sMap[64];
-		GetCurrentMap(sMap, sizeof(sMap));
+	// if (strcmp(sWeapon, "weapon_melee") == 0)
+	// {
+	// 	char sTime[32];
+	// 	FormatTime(sTime, sizeof(sTime), "%H-%M", GetTime()); 
+	// 	char sMap[64];
+	// 	GetCurrentMap(sMap, sizeof(sMap));
 
-		char sMeleeName[64];
-		if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
-		{
-			GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", sMeleeName, sizeof(sMeleeName));
-			//LogMessage("%N drops melee %s (time: %s) in %s", client, sMeleeName, sTime, sMap);
-		}
-		else
-		{
-			LogError("%N drops unknow melee weapon (time: %s) in %s", client, sTime, sMap);
-		}
-	}
+	// 	char sMeleeName[64];
+	// 	if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
+	// 	{
+	// 		GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", sMeleeName, sizeof(sMeleeName));
+	// 		LogMessage("%N drops melee %s (time: %s) in %s", client, sMeleeName, sTime, sMap);
+	// 	}
+	// 	else
+	// 	{
+	// 		LogError("%N drops unknow melee weapon (time: %s) in %s", client, sTime, sMap);
+	// 		return;
+	// 	}
+	// }
 
 	float origin[3];
 	GetClientEyePosition(client, origin);
