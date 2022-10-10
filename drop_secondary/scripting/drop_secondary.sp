@@ -48,7 +48,7 @@ public void OnPluginStart()
 	iOffs_m_hSecondaryHiddenWeaponPreDead = FindSendPropInfo("CTerrorPlayer", "m_knockdownTimer") + 116;
 
 	HookEvent("player_spawn", Event_PlayerSpawn,	EventHookMode_Post);
-	HookEvent("player_death", OnPlayerDeath, 		EventHookMode_Post);
+	HookEvent("player_death", OnPlayerDeath, 		EventHookMode_Pre);
 }
 
 //playerspawn is triggered even when bot or human takes over each other (even they are already dead state) or a survivor is spawned
@@ -73,7 +73,8 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 
 	int weapon = GetSecondaryHiddenWeaponPreDead(client);
 	//PrintToChatAll("%N - %d, %d, %d", client, GetSecondaryWeaponIDPreDead(client), GetSecondaryWeaponDoublePistolPreDead(client), GetSecondaryHiddenWeaponPreDead(client));
-	if(weapon <= 0 || !IsValidEntity(weapon))
+	if(weapon <= 0 || !IsValidEntity(weapon) 
+		|| (GetWeaponOwner(weapon) > 0 && GetWeaponOwner(weapon) != client)) //lol, what?
 	{
 		if(GetSecondaryWeaponIDPreDead(client) == WEPID_PISTOL)
 		{
@@ -199,4 +200,9 @@ int GetSecondaryHiddenWeaponPreDead(int client)
 void SetSecondaryHiddenWeapon(int client, int data)
 {
 	SetEntData(client, iOffs_m_hSecondaryHiddenWeaponPreDead, data);
+}
+
+int GetWeaponOwner(int weapon)
+{
+	return GetEntPropEnt(weapon, Prop_Data, "m_hOwner");
 }
