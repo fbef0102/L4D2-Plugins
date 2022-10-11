@@ -4,7 +4,7 @@ Cars explode after they take some damage
 1. Left 4 DHooks Direct: https://forums.alliedmods.net/showthread.php?t=321696
 
 -Changelog-
-v1.9
+v2.0
 -Remake code
 -Replace left4downtown with left4dhooks
 -Remove car entity after it explodes
