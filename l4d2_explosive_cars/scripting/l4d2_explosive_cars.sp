@@ -108,12 +108,15 @@ public void OnPluginEnd()
 	ResetPlugin();
 }
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
+	g_bConfigLoaded = true;
+
 	g_bDisabled = false;
 	char sCurrentMap[64], sCvarMap[512];
 	GetCurrentMap(sCurrentMap, sizeof(sCurrentMap));
 	g_cvarUnload.GetString(sCvarMap, sizeof(sCvarMap));
+	//LogMessage("sCvarMap: %s, sCurrentMap: %s", sCvarMap, sCurrentMap);
 	if(StrContains(sCvarMap, sCurrentMap) >= 0)
 	{
 		g_bDisabled = true;
@@ -138,6 +141,11 @@ public void OnMapStart()
 		PrecacheSound(EXPLOSION_SOUND2);
 		PrecacheSound(EXPLOSION_SOUND3);
 	}
+}
+
+public void OnMapStart()
+{
+	// call before OnConfigsExecuted()
 }
 
 public void OnMapEnd()
@@ -169,7 +177,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 
 public Action TimerStart(Handle timer)
 {
-	g_bConfigLoaded = true;
 	ResetPlugin();
 
 	if(g_bDisabled) return Plugin_Continue;
@@ -225,6 +232,10 @@ void FindMapCars()
 				g_bHooked[entity] = true;
 				SDKHook(entity, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 			}
+
+			float vpos[3];
+			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", vpos);
+			LogMessage("pos: %.2f %.2f %.2f", vpos[0], vpos[1], vpos[2]);
 		}
 		else if(strcmp(classname, "prop_car_alarm") == 0)
 		{
