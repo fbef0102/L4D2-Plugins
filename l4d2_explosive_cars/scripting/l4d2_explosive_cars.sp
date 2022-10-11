@@ -5,7 +5,7 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define GETVERSION "1.9"
+#define GETVERSION "2.0"
 #define ARRAY_SIZE 2048
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn entity when it's index is above this
 #define EXLOPDE_INTERVAL 6.0
@@ -111,12 +111,11 @@ public void OnPluginEnd()
 public void OnMapStart()
 {
 	g_bDisabled = false;
-	char sCurrentMap[64], sCvarMap[256];
+	char sCurrentMap[64], sCvarMap[512];
 	GetCurrentMap(sCurrentMap, sizeof(sCurrentMap));
 	g_cvarUnload.GetString(sCvarMap, sizeof(sCvarMap));
 	if(StrContains(sCvarMap, sCurrentMap) >= 0)
 	{
-		LogMessage("[Unload] Plugin disabled for this map");
 		g_bDisabled = true;
 	}
 
@@ -286,7 +285,7 @@ public void OnNextFrame(int entityRef)
 	char classname[15];
 	GetEntityClassname(entity, classname, sizeof(classname));
 	char model[256];
-	if(strcmp(classname, "prop_physics") == 0 || strcmp(classname, "prop_physics_override") == 0)
+	if(strncmp(classname, "prop_physics", 12) == 0)
 	{
 		GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
 		if(StrContains(model, "vehicle", false) != -1)
@@ -395,30 +394,42 @@ public void OnTakeDamagePost(int victim, int attacker, int inflictor, float dama
 		}
 		else if(tdamage > MaxDamageHandle * 5 && !g_bExploded[victim])
 		{
-			if(g_GameExplodeTime < GetEngineTime())
+			if(!g_bCritWreck[victim])
 			{
-				g_bExploded[victim] = true;
-				float carPos[3];
-				GetEntPropVector(victim, Prop_Data, "m_vecOrigin", carPos);
-				CreateExplosion(carPos);
-				EditCar(victim);
-				LaunchCar(victim);
-
-				SDKUnhook(victim, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-
-				g_GameExplodeTime = GetEngineTime() + EXLOPDE_INTERVAL;
+				EmitSoundToAll(FIRE_SOUND, victim);
+				AttachParticle(victim, DAMAGE_FIRE_HUGE);
+				g_bCritWreck[victim] = true;
 			}
-			else
-			{
-				if(!g_bCritWreck[victim])
-				{
-					EmitSoundToAll(FIRE_SOUND, victim);
-					AttachParticle(victim, DAMAGE_FIRE_HUGE);
-					g_bCritWreck[victim] = true;
-				}
-			}
+
+			CreateTimer(GetRandomInt(0, 100) * 0.0001, Timer_ExplodeCar, EntIndexToEntRef(victim), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
+}
+
+Action Timer_ExplodeCar(Handle timer, any entityRef)
+{
+	if(g_bDisabled) return Plugin_Continue;
+
+	int car = EntRefToEntIndex(entityRef);
+
+	if (car == INVALID_ENT_REFERENCE)
+		return Plugin_Continue;
+
+	if(g_GameExplodeTime < GetEngineTime())
+	{
+		g_bExploded[car] = true;
+		float carPos[3];
+		GetEntPropVector(car, Prop_Data, "m_vecOrigin", carPos);
+		CreateExplosion(carPos);
+		EditCar(car);
+		LaunchCar(car);
+
+		SDKUnhook(car, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+		g_GameExplodeTime = GetEngineTime() + EXLOPDE_INTERVAL;
+	}
+
+	return Plugin_Continue;
 }
 
 stock void EditCar(int car)
