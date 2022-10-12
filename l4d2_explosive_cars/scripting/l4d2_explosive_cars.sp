@@ -99,8 +99,6 @@ public void OnPluginStart()
 	HookEvent("player_spawn",		Event_PlayerSpawn,	EventHookMode_PostNoCopy);
 	HookEvent("round_start",		Event_RoundStart,	EventHookMode_PostNoCopy);
 	HookEvent("round_end",			Event_RoundEnd,		EventHookMode_PostNoCopy);
-	
-	FindMapCars();
 }
 
 public void OnPluginEnd()
