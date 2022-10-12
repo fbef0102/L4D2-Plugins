@@ -1,7 +1,7 @@
-Makes AI SI take (and do) damage like human SI.
+Survivors will vocalize based on their model
 
 -Changelog-
-v1.1
+v1.2
 -Remake Code
 -Late load plugin fix
 
