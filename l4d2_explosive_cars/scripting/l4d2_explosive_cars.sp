@@ -233,7 +233,7 @@ void FindMapCars()
 
 			float vpos[3];
 			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", vpos);
-			LogMessage("pos: %.2f %.2f %.2f", vpos[0], vpos[1], vpos[2]);
+			//LogMessage("pos: %.2f %.2f %.2f", vpos[0], vpos[1], vpos[2]);
 		}
 		else if(strcmp(classname, "prop_car_alarm") == 0)
 		{
