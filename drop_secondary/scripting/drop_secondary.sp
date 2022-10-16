@@ -19,7 +19,7 @@ public Plugin myinfo =
 {
 	name		= "L4D2 Drop Secondary",
 	author		= "HarryPotter",
-	version		= "2.2",
+	version		= "2.3",
 	description	= "Survivor players will drop their secondary weapon when they die",
 	url			= "https://steamcommunity.com/profiles/76561198026784913/"
 };
@@ -72,9 +72,8 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	}
 
 	int weapon = GetSecondaryHiddenWeaponPreDead(client);
-	//PrintToChatAll("%N - %d, %d, %d", client, GetSecondaryWeaponIDPreDead(client), GetSecondaryWeaponDoublePistolPreDead(client), GetSecondaryHiddenWeaponPreDead(client));
-	if(weapon <= 0 || !IsValidEntity(weapon) 
-		|| (GetWeaponOwner(weapon) > 0 && GetWeaponOwner(weapon) != client)) //lol, what?
+	//PrintToChatAll("%N - %d, %d, %d - skin: %d", client, GetSecondaryWeaponIDPreDead(client), GetSecondaryWeaponDoublePistolPreDead(client), GetSecondaryHiddenWeaponPreDead(client), GetEntProp(weapon, Prop_Send, "m_nSkin", 4));
+	if(weapon <= MaxClients || !IsValidEntity(weapon))
 	{
 		if(GetSecondaryWeaponIDPreDead(client) == WEPID_PISTOL)
 		{
@@ -124,28 +123,75 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		return;
 	}
 
-	//char sWeapon[32];
-	//GetEntityClassname(weapon, sWeapon, sizeof(sWeapon));
+	char sWeapon[32];
+	GetEntityClassname(weapon, sWeapon, sizeof(sWeapon));
 
-	// if (strcmp(sWeapon, "weapon_melee") == 0)
-	// {
-	// 	char sTime[32];
-	// 	FormatTime(sTime, sizeof(sTime), "%H-%M", GetTime()); 
-	// 	char sMap[64];
-	// 	GetCurrentMap(sMap, sizeof(sMap));
+	int new_weapon, clip, skin;
+	skin = GetEntProp(weapon, Prop_Send, "m_nSkin", 4);
+	if (strcmp(sWeapon, "weapon_melee") == 0)
+	{
+		// char sTime[32];
+		// FormatTime(sTime, sizeof(sTime), "%H-%M", GetTime()); 
+		// char sMap[64];
+		// GetCurrentMap(sMap, sizeof(sMap));
 
-	// 	char sMeleeName[64];
-	// 	if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
-	// 	{
-	// 		GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", sMeleeName, sizeof(sMeleeName));
-	// 		LogMessage("%N drops melee %s (time: %s) in %s", client, sMeleeName, sTime, sMap);
-	// 	}
-	// 	else
-	// 	{
-	// 		LogError("%N drops unknow melee weapon (time: %s) in %s", client, sTime, sMap);
-	// 		return;
-	// 	}
-	// }
+		char sMeleeName[64];
+		if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
+		{
+			GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", sMeleeName, sizeof(sMeleeName));
+			//LogMessage("%N drops melee %s (time: %s) in %s", client, sMeleeName, sTime, sMap);
+
+			new_weapon = CreateEntityByName(sWeapon);
+			if(new_weapon == -1) return;
+
+			DispatchKeyValue(new_weapon, "solid", "6");
+			DispatchKeyValue(new_weapon, "melee_script_name", sMeleeName);
+		}
+		else
+		{
+			//LogError("%N drops unknow melee weapon (time: %s) in %s", client, sTime, sMap);
+			return;
+		}
+	}
+	else //chainsaw, magnum
+	{
+		clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
+
+		new_weapon = CreateEntityByName(sWeapon);
+		if(new_weapon == -1) return;
+	}
+
+	if(new_weapon > MaxClients && IsValidEntity(new_weapon))
+	{
+		float origin[3];
+		float ang[3];
+		GetClientEyePosition(client,origin);
+		GetClientEyeAngles(client, ang);
+		GetAngleVectors(ang, ang, NULL_VECTOR,NULL_VECTOR);
+		NormalizeVector(ang,ang);
+		ScaleVector(ang, 90.0);
+		
+		DispatchSpawn(new_weapon);
+		TeleportEntity(new_weapon, origin, NULL_VECTOR, ang);
+
+		if (strcmp(sWeapon, "weapon_melee") != 0)
+		{
+			SetEntProp(new_weapon, Prop_Send, "m_iClip1", clip);
+		}
+
+		SetEntProp(new_weapon, Prop_Send, "m_nSkin", skin);
+
+		if (HasEntProp(new_weapon, Prop_Data, "m_nWeaponSkin"))
+			SetEntProp(new_weapon, Prop_Data, "m_nWeaponSkin", skin);
+
+		RemovePlayerItem(client, weapon);
+		RemoveEntity(weapon);
+	}
+	
+	/*
+	//倒地之前閒置=>等待自己的bot倒地=>取代bot=>接著死亡=>出現error
+	//Exception reported: Weapon X is not owned by client X
+	SetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity", client);
 
 	float origin[3];
 	GetClientEyePosition(client, origin);
@@ -161,6 +207,7 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 			hEvent.Fire();
 		}
 	}
+	*/
 
 	Clear(client);
 }
@@ -202,7 +249,7 @@ void SetSecondaryHiddenWeapon(int client, int data)
 	SetEntData(client, iOffs_m_hSecondaryHiddenWeaponPreDead, data);
 }
 
-int GetWeaponOwner(int weapon)
+stock int GetWeaponOwner(int weapon)
 {
 	return GetEntPropEnt(weapon, Prop_Data, "m_hOwner");
 }
