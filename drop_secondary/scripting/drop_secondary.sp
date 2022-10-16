@@ -186,6 +186,14 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 
 		RemovePlayerItem(client, weapon);
 		RemoveEntity(weapon);
+
+		Event hEvent = CreateEvent("weapon_drop");
+		if( hEvent != null )
+		{
+			hEvent.SetInt("userid", userid);
+			hEvent.SetInt("propid", new_weapon);
+			hEvent.Fire();
+		}
 	}
 	
 	/*
