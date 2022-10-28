@@ -401,7 +401,7 @@
 	}
 	"Can't buy when handing from ledge"
 	{
-		"en"	"Can't purchase this item when handing from ledge"
+		"en"	"Can't purchase this item when hanging from ledge"
 		"pt"	"Você não pode comprar quando estiver preso na borda"
 		"zho"	"懸掛時無法購買此商品!"
 		"chi"	"处于挂边状态时无法购买此商品!"
@@ -1450,7 +1450,7 @@
 	"Immune Everything"
 	{
 		"en"	"Immune Everything (short time)"
-		"en"	"God Mod (por curto período)"
+		"pt"	"God Mod (por curto período)"
 		"zho"	"God 上帝模式 (短暫時間)"
 		"chi"	"God 上帝模式 (短暂时间)"
 		"es"	"Inmune a todo (periodo de tiempo)"
