@@ -1,20 +1,24 @@
 Quickswitch Reloading like CS:GO in L4D2
+
 -Video-
 idea from CS:GO Quickswitch Reloading: https://www.youtube.com/watch?v=VfdfbWhVP-8
 videoshowcase: https://youtu.be/Ur0uNQTZhbU
 
 -Changelog-
 AlliedModders Post: https://forums.alliedmods.net/showthread.php?t=318820
-v 2.1 (2021-4-24)
+v2.2 (2022-11-6)
+- add m60
+
+v2.1 (2021-4-24)
 - fixed DataPack memory leak issue
 
-v 2.0 (2020-11-10)
+v2.0 (2020-11-10)
 - replace OnPlayerRunCmd with SDKHook_Reload, better safe and improve code.
 
-v 1.9 (2020-10-1)
+v1.9 (2020-10-1)
 - adjust "l4d2_sg552_reload_clip_time" from 1.3 to 1.6 since L4D2 "The Last Stand" update.
 
-v 1.8 (2020-8-12)
+v1.8 (2020-8-12)
 - new convars, control each weapon max clip.
 - fixed dual pistol not working.
 
@@ -55,6 +59,12 @@ l4d2_huntingrifle_reload_clip "15"
 
 // reload time for hunting rifle clip
 l4d2_huntingrifle_reload_clip_time "2.6"
+
+// m60 max clip
+l4d2_m60_clip "150"
+
+// reload time for m60 clip
+l4d2_m60_reload_clip_time "1.2"
 
 // mangum max clip
 l4d2_mangum_clip "8"
@@ -115,5 +125,8 @@ l4d2_weapon_csgo_reload_allow "1"
 
 // enable previous clip recover?
 l4d2_weapon_csgo_reload_clip_recover "1"
+
+-Command-
+None
  			
 

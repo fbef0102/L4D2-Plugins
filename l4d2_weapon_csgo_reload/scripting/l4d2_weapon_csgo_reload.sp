@@ -25,7 +25,7 @@ enum WeaponID
 	ID_SNIPER_MILITARY,
 	ID_GRENADE,
 	ID_SG552,
-	//ID_M60,
+	ID_M60,
 	ID_AWP,
 	ID_SCOUT,
 	//ID_SPASSHOTGUN,
@@ -39,10 +39,10 @@ int WeaponMaxClip[view_as<int>(ID_WEAPON_MAX)];
 //cvars
 ConVar hEnable, hEnableClipRecoverCvar, hSmgTimeCvar, hRifleTimeCvar, hHuntingRifleTimeCvar,
 	hPistolTimeCvar, hDualPistolTimeCvar, hSmgSilencedTimeCvar, hSmgMP5TimeCvar, hAK47TimeCvar, hRifleDesertTimeCvar,
-	hSniperMilitaryTimeCvar, hGrenadeTimeCvar, hSG552TimeCvar, hAWPTimeCvar, hScoutTimeCvar, hMangumTimeCvar;
+	hSniperMilitaryTimeCvar, hGrenadeTimeCvar, hSG552TimeCvar, hAWPTimeCvar, hScoutTimeCvar, hMangumTimeCvar, hM60TimeCvar;
 ConVar hSmgClipCvar, hRifleClipCvar, hHuntingRifleClipCvar, hPistolClipCvar, hDualPistolClipCvar, hSmgSilencedClipCvar,
 	hSmgMP5ClipCvar, hAK47ClipCvar, hRifleDesertClipCvar, hSniperMilitaryClipCvar, hGrenadeClipCvar, hSG552ClipCvar,
-	hAWPClipCvar, hScoutClipCvar, hMangumClipCvar;
+	hAWPClipCvar, hScoutClipCvar, hMangumClipCvar, hM60ClipCvar;
 
 bool g_bEnable;
 bool g_EnableClipRecoverCvar;
@@ -61,6 +61,7 @@ float g_SG552TimeCvar;
 float g_AWPTimeCvar;
 float g_ScoutTimeCvar;
 float g_MangumTimeCvar;
+float g_M60TimeCvar;
 
 //value
 float g_hClientReload_Time[MAXPLAYERS+1]	= {0.0};	
@@ -73,9 +74,9 @@ public Plugin myinfo =
 	name = "L4D2 weapon csgo reload",
 	author = "Harry Potter",
 	description = "reload like csgo weapon",
-	version = "2.1",
-	url = "Harry Potter myself, you bitch shit"
-};
+	version = "2.2",
+	url = "https://steamcommunity.com/profiles/76561198026784913/"
+}
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -110,6 +111,7 @@ public void OnPluginStart()
 	hAWPTimeCvar			= CreateConVar("l4d2_awp_reload_clip_time", 			"2.0",  "reload time for awp clip" 				  , FCVAR_NOTIFY, true, 0.0);
 	hScoutTimeCvar			= CreateConVar("l4d2_scout_reload_clip_time", 			"1.45", "reload time for scout clip"  			  , FCVAR_NOTIFY, true, 0.0);
 	hMangumTimeCvar			= CreateConVar("l4d2_mangum_reload_clip_time", 			"1.18", "reload time for mangum clip"  			  , FCVAR_NOTIFY, true, 0.0);
+	hM60TimeCvar			= CreateConVar("l4d2_m60_reload_clip_time", 			"1.2",  "reload time for m60 clip"  			  , FCVAR_NOTIFY, true, 0.0);
 	hSmgClipCvar			= CreateConVar("l4d2_smg_reload_clip", 					"50", 	"smg max clip"							  , FCVAR_NOTIFY, true, 1.0);
 	hRifleClipCvar			= CreateConVar("l4d2_rifle_reload_clip", 				"50", 	"rifle max clip"						  , FCVAR_NOTIFY, true, 1.0);
 	hHuntingRifleClipCvar	= CreateConVar("l4d2_huntingrifle_reload_clip", 		"15", 	"huntingrifle max clip"					  , FCVAR_NOTIFY, true, 1.0);
@@ -125,6 +127,7 @@ public void OnPluginStart()
 	hAWPClipCvar			= CreateConVar("l4d2_awp_clip", 						"20", 	"awp max clip"				 	 		  , FCVAR_NOTIFY, true, 1.0);
 	hScoutClipCvar			= CreateConVar("l4d2_scout_clip", 						"15", 	"scout max clip"				  		  , FCVAR_NOTIFY, true, 1.0);
 	hMangumClipCvar			= CreateConVar("l4d2_mangum_clip", 						"8", 	"mangum max clip"				  		  , FCVAR_NOTIFY, true, 1.0);
+	hM60ClipCvar			= CreateConVar("l4d2_m60_clip", 						"150", 	"m60 max clip"				  		  , FCVAR_NOTIFY, true, 1.0);
 
 	GetCvars();
 	
@@ -145,6 +148,7 @@ public void OnPluginStart()
 	hAWPTimeCvar.AddChangeHook(ConVarChange_CvarChanged);
 	hScoutTimeCvar.AddChangeHook(ConVarChange_CvarChanged);
 	hMangumTimeCvar.AddChangeHook(ConVarChange_CvarChanged);
+	hM60TimeCvar.AddChangeHook(ConVarChange_CvarChanged);
 	hSmgClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
 	hRifleClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
 	hHuntingRifleClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
@@ -160,6 +164,7 @@ public void OnPluginStart()
 	hAWPClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
 	hScoutClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
 	hMangumClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
+	hM60ClipCvar.AddChangeHook(ConVarChange_MaxClipChanged);
 
 	HookEvent("weapon_reload", OnWeaponReload_Event, EventHookMode_Post);
 	HookEvent("round_start", RoundStart_Event);
@@ -170,7 +175,7 @@ public void OnPluginStart()
 	AutoExecConfig(true, "l4d2_weapon_csgo_reload");
 }
 
-public Action RoundStart_Event(Event event, const char[] name, bool dontBroadcast) 
+public void RoundStart_Event(Event event, const char[] name, bool dontBroadcast) 
 {
 	for(int i = 1; i <= MaxClients; i++)
 	{
@@ -217,10 +222,10 @@ public Action OnWeaponReload_Pre(int weapon)
 		{
 			case ID_SMG,ID_RIFLE,ID_HUNTING_RIFLE,ID_SMG_SILENCED,ID_SMG_MP5,
 			ID_AK47,ID_RIFLE_DESERT,ID_AWP,ID_GRENADE,ID_SCOUT,ID_SG552,
-			ID_SNIPER_MILITARY:
+			ID_SNIPER_MILITARY, ID_M60:
 			{
 				int previousclip = GetWeaponClip(weapon);
-				if (0 < previousclip && previousclip < MaxClip)	//If the his current mag equals the maximum allowed, remove reload from buttons
+				if (0 < previousclip && previousclip < MaxClip)	//If his current mag equals the maximum allowed, remove reload from buttons
 				{
 					#if DEBUG
 						PrintToChatAll("OnWeaponReload_Pre client: %N, sWeaponName: (%d)%s, previousclip: %d", client, weapon, sWeaponName, previousclip);
@@ -325,6 +330,7 @@ public void OnWeaponReload_Event(Event event, const char[] name, bool dontBroadc
 		case ID_GRENADE: CreateTimer(g_GrenadeTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
 		case ID_SG552: CreateTimer(g_SG552TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
 		case ID_SNIPER_MILITARY: CreateTimer(g_SniperMilitaryTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+		case ID_M60: CreateTimer(g_M60TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
 		case ID_MAGNUM:
 		{
 			if(IsIncapacitated(client))
@@ -368,7 +374,7 @@ public Action WeaponReloadClip(Handle timer, DataPack pack)
 	{
 		case ID_SMG,ID_RIFLE,ID_HUNTING_RIFLE,ID_SMG_SILENCED,ID_SMG_MP5,
 		ID_AK47,ID_RIFLE_DESERT,ID_AWP,ID_GRENADE,ID_SCOUT,ID_SG552,
-		ID_SNIPER_MILITARY:
+		ID_SNIPER_MILITARY, ID_M60:
 		{
 			#if DEBUG
 				PrintToChatAll("CurrentWeapon reload clip completed");
@@ -472,6 +478,7 @@ void GetCvars()
 	g_AWPTimeCvar			= hAWPTimeCvar.FloatValue;
 	g_ScoutTimeCvar			= hScoutTimeCvar.FloatValue;
 	g_MangumTimeCvar		= hMangumTimeCvar.FloatValue;
+	g_M60TimeCvar			= hM60TimeCvar.FloatValue;
 }
 
 public void SetWeapon()
@@ -493,7 +500,7 @@ public void SetWeapon()
 	Weapon_Name[ID_SNIPER_MILITARY] = "weapon_sniper_military";
 	Weapon_Name[ID_GRENADE] = "weapon_grenade_launcher";
 	Weapon_Name[ID_SG552] = "weapon_rifle_sg552";
-	//Weapon_Name[ID_M60] = "weapon_rifle_m60";
+	Weapon_Name[ID_M60] = "weapon_rifle_m60";
 	Weapon_Name[ID_AWP] = "weapon_sniper_awp";
 	Weapon_Name[ID_SCOUT] = "weapon_sniper_scout";
 	//Weapon_Name[ID_SPASSHOTGUN] = "weapon_shotgun_spas";
@@ -515,7 +522,7 @@ public void SetWeapon()
 	WeaponAmmoOffest[ID_SNIPER_MILITARY] = 10;
 	WeaponAmmoOffest[ID_GRENADE] = 17;
 	WeaponAmmoOffest[ID_SG552] = 3;
-	//WeaponAmmoOffest[ID_M60] = 6;
+	WeaponAmmoOffest[ID_M60] = 6;
 	WeaponAmmoOffest[ID_AWP] = 10;
 	WeaponAmmoOffest[ID_SCOUT] = 10;
 	//WeaponAmmoOffest[ID_SPASSHOTGUN] = 8;
@@ -540,7 +547,7 @@ public void SetWeaponMaxClip()
 	WeaponMaxClip[ID_SNIPER_MILITARY] = hSniperMilitaryClipCvar.IntValue;
 	WeaponMaxClip[ID_GRENADE] = hGrenadeClipCvar.IntValue;
 	WeaponMaxClip[ID_SG552] = hSG552ClipCvar.IntValue;
-	//WeaponMaxClip[ID_M60] = 150;
+	WeaponMaxClip[ID_M60] = hM60ClipCvar.IntValue;
 	WeaponMaxClip[ID_AWP] = hAWPClipCvar.IntValue;
 	WeaponMaxClip[ID_SCOUT] = hScoutClipCvar.IntValue;
 	//WeaponMaxClip[ID_SPASSHOTGUN] = 10;
