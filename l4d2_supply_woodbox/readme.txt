@@ -1,7 +1,7 @@
 CSO Random Supply Boxes in l4d2
 -Supply boxes are dropped randomly in the map every certain seconds to provide support for the fight against the zombies.
 They contain several types of weapons or items inside, depending on the cvar you set.
-video showcase: https://youtu.be/hpGlmwdWH6o
+video showcase: https://youtu.be/9rXlJ8PsOTA
 
 -ChangeLog-
 v1.3
