@@ -1629,7 +1629,7 @@ bool CanInfectedBuy(int client)
 	
 	if (GetClientTeam(client) != L4D_TEAM_INFECTED)
 	{
-		CPrintToChat(client, "%T", "You are not in Infected Ieam", client);
+		CPrintToChat(client, "%T", "You are not in Infected Team", client);
 		return false;
 	}
 
