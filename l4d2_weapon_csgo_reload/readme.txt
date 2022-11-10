@@ -2,7 +2,7 @@ Quickswitch Reloading like CS:GO in L4D2
 
 -Video-
 idea from CS:GO Quickswitch Reloading: https://www.youtube.com/watch?v=VfdfbWhVP-8
-videoshowcase: https://youtu.be/Ur0uNQTZhbU
+videoshowcase: https://youtu.be/t7n1vYBb5sk
 
 -Changelog-
 AlliedModders Post: https://forums.alliedmods.net/showthread.php?t=318820
