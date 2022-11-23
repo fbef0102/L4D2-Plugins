@@ -10,7 +10,7 @@ L4D2 Human and Zombie Shop by HarryPoter
 -ChangeLog-
 v5.0 (2022-11-05)
 -Newer Version-
-Private: https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D2_Buy_Store
+Private: https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Fun_娛樂/L4D2_Buy_Store
 * Add Survivor/Infected Special items
 * Support Database
 * Points Transfer
