@@ -38,7 +38,7 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
-    version = "2.2",
+    version = "2.3",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -392,4 +392,9 @@ public bool HasAccess(int client, char[] g_sAcclvl)
 	}
 
 	return false;
+}
+
+public void L4D2_OnClientChangeZombieClass(int client, int new_zombieclass)
+{
+	CreateInfectedModelGlow(client);
 }

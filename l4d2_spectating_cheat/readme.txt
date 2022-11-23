@@ -4,7 +4,7 @@ A spectator who watching the survivor at first person view can now see the infec
 看這影片展示 Video: https://www.bilibili.com/video/BV1Xq4y1a7ie
 
 -ChangeLog-
-v2.2
+v2.3
 - Remake code
 - Alive SI glow color
 - Ghost SI glow color
