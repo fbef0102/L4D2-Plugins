@@ -4,8 +4,8 @@ Very Very loudly announces the predicted event of a player leaving the map and o
 * [Video | 影片展示](https://youtu.be/ID5Zxj0QHwg)
 
 * Image | 圖示
-	* server slow down
-	> 慢動作
+	* Arresto Momentum
+	> 動作慢下來
 	<br/>![l4d2_karma_kill_1](image/l4d2_karma_kill_1.gif)
 
 * Apply to | 適用於
