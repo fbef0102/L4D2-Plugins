@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2022/10/21)
+>All plugins in here only apply to L4D2 (last edited:2022/11/26)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -45,6 +45,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
 * <b>[AnnouceLaserAmmo](/AnnouceLaserAmmo)</b>: Display instruction hint when someone uses ammo or laser sight
 * <b>[l4d_death_weapon_respawn_fix](/l4d_death_weapon_respawn_fix)</b>: In coop/realism, if you died with primary weapon, you will respawn with T1 weapon. Delete datas if hold M60 or mission lost
+* <b>[LMC_Black_and_White_Notifier](/LMC_Black_and_White_Notifier)</b>: Notifies selected team(s) when someone is on final strike and add glow
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 # Others
