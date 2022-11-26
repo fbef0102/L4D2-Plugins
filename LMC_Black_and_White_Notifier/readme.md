@@ -92,7 +92,7 @@ English
 
 * 原理
     * 救起玩家之後判定玩家是否為黑白狀態
-    * 支援其他插件回復玩家血量的插件
+    * 支援其他回復玩家血量的插件
 	* [LMC模組是由Lux大佬創建的插件](https://forums.alliedmods.net/showthread.php?t=286987)，可以自由切換角色為任何模組
 
 * 功能
