@@ -43,10 +43,6 @@ L4D2
 * Require | 必要安裝
 	1. [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)
 
-* Similar Plugin | 相似插件
-	1. [l4d_player_spritetrail](/Plugin_插件/Fun_娛樂/l4d_player_spritetrail)
-	> 一樣是尾巴特效，看自己喜歡用哪一種
-
 * Note
 	* Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look' item hint. Install [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511) plugin to fix.
 	* Player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer, or they can't see the hint
