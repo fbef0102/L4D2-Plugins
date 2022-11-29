@@ -32,7 +32,7 @@
 	}
 	"BAW_3"
 	{
-		"zho"		"%N healed themselves"
+		"en"		"%N healed themselves"
 		"zho"		"%N 治癒了自己"
 		"chi"		"%N 治愈了自己"
 	}
