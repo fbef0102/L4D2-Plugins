@@ -7,7 +7,7 @@
 #include <ThirdPersonShoulder_Detect>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.0"
+#define PLUGIN_VERSION "1.8"
 #define CVAR_FLAGS	FCVAR_NOTIFY
 
 #define UPDATESPEAKING_TIME_INTERVAL 0.5
@@ -99,29 +99,12 @@ public void OnMapStart()
 public void OnClientDisconnect(int client)
 {
 	ClientSpeakingTime[client] = false;
-}
-
-public void OnClientSpeakingStart(int client)
-{
-	if (!IsClientInGame(client)) return;
-
-	if (bSV_VoiceEnable == false
-		|| g_bCvarHatEnable == false 
-		|| BaseComm_IsClientMuted(client) 
-		|| GetClientListeningFlags(client) == 1)
-	{
-		return;
-	}
-
-	CreateHat(client);
-	ClientSpeakingTime[client] = true;
-	
-	return;
+	RemoveHat(client);
 }
 
 public void OnClientSpeaking(int client)
 {
-	if (!IsClientInGame(client)) return;
+	if (!IsClientInGame(client) || IsFakeClient(client)) return;
 
 	if (bSV_VoiceEnable == false
 		|| g_bCvarHatEnable == false
@@ -130,7 +113,20 @@ public void OnClientSpeaking(int client)
 	{
 		RemoveHat(client);
 		ClientSpeakingTime[client] = false;
+		
+		return;
 	}
+	
+	if (GetClientTeam(client) != 2 || !IsPlayerAlive(client))
+	{
+		RemoveHat(client);
+	}
+	else
+	{
+		CreateHat(client);
+	}
+
+	ClientSpeakingTime[client] = true;
 }
 
 public void OnClientSpeakingEnd(int client)
@@ -242,7 +238,7 @@ public Action Timer_UpdateSpeaking(Handle timer)
 
 void CreateHat(int client)
 {
-	if (IsValidEntRef(g_iHatIndex[client]) == true || IsValidClient(client) == false)
+	if (IsValidEntRef(g_iHatIndex[client]) == true)
 	{
 		return;
 	}
@@ -368,13 +364,6 @@ public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 bool IsValidEntRef(int entity)
 {
 	if( entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE )
-		return true;
-	return false;
-}
-
-bool IsValidClient(int client)
-{
-	if( client && IsClientInGame(client) && !IsFakeClient(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client) )
 		return true;
 	return false;
 }
