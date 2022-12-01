@@ -12,7 +12,6 @@ Voice Announce in centr text + create hat to Show Who is speaking.
 
 * Apply to | 適用於
 ```
-L4D1
 L4D2
 ```
 
