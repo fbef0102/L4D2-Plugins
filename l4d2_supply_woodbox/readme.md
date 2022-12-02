@@ -48,10 +48,10 @@ L4D2
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
 
 * Related Plugin | 相關插件
-	1. [l4d_cso_zombie_Regeneration](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d_cso_zombie_Regeneration): The zombies have grown stronger, now they are able to heal their injuries by standing still without receiving any damage.
+	1. [l4d_cso_zombie_Regeneration](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_cso_zombie_Regeneration): The zombies have grown stronger, now they are able to heal their injuries by standing still without receiving any damage.
 	    > 殭屍變得更強大，他們只要站著不動便可以自癒傷勢　(仿CSO惡靈降世 殭屍技能)
 
-	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
+	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
 	    > 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
 
 * <details><summary>ConVar | 指令</summary>
