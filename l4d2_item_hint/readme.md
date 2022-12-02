@@ -159,7 +159,7 @@ L4D2
 	4. 可設置標記地點的顏色、發光範圍、提示顏色、提示圖案、標記時間
 
 * 注意事項
-	* 如果有其他插件會擋住視野的裝飾品譬如帽子插件，你可以無法使用標記功能，請安裝[Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)以修正
+	* 如果有其他插件會擋住視野的裝飾品譬如帽子插件，你可能無法使用標記功能，請安裝[Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)以修正
 	* 玩家必須啟動遊戲指導系統，ESC->選項->多人連線->遊戲指導系統->已啟用，否則玩家看不見標記提示
     <br/>![未命名](https://user-images.githubusercontent.com/12229810/203991469-2b7dcba2-d70b-47ac-aed1-a18442c6d2de.jpg)
     * 伺服器端不要修改指令 ```sv_gameinstructor_disable```，這會關閉所有玩家的遊戲指導系統
