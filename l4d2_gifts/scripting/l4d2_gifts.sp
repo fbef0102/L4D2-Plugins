@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION		"2.8"
+#define PLUGIN_VERSION		"2.9"
 
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -6,8 +6,8 @@
 
 *	Name	:	[L4D2] Gifts Drop & Spawn
 *	Author	:	Aceleracion & HarryPotter
-*	Descrp	:	Drop gifts when a special infected died and win points & special weapon
-*	Link	:	https://forums.alliedmods.net/showthread.php?t=302731
+*	Descrp	:	Drop gifts (touch gift to earn reward) when a special infected or a witch/tank killed by survivor.
+*	Link	:	https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_gifts
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
@@ -20,8 +20,7 @@
 #include <left4dhooks>
 
 #define MAXENTITIES                   2048
-#define DATABASE_CONFIG 	"l4d2gifts"
-#define TAG_GIFT			"[GIFTS]"
+
 #define	MAX_GIFTS			20
 #define MAX_STRING_WIDTH	64
 #define MAX_TYPEGIFTS		3
@@ -30,31 +29,118 @@
 #define STRING_STANDARD		"standard"
 #define STRING_SPECIAL		"special"
 
+#define TEAM_SPECTATOR		1
 #define TEAM_SURVIVOR		2
 #define TEAM_INFECTED		3
 
-#define AURA_CYAN  			"0 255 255"
-#define AURA_BLUE  			"0 0 255"
-#define AURA_GREEN 			"0 255 0"
-#define AURA_PINK 			"255 0 150"
-#define AURA_RED 			"255 0 0"
-#define AURA_ORANGE 		"255 155 0"
-#define AURA_YELLOW 		"255 255 0"
-#define AURA_PURPLE 		"155 0 255"
-#define AURA_WHITE			"255 255 255"
-#define AURA_LIME			"128 255 0"
-#define AURA_MAROON			"128 0 0"
-#define AURA_TEAL			"0 128 128"
-#define AURA_GREY			"50 50 50"
+#define MODEL_GNOME			"models/props_junk/gnome.mdl"
 
-#define	MAX_WEAPONS2		29
+static char weapons_name_standard[][][] = 
+{
+	//{"grenade_launcher","Grenade Launcher"},
+	//{"rifle_m60", "M60 Machine Gun"},
+	{"defibrillator","Defibrillator"},
+	{"first_aid_kit","First Aid Kit"},
+	{"pain_pills", "Pain Pill"},
+	{"adrenaline", "Adrenaline"},
+	{"health_100", "Health+100"},
+	{"weapon_upgradepack_incendiary", "Incendiary Pack"},
+	{"weapon_upgradepack_explosive","Explosive Pack"},
+	{"molotov", "Molotov"},
+	{"pipe_bomb", "Pipe Bomb"},
+	{"vomitjar", "Vomitjar"},
+	//{"gascan","Gascan"},
+	{"propanetank", "Propane Tank"},
+	{"oxygentank", "Oxygen Tank"},
+	{"fireworkcrate","Firework Crate"},
+	//{"pistol","Pistol"},
+	{"pistol_magnum", "Magnum"},
+	{"pumpshotgun", "Pumpshotgun"},
+	{"shotgun_chrome", "Chrome Shotgun"},
+	{"smg", "Smg"},
+	{"smg_silenced", "Silenced Smg"},
+	{"smg_mp5","MP5"},
+	{"rifle", "Rifle"},
+	{"rifle_sg552", "SG552"},
+	{"rifle_ak47", "AK47"},
+	{"rifle_desert","Desert Rifle"},
+	{"shotgun_spas","Spas Shotgun"},
+	{"autoshotgun", "Autoshotgun"},
+	{"hunting_rifle", "Hunting Rifle"},
+	{"sniper_military", "Military Sniper"},
+	{"sniper_scout", "SCOUT"},
+	{"sniper_awp", "AWP"},
+	{"baseball_bat", "Baseball Bat"},
+	{"chainsaw", "Chainsaw"},
+	{"cricket_bat", "Cricket Bat"},
+	{"crowbar", "Crowbar"},
+	{"electric_guitar", "Electric Guitar"},
+	{"fireaxe", "Fire Axe"},
+	{"frying_pan", "Frying Pan"},
+	{"katana", "Katana"},
+	{"machete", "Machete"},
+	{"tonfa", "Tonfa"},
+	{"knife", "Knife"},
+	{"golfclub", "Golf Club"},
+	{"pitchfork", "Pitchfork"},
+	{"shovel", "Shovel"},
+	{"gnome", "Gnome"},
+	{"", "Empty"},
+	{"laser_sight",	"Laser Sight"},
+	{"incendiary_ammo",	"Incendiary Ammo"},
+	{"explosive_ammo",	"Explosive Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"},
+	{"ammo","Ammo"}
+};
 
-#define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
+static char weapons_name_special[][][] = 
+{
+	{"first_aid_kit","First Aid Kit"},
+	{"first_aid_kit","First Aid Kit"},
+	{"defibrillator","Defibrillator"},
+	{"pain_pills", "Pain Pill"},
+	{"adrenaline", "Adrenaline"},
+	{"health_100", "Health+100"},
+	{"health_100", "Health+100"},
+	{"vomitjar", "Vomitjar"},
+	{"grenade_launcher","Grenade Launcher"},
+	{"rifle_m60", "M60 Machine Gun"},
+	{"sniper_awp", "AWP"},
+	{"ammo","Ammo"},
+};
 
-ConVar cvar_gift_enable, cvar_gift_life, cvar_gift_chance, cvar_gift_chance2, cvar_gift_maxcollectMap,
-	cvar_gift_maxcollectRound, cvar_gift_Announce, cvar_gift_DecayDecay, cvar_gift_MaxIncapCount;
+//WeaponName/AmmoOffset/AmmoGive
+static char weapon_ammo[][][] =
+{
+	{"weapon_smg",		 				"5", 	"250"},
+	{"weapon_pumpshotgun",				"7", 	"40"},
+	{"weapon_rifle",					"3", 	"200"},
+	{"weapon_autoshotgun",				"8", 	"50"},
+	{"weapon_hunting_rifle",			"9", 	"75"},
+	{"weapon_smg_silenced",				"5", 	"250"},
+	{"weapon_smg_mp5", 	 				"5", 	"250"},
+	{"weapon_shotgun_chrome",	 		"7", 	"40"},
+	{"weapon_rifle_ak47",  				"3",	"200"},
+	{"weapon_rifle_desert",				"3", 	"200"},
+	{"weapon_sniper_military",			"10", 	"90"},
+	{"weapon_grenade_launcher", 	 	"17", 	"15"},
+	{"weapon_rifle_sg552",	 			"3", 	"200"},
+	{"weapon_rifle_m60",  				"6",	"200"},
+	{"weapon_sniper_awp", 	 			"10", 	"80"},
+	{"weapon_sniper_scout",	 			"10", 	"80"},
+	{"weapon_shotgun_spas",  			"8",	"50"}
+};
 
-static char g_sWeaponModels2[MAX_WEAPONS2][] =
+#define	MAX_WEAPONS		29
+static char g_sWeaponModels[MAX_WEAPONS][] =
 {
 	"models/w_models/weapons/w_pistol_B.mdl",
 	"models/w_models/weapons/w_desert_eagle.mdl",
@@ -87,115 +173,27 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 	"models/w_models/weapons/w_eq_incendiary_ammopack.mdl",
 };
 
-#define MODEL_GNOME			"models/props_junk/gnome.mdl"
+int ColorCyan[3], ColorBlue[3], ColorGreen[3], ColorPink[3], ColorRed[3],
+	ColorOrange[3], ColorYellow[3], ColorPurple[3], ColorWhite[3],ColorLime[3],
+	ColorMaroon[3], ColorTeal[3], ColorLightGreen[3];
 
-static char weapons_name_standard[][][] = 
-{
-	//{"grenade_launcher","榴彈發射器"},
-	//{"rifle_m60", "M60機關槍"},
-	{"defibrillator","電擊器"},
-	{"first_aid_kit","治療包"},
-	{"pain_pills", "止痛藥丸"},
-	{"adrenaline", "腎上腺素"},
-	{"health_100", "生命值+100"},
-	{"weapon_upgradepack_incendiary", "火焰包"},
-	{"weapon_upgradepack_explosive","高爆彈"},
-	{"molotov", "火瓶"},
-	{"pipe_bomb", "土製炸彈"},
-	{"vomitjar", "膽汁"},
-	{"gascan","汽油"},
-	{"propanetank", "瓦斯桶"},
-	{"oxygentank", "氧氣罐"},
-	{"fireworkcrate","煙火盒"},
-	//{"pistol","手槍"},
-	{"pistol_magnum", "沙漠之鷹"},
-	//{"pumpshotgun", "木製霰彈槍"},
-	//{"shotgun_chrome", "鐵製霰彈槍"},
-	//{"smg", "機槍"},
-	//{"smg_silenced", "消音機槍"},
-	//{"smg_mp5","MP5衝鋒槍"},
-	//{"rifle", "步槍"},
-	//{"rifle_sg552", "SG552步槍"},
-	//{"rifle_ak47", "AK47"},
-	//{"rifle_desert","三連發步槍"},
-	//{"shotgun_spas","戰鬥霰彈槍"},
-	//{"autoshotgun", "連發霰彈槍"},
-	//{"hunting_rifle", "獵槍"},
-	//{"sniper_military", "軍用狙擊槍"},
-	//{"sniper_scout", "SCOUT狙擊槍"},
-	//{"sniper_awp", "AWP"},
-	{"baseball_bat", "球棒"},
-	{"chainsaw", "奪魂鋸"},
-	{"cricket_bat", "板球拍"},
-	{"crowbar", "鐵撬"},
-	{"electric_guitar", "電吉他"},
-	{"fireaxe", "斧頭"},
-	{"frying_pan", "平底鍋"},
-	{"katana", "武士刀"},
-	{"machete", "開山刀"},
-	{"tonfa", "警棍"},
-	{"knife", "小刀"},
-	{"golfclub", "高爾夫球棒"},
-	{"pitchfork", "草叉"},
-	{"shovel", "鐵鏟"},
-	{"gnome", "小侏儒"},
-	{"", "空(謝謝惠顧)"},
-	{"laser_sight",	"雷射裝置"},
-	{"incendiary_ammo",	"火焰子彈"},
-	{"explosive_ammo",	"高爆子彈"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"},
-	{"ammo","彈藥補給"}
-};
+#define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
 
-static char weapons_name_special[][][] = 
-{
-	{"first_aid_kit","治療包"},
-	{"first_aid_kit","治療包"},
-	{"defibrillator","電擊器"},
-	{"defibrillator","電擊器"},
-	{"pain_pills", "止痛藥丸"},
-	{"adrenaline", "腎上腺素"},
-	{"health_100", "生命值+100"},
-	{"health_100", "生命值+100"},
-	{"vomitjar", "膽汁"},
-	{"grenade_launcher","榴彈發射器"},
-	{"rifle_m60", "殲滅者 M60"},
-	{"sniper_awp", "AWP"},
-	{"ammo","補給彈藥"},
-};
+ConVar cvar_gift_enable, cvar_gift_life, cvar_gift_color, cvar_gift_chance, cvar_gift_glowrange,
+	cvar_special_gift_color, cvar_special_gift_chance, cvar_special_gift_glowrange,
+	cvar_gift_infected_hp, cvar_special_gift_infected_hp,
+	cvar_gift_maxcollectMap, cvar_gift_maxcollectRound, cvar_gift_Announce;
+ConVar pain_pills_decay_rate, survivor_max_incapacitated_count;
 
-//WeaponName/AmmoOffset/AmmoGive
-static char weapon_ammo[][][] =
-{
-	{"weapon_smg",		 				"5", 	"400"},
-	{"weapon_pumpshotgun",				"7", 	"64"},
-	{"weapon_rifle",					"3", 	"250"},
-	{"weapon_autoshotgun",				"8", 	"64"},
-	{"weapon_hunting_rifle",			"9", 	"100"},
-	{"weapon_smg_silenced",				"5", 	"400"},
-	{"weapon_smg_mp5", 	 				"5", 	"400"},
-	{"weapon_shotgun_chrome",	 		"7", 	"64"},
-	{"weapon_rifle_ak47",  				"3",	"250"},
-	{"weapon_rifle_desert",				"3", 	"250"},
-	{"weapon_sniper_military",			"10", 	"100"},
-	{"weapon_grenade_launcher", 	 	"17", 	"15"},
-	{"weapon_rifle_sg552",	 			"3", 	"250"},
-	{"weapon_rifle_m60",  				"6",	"200"},
-	{"weapon_sniper_awp", 	 			"10", 	"100"},
-	{"weapon_sniper_scout",	 			"10", 	"100"},
-	{"weapon_shotgun_spas",  			"8",	"64"}
-};
+char g_sCvarGiftCols[12], g_sCvarSpecialGiftCols[12];
+bool g_bGiftEnable;
+float g_fGiftLife;
+int g_iGiftChance, g_iSpecialGiftChance, g_iGiftMaxMap, g_iGiftMaxRound,
+	g_iGiftGlowRange, g_iSpecialGiftGlowRange, g_iGiftHP, g_iSpecialGiftHP;
+int survivor_max_incapacitated_count_int;
+float pain_pills_decay_rate_float;
+int g_iCvarAnnounce;
 
-int CurrentPointsForMap[MAXPLAYERS+1];
-int CurrentPointsForRound[MAXPLAYERS+1];
 int CurrentGiftsForMap[MAXPLAYERS+1][MAX_TYPEGIFTS];
 int CurrentGiftsForRound[MAXPLAYERS+1][MAX_TYPEGIFTS];
 int CurrentGiftsTotalForMap[MAXPLAYERS+1];
@@ -208,15 +206,6 @@ float g_fScale[MAX_GIFTS];
 
 char g_sGifType[MAXENTITIES + 1][10];
 
-bool bGiftEnable;
-float fGiftLife;
-int iGiftChance;
-int iGiftChance2;
-int iGiftMaxMap;
-int iGiftMaxRound;
-int iGiftMaxIncapCount;
-bool g_bAnnounce;
-
 int gifts_collected_map;
 int gifts_collected_round;
 
@@ -226,8 +215,8 @@ int g_iOffset_Incapacitated;        // Used to check if tank is dying
 int ammoOffset;	
 bool g_bFinalHasStart, g_bIsOpenSafeRoom;
 
-#define SND_REWARD1			"level/gnomeftw.wav"
-#define SND_REWARD2			"level/loud/climber.wav"
+#define SOUND_SPECIAL			"level/gnomeftw.wav"
+#define SOUND_STANDARD			"level/loud/climber.wav"
 
 public Plugin myinfo = 
 {
@@ -238,7 +227,7 @@ public Plugin myinfo =
 	url = "https://forums.alliedmods.net/showthread.php?t=302731"
 }
 
-bool g_bLate;
+int ZC_TANK;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
 {
 	EngineVersion test = GetEngineVersion();
@@ -249,7 +238,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		return APLRes_SilentFailure;
 	}
 	
-	g_bLate = late;
+	ZC_TANK = 8;
 	return APLRes_Success; 
 }
 
@@ -263,19 +252,9 @@ public void OnPluginStart()
 		SetFailState("Cannot find the file 'data/l4d2_gifts.cfg'");
 	}
 	
-	if(g_bLate)
+	if(!LoadConfigGifts(false))
 	{
-		if(!LoadConfigGifts(true))
-		{
-			SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
-		}
-	}
-	else
-	{
-		if(!LoadConfigGifts(false))
-		{
-			SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
-		}
+		SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
 	}
 	
 	if(g_iCountGifts == 0 )
@@ -286,26 +265,41 @@ public void OnPluginStart()
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 	g_iOffset_Incapacitated = FindSendPropInfo("Tank", "m_isIncapacitated");
 
+	survivor_max_incapacitated_count = FindConVar("survivor_max_incapacitated_count");
+	pain_pills_decay_rate = FindConVar("pain_pills_decay_rate");
 
-	cvar_gift_enable = CreateConVar("l4d2_gifts_enabled",	"1", "Enable gifts 0: Disable, 1: Enable", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvar_gift_life = CreateConVar("l4d2_gifts_giflife",	"30",	"How long the gift stay on ground (seconds)", FCVAR_NOTIFY, true, 0.0);
-	cvar_gift_chance = CreateConVar("l4d2_gifts_chance", "50",	"Chance (%) of infected drop special gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
-	cvar_gift_chance2 = CreateConVar("l4d2_gifts_chance2", "100",	"Chance (%) of tank and witch drop second special gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
-	cvar_gift_maxcollectMap = CreateConVar("l4d2_gifts_maxcollectMap", "0", "Maximum of gifts that all survivors can pick up per map [0 = Disabled]", FCVAR_NOTIFY, true, 0.0);
-	cvar_gift_maxcollectRound = CreateConVar("l4d2_gifts_maxcollectRound", "0", "Maximum of gifts that all survivors can pick up per round [0 = Disabled]", FCVAR_NOTIFY, true, 0.0);
-	cvar_gift_Announce = CreateConVar("l4d2_gifts_announce",	"1",	"Notify Server who pickes up gift, and what the gift reward is.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvar_gift_MaxIncapCount = FindConVar("survivor_max_incapacitated_count");
-	cvar_gift_DecayDecay = FindConVar("pain_pills_decay_rate");
+	cvar_gift_enable = CreateConVar("l4d2_gifts_enabled",									"1", 		"Enable gifts 0: Disable, 1: Enable", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvar_gift_life = CreateConVar("l4d2_gifts_gift_life",									"30",		"How long the gift stay on ground (seconds)", FCVAR_NOTIFY, true, 0.0);
+	cvar_gift_chance = CreateConVar("l4d2_gifts_chance", 									"50",		"Chance (%) of infected drop special standard gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
+	cvar_gift_color = CreateConVar("l4d2_gifts_glow_color", 								"-1 -1 -1",	"Standard gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.\n-1 -1 -1: Random", FCVAR_NOTIFY);
+	cvar_gift_glowrange = CreateConVar("l4d2_gifts_glow_range", 							"600",		"Standard gift glow range.", FCVAR_NOTIFY, true, 0.0);
+	cvar_special_gift_chance = CreateConVar("l4d2_specail_gifts_chance", 					"100",		"Chance (%) of tank and witch drop second special gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
+	cvar_special_gift_color = CreateConVar("l4d2_special_gifts_glow_color",	 				"-1 -1 -1",	"Special gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.\n-1 -1 -1: Random", FCVAR_NOTIFY);
+	cvar_special_gift_glowrange = CreateConVar("l4d2_specail_gifts_glow_range", 			"600",		"Special gift glow range.", FCVAR_NOTIFY, true, 0.0);
+	cvar_gift_maxcollectMap = CreateConVar("l4d2_gifts_maxcollectMap", 						"0", 		"Maximum of gifts that all survivors can pick up per map [0 = Disabled]", FCVAR_NOTIFY, true, 0.0);
+	cvar_gift_maxcollectRound = CreateConVar("l4d2_gifts_maxcollectRound", 					"0", 		"Maximum of gifts that all survivors can pick up per round [0 = Disabled]", FCVAR_NOTIFY, true, 0.0);
+	cvar_gift_Announce = CreateConVar("l4d2_gifts_announce_type",							"3",		"Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	cvar_gift_infected_hp = CreateConVar("l4d2_gifts_infected_reward_hp",					"200",		"Increase Infected health if they pick up gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
+	cvar_special_gift_infected_hp = CreateConVar("l4d2_gifts_special_infected_reward_hp",	"400",		"Increase Infected health if they pick up special gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
+	AutoExecConfig(true, "l4d2_gifts");
 
 	GetCvars();
+	survivor_max_incapacitated_count.AddChangeHook(Cvar_Changed);
+	pain_pills_decay_rate.AddChangeHook(Cvar_Changed);
+
 	cvar_gift_enable.AddChangeHook(Cvar_Changed);
 	cvar_gift_life.AddChangeHook(Cvar_Changed);
 	cvar_gift_chance.AddChangeHook(Cvar_Changed);
-	cvar_gift_chance2.AddChangeHook(Cvar_Changed);
+	cvar_gift_color.AddChangeHook(Cvar_Changed);
+	cvar_gift_glowrange.AddChangeHook(Cvar_Changed);
+	cvar_special_gift_chance.AddChangeHook(Cvar_Changed);
+	cvar_special_gift_color.AddChangeHook(Cvar_Changed);
+	cvar_special_gift_glowrange.AddChangeHook(Cvar_Changed);
 	cvar_gift_maxcollectMap.AddChangeHook(Cvar_Changed);
 	cvar_gift_maxcollectRound.AddChangeHook(Cvar_Changed);
 	cvar_gift_Announce.AddChangeHook(Cvar_Changed);
-	cvar_gift_MaxIncapCount.AddChangeHook(Cvar_Changed);
+	cvar_gift_infected_hp.AddChangeHook(Cvar_Changed);
+	cvar_special_gift_infected_hp.AddChangeHook(Cvar_Changed);
 
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("round_end", Event_RoundEnd);
@@ -316,10 +310,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_giftcollect", Command_GiftCollected, "View number of gifts collected");
 	RegConsoleCmd("sm_giftc", Command_GiftCollected, "View number of gifts collected");
 	
-	RegAdminCmd("sm_gift", Command_Gift, ADMFLAG_CHEATS, "Spawn a gift in your position");
+	RegAdminCmd("sm_gifts", Command_Gift, ADMFLAG_CHEATS, "Spawn a gift in your position");
 	RegAdminCmd("sm_reloadgifts", Command_ReloadGift, ADMFLAG_CONFIG, " Reload the config file of gifts (data/l4d2_gifts.cfg)");
 
-	AutoExecConfig(true, "l4d2_gifts");
+	SetRandomColor();
 }
 
 public void OnMapStart()
@@ -334,7 +328,6 @@ public void OnMapStart()
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		CurrentPointsForMap[i] = 0;
 		for (int j=0; j < MAX_TYPEGIFTS; j++)
 		{
 			CurrentGiftsForMap[i][j] = 0;
@@ -344,10 +337,10 @@ public void OnMapStart()
 
 	gifts_collected_map = 0;
 	
-	int max = MAX_WEAPONS2;
+	int max = MAX_WEAPONS;
 	for( int i = 0; i < max; i++ )
 	{
-		PrecacheModel(g_sWeaponModels2[i], true);
+		PrecacheModel(g_sWeaponModels[i], true);
 	}
 	PrecacheModel(MODEL_GNOME, true);
 }
@@ -362,8 +355,8 @@ public void PrecacheModelGifts()
 
 public void PrecacheSoundGifts()
 {
-	PrecacheSound(SND_REWARD1, true);
-	PrecacheSound(SND_REWARD2, true);
+	PrecacheSound(SOUND_SPECIAL, true);
+	PrecacheSound(SOUND_STANDARD, true);
 }
 
 public void CheckPrecacheModel(char[] Model)
@@ -387,19 +380,27 @@ public void Cvar_Changed(ConVar convar, const char[] oldValue, const char[] newV
 void GetCvars()
 {
 	//Values of cvars
-	bGiftEnable = cvar_gift_enable.BoolValue;
-	fGiftLife = cvar_gift_life.FloatValue;
-	iGiftChance = cvar_gift_chance.IntValue;
-	iGiftChance2 = cvar_gift_chance2.IntValue;
-	iGiftMaxMap = cvar_gift_maxcollectMap.IntValue;
-	iGiftMaxRound = cvar_gift_maxcollectRound.IntValue;
-	g_bAnnounce = cvar_gift_Announce.BoolValue;
-	iGiftMaxIncapCount = cvar_gift_MaxIncapCount.IntValue;
+	g_bGiftEnable = cvar_gift_enable.BoolValue;
+	g_fGiftLife = cvar_gift_life.FloatValue;
+	g_iGiftChance = cvar_gift_chance.IntValue;
+	cvar_gift_color.GetString(g_sCvarGiftCols, sizeof(g_sCvarGiftCols));
+	g_iGiftGlowRange = cvar_gift_glowrange.IntValue;
+	g_iSpecialGiftChance = cvar_special_gift_chance.IntValue;
+	cvar_special_gift_color.GetString(g_sCvarSpecialGiftCols, sizeof(g_sCvarSpecialGiftCols));
+	g_iSpecialGiftGlowRange = cvar_special_gift_glowrange.IntValue;
+	g_iGiftMaxMap = cvar_gift_maxcollectMap.IntValue;
+	g_iGiftMaxRound = cvar_gift_maxcollectRound.IntValue;
+	g_iCvarAnnounce = cvar_gift_Announce.IntValue;
+	g_iGiftHP = cvar_gift_infected_hp.IntValue;
+	g_iSpecialGiftHP = cvar_special_gift_infected_hp.IntValue;
+
+	survivor_max_incapacitated_count_int = survivor_max_incapacitated_count.IntValue;
+	pain_pills_decay_rate_float = pain_pills_decay_rate.FloatValue;
 }
 
 public Action Command_Gift(int client, int args)
 {
-	if (!bGiftEnable)
+	if (!g_bGiftEnable)
 		return Plugin_Handled;
 	
 	if(!IsValidClient(client))
@@ -427,7 +428,7 @@ public Action Command_Gift(int client, int args)
 		}
 		else
 		{
-			ReplyToCommand(client, "[SM] Usage: sm_gift <standard or special>");
+			ReplyToCommand(client, "[SM] Usage: sm_gifts <standard or special>");
 		}
 	}
 	return Plugin_Handled;
@@ -439,7 +440,7 @@ public Action Command_Gift(int client, int args)
 
 public Action Command_GiftCollected(int client, int args)
 {
-	if (!bGiftEnable)
+	if (!g_bGiftEnable)
 		return Plugin_Handled;
 	
 	if(!IsValidClient(client))
@@ -449,9 +450,10 @@ public Action Command_GiftCollected(int client, int args)
 		return Plugin_Handled;
 	
 
-	PrintToChat(client, "%s %T", TAG_GIFT, "Number of gifts collected", client);
-	PrintToChat(client, "Special: %T", "In current map: %d | In current round: %d", client, CurrentGiftsForMap[client][TYPE_STANDARD], CurrentGiftsForRound[client][TYPE_STANDARD]);
-	PrintToChat(client, "Total: %T", "In current map: %d | In current round: %d", client, CurrentGiftsTotalForMap[client], CurrentGiftsTotalForRound[client]);
+	PrintToChat(client, "[Gift] %T", "Number of gifts collected", client);
+	PrintToChat(client, "Standard: %T", "In current map and round", client, CurrentGiftsForMap[client][TYPE_STANDARD], CurrentGiftsForRound[client][TYPE_STANDARD]);
+	PrintToChat(client, "Special: %T", "In current map and round", client, CurrentGiftsForMap[client][TYPE_SPECIAL], CurrentGiftsForRound[client][TYPE_SPECIAL]);
+	PrintToChat(client, "Total: %T", "In current map and round", client, CurrentGiftsTotalForMap[client], CurrentGiftsTotalForRound[client]);
 
 	return Plugin_Handled;
 }
@@ -465,15 +467,13 @@ public Action Command_ReloadGift(int client, int args)
 	if(!LoadConfigGifts(true))
 	{
 		LogError("Cannot load the file 'data/l4d2_gifts.cfg'");
-		SetConVarInt(cvar_gift_enable, 0 , false, false);
-		GetCvars();
+		if(client) ReplyToCommand(client, "Cannot load the file 'data/l4d2_gifts.cfg'");
 	}
 	
 	if(g_iCountGifts == 0 )
 	{
 		LogError("Do not have models!!!");
-		SetConVarInt(cvar_gift_enable, 0 , false, false);
-		GetCvars();
+		if(client) ReplyToCommand(client, "Do not have models!!!");
 	}
 	
 	return Plugin_Handled;
@@ -534,17 +534,12 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
 	g_bIsOpenSafeRoom = false;
-
-	if (!bGiftEnable) 
-		return;
-
 	gifts_collected_round = 0;
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientConnected(i) && IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == TEAM_SURVIVOR)
 		{
-			CurrentPointsForRound[i] = 0;
 			for (int j=0; j < MAX_TYPEGIFTS; j++)
 			{
 				CurrentGiftsForRound[i][j] = 0;
@@ -558,10 +553,6 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
 	g_bIsOpenSafeRoom = false;
-
-	if (!bGiftEnable) 
-		return;
-	
 	gifts_collected_round = 0;
 }
 
@@ -572,16 +563,16 @@ public void Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadc
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!bGiftEnable)
+	if (!g_bGiftEnable)
 		return;
 
 	if(g_bIsOpenSafeRoom|| g_bFinalHasStart)
 		return;
 
-	if (iGiftMaxRound != 0 && gifts_collected_round > iGiftMaxRound)
+	if (g_iGiftMaxRound != 0 && gifts_collected_round > g_iGiftMaxRound)
 		return;
 	
-	if (iGiftMaxMap != 0 && gifts_collected_map > iGiftMaxMap)
+	if (g_iGiftMaxMap != 0 && gifts_collected_map > g_iGiftMaxMap)
 		return;
 	
 	int victim = GetClientOfUserId(event.GetInt("userid"));
@@ -591,14 +582,14 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	{
 		if(GetZombieClass(victim) == 8)
 		{
-			if (GetRandomInt(1, 100) <= iGiftChance2)
+			if (GetRandomInt(1, 100) <= g_iSpecialGiftChance)
 			{
 				DropGift(victim, STRING_SPECIAL);
 			}
 		}
 		else
 		{
-			if (GetRandomInt(1, 100) <= iGiftChance)
+			if (GetRandomInt(1, 100) <= g_iGiftChance)
 			{
 				DropGift(victim);
 			}
@@ -610,7 +601,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 
 public void OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!bGiftEnable)
+	if (!g_bGiftEnable)
 		return;
 
 	if(g_bIsOpenSafeRoom|| g_bFinalHasStart)
@@ -618,7 +609,7 @@ public void OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 
 	//int attacker = GetClientOfUserId(event.GetInt("userid"));
 	int witch = event.GetInt("witchid");
-	if (GetRandomInt(1, 100) <= iGiftChance2)
+	if (GetRandomInt(1, 100) <= g_iSpecialGiftChance)
 	{
 		DropGift(witch, STRING_SPECIAL);
 	}
@@ -650,9 +641,48 @@ void NotifyGift(int client, int type, int gift = -1)
 		else
 			GiveWeapon(client, weapons_name_standard[index][0]);
 
-		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name_standard[index][1]);
-		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name_standard[index][1]);
-		PlaySound(client,SND_REWARD2);
+		switch(g_iCvarAnnounce)
+		{
+			case 0: { }
+			case 1:
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if(!IsClientInGame(i)) continue;
+					if(IsFakeClient(i)) continue;
+					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
+					{
+						PrintToChat(i, "%T", "Got Gift", i, client, weapons_name_standard[index][1]);
+					}
+				}
+			}
+			case 2:
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if(!IsClientInGame(i)) continue;
+					if(IsFakeClient(i)) continue;
+					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
+					{
+						PrintHintText(i, "%T", "Got Gift", i, client, weapons_name_standard[index][1]);
+					}
+				}
+			}
+			case 3:
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if(!IsClientInGame(i)) continue;
+					if(IsFakeClient(i)) continue;
+					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
+					{
+						PrintCenterText(i, "%T", "Got Gift", i, client, weapons_name_standard[index][1]);
+					}
+				}
+			}
+		}
+
+		PlaySound(client,SOUND_STANDARD);
 		AddCollect(client, type);
 	}
 	else if(type == TYPE_SPECIAL)
@@ -679,9 +709,48 @@ void NotifyGift(int client, int type, int gift = -1)
 		else
 			GiveWeapon(client, weapons_name_special[index][0]);
 
-		if(g_bAnnounce) PrintCenterToTeam(TEAM_SURVIVOR, client, weapons_name_special[index][1]);
-		else PrintToChat(client, "%s %T", TAG_GIFT, "Spawn Gift Special Not Points", client, client, weapons_name_special[index][1]);
-		PlaySound(client,SND_REWARD1);
+		switch(g_iCvarAnnounce)
+		{
+			case 0: { }
+			case 1:
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if(!IsClientInGame(i)) continue;
+					if(IsFakeClient(i)) continue;
+					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
+					{
+						PrintToChat(i, "%T", "Got Gift", i, client, weapons_name_special[index][1]);
+					}
+				}
+			}
+			case 2:
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if(!IsClientInGame(i)) continue;
+					if(IsFakeClient(i)) continue;
+					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
+					{
+						PrintHintText(i, "%T", "Got Gift", i, client, weapons_name_special[index][1]);
+					}
+				}
+			}
+			case 3:
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if(!IsClientInGame(i)) continue;
+					if(IsFakeClient(i)) continue;
+					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
+					{
+						PrintCenterText(i, "%T", "Got Gift", i, client, weapons_name_special[index][1]);
+					}
+				}
+			}
+		}
+
+		PlaySound(client, SOUND_SPECIAL);
 		AddCollect(client, type);
 	}
 
@@ -744,93 +813,93 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 
 		DispatchSpawn(gift);
 		SetEntPropFloat(gift, Prop_Send, "m_flModelScale", g_fScale[random]);
-		if(strcmp(g_sTypeGift[random], STRING_STANDARD) == 0 || strcmp(g_sTypeGift[random], STRING_SPECIAL) == 0)
+
+		int entitycolor[3], glowcolor[3];
+		if(strcmp(g_sGifType[gift], STRING_STANDARD, false) == 0)
 		{
-			int color = GetRandomInt(1, 7);
-			switch(color)
+			if(strcmp(g_sCvarGiftCols, "-1 -1 -1", false) == 0)
 			{
-				case 1: SetEntityRenderColor(gift, 0, 255, 255, 255); //COLOR_CYAN
-				case 2: SetEntityRenderColor(gift, 144, 238, 144), 255; //COLOR_LIGHT_GREEN
-				case 3: SetEntityRenderColor(gift, 128, 0, 128, 255); //COLOR_PURPLE
-				case 4: SetEntityRenderColor(gift, 255, 88, 130, 255); //COLOR_PINK
-				case 5: SetEntityRenderColor(gift, 255, 0, 0, 255); //COLOR_RED
-				case 6: SetEntityRenderColor(gift, 254, 100, 46, 255); //COLOR_ORANGE
-				case 7: SetEntityRenderColor(gift, 255, 255, 0, 255); //COLOR_YELLOW
+				switch(GetRandomInt(1, 8))
+				{
+					case 1: {entitycolor[0] = ColorCyan[0]; entitycolor[1] = ColorCyan[1]; entitycolor[2] = ColorCyan[2];}
+					case 2: {entitycolor[0] = ColorLightGreen[0]; entitycolor[1] = ColorLightGreen[1]; entitycolor[2] = ColorLightGreen[2];}
+					case 3: {entitycolor[0] = ColorPurple[0]; entitycolor[1] = ColorPurple[1]; entitycolor[2] = ColorPurple[2];}
+					case 4: {entitycolor[0] = ColorPink[0]; entitycolor[1] = ColorPink[1]; entitycolor[2] = ColorPink[2];}
+					case 5: {entitycolor[0] = ColorRed[0]; entitycolor[1] = ColorRed[1]; entitycolor[2] = ColorRed[2];}
+					case 6: {entitycolor[0] = ColorOrange[0]; entitycolor[1] = ColorOrange[1]; entitycolor[2] = ColorOrange[2];}
+					case 7: {entitycolor[0] = ColorYellow[0]; entitycolor[1] = ColorYellow[1]; entitycolor[2] = ColorYellow[2];}
+					case 8: {entitycolor[0] = 255; entitycolor[1] = 255; entitycolor[2] = 255;}
+				}
+				switch(GetRandomInt(1, 13))
+				{
+					case 1: {glowcolor[0] = ColorRed[0]; glowcolor[1] = ColorRed[1]; glowcolor[2] = ColorRed[2];}
+					case 2: {glowcolor[0] = ColorGreen[0]; glowcolor[1] = ColorGreen[1]; glowcolor[2] = ColorGreen[2];}
+					case 3: {glowcolor[0] = ColorBlue[0]; glowcolor[1] = ColorBlue[1]; glowcolor[2] = ColorBlue[2];}
+					case 4: {glowcolor[0] = ColorPurple[0]; glowcolor[1] = ColorPurple[1]; glowcolor[2] = ColorPurple[2];}
+					case 5: {glowcolor[0] = ColorCyan[0]; glowcolor[1] = ColorCyan[1]; glowcolor[2] = ColorCyan[2];}
+					case 6: {glowcolor[0] = ColorOrange[0]; glowcolor[1] = ColorOrange[1]; glowcolor[2] = ColorOrange[2];}
+					case 7: {glowcolor[0] = ColorWhite[0]; glowcolor[1] = ColorWhite[1]; glowcolor[2] = ColorWhite[2];}
+					case 8: {glowcolor[0] = ColorPink[0]; glowcolor[1] = ColorPink[1]; glowcolor[2] = ColorPink[2];}
+					case 9: {glowcolor[0] = ColorLime[0]; glowcolor[1] = ColorLime[1]; glowcolor[2] = ColorLime[2];}
+					case 10: {glowcolor[0] = ColorMaroon[0]; glowcolor[1] = ColorMaroon[1]; glowcolor[2] = ColorMaroon[2];}
+					case 11: {glowcolor[0] = ColorTeal[0]; glowcolor[1] = ColorTeal[1]; glowcolor[2] = ColorTeal[2];}
+					case 12: {glowcolor[0] = ColorYellow[0]; glowcolor[1] = ColorYellow[1]; glowcolor[2] = ColorYellow[2];}
+					case 13: {glowcolor[0] = 255; glowcolor[1] = 255; glowcolor[2] = 255;}
+				}
+			}
+			else
+			{
+				GetColor(g_sCvarGiftCols, entitycolor);
+				GetColor(g_sCvarGiftCols, glowcolor);
 			}
 		}
-		
-		int rmdAura = GetRandomInt(1, 7);
-		int color[3];
-		switch(rmdAura)
+		else
 		{
-			case 1:
+			if(strcmp(g_sCvarSpecialGiftCols, "-1 -1 -1", false) == 0)
 			{
-				GetColor(AURA_CYAN, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+				switch(GetRandomInt(1, 8))
+				{
+					case 1: {entitycolor[0] = ColorCyan[0]; entitycolor[1] = ColorCyan[1]; entitycolor[2] = ColorCyan[2];}
+					case 2: {entitycolor[0] = ColorLightGreen[0]; entitycolor[1] = ColorLightGreen[1]; entitycolor[2] = ColorLightGreen[2];}
+					case 3: {entitycolor[0] = ColorPurple[0]; entitycolor[1] = ColorPurple[1]; entitycolor[2] = ColorPurple[2];}
+					case 4: {entitycolor[0] = ColorPink[0]; entitycolor[1] = ColorPink[1]; entitycolor[2] = ColorPink[2];}
+					case 5: {entitycolor[0] = ColorRed[0]; entitycolor[1] = ColorRed[1]; entitycolor[2] = ColorRed[2];}
+					case 6: {entitycolor[0] = ColorOrange[0]; entitycolor[1] = ColorOrange[1]; entitycolor[2] = ColorOrange[2];}
+					case 7: {entitycolor[0] = ColorYellow[0]; entitycolor[1] = ColorYellow[1]; entitycolor[2] = ColorYellow[2];}
+					case 8: {entitycolor[0] = 255; entitycolor[1] = 255; entitycolor[2] = 255;}
+				}
+				switch(GetRandomInt(1, 13))
+				{
+					case 1: {glowcolor[0] = ColorRed[0]; glowcolor[1] = ColorRed[1]; glowcolor[2] = ColorRed[2];}
+					case 2: {glowcolor[0] = ColorGreen[0]; glowcolor[1] = ColorGreen[1]; glowcolor[2] = ColorGreen[2];}
+					case 3: {glowcolor[0] = ColorBlue[0]; glowcolor[1] = ColorBlue[1]; glowcolor[2] = ColorBlue[2];}
+					case 4: {glowcolor[0] = ColorPurple[0]; glowcolor[1] = ColorPurple[1]; glowcolor[2] = ColorPurple[2];}
+					case 5: {glowcolor[0] = ColorCyan[0]; glowcolor[1] = ColorCyan[1]; glowcolor[2] = ColorCyan[2];}
+					case 6: {glowcolor[0] = ColorOrange[0]; glowcolor[1] = ColorOrange[1]; glowcolor[2] = ColorOrange[2];}
+					case 7: {glowcolor[0] = ColorWhite[0]; glowcolor[1] = ColorWhite[1]; glowcolor[2] = ColorWhite[2];}
+					case 8: {glowcolor[0] = ColorPink[0]; glowcolor[1] = ColorPink[1]; glowcolor[2] = ColorPink[2];}
+					case 9: {glowcolor[0] = ColorLime[0]; glowcolor[1] = ColorLime[1]; glowcolor[2] = ColorLime[2];}
+					case 10: {glowcolor[0] = ColorMaroon[0]; glowcolor[1] = ColorMaroon[1]; glowcolor[2] = ColorMaroon[2];}
+					case 11: {glowcolor[0] = ColorTeal[0]; glowcolor[1] = ColorTeal[1]; glowcolor[2] = ColorTeal[2];}
+					case 12: {glowcolor[0] = ColorYellow[0]; glowcolor[1] = ColorYellow[1]; glowcolor[2] = ColorYellow[2];}
+					case 13: {glowcolor[0] = 255; glowcolor[1] = 255; glowcolor[2] = 255;}
+				}
 			}
-			case 2:
+			else
 			{
-				GetColor(AURA_BLUE, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 3:
-			{
-				GetColor(AURA_GREEN, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 4:
-			{
-				GetColor(AURA_PINK, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 5:
-			{
-				GetColor(AURA_RED, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 6:
-			{
-				GetColor(AURA_ORANGE, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 7:
-			{
-				GetColor(AURA_YELLOW, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 8:
-			{
-				GetColor(AURA_PURPLE, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 9:
-			{
-				GetColor(AURA_WHITE, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 10:
-			{
-				GetColor(AURA_LIME, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 11:
-			{
-				GetColor(AURA_MAROON, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 12:
-			{
-				GetColor(AURA_TEAL, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
-			}
-			case 13:
-			{
-				GetColor(AURA_GREY, color);
-				L4D2_SetEntityGlow(gift, L4D2Glow_Constant, 1000, 0, color, true);
+				GetColor(g_sCvarSpecialGiftCols, entitycolor);
+				GetColor(g_sCvarSpecialGiftCols, glowcolor);
 			}
 		}
 
-		CreateTimer(fGiftLife, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_FLAG_NO_MAPCHANGE);
+		int glowrange = 0;
+		if(strcmp(type, STRING_STANDARD, false) == 0) glowrange = g_iGiftGlowRange;
+		else glowrange = g_iSpecialGiftGlowRange;
+
+		SetEntityRenderColor(gift, entitycolor[0], entitycolor[1], entitycolor[2]); //COLOR_CYAN
+		L4D2_SetEntityGlow(gift, L4D2Glow_Constant, glowrange, 0, glowcolor, true);
+
+		CreateTimer(g_fGiftLife, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_FLAG_NO_MAPCHANGE);
 		CreateTimer(1.0, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
 	}
 
@@ -841,13 +910,13 @@ public Action ColdDown( Handle timer, any ref)
 	int gift;
 	if (ref && (gift = EntRefToEntIndex(ref)) != INVALID_ENT_REFERENCE)
 	{
-		SDKHook(gift, SDKHook_Touch, OnTouch);
+		SDKHook(gift, SDKHook_TouchPost, OnTouchPost);
 	}
 
 	return Plugin_Continue;
 }
 
-public void OnTouch(int gift, int other)
+public void OnTouchPost(int gift, int other)
 {
 	if (IsValidClient(other))
 	{
@@ -862,37 +931,49 @@ public void OnTouch(int gift, int other)
 
 			if (strcmp(g_sGifType[gift], STRING_STANDARD) == 0)
 			{
-				//Points for Gifts Special
 				NotifyGift(other, TYPE_STANDARD, gift);
 			}
 			else if (strcmp(g_sGifType[gift], STRING_SPECIAL) == 0)
 			{
-				//PoiNotifyGift(nts for Gifts Special
 				NotifyGift(other, TYPE_SPECIAL, gift);
 			}
 			gifts_collected_map += 1;
 			gifts_collected_round += 1;
-			SDKUnhook(gift, SDKHook_Touch, OnTouch);
+
+			SDKUnhook(gift, SDKHook_TouchPost, OnTouchPost);
 			AcceptEntityInput(gift, "kill");
 		}
 		else if(iTeam == 3 && IsPlayerAlive(other) && !IsPlayerGhost(other))
 		{
-			int CurrentHealth = GetClientHealth(other);
+			if(GetEntProp(other, Prop_Send, "m_zombieClass") == ZC_TANK && IsTankDying(other)) return;
+
 			int AddHP = 0;
-			if(GetEntProp(other, Prop_Send, "m_zombieClass") == 8) 
+			if (strcmp(g_sGifType[gift], STRING_STANDARD) == 0) AddHP = g_iGiftHP;
+			else AddHP = g_iSpecialGiftHP;
+
+			if(AddHP == 0) return;
+
+			SetEntityHealth(other, GetClientHealth(other) + AddHP);
+
+			switch(g_iCvarAnnounce)
 			{
-				if(IsTankDying(other)) return;
-				AddHP = 450;
+				case 0: { }
+				case 1:
+				{
+					PrintToChatAll("%t", "Infected Got Gift", other, AddHP);
+				}
+				case 2:
+				{
+					PrintHintTextToAll("%t", "Infected Got Gift", other, AddHP);
+				}
+				case 3:
+				{
+					PrintCenterTextAll("%t", "Infected Got Gift", other, AddHP);
+				}
 			}
-			else
-			{
-				AddHP = 200;
-			}
-			SetEntityHealth(other, CurrentHealth + AddHP);
-			if(g_bAnnounce) PrintCenterTextAll("%t", "Infected Got Gift", other, AddHP);
-			else PrintToChat(other, "%s %T", TAG_GIFT, "Infected Got Gift", other, other, AddHP);
-			PlaySound(other,SND_REWARD2);
-			SDKUnhook(gift, SDKHook_Touch, OnTouch);
+
+			PlaySound(other, SOUND_STANDARD);
+			SDKUnhook(gift, SDKHook_TouchPost, OnTouchPost);
 			AcceptEntityInput(gift, "kill");
 		}
 	}
@@ -1033,13 +1114,13 @@ float GetTempHealth(int client)
 	float fGameTime = GetGameTime();
 	float fHealthTime = GetEntPropFloat(client, Prop_Send, "m_healthBufferTime");
 	float fHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
-	fHealth -= (fGameTime - fHealthTime) * cvar_gift_DecayDecay.FloatValue;
+	fHealth -= (fGameTime - fHealthTime) * pain_pills_decay_rate_float;
 	return fHealth < 0.0 ? 0.0 : fHealth;
 }
 
 void SetClientHealth(int client, float fHealth)
 {	
-	if( GetEntProp( client, Prop_Send, "m_currentReviveCount" ) >= 1 && iGiftMaxIncapCount >= 1 ) 	// The client has been incompetent once.
+	if( GetEntProp( client, Prop_Send, "m_currentReviveCount" ) >= 1 && survivor_max_incapacitated_count_int >= 1 ) 	// The client has been incompetent once.
 	{
 		int flagsgive = GetCommandFlags("give");
 		SetCommandFlags("give", flagsgive & ~FCVAR_CHEAT);
@@ -1063,14 +1144,24 @@ bool CheckIfEntityMax(int entity)
 	return true;
 }
 
-void PrintCenterToTeam (int team, int client, char[] displayMessage)
-{
-	for (int i = 1; i <= MaxClients; i++)
-		if(IsClientInGame(i) && (GetClientTeam(i) == team || GetClientTeam(i) == 1))
-			PrintCenterText(i, "%t", "Spawn Gift Special Not Points", client, displayMessage);
-}
-
 public void L4D2_OnLockDownOpenDoorFinish(const char[] sKeyMan)
 {
 	g_bIsOpenSafeRoom = true;
+}
+
+void SetRandomColor()
+{
+	GetColor("255 0 0", ColorRed);
+	GetColor("0 255 0", ColorGreen);
+	GetColor("0 0 255", ColorBlue);
+	GetColor("128 0 128", ColorPurple);
+	GetColor("0 255 255", ColorCyan);
+	GetColor("254 100 46", ColorOrange);
+	GetColor("255 255 255", ColorWhite);
+	GetColor("255 88 130", ColorPink);
+	GetColor("128 255 0", ColorLime);
+	GetColor("128 0 0", ColorMaroon);
+	GetColor("0 128 128", ColorTeal);
+	GetColor("255 255 0", ColorYellow);
+	GetColor("144 238 144", ColorLightGreen);
 }
