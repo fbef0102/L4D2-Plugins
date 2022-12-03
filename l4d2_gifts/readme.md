@@ -46,7 +46,7 @@ English
 
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-	2. [Mission and Weapons - Info Editor]("https://forums.alliedmods.net/showthread.php?t=310586"): To unlock all melee weapons in all campaigns
+	2. [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586): To unlock all melee weapons in all campaigns
 
 * <details><summary>ConVar | 指令</summary>
 
