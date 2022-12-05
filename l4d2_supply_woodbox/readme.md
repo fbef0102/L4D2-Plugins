@@ -1,4 +1,3 @@
-
 # Description | 內容
 Supply boxes are dropped randomly in the map every certain seconds to provide support for the fight against the zombies.
 
