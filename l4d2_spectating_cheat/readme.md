@@ -1,0 +1,93 @@
+# Description | 內容
+A spectator who watching the survivor at first person view can now see the infected model glows though the wall
+
+* [Video | 影片展示](https://www.bilibili.com/video/BV1Xq4y1a7ie)
+
+* Image | 圖示
+	* White Glow=Ghost Infected, Red Glow=Alive Infected 
+        > 白光=靈魂特感，紅光=活著的特感
+	    <br/>![l4d2_spectating_cheat_1](image/l4d2_spectating_cheat_1.jpg)
+	* Better view for spectator in versus match
+        > 提高對抗模式觀賞性
+	    <br/>![l4d2_spectating_cheat_2](image/l4d2_spectating_cheat_2.jpg)
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+	* v2.3 (2022-12-5)
+        * Support [Zombie Chane Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
+
+	* v2.2
+        * Remake code
+        * Alive SI glow color
+        * Ghost SI glow color
+        * Admin Flag to toggle Speatator watching cheat
+        * Enable Speatator watching cheat for spectators default valve
+
+	* v1.0
+        * Initial Release
+        * Request by Target_7
+</details>
+
+* Require | 必要安裝
+<br/>None
+
+* Related Plugin | 相關插件
+	1. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
+	    > 頭上有血量提示，給旁觀者更好的觀賞性
+
+	2. [HP Laser](https://forums.alliedmods.net/showthread.php?t=330590): Shows a laser beam at the client head based on its HP
+	    > 頭上有血量激光束提示，給旁觀者更好的觀賞性 (比較卡)
+
+* <details><summary>ConVar | 指令</summary>
+
+	* cfg\sourcemod\l4d2_specting_cheat.cfg
+		```php
+        // Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
+        l4d2_specting_cheat_alive_color "255 0 0"
+
+        // Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]
+        l4d2_specting_cheat_default_value "0"
+
+        // Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
+        l4d2_specting_cheat_ghost_color "255 255 255"
+
+        // Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)
+        l4d2_specting_cheat_use_command_flag "z"
+		```
+</details>
+
+* <details><summary>Command | 命令</summary>
+
+	* **Toggle Speatator watching cheat (spectator only)**
+		```php
+        sm_speccheat
+        sm_watchcheat
+        sm_lookcheat
+        sm_seecheat
+        sm_meetcheat
+        sm_starecheat
+        sm_hellocheat
+        sm_areyoucheat
+        sm_fuckyoucheat
+        sm_zzz
+		```
+</details>
+
+- - - -
+# 中文說明
+旁觀者可以看到特感的光圈，方便旁觀者觀賞
+
+* 原理
+    * 生成特感或變成靈魂特感時在特感玩家身上創造光圈，只有旁觀者能看見
+    * 即使旁觀者觀看人類視角第一人稱，也能看到特感光圈
+    * 此插件本意只是拿來抓鬼(偷看倖存者誰開了透視外掛)，誰知道意外地提供了旁觀者非常好的觀賞性(被各個對抗伺服器拿去用)
+
+* 功能
+    * 特定權限的人可以使用指令關閉或開啟光圈
+    * 可調整預設所有旁觀者能看到
+    * 可調整活著的特感與靈魂特感的顏色
