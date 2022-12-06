@@ -5,21 +5,11 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define AIRDROP_CHANCE 15
 #define MAXENTITIES                   2048
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
 
-#define ZOMBIECLASS_SMOKER      1
-#define ZOMBIECLASS_BOOMER      2
-#define ZOMBIECLASS_HUNTER      3
-#define ZOMBIECLASS_SPITTER     4
-#define ZOMBIECLASS_JOCKEY      5
-#define ZOMBIECLASS_CHARGER     6
-#define ZOMBIECLASS_TANK        8
-
 #define TEAM_SPECTATOR		1
 #define TEAM_SURVIVORS 		2
-#define TEAM_INFECTED 		3
 
 #define	OXYGENTANK_MODEL		"models/props_equipment/oxygentank01.mdl"
 #define	FIREWORKCRATE_MODEL		"models/props_junk/explosive_box001.mdl"
@@ -35,7 +25,6 @@
 #define g_iRandomGLAmmo			GetRandomInt(10, 25)
 #define g_iRandomSmgAmmo		GetRandomInt(300, 500)
 #define g_iRandomSniperAmmo		GetRandomInt(50, 100)
-#define	MAX_MELEE			13
 #define CVAR_FLAGS			FCVAR_NOTIFY
 
 // Cvar Handles/Variables
