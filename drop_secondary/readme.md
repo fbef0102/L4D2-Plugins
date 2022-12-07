@@ -15,6 +15,9 @@ L4D2
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.4 (2022-12-7)
+		* Use other method to get the melee weapon
+
 	* v2.3 (2022-10-7)
 		* Convert All codes to new syntax.
 		* Support Custom Melee
@@ -25,7 +28,7 @@ L4D2
 </details>
 
 * Require | 必要安裝
-<br/>None
+	1. Optional - [l4d_info_editor](https://forums.alliedmods.net/showthread.php?t=310586)
 
 * Related Plugin | 相關插件
 	1. [l4d_drop](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_drop): Allows players to drop the weapon they are holding
