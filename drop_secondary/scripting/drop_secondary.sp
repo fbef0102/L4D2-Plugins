@@ -281,7 +281,7 @@ stock void GetMeleeClasses()
 	int MeleeStringTable = FindStringTable( "MeleeWeapons" );
 	g_iMeleeClassCount = GetStringTableNumStrings( MeleeStringTable );
 	
-	int len = sizeof(g_sMeleeClass);
+	int len = sizeof(g_sMeleeClass[]);
 	
 	for( int i = 0; i < g_iMeleeClassCount; i++ )
 	{
