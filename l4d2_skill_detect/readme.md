@@ -10,7 +10,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * Apply to | 適用於
 	```
-	L4D2
+	L4D2 Coop/Versus/Survival/Realism
 	```
 
 * Translation Support | 支援翻譯
@@ -105,6 +105,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * 原理
 	* 每當有高手展現實力，打印在聊天視窗
+    * 戰役/對抗/寫實/生存都適用
 
 * 功能
 	* 可控制指令選擇打印哪些特殊技巧，請打開源始碼查看
