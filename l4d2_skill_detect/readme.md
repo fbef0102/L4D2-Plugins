@@ -22,7 +22,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-    * v1.1h
+    * v1.1h (2022-12-16)
         * Request by Yabi
         * Translation Support
 
