@@ -280,9 +280,9 @@
 	"HandleSmokerSelfClear_2"
 	{
 		"#format"		"{1:s},{2:t}"
-		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue{1}."
-		"zho"		"{lightgreen}★★ {olive}{1}{default} {1}自解了 {green}Smoker{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} {1}自解了 {green}Smoker{default} 的舌头."
+		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue{2}."
+		"zho"		"{lightgreen}★★ {olive}{1}{default} {2}自解了 {green}Smoker{default} 的舌頭."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} {2}自解了 {green}Smoker{default} 的舌头."
 	}
 	"Tank_Rock"
 	{
