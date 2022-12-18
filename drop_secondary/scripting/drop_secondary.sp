@@ -12,6 +12,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
+#undef REQUIRE_PLUGIN
 #tryinclude <l4d_info_editor>
 #define DEBUG 0
 
@@ -21,7 +22,7 @@ public Plugin myinfo =
 {
 	name		= "L4D2 Drop Secondary",
 	author		= "HarryPotter",
-	version		= "2.4",
+	version		= "2.5",
 	description	= "Survivor players will drop their secondary weapon when they die",
 	url			= "https://steamcommunity.com/profiles/76561198026784913/"
 };
@@ -188,13 +189,17 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 			DispatchKeyValue(new_weapon, "melee_script_name", g_sMeleeClass[meleeWeaponId]);
 
 			#if DEBUG
-				PrintToChatAll(">>>>[DropMelee] Drop Melee Weapon: %s", g_sMeleeClass[meleeWeaponId]);
+				char m_ModelName[PLATFORM_MAX_PATH];
+				GetEntPropString(weapon, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
+				LogMessage(">>>>[Melee] Drop Melee Weapon: %s (%s), player: %N", g_sMeleeClass[meleeWeaponId], m_ModelName, client);
 			#endif
 		}
 		else
 		{
 			#if DEBUG
-				PrintToChatAll(">>>>[DropMelee] Drop Unknown Melee Weapon ID: %d", meleeWeaponId);
+				char m_ModelName[PLATFORM_MAX_PATH];
+				GetEntPropString(weapon, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
+				LogMessage(">>>>[Melee] Drop Unknown Melee Weapon ID: %d (%s), player: %N", meleeWeaponId, m_ModelName, client);
 			#endif
 
 			Clear(client);
@@ -287,12 +292,15 @@ stock void GetMeleeClasses()
 	{
 		ReadStringTable( MeleeStringTable, i, g_sMeleeClass[i], len );
 		#if DEBUG
-			LogMessage( "Function::GetMeleeClasses - Getting melee classes: %s", g_sMeleeClass[i]);
+			char sMap[64];
+			GetCurrentMap(sMap, sizeof(sMap));
+			LogMessage( "[%s] Function::GetMeleeClasses - Getting melee classes: %s", sMap, g_sMeleeClass[i]);
 		#endif
 	}	
 }
 
 // Credit: github.com/SamuelXXX/l4d2_supercoop_for2/blob/master/left4dead2/addons/sourcemod/scripting/_sc_drop_melee_when_died.sp
+/* comment out reason: too frequently call OnGetMissionInfo (every 20~30 seconds)
 public void OnGetMissionInfo(int pThis)
 {
 	//由info_editor提供的一个回调函数，用来获取当前战役的一些设置信息
@@ -308,14 +316,16 @@ public void onMissionSettingParsed(int pThis)
 	g_iMeleeClassCount = ExplodeString(temp,";",g_sMeleeClass,16,16,true);
 
 	#if DEBUG
-		LogMessage(">>>>[DropMelee] Melee Weapon List In This Campaign: %s",temp);
+		char sMap[64];
+		GetCurrentMap(sMap, sizeof(sMap));
+		LogMessage(">>>>[Melee] Melee Weapon List In %s: %s", sMap, temp);
 		for(int i=0;i<g_iMeleeClassCount;i++)
 		{
-			LogMessage(">>>>[DropMelee] Melee Weapon %d : %s",i,g_sMeleeClass[i]);
+			LogMessage(">>>>[Melee] Melee Weapon %d : %s",i,g_sMeleeClass[i]);
 		}
 	#endif
 }
-
+*/
 void Clear(int client)
 {
 	SetSecondaryWeaponIDPreDead(client, 1);
