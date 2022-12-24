@@ -63,7 +63,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.3",
+	version     = "2.4",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -180,6 +180,8 @@ public void OnPluginStart()
 	g_hInfectedMarkGlowRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedMarkCvarColor.AddChangeHook(ConVarChanged_Cvars);
 	g_hInfectedMarkWitch.AddChangeHook(ConVarChanged_Cvars);
+
+	RegConsoleCmd("sm_mark", CMD_MARK, "Mark item/infected/spot");
 
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("round_end", Event_Round_End);
@@ -465,6 +467,22 @@ public void OnWeaponEquipPost(int client, int weapon)
 	delete g_iTargetInstructorTimer[weapon];
 }
 
+public Action CMD_MARK(int client, int args)
+{
+	if (client == 0)
+	{
+		PrintToServer("[TS] This command cannot be used by server.");
+		return Plugin_Handled;
+	}
+
+	if (IsRealSur(client) && !IsHandingFromLedge(client) && GetInfectedAttacker(client) == -1)
+	{
+		PlayerMarkHint(client);
+	}
+
+	return Plugin_Handled;
+}
+
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Clear();
@@ -531,118 +549,7 @@ public Action Vocalize_Listener(int client, const char[] command, int argc)
 		{
 			if (strncmp(sCmdString, "smartlook #", 11, false) == 0)
 			{
-				bool bIsAimInfeced = false, bIsAimWitch = false, bIsVaildItem = false;
-				static char sItemName[64], sEntModelName[PLATFORM_MAX_PATH];
-
-				// marker priority (infected maker > item hint > spot marker)
-
-				if (g_iInfectedMarkCvarColor != 0)
-				{
-					int clientAim = GetClientViewClient(client); //ignore glow model
-
-					if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim))
-					{
-						bIsAimInfeced = true;
-						//PrintToChatAll("look at %N", clientAim);
-						
-						if( CreateInfectedMarker(client, clientAim) == true )
-							return Plugin_Continue;
-					}
-					else if ( IsWitch(clientAim) )
-					{
-						bIsAimWitch = true;
-
-						if( CreateInfectedMarker(client, clientAim, true) == true )
-							return Plugin_Continue;
-					}
-				}
-
-				static int iEntity;
-				iEntity = GetUseEntity(client, g_fItemUseHintRange);
-				//PrintToChatAll("%N is looking at %d", client, iEntity);
-				if ( !bIsAimInfeced && !bIsAimWitch && IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false )
-				{
-					static char targetname[128];
-					GetEntPropString(iEntity, Prop_Data, "m_iName", targetname, sizeof(targetname));
-					if (strcmp(targetname, "harry_marked_item") == 0) //custom model
-					{
-						iEntity = GetEntPropEnt(iEntity, Prop_Data, "m_pParent");
-					}
-
-					if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
-					{
-						if (GetEntPropString(iEntity, Prop_Data, "m_ModelName", sEntModelName, sizeof(sEntModelName)) > 1)
-						{
-							//PrintToChatAll("Model - %s", sEntModelName);
-							StringToLowerCase(sEntModelName);
-							float fHeight = 10.0;
-							if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
-							{
-								g_smModelHeight.GetValue(sEntModelName, fHeight);
-								bIsVaildItem = true;
-							}
-							else if (StrContains(sEntModelName, "/melee/") != -1) // entity is not in the listb(custom melee weapon model)
-							{
-								FormatEx(sItemName, sizeof sItemName, "%s", "Melee!");
-								fHeight = 5.0;
-
-								bIsVaildItem = true;
-							}
-							else if (StrContains(sEntModelName, "/weapons/") != -1) // entity is not in the list (custom weapom model)
-							{
-								FormatEx(sItemName, sizeof sItemName, "%s", "Weapons!");
-								fHeight = 10.0;
-
-								bIsVaildItem = true;
-							}
-							else // entity is not in the list (other entity model on the map)
-							{
-								bIsVaildItem = false;
-							}
-
-							if(bIsVaildItem)
-							{
-								if(GetEngineTime() > g_fItemHintCoolDownTime[client])
-								{
-									NotifyMessage(client, sItemName, view_as<EHintType>(eItemHint));
-
-									if (strlen(g_sItemUseSound) > 0)
-									{
-										for (int target = 1; target <= MaxClients; target++)
-										{
-											if (!IsClientInGame(target))
-												continue;
-
-											if (IsFakeClient(target))
-												continue;
-
-											if (GetClientTeam(target) == TEAM_INFECTED)
-												continue;
-
-											EmitSoundToClient(target, g_sItemUseSound, client);
-										}
-									}
-
-									g_fItemHintCoolDownTime[client] = GetEngineTime() + g_fItemHintCoolDown;
-									CreateEntityModelGlow(iEntity, sEntModelName);
-
-									if(g_bItemInstructorHint)
-									{
-										float vEndPos[3];
-										GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
-										vEndPos[2] = vEndPos[2] + fHeight;
-										CreateInstructorHint(client, vEndPos, sItemName, iEntity, view_as<EHintType>(eItemHint));
-									}
-								}
-
-								return Plugin_Continue;
-							}
-						}
-					}
-				}
-
-				// client / world / witch
-				CreateSpotMarker(client, bIsAimInfeced);
+				PlayerMarkHint(client);
 			}
 		}
 	}
@@ -1618,3 +1525,119 @@ bool TRDontHitSelf(int entity, int mask, any data) {
         return false;
     return true;
 }
+
+void PlayerMarkHint(int client)
+{
+	bool bIsAimInfeced = false, bIsAimWitch = false, bIsVaildItem = false;
+	static char sItemName[64], sEntModelName[PLATFORM_MAX_PATH];
+
+	// marker priority (infected maker > item hint > spot marker)
+
+	if (g_iInfectedMarkCvarColor != 0)
+	{
+		int clientAim = GetClientViewClient(client); //ignore glow model
+
+		if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim) && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim))
+		{
+			bIsAimInfeced = true;
+			//PrintToChatAll("look at %N", clientAim);
+			
+			if( CreateInfectedMarker(client, clientAim) == true )
+				return;
+		}
+		else if ( IsWitch(clientAim) )
+		{
+			bIsAimWitch = true;
+
+			if( CreateInfectedMarker(client, clientAim, true) == true )
+				return;
+		}
+	}
+
+	static int iEntity;
+	iEntity = GetUseEntity(client, g_fItemUseHintRange);
+	//PrintToChatAll("%N is looking at %d", client, iEntity);
+	if ( !bIsAimInfeced && !bIsAimWitch && IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false )
+	{
+		static char targetname[128];
+		GetEntPropString(iEntity, Prop_Data, "m_iName", targetname, sizeof(targetname));
+		if (strcmp(targetname, "harry_marked_item") == 0) //custom model
+		{
+			iEntity = GetEntPropEnt(iEntity, Prop_Data, "m_pParent");
+		}
+
+		if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
+		{
+			if (GetEntPropString(iEntity, Prop_Data, "m_ModelName", sEntModelName, sizeof(sEntModelName)) > 1)
+			{
+				//PrintToChatAll("Model - %s", sEntModelName);
+				StringToLowerCase(sEntModelName);
+				float fHeight = 10.0;
+				if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
+				{
+					g_smModelHeight.GetValue(sEntModelName, fHeight);
+					bIsVaildItem = true;
+				}
+				else if (StrContains(sEntModelName, "/melee/") != -1) // entity is not in the listb(custom melee weapon model)
+				{
+					FormatEx(sItemName, sizeof sItemName, "%s", "Melee!");
+					fHeight = 5.0;
+
+					bIsVaildItem = true;
+				}
+				else if (StrContains(sEntModelName, "/weapons/") != -1) // entity is not in the list (custom weapom model)
+				{
+					FormatEx(sItemName, sizeof sItemName, "%s", "Weapons!");
+					fHeight = 10.0;
+
+					bIsVaildItem = true;
+				}
+				else // entity is not in the list (other entity model on the map)
+				{
+					bIsVaildItem = false;
+				}
+
+				if(bIsVaildItem)
+				{
+					if(GetEngineTime() > g_fItemHintCoolDownTime[client])
+					{
+						NotifyMessage(client, sItemName, view_as<EHintType>(eItemHint));
+
+						if (strlen(g_sItemUseSound) > 0)
+						{
+							for (int target = 1; target <= MaxClients; target++)
+							{
+								if (!IsClientInGame(target))
+									continue;
+
+								if (IsFakeClient(target))
+									continue;
+
+								if (GetClientTeam(target) == TEAM_INFECTED)
+									continue;
+
+								EmitSoundToClient(target, g_sItemUseSound, client);
+							}
+						}
+
+						g_fItemHintCoolDownTime[client] = GetEngineTime() + g_fItemHintCoolDown;
+						CreateEntityModelGlow(iEntity, sEntModelName);
+
+						if(g_bItemInstructorHint)
+						{
+							float vEndPos[3];
+							GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
+							vEndPos[2] = vEndPos[2] + fHeight;
+							CreateInstructorHint(client, vEndPos, sItemName, iEntity, view_as<EHintType>(eItemHint));
+						}
+					}
+
+					return;
+				}
+			}
+		}
+	}
+
+	// client / world / witch
+	CreateSpotMarker(client, bIsAimInfeced);
+} 

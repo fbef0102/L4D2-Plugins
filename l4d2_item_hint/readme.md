@@ -24,6 +24,9 @@ L4D2
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.4 (2022-12-24)
+        * Add Command ```sm_mark```, Mark item/infected/spot for people who don't have 'Look' in vocalize menu
+
 	* v2.3 (2022-10-02)
         * [AlliedModders Post](https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30)
         * Add all gun weapons, melee weapons, minigun, ammo and items.
@@ -140,7 +143,10 @@ L4D2
 
 * <details><summary>Command | 命令</summary>
 
-	None
+	* **Mark item/infected/spot**
+        ```php
+        sm_mark
+        ```
 </details>
 
 - - - -
@@ -151,6 +157,7 @@ L4D2
 	* 使用角色語音雷達"看"，可以標記準心指向的任何東西
     <br/>![image](https://user-images.githubusercontent.com/12229810/203991725-dcccd931-3079-4a32-a560-796da31c44d4.png)
     * 特感看不見人類標記的光圈
+    * 如果你安裝了一些模組導致語音雷達"看"，輸入```!mark```也可以標記準心指向的任何東西
 
 * 功能
 	1. 可設置標記物品與武器的顏色、發光範圍、提示顏色、提示圖案、標記時間
