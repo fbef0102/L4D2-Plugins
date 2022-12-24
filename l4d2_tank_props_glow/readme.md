@@ -15,13 +15,11 @@ Stop tank props from fading whilst the tank is alive
 	L4D2
 	```
 
+* [L4D1 version | 適用於L4D1的版本](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/l4d_tank_props.sp)
+
 * <details><summary>Changelog | 版本日誌</summary>
 
-	* v2.6
-        * Optimze the code.
-        * Modify convar
-
-	* v2.4
+	* v2.4 (2022-12-24)
         * Credit to [Sir, A1m`, Derpduck](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_tank_props_glow.sp)
 
 	* v2.0
@@ -53,7 +51,7 @@ Stop tank props from fading whilst the tank is alive
 </details>
 
 * Require | 必要安裝
-<br/>None
+	1. [[INC] l4d2_hittable_control](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/include/l4d2_hittable_control.inc)
 
 * <details><summary>ConVar | 指令</summary>
 

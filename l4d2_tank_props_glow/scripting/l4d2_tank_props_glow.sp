@@ -5,6 +5,8 @@
 #include <sdkhooks>
 #include <sdktools>
 #include <dhooks>
+#undef REQUIRE_PLUGIN
+#tryinclude <l4d2_hittable_control>
 
 #define Z_TANK			8
 #define TEAM_INFECTED	3
@@ -36,7 +38,8 @@ int
 bool
 	g_bCvarTankOnly = false,
 	g_bCvarTankSpec = false,
-	g_bTankSpawned = false;
+	g_bTankSpawned = false,
+	g_bHittableControlExists = false;
 
 public Plugin myinfo =
 {
@@ -67,13 +70,24 @@ public void OnPluginStart()
 	g_hCvarTankSpec.AddChangeHook(ConVarChanged_Cvars);
 
 	PluginEnable();
-
-	AutoExecConfig(true, "l4d2_tank_props_glow");
 }
 
-public void OnPluginEnd()
+public void OnAllPluginsLoaded()
 {
-	PluginDisable();
+	g_bHittableControlExists = LibraryExists("l4d2_hittable_control");
+}
+public void OnLibraryRemoved(const char[] name)
+{
+	if (StrEqual(name, "l4d2_hittable_control", true)) {
+		g_bHittableControlExists = false;
+	} 
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if (StrEqual(name, "l4d2_hittable_control", true)) {
+		g_bHittableControlExists = true;
+	}
 }
 
 public void ConVarChanged_Cvars(ConVar hConvar, const char[] sOldValue, const char[] sNewValue)
@@ -278,7 +292,7 @@ public void TankPropTankKilled(Event hEvent, const char[] sEventName, bool bDont
 public Action TankDeadCheck(Handle hTimer)
 {
 	if (GetTankClient() == -1) {
-		CreateTimer(g_hCvarTankPropsBeGone.FloatValue, TankPropsBeGone, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(g_hCvarTankPropsBeGone.FloatValue, TankPropsBeGone);
 		
 		DHookRemoveEntityListener(ListenType_Created, PossibleTankPropCreated);
 		
@@ -391,9 +405,19 @@ bool IsTankProp(int iEntity)
 		return false;
 	}
 
+	// Exception
+	bool bAreForkliftsUnbreakable;
+	if (g_bHittableControlExists)
+	{
+		bAreForkliftsUnbreakable = AreForkliftsUnbreakable();
+	}
+	else
+	{
+		bAreForkliftsUnbreakable = false;
+	}
 	char sModel[PLATFORM_MAX_PATH];
 	GetEntPropString(iEntity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
-	if (strcmp("models/props/cs_assault/forklift.mdl", sModel) == 0 ) {
+	if (strcmp("models/props/cs_assault/forklift.mdl", sModel) == 0 && bAreForkliftsUnbreakable == false) {
 		return false;
 	}
 	
@@ -473,11 +497,9 @@ public void Hook_PropSpawned(int iEntity)
 	}
 }
 
-bool IsValidEntRef(int entity)
+bool IsValidEntRef(int iRef)
 {
-	if( entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE )
-		return true;
-	return false;
+	return (iRef > 0 && EntRefToEntIndex(iRef) != INVALID_ENT_REFERENCE);
 }
 
 int GetColor(char[] sTemp)
