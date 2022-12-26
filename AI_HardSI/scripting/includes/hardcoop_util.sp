@@ -210,8 +210,8 @@ stock bool IsIncapacitated(int client) {
 **/
 stock int GetClosestSurvivor( float referencePos[3], int excludeSurvivor = -1 ) {
 	float survivorPos[3];
-	int closestSurvivor = GetRandomSurvivor();	
-	if (closestSurvivor == -1) return -1;
+	int closestSurvivor = GetRandomSurvivor(1, -1);	
+	if (closestSurvivor <= 0) return -1;
 	GetClientAbsOrigin( closestSurvivor, survivorPos );
 	int iClosestAbsDisplacement = RoundToNearest( GetVectorDistance(referencePos, survivorPos) );
 	for (int client = 1; client < MaxClients; client++) {
@@ -252,7 +252,7 @@ stock int GetSurvivorProximity( const float rp[3], int specificSurvivor = -1 ) {
 		targetSurvivor = GetClosestSurvivor( referencePos );
 	}
 	
-	if (targetSurvivor == -1) return -1;
+	if (targetSurvivor <= 0) return -1;
 
 	GetEntPropVector( targetSurvivor, Prop_Send, "m_vecOrigin", targetSurvivorPos );
 	return RoundToNearest( GetVectorDistance(referencePos, targetSurvivorPos) );
@@ -424,11 +424,11 @@ stock void CheatCommand( char[] commandName, char[] argument1 = "",  char[] argu
 			    if( IsValidClient(commandDummy) ) {
 			    	ChangeClientTeam(commandDummy, L4D2Team_Spectator);	
 			    } else {
-			    	commandDummy = GetRandomSurvivor(); // wanted to use a bot, but failed; last resort
+			    	commandDummy = GetRandomSurvivor(1, -1);	 // wanted to use a bot, but failed; last resort
 			    }			
 			}
 		} else {
-			commandDummy = GetRandomSurvivor();
+			commandDummy = GetRandomSurvivor(1, -1);
 		}
 		
 		// Execute command
@@ -437,9 +437,9 @@ stock void CheatCommand( char[] commandName, char[] argument1 = "",  char[] argu
 		    int originalCommandFlags = GetCommandFlags(commandName);            
 		    SetUserFlagBits(commandDummy, ADMFLAG_ROOT); 
 		    SetCommandFlags(commandName, originalCommandFlags ^ FCVAR_CHEAT);               
-		    FakeClientCommand(commandDummy, "%s %s %s", commandName, argument1, argument2);
+		    FakeClientCommand(commandDummy, "%s %s %s", commandName, argument1, argument2); //could be kicked (reason: run too many commands or other reason else)
 		    SetCommandFlags(commandName, originalCommandFlags);
-		    SetUserFlagBits(commandDummy, originalUserFlags);            
+		    if(IsClientConnected(commandDummy)) SetUserFlagBits(commandDummy, originalUserFlags);            
 		}
     }
 }

@@ -1,7 +1,7 @@
 Improves the AI behaviour of special infected
 
 -Changelog-
-v1.3
+v1.4
 -Remake code
 -Replace left4downtown with left4dhooks
 -Compatibility support for SourceMod 1.11. Fixed various warnings.
