@@ -10,6 +10,18 @@
 		"chi"			"%N 取得 礼物 + {1}!"
 		"ru"			"%N Нашёл в подарке {1}!"
 	}
+	"Got Gift (+hp)"
+	{
+		"en"			"%N got health +%d HP!"
+		"zho"			"%N 取得 血量 +%d HP!"
+		"chi"			"%N 取得 血量 +%d HP!"
+	}
+	"Got Gift (-hp)"
+	{
+		"en"			"%N lost health %d HP!"
+		"zho"			"%N 失去 血量 %d HP!"
+		"chi"			"%N 失去 血量 %d HP!"
+	}
 	"Infected Got Gift"
 	{
 		"en"			"%N got Health + %d HP!"
@@ -331,15 +343,6 @@
 		"chi"	"铁铲"
 		"es"	"Pala"
 		"ru"	"Лопата"
-	}
-	"Health+100"
-	{
-		"en"	"Health+100"
-		"pt"	"Sáude+100"
-		"zho"	"生命值+100"
-		"chi"	"生命值+100"
-		"es"	"Salud+100"
-		"ru"	"Здоровье +100"
 	}
 	"Defibrillator"
 	{

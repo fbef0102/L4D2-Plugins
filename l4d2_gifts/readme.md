@@ -9,16 +9,16 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		<br/>![l4d2_gifts_1](image/l4d2_gifts_1.jpg)
 
 * Apply to | 適用於
-```
-L4D2
-```
+	```
+	L4D2
+	```
 
 * Translation Support | 支援翻譯
-```
-English
-繁體中文
-简体中文
-```
+	```
+	English
+	繁體中文
+	简体中文
+	```
 
 * <details><summary>Changelog | 版本日誌</summary>
 
@@ -26,6 +26,10 @@ English
 	//[X]Aceleracion @ 2017
 	//HarryPotter @ 2022
 	```
+    * v3.0 (2022-12-26)
+		* Request by Anzu
+		* Add health gift, survivor could increase or lose health
+
     * v2.9 (2022-12-2)
 		* Add cvars to control glow color and range
 		* Translation Support
@@ -129,7 +133,7 @@ English
 
 * How to modify the gift item
 	* Standard Gift: l4d2_gifts.sp line 38
-	* Special Gift: l4d2_gifts.sp line 104
+	* Special Gift: l4d2_gifts.sp line 111
 	> __Note__ Recompile after modify
 
 - - - -
@@ -138,7 +142,7 @@ English
 
 * 原理
     * 特感死亡時會掉落禮物盒，人類只要碰觸到便會自動拆開
-	* 禮物盒會有各式各樣的武器與物品，也有可能為空，驚喜一瞬間
+	* 禮物盒會有各式各樣的武器與物品，也有可能為空或失去血量，驚喜一瞬間
 	* 特感也能碰到禮盒，會增加血量
 
 * 功能
@@ -161,5 +165,5 @@ English
 
 * 如何設定禮盒驚喜物品
 	* 普通禮盒: l4d2_gifts.sp 第38行開始
-	* 特殊禮盒: l4d2_gifts.sp 第104行開始
+	* 特殊禮盒: l4d2_gifts.sp 第111行開始
 	> __Note__ 修改完後必須重新編譯
