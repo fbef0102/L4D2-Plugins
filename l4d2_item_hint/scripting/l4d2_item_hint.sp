@@ -7,6 +7,7 @@
 #include <sdkhooks>
 #include <sdktools>
 #include <sourcemod>
+#include <multicolors>
 
 #define MAXENTITIES 2048
 #define MODEL_MARK_FIELD 	"materials/sprites/laserbeam.vmt"
@@ -63,7 +64,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.4",
+	version     = "2.5",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -1199,7 +1200,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintToChat(i, "\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+						CPrintToChat(i, "({green}Vocalize{default}) {olive}%N{default}: %s", client, sItemName);
 					}
 				}
 			}
@@ -1208,7 +1209,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+						PrintHintText(i, "(Vocalize) %N: %s", client, sItemName);
 					}
 				}
 			}
@@ -1217,7 +1218,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "\x01(\x04Vocalize\x01) \x05%N\x01: %s", client, sItemName);
+						PrintCenterText(i, "(Vocalize) %N: %s", client, sItemName);
 					}
 				}
 			}
@@ -1360,7 +1361,7 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
 			{
-				FormatEx(sCaption, sizeof sCaption, "%N Marked something here", client);
+				FormatEx(sCaption, sizeof sCaption, "%N Marked Here", client);
 				Create_env_instructor_hint(iEntity, view_as<EHintType>(eSpotMarker), vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
 			}
 		}
