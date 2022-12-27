@@ -8,7 +8,7 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.3.0"
+#define PLUGIN_VERSION "1.3.1"
 #define STRINGLENGTH_CLASSES 64
 #define L4D2_WEPID_VOMITJAR           25
 #define CLASSNAME_VOMITJAR            "vomitjar_projectile"
@@ -31,7 +31,7 @@ static int    ge_iType[MAXENTITIES+1];
 public Plugin myinfo = 
 {
 	name = "L4D2 Bile the World",
-	author = "AtomicStryker, foxhound27, HarryPotter",
+	author = "AtomicStryker, HarryPotter",
 	description = "Vomit Jars hit Survivors, Boomer Explosions slime Infected",
 	version = PLUGIN_VERSION,
 	url = "http://forums.alliedmods.net/showthread.php?p=1237748"
@@ -87,7 +87,15 @@ public void event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	float pos[3];
 	GetClientEyePosition(client, pos);
 
-	VomitSplash(true, pos, client);
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
+	if (!attacker || !IsClientInGame(attacker))
+	{
+		VomitSplash(true, pos, client);
+	}
+	else
+	{
+		VomitSplash(true, pos, attacker);
+	}
 }
 
 void HurtEntity(int victim, int client, float damage)
@@ -139,7 +147,6 @@ public void OnEntityDestroyed(int entity)
 	int client = ge_iType[entity];
 	ge_iType[entity] = 0;
 	client = GetClientOfUserId(client);
-	if(client <= 0 || !IsClientInGame(client)) return;
 
 	//PrintToChatAll("OnEntityDestroyed() %N throws a bilejar", client);
 	VomitSplash(false, pos, client);
@@ -148,8 +155,7 @@ public void OnEntityDestroyed(int entity)
 void VomitSplash(bool BoomerDeath, float pos[3], int client)
 {		
 	float targetpos[3];
-	if(client == 0 || !IsClientInGame(client)) client = GetAnyValidSurvivor();
-	if(client == 0) return;
+	if(client <= 0 || client > MaxClients || !IsClientInGame(client)) client = 0;
 	
 	if (BoomerDeath)
 	{
@@ -166,11 +172,12 @@ void VomitSplash(bool BoomerDeath, float pos[3], int client)
 				continue;
 			}
 			
-			L4D2_CTerrorPlayer_OnHitByVomitJar(i, client);
+			L4D2_CTerrorPlayer_OnHitByVomitJar(i, (client == 0) ? i : client);
 		}
-	
+
+		if(client == 0) return;
+
 		char class[STRINGLENGTH_CLASSES];
-	
 		int maxents = GetMaxEntities();
 		for (int i = MaxClients+1; i <= maxents; i++)
 		{
@@ -203,8 +210,8 @@ void VomitSplash(bool BoomerDeath, float pos[3], int client)
 				continue;
 			}
 			
-			L4D_CTerrorPlayer_OnVomitedUpon(i, client);
-			if(i!=client) HurtEntity(client, client, g_fVomitJarSurvivorHP);
+			L4D_CTerrorPlayer_OnVomitedUpon(i, (client == 0) ? i : client);
+			if(client > 0 && GetClientTeam(client) == L4D2Team_Survivors && i!=client) HurtEntity(client, client, g_fVomitJarSurvivorHP);
 		}
 	}
 }
@@ -263,18 +270,6 @@ void SetClientEyePosition(int entity, float origin[3])
 		origin[1] += (mins[1] + maxs[1]) * 0.5;
 		origin[2] += (mins[2] + maxs[2]) * 0.5;
 	}
-}
-
-int GetAnyValidSurvivor()
-{
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientInGame(i) && GetClientTeam(i) == L4D2Team_Survivors)
-		{
-			return i;
-		}
-	}
-	return 0;
 }
 
 bool IsValidEntityIndex(int entity)

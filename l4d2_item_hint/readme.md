@@ -24,6 +24,9 @@ L4D2
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.5 (2022-12-27)
+        * Add MultiColors
+
 	* v2.4 (2022-12-24)
         * Add Command ```sm_mark```, Mark item/infected/spot for people who don't have 'Look' in vocalize menu
 
@@ -45,6 +48,7 @@ L4D2
 
 * Require | 必要安裝
 	1. [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)
+    2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
 
 * Note
 	* Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look' item hint. Install [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511) plugin to fix.
@@ -167,6 +171,5 @@ L4D2
 
 * 注意事項
 	* 如果有其他插件會擋住視野的裝飾品譬如帽子插件，你可能無法使用標記功能，請安裝[Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)以修正
-	* 玩家必須啟動遊戲指導系統，ESC->選項->多人連線->遊戲指導系統->已啟用，否則玩家看不見標記提示
-    <br/>![未命名](https://user-images.githubusercontent.com/12229810/203991469-2b7dcba2-d70b-47ac-aed1-a18442c6d2de.jpg)
+	* 玩家必須啟動[遊戲指導系統](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Tutorial_%E6%95%99%E5%AD%B8%E5%8D%80/Chinese_%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87/Game#%E5%95%9F%E5%8B%95%E9%81%8A%E6%88%B2%E6%8C%87%E5%B0%8E%E7%B3%BB%E7%B5%B1)，否則玩家看不見標記提示
     * 伺服器端不要修改指令 ```sv_gameinstructor_disable```，這會關閉所有玩家的遊戲指導系統
