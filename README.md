@@ -46,6 +46,7 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
 * <b>[l4d_death_weapon_respawn_fix](/l4d_death_weapon_respawn_fix)</b>: In coop/realism, if you died with primary weapon, you will respawn with T1 weapon. Delete datas if hold M60 or mission lost
 * <b>[LMC_Black_and_White_Notifier](/LMC_Black_and_White_Notifier)</b>: Notifies selected team(s) when someone is on final strike and add glow
+* <b>[l4d_witch_realism_door_fix](/l4d_witch_realism_door_fix)</b>: Fixing witch can't break the door on Realism Normal、Advanced、Expert
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 
