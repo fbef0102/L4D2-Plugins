@@ -7,24 +7,27 @@ Voice Announce in centr text + create hat to Show Who is speaking.
 
 * Image | 圖示
 	* hat + text
-    > MIC說話的玩家頭上會有對話框
-	  <br/>![show_mic_1](image/show_mic_1.jpg)
+        > MIC說話的玩家頭上會有對話框
+        <br/>![show_mic_1](image/show_mic_1.jpg)
 
 * Apply to | 適用於
-```
-L4D2
-```
+    ```
+    L4D2
+    ```
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v1.9 (2023-1-11)
+        * Fixed center text disappear when show_mic_center_hat_enable is 0
+
 	* v1.8 (2022-12-1)
-    * Remove voicehook (voicehook is now included with SourceMod 1.11)
+        * Remove voicehook (voicehook is now included with SourceMod 1.11)
 
 	* v1.7
-    * Remake Code
+        * Remake Code
 
 	* v1.8
-    * [foxhound27's fork](https://forums.alliedmods.net/showpost.php?p=2671963&postcount=7)
+        * [foxhound27's fork](https://forums.alliedmods.net/showpost.php?p=2671963&postcount=7)
 </details>
 
 * Require | 必要安裝
@@ -35,13 +38,13 @@ L4D2
 * <details><summary>ConVar | 指令</summary>
 
 	* cfg\sourcemod\show_mic.cfg
-    ```php
-    // If 1, display hat on player's head if player is speaking
-    show_mic_center_hat_enable "1"
+        ```php
+        // If 1, display hat on player's head if player is speaking
+        show_mic_center_hat_enable "1"
 
-    // If 1, display player speaking message in center text
-    show_mic_center_text_enable "1"
-    ```
+        // If 1, display player speaking message in center text
+        show_mic_center_text_enable "1"
+        ```
 </details>
 
 * <details><summary>Command | 命令</summary>

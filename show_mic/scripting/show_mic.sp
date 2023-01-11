@@ -7,7 +7,7 @@
 #include <ThirdPersonShoulder_Detect>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "1.8"
+#define PLUGIN_VERSION "1.9"
 #define CVAR_FLAGS	FCVAR_NOTIFY
 
 #define UPDATESPEAKING_TIME_INTERVAL 0.5
@@ -107,7 +107,6 @@ public void OnClientSpeaking(int client)
 	if (!IsClientInGame(client) || IsFakeClient(client)) return;
 
 	if (bSV_VoiceEnable == false
-		|| g_bCvarHatEnable == false
 		|| BaseComm_IsClientMuted(client) 
 		|| GetClientListeningFlags(client) == 1)
 	{
@@ -117,7 +116,7 @@ public void OnClientSpeaking(int client)
 		return;
 	}
 	
-	if (GetClientTeam(client) != 2 || !IsPlayerAlive(client))
+	if (g_bCvarHatEnable == false || GetClientTeam(client) != 2 || !IsPlayerAlive(client))
 	{
 		RemoveHat(client);
 	}
@@ -160,7 +159,7 @@ public Action Timer_UpdateSpeaking(Handle timer)
 				if(IsClientInGame(i) && !IsFakeClient(i))
 				{
 					SetGlobalTransTarget(i);
-					PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingPlayers);
+					PrintCenterText(i, "%T\n%s", "Players Speaking:", i, SpeakingPlayers);
 				}
 			}
 		}
@@ -208,7 +207,7 @@ public Action Timer_UpdateSpeaking(Handle timer)
 					if(GetClientListeningFlags(i) == VOICE_LISTENALL)
 					{
 						SetGlobalTransTarget(i);
-						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingPlayers);
+						PrintCenterText(i, "%T\n%s", "Players Speaking:", i, SpeakingPlayers);
 						continue;
 					}
 
@@ -216,17 +215,17 @@ public Action Timer_UpdateSpeaking(Handle timer)
 					if(team == 2 && sur > 0)
 					{
 						SetGlobalTransTarget(i);
-						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingSurvivorPlayers);
+						PrintCenterText(i, "%T\n%s", "Players Speaking:", i, SpeakingSurvivorPlayers);
 					}
 					else if(team == 3 && inf > 0)
 					{
 						SetGlobalTransTarget(i);
-						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingInfectedPlayers);
+						PrintCenterText(i, "%T\n%s", "Players Speaking:", i, SpeakingInfectedPlayers);
 					}
 					else if(team == 1 && spec > 0)
 					{
 						SetGlobalTransTarget(i);
-						PrintCenterText(i, "%T %s", "Players Speaking:", i, SpeakingSpectatorPlayers);
+						PrintCenterText(i, "%T\n%s", "Players Speaking:", i, SpeakingSpectatorPlayers);
 					}
 				}
 			}
