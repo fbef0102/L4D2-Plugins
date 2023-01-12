@@ -30,7 +30,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <l4d2_weapons>
-#define PLUGIN_VERSION			"1.0"
+#define PLUGIN_VERSION			"1.1"
 #define DEBUG 0
 
 public Plugin myinfo =
@@ -87,6 +87,7 @@ public void OnPluginStart()
     g_hAmmoSmg.AddChangeHook(ConVarChanged_Cvars);
     g_hAmmoShotgun.AddChangeHook(ConVarChanged_Cvars);
 
+    HookEvent("round_start",            Event_RoundStart);
     HookEvent("mission_lost", 			Event_MissionLost,		EventHookMode_PostNoCopy); //all survivors wipe out in coop mode (also triggers round_end)
     
     HookEvent("player_death",           Event_PlayerDeath);
