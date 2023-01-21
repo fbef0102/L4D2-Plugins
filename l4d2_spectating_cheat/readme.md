@@ -18,8 +18,11 @@ A spectator who watching the survivor at first person view can now see the infec
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.4 (2023-1-22)
+        * Support [l4d2_profitless_ai_tank Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_profitless_ai_tank.sp)
+
 	* v2.3 (2022-12-5)
-        * Support [Zombie Chane Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
+        * Support [Zombie Change Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
 
 	* v2.2
         * Remake code

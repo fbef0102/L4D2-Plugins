@@ -38,7 +38,7 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
-    version = "2.3",
+    version = "2.4",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -67,6 +67,7 @@ public void OnPluginStart()
 	HookEvent("finale_vehicle_leaving", Event_RoundEnd, EventHookMode_PostNoCopy); //救援載具離開之時  (沒有觸發round_end)
 	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
+	HookEvent("tank_frustrated", OnTankFrustrated, EventHookMode_Post);
 	
 	RegConsoleCmd("sm_speccheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_watchcheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
@@ -137,17 +138,23 @@ public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroa
 	bSpecCheatActive[client] = g_bDefaultValue;
 }
 
+void OnTankFrustrated(Event event, const char[] name, bool dontBroadcast)
+{
+	RemoveInfectedModelGlow(GetClientOfUserId(event.GetInt("userid"))); //Tank玩家變成AI
+}
+
 public void L4D_OnEnterGhostState(int client)
 {
-	CreateInfectedModelGlow(client);
+	RequestFrame(OnNextFrame, GetClientUserId(client));
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 { 
+	int userid = event.GetInt("userid");
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
 	RemoveInfectedModelGlow(client); //有可能特感變成坦克復活
-	CreateInfectedModelGlow(client);
+	RequestFrame(OnNextFrame, userid);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -176,7 +183,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	RemoveAllModelGlow();
 }
 
-public void CreateInfectedModelGlow(int client)
+void CreateInfectedModelGlow(int client)
 {
 	if (!client || 
 	!IsClientInGame(client) || 
@@ -358,10 +365,17 @@ void CreateAllModelGlow()
 {
 	if (g_bMapStarted == false) return;
 	
-	for (int i = 1; i <= MaxClients; i++) 
+	for (int client = 1; client <= MaxClients; client++) 
 	{
-		CreateInfectedModelGlow(i);
+		if(!IsClientInGame(client)) continue;
+
+		RequestFrame(OnNextFrame, GetClientUserId(client));
 	}
+}
+
+void OnNextFrame(int userid)
+{
+	CreateInfectedModelGlow(GetClientOfUserId(userid));
 }
 
 bool CheckIfEntityMax(int entity)
@@ -376,7 +390,7 @@ bool CheckIfEntityMax(int entity)
 	return true;
 }
 
-public bool HasAccess(int client, char[] g_sAcclvl)
+bool HasAccess(int client, char[] g_sAcclvl)
 {
 	// no permissions set
 	if (strlen(g_sAcclvl) == 0)
@@ -394,7 +408,8 @@ public bool HasAccess(int client, char[] g_sAcclvl)
 	return false;
 }
 
+// from l4d_zcs.smx by Harry, player can change Zombie Class during ghost state
 public void L4D2_OnClientChangeZombieClass(int client, int new_zombieclass)
 {
-	CreateInfectedModelGlow(client);
+	RequestFrame(OnNextFrame, GetClientUserId(client));
 }
