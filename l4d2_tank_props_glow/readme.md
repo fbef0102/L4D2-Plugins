@@ -19,9 +19,9 @@ Stop tank props from fading whilst the tank is alive
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-	* v2.4 (2022-12-24)
+	* v2.5 (2022-12-12)
         * Credit to [Sir, A1m`, Derpduck](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_tank_props_glow.sp)
-
+        
 	* v2.0
         * fixed issue that tank hittable props disappear, this happens when tank is alive and then changes same map.
 
