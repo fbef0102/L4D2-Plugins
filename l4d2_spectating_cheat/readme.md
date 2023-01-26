@@ -18,6 +18,9 @@ A spectator who watching the survivor at first person view can now see the infec
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.5 (2023-1-27)
+        * Support [confoglcompmod Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/confoglcompmod/GhostTank.sp#L216): This plugin change tank into ghsot state when tank spawns
+
 	* v2.4 (2023-1-22)
         * Support [l4d2_profitless_ai_tank Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_profitless_ai_tank.sp)
 
