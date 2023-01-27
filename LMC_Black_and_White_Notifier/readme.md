@@ -68,7 +68,7 @@ English
     // Director hint colour Layout(255 255 255)
     lmc_hintcolour "255 0 0"
 
-    // Director hint On Black and white
+    // Director hint range On Black and white
     lmc_hintrange "600"
 
     // Director hint Timeout (in seconds)
