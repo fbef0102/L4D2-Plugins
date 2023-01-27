@@ -97,7 +97,7 @@ public void OnPluginStart()
 	hCvar_GlowFlash = CreateConVar("lmc_glowflash", "20", "while black and white if below 20(Def) start pulsing (0 = disable)", FCVAR_NOTIFY, true, 0.0);
 	hCvar_NoticeType = CreateConVar("lmc_noticetype", "3", "Type to use for notification. (0= off, 1=chat, 2=hint text, 3=director hint)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	hCvar_TeamNoticeType = CreateConVar("lmc_teamnoticetype", "0", "Method of notification. (0=survivors only, 1=infected only, 2=all players)", FCVAR_NOTIFY, true, 0.0, true, 2.0);
-	hCvar_HintRange = CreateConVar("lmc_hintrange", "600", "Director hint On Black and white", FCVAR_NOTIFY, true, 1.0, true, 9999.0);
+	hCvar_HintRange = CreateConVar("lmc_hintrange", "600", "Director hint range On Black and white", FCVAR_NOTIFY, true, 1.0, true, 9999.0);
 	hCvar_HintTime = CreateConVar("lmc_hinttime", "5.0", "Director hint Timeout (in seconds)", FCVAR_NOTIFY, true, 1.0, true, 20.0);
 	hCvar_HintColour = CreateConVar("lmc_hintcolour", "255 0 0", "Director hint colour Layout(255 255 255)", FCVAR_NOTIFY);
 	
