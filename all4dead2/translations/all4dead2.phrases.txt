@@ -22,7 +22,7 @@
 	{
 		"en"			"Spawn Uncommon Infected"
 		"chi"			"生成特殊丧尸"
-		"zho"			"生成特殊喪屍"
+		"zho"			"生成特殊一般感染者"
 	}
 	"Spawn Melee Weapons"
 	{
@@ -136,7 +136,7 @@
 	{
 		"en"			"Spawn a clown zombie"
 		"chi"			"小丑"
-		"zho"			"小醜"
+		"zho"			"小丑"
 	}
 	"Spawn a mudmen zombie"
 	{
@@ -154,13 +154,13 @@
 	{
 		"en"			"Spawn a jimmie gibbs zombie"
 		"chi"			"吉米吉布斯(很强)"
-		"zho"			"吉米吉布斯(很强)"
+		"zho"			"吉米賽車手(很强)"
 	}
 	"Spawn a fallen survivor zombie"
 	{
 		"en"			"Spawn a fallen survivor zombie"
 		"chi"			"堕落幸存者(掉落物资)"
-		"zho"			"墮落幸存者(掉落物資)"
+		"zho"			"墮落生還者(掉落物資)"
 	}
 	"Spawn a defibrillator"
 	{
@@ -214,7 +214,7 @@
 	{
 		"en"			"Spawn a firework"
 		"chi"			"烟花"
-		"zho"			"煙花"
+		"zho"			"煙火盒"
 	}
 	"Spawn a propane tank"
 	{
@@ -238,7 +238,7 @@
 	{
 		"en"			"Spawn laser sight pack"
 		"chi"			"激光瞄准器"
-		"zho"			"激光瞄準器"
+		"zho"			"雷射裝置"
 	}
 	"Spawn incendiary ammo"
 	{
@@ -256,7 +256,7 @@
 	{
 		"en"			"Spawn a gnome"
 		"chi"			"矮人玩具"
-		"zho"			"矮人玩具"
+		"zho"			"精靈小矮人"
 	}
 	"Spawn cola bottles"
 	{
@@ -388,7 +388,7 @@
 	{
 		"en"			"Spawn a chainsaw"
 		"chi"			"燃油链锯"
-		"zho"			"燃油鏈鋸"
+		"zho"			"電鋸"
 	}
 	"Spawn a cricket bat"
 	{
@@ -400,7 +400,7 @@
 	{
 		"en"			"Spawn a crowbar"
 		"chi"			"撬棍"
-		"zho"			"撬棍"
+		"zho"			"鐵撬"
 	}
 	"Spawn an electric guitar"
 	{
@@ -466,37 +466,37 @@
 	{
 		"en"			"End non-stop panic events"
 		"chi"			"停止无尽尸潮"
-		"zho"			"停止無盡屍潮"
+		"zho"			"停止無限屍潮"
 	}
 	"Force non-stop panic events"
 	{
 		"en"			"Force non-stop panic events"
 		"chi"			"开始无尽尸潮"
-		"zho"			"開始無盡屍潮"
+		"zho"			"開始無限屍潮"
 	}
 	"Director controls if a tank spawns this round"
 	{
 		"en"			"Director controls if a tank spawns this round"
 		"chi"			"导演系统控制生成Tank"
-		"zho"			"導演系統控製生成Tank"
+		"zho"			"導演系統控制生成Tank"
 	}
 	"Force a tank to spawn this round"
 	{
 		"en"			"Force a tank to spawn this round"
 		"chi"			"当前回合强制生成Tank"
-		"zho"			"當前回合強製生成Tank"
+		"zho"			"當前回合強制生成Tank"
 	}
 	"Director controls if a witch spawns this round"
 	{
 		"en"			"Director controls if a witch spawns this round"
 		"chi"			"导演系统控制生成Tank"
-		"zho"			"導演系統控製生成Tank"
+		"zho"			"導演系統控制生成Tank"
 	}
 	"Force a witch to spawn this round"
 	{
 		"en"			"Force a witch to spawn this round"
 		"chi"			"当前回合强制生成Witch"
-		"zho"			"當前回合強製生成Witch"
+		"zho"			"當前回合強制生成Witch"
 	}
 	"Stop bosses spawning continuously"
 	{
@@ -580,13 +580,13 @@
 	{
 		"en"			"Endless panic events have started"
 		"chi"			"开始无尽尸潮"
-		"zho"			"開始無盡屍潮"
+		"zho"			"開始無限屍潮"
 	}
 	"Endless panic events have ended"
 	{
 		"en"			"Automatic placement of spawned infected has been disabled"
 		"chi"			"停止无尽尸潮"
-		"zho"			"停止無盡屍潮"
+		"zho"			"停止無限屍潮"
 	}
 	"A tank is guaranteed to spawn this round"
 	{

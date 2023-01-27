@@ -35,8 +35,7 @@ Copyright 2020 Harry Potter
 #include <adminmenu>
 // Make the left4dhooks optional
 #include <left4dhooks>
-// include colors.inc
-#include <colors> //http://forums.alliedmods.net/showthread.php?t=96831
+#include <multicolors>
 
 // Create ConVar Handles
 ConVar notify_players, zombies_increment, always_force_bosses, refresh_zombie_location = null;
@@ -160,8 +159,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart() {
 
 	// Translations
-	char sPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, sPath, PLATFORM_MAX_PATH, "translations/all4dead2.phrases.txt");
 	LoadTranslations("all4dead2.phrases");
 	
 	GetGameData();
