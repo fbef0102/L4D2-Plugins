@@ -430,7 +430,7 @@
 	{
 		"en"			"Spawn a machete"
 		"chi"			"砍刀"
-		"zho"			"砍刀"
+		"zho"			"開山刀"
 	}
 	"Spawn a police baton"
 	{
