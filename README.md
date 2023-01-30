@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/1/27)
+>All plugins in here only apply to L4D2 (last edited:2023/1/30)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -47,6 +47,9 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[l4d_death_weapon_respawn_fix](/l4d_death_weapon_respawn_fix)</b>: In coop/realism, if you died with primary weapon, you will respawn with T1 weapon. Delete datas if hold M60 or mission lost
 * <b>[LMC_Black_and_White_Notifier](/LMC_Black_and_White_Notifier)</b>: Notifies selected team(s) when someone is on final strike and add glow
 * <b>[l4d_witch_realism_door_fix](/l4d_witch_realism_door_fix)</b>: Fixing witch can't break the door on Realism Normal、Advanced、Expert
+    * 修正Witch在寫實模式下的一般難度、進階難度、專家難度，無法抓破門
+* <b>[jockey_ride_team_switch_teleport_fix](/jockey_ride_team_switch_teleport_fix)</b>: Fixed Teleport bug if jcokey player switches team while ridding the survivor
+    * 修正Jockey玩家跳隊時，會發生傳送bug
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 
