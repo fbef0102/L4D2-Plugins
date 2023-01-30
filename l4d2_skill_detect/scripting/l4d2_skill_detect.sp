@@ -1003,7 +1003,7 @@ public Action: Event_IncapStart( Handle:event, const String:name[], bool:dontBro
 	new String: classname[24];
 	new strOEC: classnameOEC;
 	if ( IsValidEntity(attackent) ) {
-		GetEdictClassname(attackent, classname, sizeof(classname));
+		GetEntityClassname(attackent, classname, sizeof(classname));
 		if ( GetTrieValue(g_hTrieEntityCreated, classname, classnameOEC)) {
 			g_iVictimFlags[client] = g_iVictimFlags[client] | VICFLG_TRIGGER;
 		}
@@ -3539,7 +3539,7 @@ stock bool: IsWitch(entity)
 	
 	decl String: classname[24];
 	new strOEC: classnameOEC;
-	GetEdictClassname(entity, classname, sizeof(classname));
+	GetEntityClassname(entity, classname, sizeof(classname));
 	if ( !GetTrieValue(g_hTrieEntityCreated, classname, classnameOEC) || classnameOEC != OEC_WITCH ) { return false; }
 	
 	return true;
