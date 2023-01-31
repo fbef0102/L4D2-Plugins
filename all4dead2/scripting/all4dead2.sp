@@ -596,14 +596,14 @@ void Do_SpawnInfected(int client, const char[] type) {
 	{
 		if(L4D_GetRandomPZSpawnPosition(L4D_GetHighestFlowSurvivor(), zombieclass, 5, vPos) == false)
 		{
-			PrintToChat(client, "[TS] Couldn't find a valid spawn position for S.I. in 5 tries");
+			PrintToChat(client, "%t", "Could not find a valid spawn position for S.I. in 5 tries");
 			return;
 		}
 	}
 	else
 	{
 		if( !SetTeleportEndPoint(client, vPos, vAng) ) {
-			PrintToChat(client, "[TS] Can not spawn, please try again.");
+			PrintToChat(client, "%t", "Can not spawn, please try again");
 			return;
 		}
 	}
@@ -739,13 +739,13 @@ void Do_SpawnWitch(const int client, const bool bAutoSpawn)
 	float vPos[3], vAng[3] = {0.0, 0.0, 0.0};
 	if (bAutoSpawn) {
 		if(L4D_GetRandomPZSpawnPosition(L4D_GetHighestFlowSurvivor(),7,ZOMBIESPAWN_Attempts,vPos) == false) {
-			PrintToChat(client, "[TS] Can't spawn witch in %d tries at this moment.", ZOMBIESPAWN_Attempts);
+			PrintToChat(client, "%t", "Can not spawn witch in tries at this moment", ZOMBIESPAWN_Attempts);
 			return;
 		}
 	} 
 	else {
 		if( !SetTeleportEndPoint(client, vPos, vAng) ) {
-			PrintToChat(client, "[TS] Can not spawn, please try again.");
+			PrintToChat(client, "%t", "Can not spawn, please try again");
 			return;
 		}
 	}
