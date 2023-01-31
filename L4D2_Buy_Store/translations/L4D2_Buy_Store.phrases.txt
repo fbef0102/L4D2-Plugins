@@ -1234,27 +1234,6 @@
 		"chi"	"召唤Witch (在你的位置上)"
 		"ru"	"Заспавнить ведьму возле тебя"
 		"es"	"Engendrar bruja (en tu ubicación)"
-	}	
-	"You didn't buy anything yet"
-	{
-		"en"	"You didn't buy anything yet"
-		"nl"	"Je hebt nog niets gekocht"
-		"pt"	"Você não pode comprar nada ainda"
-		"zho"	"尚未購買任何商品"
-		"chi"	"尚未购买任何商品"
-		"ru"	"Ты еще ничего не купил"
-		"es"	"Aún no has comprado nada"
-	}
-	"Last item you buy is not available"
-	{
-		"#format"		"{1:t}"
-		"en"	"Last item you buy {green}---{1}---{default} is not available"
-		"nl"	"Laatste item dat je kocht {green}---{1}---{default} is niet beschikbaar"
-		"pt"	"Último item que você comprou {green}---{1}---{default} não esta disponivel"
-		"zho"	"上次購買的物品 {green}---{1}---{default} 無法適用"
-		"chi"	"上次购买的物品 {green}---{1}---{default} 无法适用"
-		"ru"	"Последняя купленая вещь {green}---{1}---{default} не доступна или выключена"
-		"es"	"El último artículo que compraste {green}---{1}---{default} no está disponible"
 	}
 	"Please wait until survivors leave the safe room."
 	{
@@ -1266,17 +1245,6 @@
 		"chi"	"请等待{blue}生还者{default}离开安全室至少 {green}{1}{default} 秒"
 		"ru"	"Подождите пока {blue}выжившие{default} покинут убегу после {green}{1}{default} секунд."
 		"es"	"Espere hasta que los {blue}supervivientes{default} abandonen la habitación segura durante al menos {green}{1}{default} segundos."
-	}
-	"Item name is not available or wrong team"
-	{
-		"#format"		"{1:s}"
-		"en"	"Short Item name {green}---{1}---{default} is not available or you might be in wrong team"
-		"nl"	"Korte naam {green}---{1}---{default} is niet beschikbaar of misschien zit je in het verkeerde team"
-		"pt"	"Nome curto do Item {green}---{1}---{default} não está disponível ou você pode estar na equipe errada"
-		"zho"	"物品短名 {green}---{1}---{default} 不可用或是不在正確的隊伍裡"
-		"chi"	"物品短名 {green}---{1}---{default} 不可用或是不在正确的队伍里"
-		"ru"	"Короткая команда {green}---{1}---{default} не существует"
-		"es"	"El nombre corto del elemento {green}---{1}---{default} no está disponible o es posible que esté en el equipo equivocado"
 	}
 	"You are not in survivor team"
 	{

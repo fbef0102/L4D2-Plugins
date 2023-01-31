@@ -71,11 +71,6 @@ int g_iRoundStart, g_iPlayerSpawn;
 bool bLimitInfectedBuy;
 
 Handle PlayerLeftStartTimer, CountDownTimer;
-StringMap g_smWeaponShortCut;
-StringMap g_smMeleeShortCut;
-StringMap g_smMedicThrowableShortCut;
-StringMap g_smOtherShortCut;
-StringMap g_smInfectedSpawnShortCut;
 
 enum EMenuType
 {
@@ -283,9 +278,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_items", BuyShopCommand);
 	RegConsoleCmd("sm_credit", BuyShopCommand);
 	RegConsoleCmd("sm_credits", BuyShopCommand);
-
-	RegConsoleCmd("sm_repeatbuy", HandleCmdRepeatBuy);
-	RegConsoleCmd("sm_lastbuy", HandleCmdRepeatBuy);
 	
 	RegConsoleCmd("sm_inspectbank", CheckBankCommand);
 	RegConsoleCmd("sm_checkbank", CheckBankCommand);
@@ -379,8 +371,6 @@ public void OnPluginStart()
 	g_hMaxMoney.AddChangeHook(ConVarChanged_Cvars);
 	g_hNotifyKillInfectedType.AddChangeHook(ConVarChanged_Cvars);
 
-	CreateShortCutStringMap();
-
 	//Autoconfig for plugin
 	AutoExecConfig(true, "L4D2_Buy_Store");
 
@@ -413,12 +403,6 @@ public void OnPluginEnd()
 	for( int i = 1; i <= MaxClients; i++ ) {
 		g_iCredits[i] = 0;
 	}
-
-	delete g_smWeaponShortCut;
-	delete g_smMeleeShortCut;
-	delete g_smMedicThrowableShortCut;
-	delete g_smOtherShortCut;
-	delete g_smInfectedSpawnShortCut;
 }
 
 bool g_bGascanMap, g_bColaMap;
@@ -534,31 +518,6 @@ void GetCvars()
 	g_iNotifyKillInfectedType = g_hNotifyKillInfectedType.IntValue;
 }
 
-public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
-	
-	if (client <= 0) return Plugin_Continue;
-
-	char sTempArray[2][64];
-	ExplodeString(sArgs, " ", sTempArray, sizeof(sTempArray), sizeof(sTempArray[]));
-	if( strcmp(sTempArray[0], "b", false) == 0 //|| 
-		//strcmp(sTempArray[0], "buy", false) == 0 || 
-		//strcmp(sTempArray[0], "shop", false) == 0 ||
-		//strcmp(sTempArray[0], "item", false) == 0 
-		)
-	{
-		if(g_bEnable == false) {
-			ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
-			return Plugin_Continue;
-		}
-		
-		FakeClientCommand(client, "sm_buy %s", sTempArray[1]);
-		//PrintToChatAll("sm_buy %s", sTempArray[1]);
-		return Plugin_Stop;
-	}
-
-	return Plugin_Continue;
-}
-
 public Action BuyShopCommand(int client, int args)
 {
 	if(g_bEnable == false) {
@@ -572,93 +531,20 @@ public Action BuyShopCommand(int client, int args)
 		return Plugin_Handled;
 	}
 
-	if (args < 1)
+	int team = GetClientTeam(client);
+	if(team == L4D_TEAM_SPECTATOR)
+	{
+		ReplyToCommand(client, "[TS] %T", "Spectators can not buy", client);
+		CPrintToChat(client, "%T", "Left Money", client, g_iCredits[client]);
+		return Plugin_Handled;
+	}
+	else if(team == L4D_TEAM_SURVIVORS)
 	{
 		GoMainMenu(client);
 	}
-	else if (args > 1)
+	else if(team == L4D_TEAM_INFECTED)
 	{
-		ReplyToCommand(client, "[TS] Usage: sm_buy <item_name>");
-		return Plugin_Handled;	
-	}
-	else //buy shortcut command
-	{
-		char item_name[64];
-		GetCmdArg(1, item_name, sizeof(item_name));
-		StringToLowerCase(item_name);
-		//PrintToChatAll("buy %s", item_name);
-
-		int index;
-		int team = GetClientTeam(client);
-		if(team == L4D_TEAM_SPECTATOR)
-		{
-			ReplyToCommand(client, "[TS] %T", "Spectators can not buy", client);
-			CPrintToChat(client, "%T", "Left Money", client, g_iCredits[client]);
-			return Plugin_Handled;
-		}
-		
-		if(team == L4D_TEAM_SURVIVORS)
-		{
-			if( g_smWeaponShortCut.GetValue(item_name, index) )
-			{
-				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eWeaponMenu), index);
-			}
-			else if( g_smMeleeShortCut.GetValue(item_name, index) )
-			{
-				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eMeleeMenu), index);
-			}
-			else if( g_smMedicThrowableShortCut.GetValue(item_name, index) )
-			{
-				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eMedicThrowableMenu), index);
-			}
-			else if( g_smOtherShortCut.GetValue(item_name, index) )
-			{
-				BuyItem(client, L4D_TEAM_SURVIVORS, view_as<EMenuType>(eOtherMenu), index);
-			}
-			else
-			{
-				CPrintToChat(client, "[{olive}TS{default}] %T", "Item name is not available or wrong team", client, item_name);
-			}
-		}
-		else if(team == L4D_TEAM_INFECTED)
-		{
-			if( g_smInfectedSpawnShortCut.GetValue(item_name, index) )
-			{
-				BuyItem(client, L4D_TEAM_INFECTED, view_as<EMenuType>(eInfectedSpawnMenu), index);
-			}
-			else
-			{
-				CPrintToChat(client, "[{olive}TS{default}] %T", "Item name is not available or wrong team", client, item_name);
-			}
-		}
-	}
-	
-	return Plugin_Handled;
-}
-
-// Repeat buy
-public Action HandleCmdRepeatBuy(int client, int args)
-{
-	if(g_bEnable == false) {
-		ReplyToCommand(client, "[TS] %T", "Not enough players", client, g_iPlayerRequired);
-		return Plugin_Handled;
-	}
-
-	if (client == 0)
-	{
-		PrintToServer("[TS] this command cannot be used by server.");
-		return Plugin_Handled;
-	}
-	
-	if(g_iLastBuyMenu[client] == view_as<EMenuType>(eNoneMenu) && g_iLastBuyIndex[client] == 0)
-	{
-		ReplyToCommand(client, "[TS] %T", "You didn't buy anything yet", client);
-		return Plugin_Handled;
-	}
-	
-	if(BuyItem(client, GetClientTeam(client), g_iLastBuyMenu[client], g_iLastBuyIndex[client]) & 4)
-	{
-		CPrintToChat(client, "[{olive}TS{default}] %T", "Last item you buy is not available", client, g_sLastBuyName[client]);
+		GoMainMenu(client);
 	}
 	
 	return Plugin_Handled;
@@ -2051,19 +1937,6 @@ void GoMainMenu(int client)
 	}
 }
 
-/**
- * Converts the string to lower case.
- *
- * @param input         Input string.
- */
-void StringToLowerCase(char[] input)
-{
-	for (int i = 0; i < strlen(input); i++)
-	{
-		input[i] = CharToLower(input[i]);
-	}
-}
-
 public Action PluginStart(Handle timer)
 {
 	ClearDefault();
@@ -2113,51 +1986,6 @@ void ResetTimer()
 {
 	delete PlayerLeftStartTimer;
 	delete CountDownTimer;
-}
-
-void CreateShortCutStringMap()
-{
-	int size;
-
-	g_smWeaponShortCut = CreateTrie();
-	size = sizeof(weaponsMenu);
-	for( int index = 0 ; index < size ; ++index )
-	{
-		StringToLowerCase(weaponsMenu[index][0]);
-		g_smWeaponShortCut.SetValue(weaponsMenu[index][0], index);
-	}
-
-	g_smMeleeShortCut = CreateTrie();
-	size = sizeof(meleeMenu);
-	for( int index = 0 ; index < size ; ++index )
-	{
-		StringToLowerCase(meleeMenu[index][0]);
-		g_smMeleeShortCut.SetValue(meleeMenu[index][0], index);
-	}
-
-	g_smMedicThrowableShortCut = CreateTrie();
-	size = sizeof(medicThrowableMenu);
-	for( int index = 0 ; index < size ; ++index )
-	{
-		StringToLowerCase(medicThrowableMenu[index][0]);
-		g_smMedicThrowableShortCut.SetValue(medicThrowableMenu[index][0], index);
-	}
-
-	g_smOtherShortCut = CreateTrie();
-	size = sizeof(otherMenu);
-	for( int index = 0 ; index < size ; ++index )
-	{
-		StringToLowerCase(otherMenu[index][0]);
-		g_smOtherShortCut.SetValue(otherMenu[index][0], index);
-	}
-
-	g_smInfectedSpawnShortCut = CreateTrie();
-	size = sizeof(infectedSpawnMenu);
-	for( int index = 0 ; index < size ; ++index )
-	{
-		StringToLowerCase(infectedSpawnMenu[index][0]);
-		g_smInfectedSpawnShortCut.SetValue(infectedSpawnMenu[index][0], index);
-	}
 }
 
 void Notify_GetCredit(int client, const char[] sWord, int money)

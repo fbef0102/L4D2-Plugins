@@ -20,9 +20,6 @@ L4D2 Human and Zombie Shop by HarryPoter
 	* infectec shop list
 		> 特感商城
 		<br/>![L4D2_Buy_Store_4](image/L4D2_Buy_Store_4.jpg)
-	* buy command
-		> 使用命令直接購物
-		<br/>![L4D2_Buy_Store_5](image/L4D2_Buy_Store_5.jpg)
 
 * Apply to | 適用於
 	```
@@ -41,7 +38,7 @@ L4D2 Human and Zombie Shop by HarryPoter
 	```
 
 * <details><summary>Changelog | 版本日誌</summary>
-
+	
 	* 4.6
 		* Remke code
 		* Translation Support
@@ -52,8 +49,6 @@ L4D2 Human and Zombie Shop by HarryPoter
 		* You can earn credits by doing damage to survivors as an infected.
 		* You can earn credits by helping each other as a survivor.
 		* Save player's money with Cookies, it means that money can be saved to database across client connections, map changes and even server restarts.
-		* Add short buy commands, directly buy item.
-		* Repeat purchase item you bought last time.
 		* Buy time cooldown, can't buy quickly.
 		* No Special Item and database
 
@@ -160,117 +155,20 @@ L4D2 Human and Zombie Shop by HarryPoter
 </details>
 
 * <details><summary>Command | 命令</summary>
-
-	* **shop and buy (Short name available)**
+	* **Open shop menu**
 		```php
-		say "b [item_name]"
-		sm_shop [item_name]
-		sm_buy [item_name]
-		sm_b [item_name]
-		sm_money [item_name]
-		sm_purchase [item_name]
-		sm_market [item_name]
-		sm_item [item_name]
-		sm_items [item_name]
-		sm_credit [item_name]
-		sm_credits [item_name]
+		sm_shop
+		sm_buy
+		sm_b
+		sm_money
+		sm_purchase
+		sm_market
+		sm_item
+		sm_items
+		sm_credit
+		sm_credits 
 		```
 
-		* say "!buy" or "b" to open shop menu
-		* say "!buy rifle_ak47" or "b rifle_ak47" to directly buy Ak47 weapon
-		* **short command list**
-		> I won't add more short commands, don't ask
-		```php
-		Weapon
-		{
-			"!buy pistol" 				-> Pistol
-			"!buy pistol_magnum"		-> Magnum
-			"!buy pumpshotgun"			-> Pumpshotgun
-			"!buy shotgun_chrome"		-> Chrome Shotgun
-			"!buy smg"					-> Smg
-			"!buy smg_silenced"			-> Silenced Smg
-			"!buy smg_mp5"				-> MP5
-			"!buy rifle"				-> Rifle
-			"!buy rifle_ak47"			-> AK47
-			"!buy rifle_desert"			-> Desert Rifle
-			"!buy rifle_sg552"			-> SG552
-			"!buy shotgun_spas"			-> Spas Shotgun
-			"!buy autoshotgun"			-> Autoshotgun
-			"!buy hunting_rifle"		-> Hunting Rifle
-			"!buy sniper_military"		-> Military Sniper
-			"!buy sniper_scout"			-> SCOUT
-			"!buy sniper_awp"			-> AWP
-			"!buy rifle_m60"			-> M60 Machine Gun
-			"!buy grenade_launcher"		-> Grenade Launcher
-		}
-
-		Melee
-		{
-			"!buy chainsaw"				-> Chainsaw
-			"!buy baseball_bat"			-> Baseball Bat
-			"!buy cricket_bat"			-> Cricket Bat
-			"!buy crowbar"				-> Crowbar
-			"!buy electric_guitar"		-> Electric Guitar
-			"!buy fireaxe"				-> Fire Axe
-			"!buy frying_pan"			-> Frying Pan
-			"!buy katana"				-> Katana
-			"!buy machete"				-> Machete
-			"!buy tonfa"				-> Tonfa
-			"!buy golfclub"				-> Golf Club
-			"!buy knife"				-> Knife
-			"!buy pitchfork"			-> Pitchfork
-			"!buy shovel"				-> Shovel
-		}
-
-		Medic and Throwable
-		{
-			"!buy defibrillator"		-> Defibrillator
-			"!buy first_aid_kit"		-> First Aid Kit
-			"!buy pain_pills"			-> Pain Pill
-			"!buy adrenaline"			-> Adrenaline
-			"!buy pipe_bomb"			-> Pipe Bomb
-			"!buy molotov"				-> Molotov
-			"!buy vomitjar"				-> Vomitjar
-		}
-
-		Other
-		{
-			"!buy ammo"								-> Ammo
-			"!buy laser_sight"						-> Laser Sight
-			"!buy incendiary_ammo"					-> Incendiary Ammo
-			"!buy explosive_ammo"					-> Explosive Ammo
-			"!buy weapon_upgradepack_incendiary"	-> Incendiary Pack
-			"!buy weapon_upgradepack_explosive"		-> Explosive Pack
-			"!buy propanetank"						-> Propane Tank
-			"!buy oxygentank"						-> Oxygen Tank
-			"!buy fireworkcrate"					-> Firework Crate
-			"!buy gascan"							-> Gascan
-			"!buy cola_bottles"						-> Cola Bottles
-			"!buy gnome"							-> Gnome
-		}
-
-		Infected Spawn
-		{
-			"!buy Suicide" 	-> Suicide
-			"!buy Smoker" 	-> Smoker
-			"!buy Boomer" 	-> Boomer
-			"!buy Hunter" 	-> Hunter
-			"!buy Spitter" 	-> Spitter
-			"!buy Jockey" 	-> Jockey
-			"!buy Charger" 	-> Charger
-			"!buy Tank" 	-> Tank
-		}
-		```
-	* **repeat purchase item you bought last time**
-		```php
-		sm_repeatbuy
-		sm_lastbuy
-		```
-	* **donate money to another player (Or use "Credits Transfer" in shop menu)**
-		```php
-		sm_pay <name> <money>
-		sm_donate <name> <money>
-		```
 	* **See all players' or specific player's deposit**
 		```php
 		sm_inspectbank [name]
@@ -278,20 +176,23 @@ L4D2 Human and Zombie Shop by HarryPoter
 		sm_lookbank [name]
 		sm_allbank [name]
 		```
+
 	* **Adm gives/reduces money (ADMFLAG_BAN)**
 		```php
 		sm_givemoney <name> <+-money>
 		sm_givecredit <name> <+-money>
 		```
+
 	* **Adm removes player's all money (ADMFLAG_BAN)**
 		```php
 		sm_clearmoney <name>
 		sm_deductmoney <name>
 		```
+
 </details>
 
 * How to modify the item price
-	* L4D2_Buy_Store.sp line 140 ~ 215
+	* L4D2_Buy_Store.sp line 135 ~ 210
 
 * Database
 	* ```sm_shop_CookiesCached_enable "1"```, this uses CookiesCached to save player money
@@ -307,121 +208,24 @@ L4D2 Human and Zombie Shop by HarryPoter
 	4. 自定義獲取的金額
 	5. 通關與滅團都有獎勵
 	6. 可設置購物冷卻時間
-	7. 特感玩家能幫自己購買特感復活，亦能購買Tank
 > __Note__ 如要更多功能，[請點我查看新版的購物插件](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Fun_%E5%A8%9B%E6%A8%82/L4D2_Buy_Store#%E4%B8%AD%E6%96%87%E8%AA%AA%E6%98%8E)，附有特殊商品與金錢轉移功能以及資料庫功能
 
 * <details><summary>命令中文介紹 (點我展開)</summary>
 
 	* **購物商城**
 		```php
-		say "b [item_name]"
-		sm_shop [item_name]
-		sm_buy [item_name]
-		sm_b [item_name]
-		sm_money [item_name]
-		sm_purchase [item_name]
-		sm_market [item_name]
-		sm_item [item_name]
-		sm_items [item_name]
-		sm_credit [item_name]
-		sm_credits [item_name]
+		sm_shop
+		sm_buy
+		sm_b
+		sm_money
+		sm_purchase
+		sm_market
+		sm_item
+		sm_items
+		sm_credit
+		sm_credits
 		```
 
-		* 聊天視窗打 !buy 或 b 開啟商城列表
-		* 聊天視窗打 !buy rifle_ak47 或 b rifle_ak47 直接購買AK47槍
-		* **購物短名列表**
-		> 我不會增加更多短名，不要問
-		```php
-		Weapon
-		{
-			"!buy pistol" 				-> Pistol
-			"!buy pistol_magnum"		-> Magnum
-			"!buy pumpshotgun"			-> Pumpshotgun
-			"!buy shotgun_chrome"		-> Chrome Shotgun
-			"!buy smg"					-> Smg
-			"!buy smg_silenced"			-> Silenced Smg
-			"!buy smg_mp5"				-> MP5
-			"!buy rifle"				-> Rifle
-			"!buy rifle_ak47"			-> AK47
-			"!buy rifle_desert"			-> Desert Rifle
-			"!buy rifle_sg552"			-> SG552
-			"!buy shotgun_spas"			-> Spas Shotgun
-			"!buy autoshotgun"			-> Autoshotgun
-			"!buy hunting_rifle"		-> Hunting Rifle
-			"!buy sniper_military"		-> Military Sniper
-			"!buy sniper_scout"			-> SCOUT
-			"!buy sniper_awp"			-> AWP
-			"!buy rifle_m60"			-> M60 Machine Gun
-			"!buy grenade_launcher"		-> Grenade Launcher
-		}
-
-		Melee
-		{
-			"!buy chainsaw"				-> Chainsaw
-			"!buy baseball_bat"			-> Baseball Bat
-			"!buy cricket_bat"			-> Cricket Bat
-			"!buy crowbar"				-> Crowbar
-			"!buy electric_guitar"		-> Electric Guitar
-			"!buy fireaxe"				-> Fire Axe
-			"!buy frying_pan"			-> Frying Pan
-			"!buy katana"				-> Katana
-			"!buy machete"				-> Machete
-			"!buy tonfa"				-> Tonfa
-			"!buy golfclub"				-> Golf Club
-			"!buy knife"				-> Knife
-			"!buy pitchfork"			-> Pitchfork
-			"!buy shovel"				-> Shovel
-		}
-
-		Medic and Throwable
-		{
-			"!buy defibrillator"		-> Defibrillator
-			"!buy first_aid_kit"		-> First Aid Kit
-			"!buy pain_pills"			-> Pain Pill
-			"!buy adrenaline"			-> Adrenaline
-			"!buy pipe_bomb"			-> Pipe Bomb
-			"!buy molotov"				-> Molotov
-			"!buy vomitjar"				-> Vomitjar
-		}
-
-		Other
-		{
-			"!buy ammo"								-> Ammo
-			"!buy laser_sight"						-> Laser Sight
-			"!buy incendiary_ammo"					-> Incendiary Ammo
-			"!buy explosive_ammo"					-> Explosive Ammo
-			"!buy weapon_upgradepack_incendiary"	-> Incendiary Pack
-			"!buy weapon_upgradepack_explosive"		-> Explosive Pack
-			"!buy propanetank"						-> Propane Tank
-			"!buy oxygentank"						-> Oxygen Tank
-			"!buy fireworkcrate"					-> Firework Crate
-			"!buy gascan"							-> Gascan
-			"!buy cola_bottles"						-> Cola Bottles
-			"!buy gnome"							-> Gnome
-		}
-
-		Infected Spawn
-		{
-			"!buy Suicide" 	-> Suicide
-			"!buy Smoker" 	-> Smoker
-			"!buy Boomer" 	-> Boomer
-			"!buy Hunter" 	-> Hunter
-			"!buy Spitter" 	-> Spitter
-			"!buy Jockey" 	-> Jockey
-			"!buy Charger" 	-> Charger
-			"!buy Tank" 	-> Tank
-		}
-		```
-	* **重複購買上次的商品**
-		```php
-		sm_repeatbuy
-		sm_lastbuy
-		```
-	* **捐贈金額給其他人 (或在商城列表使用"金錢轉移")**
-		```php
-		sm_pay <name> <money>
-		sm_donate <name> <money>
-		```
 	* **查看所有玩家的銀行儲值**
 		```php
 		sm_inspectbank [name]
@@ -429,20 +233,23 @@ L4D2 Human and Zombie Shop by HarryPoter
 		sm_lookbank [name]
 		sm_allbank [name]
 		```
+
 	* **管理員打錢 (權限：ADMFLAG_BAN)**
 		```php
 		sm_givemoney <name> <+-money>
 		sm_givecredit <name> <+-money>
 		```
+
 	* **管理員沒收玩家的金錢 (權限：ADMFLAG_BAN)**
 		```php
 		sm_clearmoney <name>
 		sm_deductmoney <name>
 		```
+
 </details>
 
 * 如何設定各商品金額
-	* 源碼檔案第140到215行
+	* 源碼檔案第135到210行
 
 * 資料庫設定
 	* 使用指令 ```sm_shop_CookiesCached_enable "1"``` 能幫玩家儲值金額到本地伺服器上
