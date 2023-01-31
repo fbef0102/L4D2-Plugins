@@ -648,4 +648,22 @@
 		"chi"			"尸潮来了!"
 		"zho"			"屍潮來了!"
 	}
+	"Could not find a valid spawn position for S.I. in 5 tries"
+	{
+		"en"			"Couldn't find a valid spawn position for S.I. in 5 tries."
+		"chi"			"尝试5次后无法为此特殊感染者找到有效的生成位置"
+		"zho"			"嘗試5次後無法爲此特殊感染者找到有效的生成位置"
+	}
+	"Can not spawn, please try again"
+	{
+		"en"			"Can not spawn, please try again."
+		"chi"			"无法生成, 请再次尝试"
+		"zho"			"無法生成, 請再次嘗試"
+	}
+	"Can not spawn witch in tries at this moment"
+	{
+		"en"			"Can't spawn witch in %d tries at this moment."
+		"chi"			"尝试%d次后无法为此witch找到有效的生成位置"
+		"zho"			"嘗試%d次後無法爲此witch找到有效的生成位置"
+	}
 }
