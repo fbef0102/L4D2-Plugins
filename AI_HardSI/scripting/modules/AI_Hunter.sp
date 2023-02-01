@@ -43,7 +43,7 @@ public void Hunter_OnModuleStart() {
 	hCvarHunterPounceMaxLoftAngle = FindConVar("hunter_pounce_max_loft_angle"); // maximum vertical angle hunters can pounce
 	
 	hCvarHunterCommittedAttackRange.SetInt(10000);
-	hCvarHunterPounceReadyRange.SetInt(500);
+	hCvarHunterPounceReadyRange.SetInt(1000);
 	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
 	hCvarHunterPounceMaxLoftAngle.SetInt(0);
 
@@ -88,7 +88,7 @@ public void Hunter_OnModuleEnd() {
 // Game tries to reset these cvars
 public void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
 	hCvarHunterCommittedAttackRange.SetInt(10000);
-	hCvarHunterPounceReadyRange.SetInt(500);
+	hCvarHunterPounceReadyRange.SetInt(1000);
 	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
 	hCvarHunterPounceMaxLoftAngle.SetInt(0);
 }
