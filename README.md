@@ -21,7 +21,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[l4d_pig_infected_notify](/l4d_pig_infected_notify)</b>: show who is pig teammate in infected team
 * <b>[all4dead2](/all4dead2)</b>: Enables admins to have control over the AI Director and spawn all weapons, melee, items, special infected, and Uncommon Infected without using sv_cheats 1
 * <b>[l4d2_gifts](/l4d2_gifts)</b>: Drop gifts (touch gift to earn reward) when a special infected or a tank/witch killed by survivor.
-* <b>[kills](/kills)</b>: show statistics of surviviors (kill S.I, C.I. and FF)on round end
 * <b>[l4d2_Death_Survivor](/l4d2_Death_Survivor)</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>[l4d2_change_m1](/l4d2_change_m1)</b>: If all Survivors die, change level to the current map m1 (coop only)
 * <b>[l4d2_spectating_cheat](/l4d2_spectating_cheat)</b>: A spectator who watching the survivor at first person view can now see the infected model glows though the wall
