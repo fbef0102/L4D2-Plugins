@@ -46,7 +46,7 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
-    version = "2.5",
+    version = "2.6",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -115,6 +115,11 @@ public void OnMapEnd()
 {
 	g_bMapStarted = false;
 }
+
+public void OnClientDisconnect(int client)
+{
+    RemoveInfectedModelGlow(client);
+} 
 
 public Action ToggleSpecCheatCmd(int client, int args) 
 {
