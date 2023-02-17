@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/1/30)
+>All plugins in here only apply to L4D2 (last edited:2023/2/18)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -35,7 +35,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[AI_HardSI](/AI_HardSI)</b>: Improves the AI behaviour of special infected
 * <b>[l4d2_explosive_cars](/l4d2_explosive_cars)</b>: Cars explode after they take some damage
 * <b>[l4d2_item_hint](/l4d2_item_hint)</b>: When using 'Look' in vocalize menu, print corresponding item to chat area.
-* <b>[l4d_flying_car](/l4d_flying_car)</b>: Replaces getaway chopper by flying car in L4D2 C8 No Mercy
 * <b>[l4d2_ty_saveweapons](/l4d2_ty_saveweapons)</b>: L4D2 coop save weapon when map transition if more than 4 players
 * <b>[l4d2_skill_detect](/l4d2_skill_detect)</b>: Detects and reports skeets, crowns, levels, highpounces, etc.
 * <b>[l4d2_supply_woodbox](/l4d2_supply_woodbox)</b>: CSO Random Supply Boxes in l4d2
@@ -49,6 +48,8 @@ If you want any modify or request, free to use or pay me money to do it.
     * 修正Witch在寫實模式下的一般難度、進階難度、專家難度，無法抓破門
 * <b>[jockey_ride_team_switch_teleport_fix](/jockey_ride_team_switch_teleport_fix)</b>: Fixed Teleport bug if jcokey player switches team while ridding the survivor
     * 修正Jockey玩家跳隊時，會發生傳送bug
+* <b>[l4d_flying_car](/l4d_flying_car)</b>: Replaces getaway chopper by flying car in L4D2 C8 No Mercy
+    * 前往霍格華茲學院的魔法汽車
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 
