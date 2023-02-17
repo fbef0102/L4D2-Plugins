@@ -55,6 +55,10 @@ public void OnPluginStart()
 	l4d_flying_car_random_model = CreateConVar("l4d_flying_car_random_model", "1", "Choose model randomly instead using custom one? 0:disable, 1:enable", 0, true, 0.0, true, 1.0);
 	
 	AutoExecConfig(true, "l4d_flying_car");
+
+	HookEvent("finale_escape_start", event_finale_escape_start, EventHookMode_PostNoCopy);
+	HookEvent("finale_vehicle_leaving", event_finale_vehicle_leaving, EventHookMode_PostNoCopy);
+	HookEvent("finale_vehicle_ready", event_finale_vehicle_ready, EventHookMode_PostNoCopy);
 }
 
 bool g_bValidMap;
@@ -74,6 +78,8 @@ public void OnMapStart()
 		PrecacheModel(MODEL_GLASS);
 		PrecacheModel(MODEL_PROPANE);
 		PrecacheModel(MODEL_LIGHTBAR);
+
+		PrecacheParticle("env_fire_medium");
 	}
 }
 
@@ -260,13 +266,9 @@ public void event_finale_vehicle_leaving(Handle event, const char[] name, bool d
 	{
 		g_iProbability = 3;
 	}
-
-	UnhookEvent("finale_escape_start", event_finale_escape_start, EventHookMode_PostNoCopy);
-	UnhookEvent("finale_vehicle_leaving", event_finale_vehicle_leaving, EventHookMode_PostNoCopy);
-	UnhookEvent("finale_vehicle_ready", event_finale_vehicle_ready, EventHookMode_PostNoCopy);
 }
 
-public Action RandomExplosions(Handle timer)
+Action RandomExplosions(Handle timer)
 {
 	if ( !GetConVarBool(l4d_flying_car_enable) )
 		return Plugin_Stop;
@@ -315,4 +317,20 @@ public Action RandomExplosions(Handle timer)
 		g_iExplosion = INVALID_ENT_REFERENCE;
 	}
 	return Plugin_Continue;
+}
+
+void PrecacheParticle(const char[] sEffectName)
+{
+	static int table = INVALID_STRING_TABLE;
+	if( table == INVALID_STRING_TABLE )
+	{
+		table = FindStringTable("ParticleEffectNames");
+	}
+
+	if( FindStringIndex(table, sEffectName) == INVALID_STRING_INDEX )
+	{
+		bool save = LockStringTables(false);
+		AddToStringTable(table, sEffectName);
+		LockStringTables(save);
+	}
 }
