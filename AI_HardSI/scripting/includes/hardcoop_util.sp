@@ -307,7 +307,7 @@ stock bool IsBotJockey(int client) {
 // @return: the number of a particular special infected class alive in the game
 stock int CountSpecialInfectedClass(int targetClass) {
     int count = 0;
-    for (int i = 1; i < MaxClients; i++) {
+    for (int i = 1; i <= MaxClients; i++) {
         if ( IsBotInfected(i) && IsPlayerAlive(i) && !IsClientInKickQueue(i) ) {
             int playerClass = GetEntProp(i, Prop_Send, "m_zombieClass");
             if (playerClass == targetClass) {
@@ -321,7 +321,7 @@ stock int CountSpecialInfectedClass(int targetClass) {
 // @return: the total special infected bots alive in the game
 stock int CountSpecialInfectedBots() {
     int count = 0;
-    for (int i = 1; i < MaxClients; i++) {
+    for (int i = 1; i <= MaxClients; i++) {
         if (IsBotInfected(i) && IsPlayerAlive(i)) {
             count++;
         }
