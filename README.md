@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/2/18)
+>All plugins in here only apply to L4D2 (last edited:2023/2/24)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -33,7 +33,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
 * <b>[l4d2_melee_swing](/l4d2_melee_swing)</b>: Adjustable melee swing rate for each melee weapon.
 * <b>[AI_HardSI](/AI_HardSI)</b>: Improves the AI behaviour of special infected
-* <b>[l4d2_explosive_cars](/l4d2_explosive_cars)</b>: Cars explode after they take some damage
 * <b>[l4d2_item_hint](/l4d2_item_hint)</b>: When using 'Look' in vocalize menu, print corresponding item to chat area.
 * <b>[l4d2_ty_saveweapons](/l4d2_ty_saveweapons)</b>: L4D2 coop save weapon when map transition if more than 4 players
 * <b>[l4d2_skill_detect](/l4d2_skill_detect)</b>: Detects and reports skeets, crowns, levels, highpounces, etc.
