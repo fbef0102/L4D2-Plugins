@@ -63,7 +63,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
         sm_skill_drawcrown_damage "500"
 
         // If set, any damage done that exceeds the health of a victim is hidden in reports.
-        sm_skill_hidefakedamage "0"
+        sm_skill_hidefakedamage "1"
 
         // Minimum height of hunter pounce for it to count as a DP.
         sm_skill_hunterdp_height "400"
@@ -154,5 +154,5 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
     * 舉例
         * 如果只要顯示 "打碎Tank石頭"(數值是512)、"Hunter高撲傷害"(數值是8192) => 請寫```sm_skill_report_flagss 8704```  (512 + 8192)
         * 如果只要顯示 "空爆hunter/jokcey"(數值是1)、"打碎Tank石頭"(數值是512)、"警報車"(數值是262144) => 請寫```sm_skill_report_flagss 262657```  (1 + 512 + 262144)
-        * 如果要顯示全部，請寫```sm_skill_report_flags 2076671``` (總數值)
+        * 如果要顯示全部，請寫```sm_skill_report_flags 2097151``` (總數值)
 </details>
