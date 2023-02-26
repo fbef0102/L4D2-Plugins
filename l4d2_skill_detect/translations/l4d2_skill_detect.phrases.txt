@@ -384,31 +384,33 @@
 		"zho"		"{lightgreen}★★ {olive}%N{default} 近戰砍斷了 {green}Smoker{default} 的舌頭."
 		"chi"		"{lightgreen}★★ {olive}%N{default} 近战砍断了 {green}Smoker{default} 的舌头."
 	}
-	"by shoving"
+	"HandleSmokerSelfClear_1_S"
 	{
-		"en"		" by shoving"
-		"zho"		"推開"
-		"chi"		"推开"
+		"#format"		"{1:s},{2:s}"
+		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}{2}{default}'s tongue by shoving."
+		"zho"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}{2}{default} 的舌頭."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}{2}{default} 的舌头."
 	}
-	"empty"
+	"HandleSmokerSelfClear_1_O"
 	{
-		"en"		""
-		"zho"		""
-		"chi"		""
+		"#format"		"{1:s},{2:s}"
+		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}{2}{default}'s tongue."
+		"zho"		"{lightgreen}★★ {olive}{1}{default} 自解了 {green}{2}{default} 的舌頭."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 自解了 {green}{2}{default} 的舌头."
 	}
-	"HandleSmokerSelfClear_1"
+	"HandleSmokerSelfClear_2_S"
 	{
-		"#format"		"{1:s},{2:s},{3:t}"
-		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}{2}{default}'s tongue{3}."
-		"zho"		"{lightgreen}★★ {olive}{1}{default} {3}自解了 {green}{2}{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} {3}自解了 {green}{2}{default} 的舌头."
+		"#format"		"{1:s}"
+		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue by shoving."
+		"zho"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}Smoker{default} 的舌頭."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}Smoker{default} 的舌头."
 	}
-	"HandleSmokerSelfClear_2"
+	"HandleSmokerSelfClear_2_O"
 	{
-		"#format"		"{1:s},{2:t}"
-		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue{2}."
-		"zho"		"{lightgreen}★★ {olive}{1}{default} {2}自解了 {green}Smoker{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} {2}自解了 {green}Smoker{default} 的舌头."
+		"#format"		"{1:s}"
+		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue."
+		"zho"		"{lightgreen}★★ {olive}{1}{default} 自解了 {green}Smoker{default} 的舌頭."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 自解了 {green}Smoker{default} 的舌头."
 	}
 	"Tank_Rock"
 	{
@@ -604,5 +606,12 @@
 		"en"		"{olive}%N{default} triggered an alarm."
 		"zho"		"{olive}%N{default} 觸發了警報車."
 		"chi"		"{olive}%N{default} 触发了警报车."
+	}
+	"HandleVomitLanded_1"
+	{
+		"#format"	"{1:d}"
+		"en"		"{lightgreen}★★ {olive}%N{default} vomit all {1} survivors"
+		"zho"		"{lightgreen}★★ {olive}%N{default} 嘔吐到 {1} 以上倖存者."
+		"chi"		"{lightgreen}★★ {olive}%N{default} 呕吐到 {1} 以上生还者."
 	}
 }
