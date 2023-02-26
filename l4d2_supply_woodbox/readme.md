@@ -12,9 +12,9 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 	    <br/>![l4d2_supply_woodbox_2](image/l4d2_supply_woodbox_2.jpg)
 
 * Apply to | 適用於
-```
-L4D2
-```
+	```
+	L4D2
+	```
 
 * <details><summary>Changelog | 版本日誌</summary>
 

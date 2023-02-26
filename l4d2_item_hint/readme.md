@@ -5,22 +5,22 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * Image | 圖示
 	* Mark weapons and items
-    > 標記武器與物品
-	<br/>![l4d2_item_hint_1](image/l4d2_item_hint_1.jpg)
+        > 標記武器與物品
+        <br/>![l4d2_item_hint_1](image/l4d2_item_hint_1.jpg)
 	* Glow through wall
-    > 隔著牆壁看到光圈
-	<br/>![l4d2_item_hint_2](image/l4d2_item_hint_2.jpg)
+        > 隔著牆壁看到光圈
+        <br/>![l4d2_item_hint_2](image/l4d2_item_hint_2.jpg)
 	* Mark place and infected
-    > 標記地點與特殊感染者
-	<br/>![l4d2_item_hint_3](image/l4d2_item_hint_3.jpg)
+        > 標記地點與特殊感染者
+        <br/>![l4d2_item_hint_3](image/l4d2_item_hint_3.jpg)
 	* Support hint
-    > 支援指導系統圖案提示
-	<br/>![l4d2_item_hint_4](image/l4d2_item_hint_4.jpg)
+        > 支援指導系統圖案提示
+        <br/>![l4d2_item_hint_4](image/l4d2_item_hint_4.jpg)
 
 * Apply to | 適用於
-```
-L4D2
-```
+    ```
+    L4D2
+    ```
 
 * <details><summary>Changelog | 版本日誌</summary>
 
@@ -58,91 +58,91 @@ L4D2
 * <details><summary>ConVar | 指令</summary>
 
 	* cfg/sourcemod/l4d2_item_hint.cfg
-	```php
-    // ---Item Hint---
-    // Cold Down Time in seconds a player can use 'Look' Item Hint again.
-    l4d2_item_hint_cooldown_time "1.0"
+        ```php
+        // ---Item Hint---
+        // Cold Down Time in seconds a player can use 'Look' Item Hint again.
+        l4d2_item_hint_cooldown_time "1.0"
 
-    // How close can a player use 'Look' item hint.
-    l4d2_item_hint_use_range "150"
+        // How close can a player use 'Look' item hint.
+        l4d2_item_hint_use_range "150"
 
-    // Item Hint Sound. (relative to to sound/, Empty = OFF)
-    l4d2_item_hint_use_sound "buttons/blip1.wav"
+        // Item Hint Sound. (relative to to sound/, Empty = OFF)
+        l4d2_item_hint_use_sound "buttons/blip1.wav"
 
-    // Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
-    l4d2_item_hint_announce_type "1"
+        // Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+        l4d2_item_hint_announce_type "1"
 
-    // Item Glow Time.
-    l4d2_item_hint_glow_timer "10.0"
+        // Item Glow Time.
+        l4d2_item_hint_glow_timer "10.0"
 
-    // Item Glow Range.
-    l4d2_item_hint_glow_range "800"
+        // Item Glow Range.
+        l4d2_item_hint_glow_range "800"
 
-    // Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)
-    l4d2_item_hint_glow_color "0 255 255"
+        // Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)
+        l4d2_item_hint_glow_color "0 255 255"
 
-    // If 1, Create instructor hint on marked item.
-    l4d2_item_instructorhint_enable "1"
+        // If 1, Create instructor hint on marked item.
+        l4d2_item_instructorhint_enable "1"
 
-    // Instructor hint color on marked item.
-    l4d2_item_instructorhint_color "0 255 255"
+        // Instructor hint color on marked item.
+        l4d2_item_instructorhint_color "0 255 255"
 
-    //Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)
-    l4d2_item_instructorhint_icon "icon_interact"
-        
-    // ---Spot Marker---
-    // Cold Down Time in seconds a player can use 'Look' Spot Marker again.
-    l4d2_spot_marker_cooldown_time "2.5"
+        //Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)
+        l4d2_item_instructorhint_icon "icon_interact"
+            
+        // ---Spot Marker---
+        // Cold Down Time in seconds a player can use 'Look' Spot Marker again.
+        l4d2_spot_marker_cooldown_time "2.5"
 
-    // How far away can a player use 'Look' Spot Marker.
-    l4d2_spot_marker_use_range "1800"
+        // How far away can a player use 'Look' Spot Marker.
+        l4d2_spot_marker_use_range "1800"
 
-    // Spot Marker Sound. (relative to to sound/, Empty = OFF)
-    l4d2_spot_marker_use_sound "buttons/blip1.wav"
+        // Spot Marker Sound. (relative to to sound/, Empty = OFF)
+        l4d2_spot_marker_use_sound "buttons/blip1.wav"
 
-    // Spot Marker Duration.
-    l4d2_spot_marker_duration "10.0"
+        // Spot Marker Duration.
+        l4d2_spot_marker_duration "10.0"
 
-    // Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)
-    l4d2_spot_marker_color "200 200 200"
+        // Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)
+        l4d2_spot_marker_color "200 200 200"
 
-    // Spot Marker Sprite model. (Empty=Disable)
-    l4d2_spot_marker_sprite_model "materials/vgui/icon_arrow_down.vmt"
+        // Spot Marker Sprite model. (Empty=Disable)
+        l4d2_spot_marker_sprite_model "materials/vgui/icon_arrow_down.vmt"
 
-    // If 1, Create instructor hint on Spot Marker.
-    l4d2_spot_marker_instructorhint_enable "1"
+        // If 1, Create instructor hint on Spot Marker.
+        l4d2_spot_marker_instructorhint_enable "1"
 
-    // Instructor hint color on Spot Marker.
-    l4d2_spot_marker_instructorhint_color "200 200 200"
+        // Instructor hint color on Spot Marker.
+        l4d2_spot_marker_instructorhint_color "200 200 200"
 
-    // Instructor icon name on Spot Marker.
-    l4d2_spot_marker_instructorhint_icon "icon_info"
-        
-    // ---Infected Marker---
-    // Cold Down Time in seconds a player can use 'Look' Infected Marker again.
-    l4d2_infected_marker_cooldown_time "0.25"
+        // Instructor icon name on Spot Marker.
+        l4d2_spot_marker_instructorhint_icon "icon_info"
+            
+        // ---Infected Marker---
+        // Cold Down Time in seconds a player can use 'Look' Infected Marker again.
+        l4d2_infected_marker_cooldown_time "0.25"
 
-    // How far away can a player use 'Look' Infected Marker.
-    l4d2_infected_marker_use_range "1800"
+        // How far away can a player use 'Look' Infected Marker.
+        l4d2_infected_marker_use_range "1800"
 
-    // Infected Marker Sound. (relative to to sound/, Empty = OFF)
-    l4d2_infected_marker_use_sound "items/suitchargeok1.wav"
+        // Infected Marker Sound. (relative to to sound/, Empty = OFF)
+        l4d2_infected_marker_use_sound "items/suitchargeok1.wav"
 
-    // Changes how infected marker hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
-    l4d2_infected_marker_announce_type "1"
+        // Changes how infected marker hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+        l4d2_infected_marker_announce_type "1"
 
-    // Infected Marker Glow Time.
-    l4d2_infected_marker_glow_timer "10.0"
+        // Infected Marker Glow Time.
+        l4d2_infected_marker_glow_timer "10.0"
 
-    // Infected Marker Glow Rang
-    l4d2_infected_marker_glow_range "2500"
+        // Infected Marker Glow Rang
+        l4d2_infected_marker_glow_range "2500"
 
-    // Infected Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Infected Marker)
-    l4d2_infected_marker_glow_color "255 120 203"
+        // Infected Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Infected Marker)
+        l4d2_infected_marker_glow_color "255 120 203"
 
-    // If 1, Enable 'Look' Infected Marker on witch.
-    l4d2_infected_marker_witch_enable "1"
-	```
+        // If 1, Enable 'Look' Infected Marker on witch.
+        l4d2_infected_marker_witch_enable "1"
+        ```
 </details>
 
 * <details><summary>Command | 命令</summary>

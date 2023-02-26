@@ -22,6 +22,10 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.2h (2023-2-25)
+        * Request by ligal 
+        * Separate translation for the jockey and hunter
+
     * v1.1h (2022-12-16)
         * Request by Yabi
         * Translation Support
