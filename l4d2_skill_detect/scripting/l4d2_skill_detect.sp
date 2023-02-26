@@ -550,7 +550,7 @@ public OnPluginStart()
 	g_hCvarSelfClearThresh = CreateConVar(	"sm_skill_selfclear_damage",  	"200", "How much damage a survivor must at least do to a smoker for him to count as self-clearing.", FCVAR_NOTIFY, true, 0.0, false );
 	g_hCvarHunterDPThresh = CreateConVar(	"sm_skill_hunterdp_height",	  	"400", "Minimum height of hunter pounce for it to count as a DP.", FCVAR_NOTIFY, true, 0.0, false );
 	g_hCvarJockeyDPThresh = CreateConVar(	"sm_skill_jockeydp_height",	  	"300", "How much height distance a jockey must make for his 'DP' to count as a reportable highpounce.", FCVAR_NOTIFY, true, 0.0, false );
-	g_hCvarHideFakeDamage = CreateConVar(	"sm_skill_hidefakedamage",		"0", "If set, any damage done that exceeds the health of a victim is hidden in reports.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	g_hCvarHideFakeDamage = CreateConVar(	"sm_skill_hidefakedamage",		"1", "If set, any damage done that exceeds the health of a victim is hidden in reports.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	g_hCvarDeathChargeHeight = CreateConVar("sm_skill_deathcharge_height",	"400", "How much height distance a charger must take its victim for a deathcharge to be reported.", FCVAR_NOTIFY, true, 0.0, false );
 	g_hCvarInstaTime = CreateConVar(		"sm_skill_instaclear_time",		"0.75", "A clear within this time (in seconds) counts as an insta-clear.", FCVAR_NOTIFY, true, 0.0, false );
 	g_hCvarBHopMinStreak = CreateConVar(	"sm_skill_bhopstreak",			"3", "The lowest bunnyhop streak that will be reported.", FCVAR_NOTIFY, true, 0.0, false );
@@ -858,11 +858,12 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 							// fix fake damage?
 							if ( GetConVarBool(g_hCvarHideFakeDamage) )
 							{
-								damage = iChargeHealth - g_iChargerHealth[victim];
+								damage = g_iChargerHealth[victim];
 							}
 							
 							// charger was killed, was it a full level?
-							if ( damage > (iChargeHealth * 0.65) ) {
+							DebugPrint("health: %d, damage: %d, chip-level: %d", health, damage, iChargeHealth * 0.8);
+							if ( damage > (iChargeHealth * 0.75) ) {
 								HandleLevel( attacker, victim );
 							}
 							else {
@@ -876,6 +877,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 				if ( health > 0 )
 				{
 					g_iChargerHealth[victim] = health;
+					DebugPrint("g_iChargerHealth[victim]: %d", g_iChargerHealth[victim]);
 				}
 			}
 			
