@@ -87,7 +87,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.1h"
+#define PLUGIN_VERSION "1.2h"
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
 #define IS_SURVIVOR(%1)			(GetClientTeam(%1) == 2)
@@ -2752,14 +2752,17 @@ stock HandleDeadstop( attacker, victim, bool:hunter = true )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
-			CPrintToChatAll( "%t", "HandleDeadstop_1", attacker, victim );
+			if(hunter)
+				CPrintToChatAll( "%t", "HandleDeadstop_1_H", attacker, victim );
+			else
+				CPrintToChatAll( "%t", "HandleDeadstop_1_J", attacker, victim );
 		}
 		else if ( IS_VALID_INGAME(attacker) )
 		{
 			if(hunter)
-				CPrintToChatAll( "%t", "HandleDeadstop_2", attacker );
+				CPrintToChatAll( "%t", "HandleDeadstop_2_H", attacker );
 			else
-				CPrintToChatAll( "%t", "HandleDeadstop_3", attacker );
+				CPrintToChatAll( "%t", "HandleDeadstop_2_J", attacker );
 		}
 	}
 	
@@ -2844,34 +2847,71 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 			if(IS_VALID_INGAME(assist))
 			{
 				if ( IS_VALID_INGAME(victim) && !IsFakeClient(victim) ) {
-					CPrintToChatAll( "%t", "HandleSkeet_1", victim, assist );
+
+					if(isHunter)
+						CPrintToChatAll( "%t", "HandleSkeet_1_H", victim, assist );
+					else
+						CPrintToChatAll( "%t", "HandleSkeet_2_J", victim, assist );
+
 				} else {
-					CPrintToChatAll( "%t", "HandleSkeet_2",
-						(isHunter ? "Hunter" : "Jockey"), assist );
+					if(isHunter)
+						CPrintToChatAll( "%t", "HandleSkeet_2_H", "Hunter", assist );
+					else
+						CPrintToChatAll( "%t", "HandleSkeet_2_J", "Jockey", assist );
 				}
 			}
 			else
 			{
 				if ( IS_VALID_INGAME(victim) && !IsFakeClient(victim) ) {
-					CPrintToChatAll( "%t", "HandleSkeet_3", victim );
+					if(isHunter)
+						CPrintToChatAll( "%t", "HandleSkeet_3_H", victim );
+					else 
+						CPrintToChatAll( "%t", "HandleSkeet_3_J", victim );
 				} else {
-					CPrintToChatAll( "%t", "HandleSkeet_4",
-						(isHunter ? "Hunter" : "Jockey") );
+					if(isHunter)
+						CPrintToChatAll( "%t", "HandleSkeet_4_H", "Hunter" );
+					else
+						CPrintToChatAll( "%t", "HandleSkeet_4_J", "Jockey");
 				}
 			}
 		}
 		else if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
 			if(bMelee)
-				CPrintToChatAll("%t.", "HandleSkeet_5", attacker, victim);
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_5_H", attacker, victim);
+				else
+					CPrintToChatAll("%t", "HandleSkeet_5_J", attacker, victim);
+			}
 			else if(bSniper)
-				CPrintToChatAll("%t", "HandleSkeet_6", attacker, victim);
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_6_H", attacker, victim);
+				else
+					CPrintToChatAll("%t", "HandleSkeet_6_J", attacker, victim);
+			}
 			else if(bGL)
-				CPrintToChatAll("%t", "HandleSkeet_7", attacker, victim);
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_7_H", attacker, victim);
+				else
+					CPrintToChatAll("%t", "HandleSkeet_7_J", attacker, victim);
+			}
 			else if(shots > 1)
-				CPrintToChatAll("%t", "HandleSkeet_8", attacker, victim, shots);
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_8_H", attacker, victim, shots);
+				else
+					CPrintToChatAll("%t", "HandleSkeet_8_J", attacker, victim, shots);
+			}
 			else
-				CPrintToChatAll("%t", "HandleSkeet_9", attacker, victim);
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_9_H", attacker, victim);
+				else
+					CPrintToChatAll("%t", "HandleSkeet_9_J", attacker, victim);
+			}
 			
 			/*
 			CPrintToChatAll( "{lightgreen}[提示] {green}%N{default} %s 殺死飛撲的 {olive}%N{default}.",
@@ -2891,15 +2931,40 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 			*/
 			
 			if(bMelee)
-				CPrintToChatAll("%t", "HandleSkeet_10", attacker, (isHunter ? "Hunter" : "Jockey"));
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_10_H", attacker, "Hunter");
+				else
+					CPrintToChatAll("%t", "HandleSkeet_10_J", attacker, "Jockey");
+			}
 			else if(bSniper)
-				CPrintToChatAll("%t", "HandleSkeet_11", attacker, (isHunter ? "Hunter" : "Jockey"));
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_11_H", attacker, "Hunter");
+				else
+					CPrintToChatAll("%t", "HandleSkeet_11_J", attacker, "Jockey");
+			}
 			else if(bGL)
-				CPrintToChatAll("%t", "HandleSkeet_12", attacker, (isHunter ? "Hunter" : "Jockey"));
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_12_H", attacker, "Hunter");
+				else
+					CPrintToChatAll("%t", "HandleSkeet_12_J", attacker, "Jockey");
+			}
 			else if(shots > 1)
-				CPrintToChatAll("%t", "HandleSkeet_13", attacker, (isHunter ? "Hunter" : "Jockey"), shots);
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_13_H", attacker, "Hunter", shots);
+				else
+					CPrintToChatAll("%t", "HandleSkeet_13_J", attacker, "Jockey", shots);
+			}
 			else
-				CPrintToChatAll("%t", "HandleSkeet_14", attacker, (isHunter ? "Hunter" : "Jockey"));
+			{
+				if(isHunter)
+					CPrintToChatAll("%t", "HandleSkeet_14_H", attacker, "Hunter");
+				else
+					CPrintToChatAll("%t", "HandleSkeet_14_J", attacker, "Jockey");
+			}
 		}
 		
 		if(attacker > 0)
@@ -2955,15 +3020,24 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 				
 				if(bMelee)
 				{
-					CPrintToChatAll("%t", "HandleNonSkeet_1", attacker, victim, damage);
+					if(isHunter)
+						CPrintToChatAll("%t", "HandleNonSkeet_1_H", attacker, victim, damage);
+					else
+						CPrintToChatAll("%t", "HandleNonSkeet_1_J", attacker, victim, damage);
 				}
 				else if(shots > 1)
 				{
-					CPrintToChatAll("%t", "HandleNonSkeet_2", attacker, victim, shots, damage);
+					if(isHunter)
+						CPrintToChatAll("%t", "HandleNonSkeet_2_H", attacker, victim, shots, damage);
+					else
+						CPrintToChatAll("%t", "HandleNonSkeet_2_J", attacker, victim, shots, damage);
 				}
 				else
 				{
-					CPrintToChatAll("%t", "HandleNonSkeet_3", attacker, victim, damage);
+					if(isHunter)
+						CPrintToChatAll("%t", "HandleNonSkeet_3_H", attacker, victim, damage);
+					else
+						CPrintToChatAll("%t", "HandleNonSkeet_3_J", attacker, victim, damage);
 				}
 			}
 			else
@@ -2972,15 +3046,24 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 				
 				if(bMelee)
 				{
-					CPrintToChatAll("%t", "HandleNonSkeet_4", attacker, (isHunter ? "Hunter" : "Jockey"), damage);
+					if(isHunter)
+						CPrintToChatAll("%t", "HandleNonSkeet_4_H", "Hunter", damage);
+					else
+						CPrintToChatAll("%t", "HandleNonSkeet_4_J", "Jockey", damage);
 				}
 				else if(shots > 0)
 				{
-					CPrintToChatAll("%t", "HandleNonSkeet_5", attacker, (isHunter ? "Hunter" : "Jockey"), shots, damage);
+					if(isHunter)
+						CPrintToChatAll("%t", "HandleNonSkeet_5_H", attacker, "Hunter", shots, damage);
+					else
+						CPrintToChatAll("%t", "HandleNonSkeet_5_J", attacker, "Jockey", shots, damage);
 				}
 				else
 				{
-					CPrintToChatAll("%t", "HandleNonSkeet_6", attacker, (isHunter ? "Hunter" : "Jockey"), damage);
+					if(isHunter)
+						CPrintToChatAll("%t", "HandleNonSkeet_6_H", attacker, "Hunter", damage);
+					else
+						CPrintToChatAll("%t", "HandleNonSkeet_6_J", attacker, "Jockey", damage);
 				}
 			}
 			
