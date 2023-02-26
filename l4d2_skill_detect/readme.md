@@ -22,9 +22,11 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-    * v1.2h (2023-2-25)
+    * v1.2h (2023-2-27)
         * Request by ligal 
         * Separate translation for the jockey and hunter
+		* Fixed Self clear, fast clear smoker tongue in versus/survival/cavenge
+        * New Skill Reqport, "boomer vomits all survivors"
 
     * v1.1h (2022-12-16)
         * Request by Yabi
@@ -78,7 +80,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
         // Report Flag
         // bitflags: 1,2:skeets/hurt; 4,8:level/chip; 16,32:crown/draw; 64,128:cut/selfclear, ...
         // See Source code for more bitflags
-        sm_skill_report_flags "1028095"
+        sm_skill_report_flags "2076671"
 
         // How much damage a survivor must at least do to a smoker for him to count as self-clearing.
         sm_skill_selfclear_damage "200"
@@ -91,6 +93,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
         // Whether to count/forward sniper/magnum headshots as skeets.
         sm_skill_skeet_allowsniper "1"
+
+        // How many survivors a boomer must at least vomit to count as wonderful-vomit.
+        sm_skill_vomit_number "4"
 		```
 </details>
 
@@ -119,8 +124,8 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
     * 指令預設
         ```php
         // 此指令用來決定顯示哪些花式技巧
-        // 1028095 = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256 + 512 + 1024 + 2048 + 8192 + 32768 + 65536 + 131072 + 262144 + 524288
-        sm_skill_report_flags "1028095"
+        // 2076671 = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256 + 512 + 1024 + 2048 + 8192 + 32768 + 65536 + 131072 + 262144 + 524288 + 1048576
+        sm_skill_report_flags "2076671"
         ```
     * 源始碼內
         ```php
@@ -144,9 +149,10 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
         REP_BHOPSTREAK			(2 ^ 17 = 131072) //連跳
         REP_CARALARM			(2 ^ 18 = 262144) //警報車
         REP_POPSTOP				(2 ^ 19 = 524288) //推開Boomer不被嘔吐
+        REP_VOMIT				(2 ^ 20 = 1048576) //Boomer 嘔吐到四位以上倖存者
         ```
     * 舉例
         * 如果只要顯示 "打碎Tank石頭"(數值是512)、"Hunter高撲傷害"(數值是8192) => 請寫```sm_skill_report_flagss 8704```  (512 + 8192)
         * 如果只要顯示 "空爆hunter/jokcey"(數值是1)、"打碎Tank石頭"(數值是512)、"警報車"(數值是262144) => 請寫```sm_skill_report_flagss 262657```  (1 + 512 + 262144)
-        * 如果要顯示全部，請寫```sm_skill_report_flags 1048575``` (總數值)
+        * 如果要顯示全部，請寫```sm_skill_report_flags 2076671``` (總數值)
 </details>

@@ -18,12 +18,13 @@
 #define REP_BHOPSTREAK			(1 << 17)		// 131072
 #define REP_CARALARM			(1 << 18)		// 262144
 #define REP_POPSTOP				(1 << 19)		// 524288
+#define REP_VOMIT				(1 << 20)		// 1048576
 
 //Report Flag
 //1:SKEET; 2: HURTSKEET, 4:LEVEL, 8:HURTLEVEL; 16:CROWN, 32:DRAWCROWN; 64:TONGUECUT, 128:SELFCLEAR
 //256:SELFCLEARSHOVE, 512:ROCKSKEET, 1024:DEADSTOP, 2048:POP, 4096:SHOVE, 8192:HUNTERDP, 16384: JOCKEYDP, 32768: DEATHCHARGE
-//65536: INSTACLEAR, 131072: BHOPSTREAK, 262144: CARALARM, 524288: POPSTOP, 1048575: All)
-#define REP_DEFAULT				"1028095" // 1028095 = 11111010111111111111 , 1019391 = 11111000110111111111
+//65536: INSTACLEAR, 131072: BHOPSTREAK, 262144: CARALARM, 524288: POPSTOP, 1048576: VOMIT, 2097151: All)
+#define REP_DEFAULT				"2076671" // 2076671 = 111111010111111111111 , 1019391 = 011111000110111111111
 
 /**
  *	L4D2_skill_detect
@@ -88,6 +89,7 @@
 #include <multicolors>
 
 #define PLUGIN_VERSION "1.2h"
+#define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
 #define IS_SURVIVOR(%1)			(GetClientTeam(%1) == 2)
@@ -338,9 +340,6 @@ new						g_iLastCarAlarmReason	[MAXPLAYERS + 1];								// what this survivor di
 new						g_iLastCarAlarmBoomer;													// if a boomer triggered an alarm, remember it
 
 // cvars
-new		Handle:			g_hCvarReport										= INVALID_HANDLE;	// cvar whether to report at all
-new		Handle:			g_hCvarReportFlags									= INVALID_HANDLE;	// cvar what to report
-
 new		Handle:			g_hCvarAllowMelee									= INVALID_HANDLE;	// cvar whether to count melee skeets
 new		Handle:			g_hCvarAllowSniper									= INVALID_HANDLE;	// cvar whether to count sniper headshot skeets
 new		Handle:			g_hCvarAllowGLSkeet									= INVALID_HANDLE;	// cvar whether to count direct hit GL skeets
@@ -355,14 +354,19 @@ new		Handle:			g_hCvarBHopMinStreak								= INVALID_HANDLE;	// cvar this many h
 new		Handle:			g_hCvarBHopMinInitSpeed								= INVALID_HANDLE;	// cvar lower than this and the first jump won't be seen as the start of a streak
 new		Handle:			g_hCvarBHopContSpeed								= INVALID_HANDLE;	// cvar
 
-new		Handle:			g_hCvarPounceInterrupt								= INVALID_HANDLE;	// z_pounce_damage_interrupt
-new						g_iPounceInterrupt									= 150;
 new		Handle:			g_hCvarChargerHealth								= INVALID_HANDLE;	// z_charger_health
 new		Handle:			g_hCvarWitchHealth									= INVALID_HANDLE;	// z_witch_health
 new		Handle:			g_hCvarMaxPounceDistance							= INVALID_HANDLE;	// z_pounce_damage_range_max
 new		Handle:			g_hCvarMinPounceDistance							= INVALID_HANDLE;	// z_pounce_damage_range_min
 new		Handle:			g_hCvarMaxPounceDamage								= INVALID_HANDLE;	// z_hunter_max_pounce_bonus_damage;
 new		bool:			g_bDeathChargeIgnore[MAXPLAYERS+1][MAXPLAYERS+1];
+
+ConVar g_hCvarPounceInterrupt; //z_pounce_damage_interrupt
+int g_iPounceInterrupt = 150;
+
+ConVar g_hCvarVomitNumber, g_hCvarReportEnable, g_hCvarReportFlags;
+int g_iCvarVomitNumber, g_iCvarReportFlags;
+bool g_bCvarReportEnable;
 
 /*
 	Reports:
@@ -518,7 +522,8 @@ public OnPluginStart()
 	HookEvent("witch_harasser_set",			Event_WitchHarasserSet,			EventHookMode_Post);
 	
 	HookEvent("tongue_grab",				Event_TongueGrab,				EventHookMode_Post);
-	HookEvent("tongue_pull_stopped",		Event_TonguePullStopped,		EventHookMode_Post);
+	HookEvent("tongue_pull_stopped",		Event_TonguePullStopped);
+	HookEvent("tongue_release",				Event_TongueRelease,			EventHookMode_Post);
 	HookEvent("choke_start",				Event_ChokeStart,				EventHookMode_Post);
 	HookEvent("choke_stopped",				Event_ChokeStop,				EventHookMode_Post);
 	HookEvent("jockey_ride",				Event_JockeyRide,				EventHookMode_Post);
@@ -535,7 +540,7 @@ public OnPluginStart()
 	
 	// cvars: config
 	
-	g_hCvarReport = CreateConVar(			"sm_skill_report_enable" ,		"1", "Whether to report in chat (see sm_skill_report_flags).", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	g_hCvarReportEnable = CreateConVar(		"sm_skill_report_enable" ,		"1", "Whether to report in chat (see sm_skill_report_flags).", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	g_hCvarReportFlags = CreateConVar(		"sm_skill_report_flags" ,		REP_DEFAULT, "Report Flag\nbitflags: 1,2:skeets/hurt; 4,8:level/chip; 16,32:crown/draw; 64,128:cut/selfclear, ...\nSee Source code for more bitflags.", FCVAR_NOTIFY, true, 0.0 );
 	
 	g_hCvarAllowMelee = CreateConVar(		"sm_skill_skeet_allowmelee",	"1", "Whether to count/forward melee skeets.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -551,12 +556,17 @@ public OnPluginStart()
 	g_hCvarBHopMinStreak = CreateConVar(	"sm_skill_bhopstreak",			"3", "The lowest bunnyhop streak that will be reported.", FCVAR_NOTIFY, true, 0.0, false );
 	g_hCvarBHopMinInitSpeed = CreateConVar( "sm_skill_bhopinitspeed",	  	"150", "The minimal speed of the first jump of a bunnyhopstreak (0 to allow 'hops' from standstill).", FCVAR_NOTIFY, true, 0.0, false );
 	g_hCvarBHopContSpeed = CreateConVar(	"sm_skill_bhopkeepspeed",	  	"300", "The minimal speed at which hops are considered succesful even if not speed increase is made.", FCVAR_NOTIFY, true, 0.0, false );
+	g_hCvarVomitNumber = CreateConVar(		"sm_skill_vomit_number",	  	"4", "How many survivors a boomer must at least vomit to count as wonderful-vomit.", FCVAR_NOTIFY, true, 0.0 );
 	AutoExecConfig(true, "l4d2_skill_detect");
 	
 	// cvars: built in
 	g_hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
-	HookConVarChange(g_hCvarPounceInterrupt, CvarChange_PounceInterrupt);
-	g_iPounceInterrupt = GetConVarInt(g_hCvarPounceInterrupt);
+
+	GetCvars();
+	g_hCvarPounceInterrupt.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarReportEnable.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarReportFlags.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarVomitNumber.AddChangeHook(ConVarChanged_Cvars);
 	
 	g_hCvarChargerHealth = FindConVar("z_charger_health");
 	g_hCvarWitchHealth = FindConVar("z_witch_health");
@@ -606,9 +616,17 @@ public OnPluginStart()
 	}
 }
 
-public CvarChange_PounceInterrupt( Handle:convar, const String:oldValue[], const String:newValue[] )
+void ConVarChanged_Cvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
 {
-	g_iPounceInterrupt = GetConVarInt(convar);
+	GetCvars();
+}
+
+void GetCvars()
+{
+	g_iPounceInterrupt = g_hCvarPounceInterrupt.IntValue;
+	g_bCvarReportEnable = g_hCvarReportEnable.BoolValue;
+	g_iCvarReportFlags = g_hCvarReportFlags.IntValue;
+	g_iCvarVomitNumber = g_hCvarVomitNumber.IntValue;
 }
 
 public OnClientPostAdminCheck(client)
@@ -1011,7 +1029,7 @@ public Action: Event_IncapStart( Handle:event, const String:name[], bool:dontBro
 	
 	new Float: flow = GetSurvivorDistance(client);
 	
-	//PrintDebug( 3, "Incap Pre on [%N]: attk: %i / %i (%s) - dmgtype: %i - flow: %.1f", client, attacker, attackent, classname, dmgtype, flow );
+	//DebugPrint("Incap Pre on [%N]: attk: %i / %i (%s) - dmgtype: %i - flow: %.1f", client, attacker, attackent, classname, dmgtype, flow );
 	
 	// drown is damage type
 	if ( dmgtype & DMG_DROWN )
@@ -1135,17 +1153,50 @@ public Action: Event_PlayerDeath( Handle:hEvent, const String:name[], bool:dontB
 			{
 				if ( !IS_VALID_SURVIVOR(attacker) ) { return Plugin_Continue; }
 				
-				if (	g_bSmokerClearCheck[victim] &&
-						g_iSmokerVictim[victim] == attacker &&
-						g_iSmokerVictimDamage[victim] >= GetConVarInt(g_hCvarSelfClearThresh)
-				) {
-						HandleSmokerSelfClear( attacker, victim );
+				DebugPrint("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
+					g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
+
+				if(L4D_IsSurvivalMode() || L4D_IsVersusMode() || L4D2_IsScavengeMode())
+				{
+					if (	g_iSmokerVictim[victim] > 0 &&
+							g_iSmokerVictim[victim] == attacker &&
+							g_iSmokerVictimDamage[victim] >= GetConVarInt(g_hCvarSelfClearThresh) ) 
+					{
+							HandleSmokerSelfClear( attacker, victim );
+					}
+					else if ( g_iSmokerVictim[victim] > 0 &&
+								g_iSmokerVictim[victim] != attacker )
+					{
+						int smoker = victim;
+						victim = g_iSmokerVictim[smoker];
+						HandleClear( attacker, smoker, victim,
+								ZC_SMOKER,
+								(g_fPinTime[smoker][1] > 0.0) ? ( GetGameTime() - g_fPinTime[smoker][1]) : -1.0,
+								( GetGameTime() - g_fPinTime[smoker][0]),
+								false
+							);
+					}
+					else
+					{
+						g_bSmokerClearCheck[victim] = false;
+						g_iSmokerVictim[victim] = 0;
+					}
 				}
 				else
 				{
-					g_bSmokerClearCheck[victim] = false;
-					g_iSmokerVictim[victim] = 0;
+					if (	g_bSmokerClearCheck[victim] &&
+							g_iSmokerVictim[victim] == attacker &&
+							g_iSmokerVictimDamage[victim] >= GetConVarInt(g_hCvarSelfClearThresh) ) 
+					{
+							HandleSmokerSelfClear( attacker, victim );
+					}
+					else
+					{
+						g_bSmokerClearCheck[victim] = false;
+						g_iSmokerVictim[victim] = 0;
+					}
 				}
+
 			}
 			
 			/*
@@ -1189,7 +1240,7 @@ public Action: Event_PlayerDeath( Handle:hEvent, const String:name[], bool:dontB
 		//new atkent = GetEventInt(hEvent, "attackerentid"); 
 		new dmgtype = GetEventInt(hEvent, "type"); 
 		
-		//PrintDebug( 3, "Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
+		//DebugPrint("Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
 		
 		if ( dmgtype & DMG_FALL)
 		{
@@ -1210,13 +1261,13 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	//PrintDebug(1, "Shove from %i on %i", attacker, victim);
+	//DebugPrint("Shove from %i on %i", attacker, victim);
 	
 	if ( !IS_VALID_SURVIVOR(attacker) || !IS_VALID_INFECTED(victim) ) { return Plugin_Continue; }
 	
 	new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
 	
-	//PrintDebug(1, " --> Shove from %N on %N (class: %i) -- (last shove time: %.2f / %.2f)", attacker, victim, zClass, g_fVictimLastShove[victim][attacker], ( GetGameTime() - g_fVictimLastShove[victim][attacker] ) );
+	//DebugPrint(" --> Shove from %N on %N (class: %i) -- (last shove time: %.2f / %.2f)", attacker, victim, zClass, g_fVictimLastShove[victim][attacker], ( GetGameTime() - g_fVictimLastShove[victim][attacker] ) );
 	
 	// track on boomers
 	if ( zClass == ZC_BOOMER )
@@ -1284,7 +1335,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 		// CPrintToChat(attacker, "shoved %d player_shoved", victim);
 	}
 	
-	//PrintDebug(0, "shove by %i on %i", attacker, victim );
+	//DebugPrint("shove by %i on %i", attacker, victim );
 	return Plugin_Continue;
 }
 
@@ -1625,7 +1676,7 @@ public Action: Event_ChargeCarryStart( Handle:event, const String:name[], bool:d
 	new victim = GetClientOfUserId( GetEventInt(event, "victim") );
 	if ( !IS_VALID_INFECTED(client) ) { return; }
 
-	PrintDebug(0, "Charge carry start: %i - %i -- time: %.2f", client, victim, GetGameTime() );
+	DebugPrint("Charge carry start: %i - %i -- time: %.2f", client, victim, GetGameTime() );
 	
 	g_fChargeTime[client] = GetGameTime();
 	g_fPinTime[client][0] = g_fChargeTime[client];
@@ -1735,7 +1786,7 @@ public Action: Timer_DeathChargeCheck( Handle:timer, any:client )
 	if ( !IS_VALID_INGAME(client) ) { return; }
 	
 	// check conditions.. if flags match up, it's a DC
-	PrintDebug( 3, "Checking charge victim: %i - %i - flags: %i (alive? %i)", g_iVictimCharger[client], client, g_iVictimFlags[client], IsPlayerAlive(client) );
+	DebugPrint("Checking charge victim: %i - %i - flags: %i (alive? %i)", g_iVictimCharger[client], client, g_iVictimFlags[client], IsPlayerAlive(client) );
 	
 	new flags = g_iVictimFlags[client];
 	
@@ -2173,7 +2224,7 @@ stock CheckWitchCrown ( witch, attacker, bool: bOneShot = false )
 	FormatEx(witch_key, sizeof(witch_key), "%x", witch);
 	decl witch_dmg_array[MAXPLAYERS+DMGARRAYEXT];
 	if ( !GetTrieArray(g_hWitchTrie, witch_key, witch_dmg_array, MAXPLAYERS+DMGARRAYEXT) ) {
-		PrintDebug(0, "Witch Crown Check: Error: Trie entry missing (entity: %i, oneshot: %i)", witch, bOneShot);
+		DebugPrint("Witch Crown Check: Error: Trie entry missing (entity: %i, oneshot: %i)", witch, bOneShot);
 		return;
 	}
 	
@@ -2198,12 +2249,12 @@ stock CheckWitchCrown ( witch, attacker, bool: bOneShot = false )
 	
 	if ( witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_GOTSLASH)] || !witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNTYPE)] )
 	{
-		PrintDebug(0, "Witch Crown Check: Failed: bungled: %i / crowntype: %i (entity: %i)",
+		DebugPrint("Witch Crown Check: Failed: bungled: %i / crowntype: %i (entity: %i)",
 				witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_GOTSLASH)],
 				witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNTYPE)],
 				witch
 			);
-		PrintDebug(1, "Witch Crown Check: Further details: attacker: %N, attacker dmg: %i, teamless dmg: %i",
+		DebugPrint("Witch Crown Check: Further details: attacker: %N, attacker dmg: %i, teamless dmg: %i",
 				attacker,
 				witch_dmg_array[attacker],
 				witch_dmg_array[0]
@@ -2211,7 +2262,7 @@ stock CheckWitchCrown ( witch, attacker, bool: bOneShot = false )
 		return;
 	}
 	
-	PrintDebug(0, "Witch Crown Check: crown shot: %i, harrassed: %i (full health: %i / drawthresh: %i / oneshot %i)", 
+	DebugPrint("Witch Crown Check: crown shot: %i, harrassed: %i (full health: %i / drawthresh: %i / oneshot %i)", 
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNSHOT)],
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_STARTLED)],
 			iWitchHealth,
@@ -2333,6 +2384,7 @@ public OnTouch_Rock ( entity )
 }
 
 // smoker tongue cutting & self clears
+// trigger this event only in coop/realism
 public Action: Event_TonguePullStopped (Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new attacker = GetClientOfUserId( GetEventInt(event, "userid") );
@@ -2341,7 +2393,9 @@ public Action: Event_TonguePullStopped (Handle:event, const String:name[], bool:
 	new reason = GetEventInt(event, "release_type");
 	
 	if ( !IS_VALID_SURVIVOR(attacker) || !IS_VALID_INFECTED(smoker) ) { return Plugin_Continue; }
-	
+
+	DebugPrint("Event_TonguePullStopped attacker %N, victim: %N, smoker: %N, reason: %d", attacker, victim, smoker, reason);
+
 	// clear check -  if the smoker itself was not shoved, handle the clear
 	HandleClear( attacker, smoker, victim,
 			ZC_SMOKER,
@@ -2350,30 +2404,48 @@ public Action: Event_TonguePullStopped (Handle:event, const String:name[], bool:
 			bool:( reason != CUT_SLASH && reason != CUT_KILL )
 		);
 	
-	if ( attacker != victim ) { return Plugin_Continue; }
-	
-	if ( reason == CUT_KILL )
+	if ( attacker == victim )
 	{
-		g_bSmokerClearCheck[smoker] = true;
-	}
-	else if ( g_bSmokerShoved[smoker] )
-	{
-		HandleSmokerSelfClear( attacker, smoker, true );
-	}
-	else if ( reason == CUT_SLASH ) // note: can't trust this to actually BE a slash..
-	{
-		// check weapon
-		decl String:weapon[32];
-		GetClientWeapon( attacker, weapon, 32 );
-		
-		// this doesn't count the chainsaw, but that's no-skill anyway
-		if ( StrEqual(weapon, "weapon_melee", false) )
+		if ( reason == CUT_KILL )
 		{
-			HandleTongueCut( attacker, smoker );
+			g_bSmokerClearCheck[smoker] = true;
 		}
+		else if ( g_bSmokerShoved[smoker] )
+		{
+			HandleSmokerSelfClear( attacker, smoker, true );
+		}
+		else if ( reason == CUT_SLASH ) // note: can't trust this to actually BE a slash..
+		{
+			// check weapon
+			decl String:weapon[32];
+			GetClientWeapon( attacker, weapon, 32 );
+			
+			// this doesn't count the chainsaw, but that's no-skill anyway
+			if ( StrEqual(weapon, "weapon_melee", false) )
+			{
+				HandleTongueCut( attacker, smoker );
+			}
+		}
+	}
+
+	if(L4D_IsSurvivalMode() || L4D_IsVersusMode() || L4D2_IsScavengeMode())
+	{
+		g_iSmokerVictim[smoker] = 0;
 	}
 	
 	return Plugin_Continue;
+}
+
+public void Event_TongueRelease(Event event, const char[] name, bool dontBroadcast) 
+{
+	int smoker = GetClientOfUserId( GetEventInt(event, "userid") );
+	int victim = GetClientOfUserId( GetEventInt(event, "victim") );
+	
+	if ( !IS_VALID_SURVIVOR(victim) || !IS_VALID_INFECTED(smoker) ) { return ;}
+
+	if (L4D_IsCoopMode() || L4D2_IsRealismMode()) return;
+
+	DebugPrint("Event_TongueRelease smoker %N, victim: %N", smoker, victim);
 }
 
 public Action: Event_TongueGrab (Handle:event, const String:name[], bool:dontBroadcast)
@@ -2411,14 +2483,19 @@ public Action: Event_ChokeStop (Handle:event, const String:name[], bool:dontBroa
 	new reason = GetEventInt(event, "release_type");
 	
 	if ( !IS_VALID_SURVIVOR(attacker) || !IS_VALID_INFECTED(smoker) ) { return; }
+	DebugPrint("Event_ChokeStop attacker %N, victim: %N, smoker: %N, reason: %d", attacker, victim, smoker, reason);
 	
 	// if the smoker itself was not shoved, handle the clear
+
 	HandleClear( attacker, smoker, victim,
 			ZC_SMOKER,
 			(g_fPinTime[smoker][1] > 0.0) ? ( GetGameTime() - g_fPinTime[smoker][1]) : -1.0,
 			( GetGameTime() - g_fPinTime[smoker][0]),
 			bool:( reason != CUT_SLASH && reason != CUT_KILL )
 		);
+
+	g_bSmokerClearCheck[smoker] = false;
+	g_iSmokerVictim[smoker] = 0;
 }
 
 // car alarm handling
@@ -2427,7 +2504,7 @@ public Hook_CarAlarmStart ( const String:output[], caller, activator, Float:dela
 	//decl String:car_key[10];
 	//FormatEx(car_key, sizeof(car_key), "%x", entity);
 	
-	PrintDebug( 0, "calarm trigger: caller %i / activator %i / delay: %.2f", caller, activator, delay );
+	DebugPrint( "calarm trigger: caller %i / activator %i / delay: %.2f", caller, activator, delay );
 }
 public Action: Event_CarAlarmGoesOff( Handle:event, const String:name[], bool:dontBroadcast )
 {
@@ -2638,7 +2715,7 @@ public Action: L4D_OnCThrowActivate ( ability )
 stock HandlePop( attacker, victim, shoveCount, Float:timeAlive, Float:timeNear )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_POP) && timeNear < 5.0 )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_POP) && timeNear < 5.0 )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
@@ -2664,7 +2741,7 @@ stock HandlePop( attacker, victim, shoveCount, Float:timeAlive, Float:timeNear )
 stock HandlePopStop(attacker, victim, hits, Float:timeVomit)
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_POPSTOP) &&
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_POPSTOP) &&
 		hits < 1 && timeVomit < GetConVarFloat(g_hCvarInstaTime) )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
@@ -2691,7 +2768,7 @@ stock HandlePopStop(attacker, victim, hits, Float:timeVomit)
 stock HandleLevel( attacker, victim )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_LEVEL) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_LEVEL) )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
@@ -2719,7 +2796,7 @@ stock HandleLevel( attacker, victim )
 stock HandleLevelHurt( attacker, victim, damage )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_HURTLEVEL) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_HURTLEVEL) )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
@@ -2748,7 +2825,7 @@ stock HandleLevelHurt( attacker, victim, damage )
 stock HandleDeadstop( attacker, victim, bool:hunter = true )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_DEADSTOP) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_DEADSTOP) )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
@@ -2776,7 +2853,7 @@ stock HandleDeadstop( attacker, victim, bool:hunter = true )
 stock HandleShove( attacker, victim, zombieClass )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_SHOVE) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_SHOVE) )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
@@ -2839,7 +2916,7 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 	shots = 1, assist = -1, bool:isHunter = true )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_SKEET) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_SKEET) )
 	{
 		if ( attacker == -2 )
 		{
@@ -3010,7 +3087,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 	shots = 1, bool:isHunter = true )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_HURTSKEET) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_HURTSKEET) )
 	{
 		if(IS_VALID_INGAME(attacker))
 		{
@@ -3108,7 +3185,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 HandleCrown( attacker, damage )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_CROWN) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_CROWN) )
 	{
 		if ( IS_VALID_INGAME(attacker) )
 		{
@@ -3131,7 +3208,7 @@ HandleCrown( attacker, damage )
 HandleDrawCrown( attacker, damage, chipdamage )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_DRAWCROWN) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_DRAWCROWN) )
 	{
 		if ( IS_VALID_INGAME(attacker) )
 		{
@@ -3156,7 +3233,7 @@ HandleDrawCrown( attacker, damage, chipdamage )
 HandleTongueCut( attacker, victim )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_TONGUECUT) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_TONGUECUT) )
 	{
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
@@ -3180,20 +3257,34 @@ HandleTongueCut( attacker, victim )
 HandleSmokerSelfClear( attacker, victim, bool:withShove = false )
 {
 	// report?
-	if (	GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_SELFCLEAR) &&
-			(!withShove || (GetConVarInt(g_hCvarReportFlags) & REP_SELFCLEARSHOVE) )
+	if (	g_bCvarReportEnable && (g_iCvarReportFlags & REP_SELFCLEAR) &&
+			(!withShove || (g_iCvarReportFlags & REP_SELFCLEARSHOVE) )
 	) {
 		static char attackername[MAX_NAME_LENGTH], victimname[MAX_NAME_LENGTH];
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
 			GetClientName(attacker, attackername, sizeof(attackername));
 			GetClientName(victim, victimname, sizeof(victimname));
-			CPrintToChatAll( "%t", "HandleSmokerSelfClear_1", attackername, victimname, (withShove ? "by shoving" : "empty") );
+			if(withShove)
+			{
+				CPrintToChatAll( "%t", "HandleSmokerSelfClear_1_S", attackername, victimname);
+			}
+			else
+			{
+				CPrintToChatAll( "%t", "HandleSmokerSelfClear_1_O", attackername, victimname);
+			}
 		}
 		else if ( IS_VALID_INGAME(attacker) )
 		{
 			GetClientName(attacker, attackername, sizeof(attackername));
-			CPrintToChatAll( "%t", "HandleSmokerSelfClear_2", attackername, (withShove ? "by shoving" : "empty") );
+			if(withShove)
+			{
+				CPrintToChatAll( "%t", "HandleSmokerSelfClear_2_S", attackername);
+			}
+			else
+			{
+				CPrintToChatAll( "%t", "HandleSmokerSelfClear_2_O", attackername);
+			}
 		}
 	}
 	
@@ -3219,7 +3310,7 @@ HandleRockEaten( attacker, victim )
 HandleRockSkeeted( attacker, victim, bool:melee=false, type=ROCK_UNKNOWN )
 {
 	// report?
-	if ( GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_ROCKSKEET) )
+	if ( g_bCvarReportEnable && (g_iCvarReportFlags & REP_ROCKSKEET) )
 	{
 		static char typename[32];
 		switch(type)
@@ -3261,8 +3352,8 @@ HandleRockSkeeted( attacker, victim, bool:melee=false, type=ROCK_UNKNOWN )
 stock HandleHunterDP( attacker, victim, actualDamage, Float:calculatedDamage, Float:height, bool:playerIncapped = false )
 {
 	// report?
-	if (	GetConVarBool(g_hCvarReport)
-		&&	(GetConVarInt(g_hCvarReportFlags) & REP_HUNTERDP)
+	if (	g_bCvarReportEnable
+		&&	(g_iCvarReportFlags & REP_HUNTERDP)
 		&&	height >= GetConVarFloat(g_hCvarHunterDPThresh)
 		&&	!playerIncapped
 	) {
@@ -3291,8 +3382,8 @@ stock HandleHunterDP( attacker, victim, actualDamage, Float:calculatedDamage, Fl
 stock HandleJockeyDP( attacker, victim, Float:height )
 {
 	// report?
-	if (	GetConVarBool(g_hCvarReport)
-		&&	(GetConVarInt(g_hCvarReportFlags) & REP_JOCKEYDP)
+	if (	g_bCvarReportEnable
+		&&	(g_iCvarReportFlags & REP_JOCKEYDP)
 		&&	height >= GetConVarFloat(g_hCvarJockeyDPThresh)
 	) {
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(attacker) )
@@ -3319,8 +3410,8 @@ stock HandleJockeyDP( attacker, victim, Float:height )
 stock HandleDeathCharge( attacker, victim, Float:height, Float:distance, bool:bCarried = true )
 {
 	// report?
-	if (	GetConVarBool(g_hCvarReport) &&
-			(GetConVarInt(g_hCvarReportFlags) & REP_DEATHCHARGE) &&
+	if (	g_bCvarReportEnable &&
+			(g_iCvarReportFlags & REP_DEATHCHARGE) &&
 			height >= GetConVarFloat(g_hCvarDeathChargeHeight) &&
 			!g_bDeathChargeIgnore[attacker][victim]
 	) {
@@ -3383,9 +3474,9 @@ stock HandleClear( attacker, victim, pinVictim, zombieClass, Float:clearTimeA, F
 	if ( clearTimeA < 0 && clearTimeA != -1.0 ) { clearTimeA = 0.0; }
 	if ( clearTimeB < 0 && clearTimeB != -1.0 ) { clearTimeB = 0.0; }
 	
-	PrintDebug(0, "Clear: %i freed %i from %i: time: %.2f / %.2f -- class: %s (with shove? %i)", attacker, pinVictim, victim, clearTimeA, clearTimeB, g_csSIClassName[zombieClass], bWithShove );
+	DebugPrint("Clear: %i freed %i from %i: time: %.2f / %.2f -- class: %s (with shove? %i)", attacker, pinVictim, victim, clearTimeA, clearTimeB, g_csSIClassName[zombieClass], bWithShove );
 	
-	if ( attacker != pinVictim && GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_INSTACLEAR) )
+	if ( attacker != pinVictim && g_bCvarReportEnable && (g_iCvarReportFlags & REP_INSTACLEAR) )
 	{
 		new Float: fMinTime = GetConVarFloat(g_hCvarInstaTime);
 		new Float: fClearTime = clearTimeA;
@@ -3443,6 +3534,13 @@ stock HandleClear( attacker, victim, pinVictim, zombieClass, Float:clearTimeA, F
 // booms
 stock HandleVomitLanded( attacker, boomCount )
 {
+	if(g_iCvarVomitNumber <= boomCount && 
+		g_bCvarReportEnable &&
+		g_iCvarReportFlags & REP_VOMIT)
+	{
+		CPrintToChatAll( "%t", "HandleVomitLanded_1", attacker, boomCount);
+	}
+
 	Call_StartForward(g_hForwardVomitLanded);
 	Call_PushCell(attacker);
 	Call_PushCell(boomCount);
@@ -3452,7 +3550,7 @@ stock HandleVomitLanded( attacker, boomCount )
 // bhaps
 stock HandleBHopStreak( survivor, streak, Float: maxVelocity )
 {
-	if (	GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_BHOPSTREAK) &&
+	if (	g_bCvarReportEnable && (g_iCvarReportFlags & REP_BHOPSTREAK) &&
 			IS_VALID_INGAME(survivor) && !IsFakeClient(survivor) &&
 			streak >= GetConVarInt(g_hCvarBHopMinStreak)
 	) {
@@ -3477,7 +3575,7 @@ stock HandleBHopStreak( survivor, streak, Float: maxVelocity )
 // car alarms
 stock HandleCarAlarmTriggered( survivor, infected, reason )
 {
-	if (	GetConVarBool(g_hCvarReport) && (GetConVarInt(g_hCvarReportFlags) & REP_CARALARM) &&
+	if (	g_bCvarReportEnable && (g_iCvarReportFlags & REP_CARALARM) &&
 			IS_VALID_INGAME(survivor) && !IsFakeClient(survivor)
 	) {
 		if ( reason == view_as<int>(CALARM_HIT) ) {
@@ -3608,13 +3706,15 @@ public bool: ChargeTraceFilter (entity, contentsMask)
 }
 */
 
-stock PrintDebug(debuglevel, const String:Message[], any:... )
+stock void DebugPrint(const char[] Message, any ...)
 {
-	/*
-	decl String:DebugBuff[256];
-	VFormat(DebugBuff, sizeof(DebugBuff), Message, 3);
-	LogMessage(DebugBuff);
-	*/
+    #if DEBUG
+        char DebugBuff[128];
+        VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
+        PrintToChatAll("%s",DebugBuff);
+        PrintToServer(DebugBuff);
+        LogMessage(DebugBuff);
+    #endif 
 }
 stock bool: IsWitch(entity)
 {
