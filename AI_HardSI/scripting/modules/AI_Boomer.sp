@@ -10,7 +10,7 @@ public void Boomer_OnModuleStart() {
 
 	hCvarBoomerVomitDelay = FindConVar("boomer_vomit_delay");	
 	hCvarBoomerVomitDelay.SetFloat(0.1);
-	hCvarChokeDamageInterrupt.AddChangeHook(OnBoomerCvarChange);    
+	hCvarBoomerVomitDelay.AddChangeHook(OnBoomerCvarChange);    
 }
 
 public void OnConfigsExecuted()
