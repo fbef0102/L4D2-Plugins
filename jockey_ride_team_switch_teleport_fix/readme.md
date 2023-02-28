@@ -1,6 +1,6 @@
 
 # Description | 內容
-Fixed Teleport bug if jcokey player switches team while ridding the survivor (Another valve bug)
+Fixed Teleport bug if jcokey player switches team while riding the survivor (Another valve bug)
 
 * [Video | 影片展示](https://youtu.be/Wt0AgL6Jjd4)
 
