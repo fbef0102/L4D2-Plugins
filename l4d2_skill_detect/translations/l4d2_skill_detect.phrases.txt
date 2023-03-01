@@ -60,26 +60,30 @@
 		"zho"		"{lightgreen}★★★ {green}Charger{default} 被 {olive}倖存者{default} 近戰砍死了 ({lightgreen}%i{default} 傷害)."
 		"chi"		"{lightgreen}★★★ {green}Charger{default} 被 {olive}幸存者{default} 近战砍死了.({lightgreen}%i{default} 伤害)."
 	}
-	"HandleDeadstop_1_H" //Is Hunter
+	"HandleDeadstop_1_H"
 	{
+		//Is Hunter
 		"en"		"{lightgreen}★ {olive}%N{default} deadstopped {green}%N{default}."
 		"zho"		"{lightgreen}★ {olive}%N{default} 推停了飛撲的 {green}%N{default}."
 		"chi"		"{lightgreen}★ {olive}%N{default} 推停了飞扑的 {green}%N{default}."
 	}
-	"HandleDeadstop_1_J" //Is Joceky
+	"HandleDeadstop_1_J" 
 	{
+		//Is Joceky
 		"en"		"{lightgreen}★ {olive}%N{default} deadstopped {green}%N{default}."
 		"zho"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}%N{default}."
 		"chi"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}%N{default}."
 	}
-	"HandleDeadstop_2_H" //Is Hunter
+	"HandleDeadstop_2_H"
 	{
+		 //Is Hunter
 		"en"		"{lightgreen}★ {olive}%N{default} deadstopped {green}a hunter{default}."
 		"zho"		"{lightgreen}★ {olive}%N{default} 推停了飛撲的 {green}Hunter{default}."
 		"chi"		"{lightgreen}★ {olive}%N{default} 推停了飞扑的 {green}Hunter{default}."
 	}
-	"HandleDeadstop_2_J" //Is Joceky
+	"HandleDeadstop_2_J"
 	{
+		//Is Joceky
 		"en"		"{lightgreen}★ {olive}%N{default} deadstopped {green}a jockey{default}."
 		"zho"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}Jockey{default}."
 		"chi"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}Jockey{default}."
@@ -110,12 +114,14 @@
 	}
 	"HandleSkeet_1_H"
 	{
+		//Is Hunter
 		"en"		"{lightgreen}★ {green}%N{default} was team-skeeted by {olive}%N{default}."
 		"zho"		"{lightgreen}★ {green}%N{default} 被 {olive}%N{default} 和隊友們合力空爆了."
 		"chi"		"{lightgreen}★ {green}%N{default} 被 {olive}%N{default} 和队友们合力空爆了."
 	}
 	"HandleSkeet_1_J"
 	{
+		//Is Joceky
 		"en"		"{lightgreen}★ {green}%N{default} was team-skeeted by {olive}%N{default}."
 		"zho"		"{lightgreen}★ {green}%N{default} 被 {olive}%N{default} 和隊友們合力空爆了."
 		"chi"		"{lightgreen}★ {green}%N{default} 被 {olive}%N{default} 和队友们合力空爆了."
