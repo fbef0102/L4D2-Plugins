@@ -677,7 +677,7 @@ void Do_SpawnInfected(int client, const char[] type) {
 		}		
 	}
 
-	if (bSpawnSuccessful)
+	if (bot > 0 && bSpawnSuccessful)
 	{
 		ChangeClientTeam(bot, 3);
 		SetEntProp(bot, Prop_Send, "m_usSolidFlags", 16);
