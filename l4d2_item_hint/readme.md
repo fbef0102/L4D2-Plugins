@@ -22,7 +22,17 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
     L4D2
     ```
 
+* Translation Support | 支援翻譯
+	```
+	English
+	繁體中文
+	简体中文
+	```
+
 * <details><summary>Changelog | 版本日誌</summary>
+
+	* v2.6 (2023-3-8)
+        * Translation Support
 
 	* v2.5 (2022-12-27)
         * Add MultiColors

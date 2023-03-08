@@ -64,7 +64,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.5",
+	version     = "2.6",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -94,6 +94,8 @@ public void OnAllPluginsLoaded()
 
 public void OnPluginStart()
 {
+	LoadTranslations("l4d2_item_hint.phrases");
+
 	GameData hGameData = new GameData("l4d2_item_hint");
 	if (hGameData != null)
 	{
@@ -1200,7 +1202,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "({green}Vocalize{default}) {olive}%N{default}: %s", client, sItemName);
+						CPrintToChat(i, "%T", "Announce_Vocalize_ITEM (C)", i, client, sItemName);
 					}
 				}
 			}
@@ -1209,7 +1211,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "(Vocalize) %N: %s", client, sItemName);
+						PrintHintText(i, "%T", "Announce_Vocalize_ITEM", i, client, sItemName);
 					}
 				}
 			}
@@ -1218,7 +1220,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "(Vocalize) %N: %s", client, sItemName);
+						PrintCenterText(i, "%T", "Announce_Vocalize_ITEM", i, client, sItemName);
 					}
 				}
 			}
@@ -1234,7 +1236,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintToChat(i, "\x01(\x04Vocalize\x01) \x05%N\x01: \x04%s", client, sItemName);
+						CPrintToChat(i, "%T", "Announce_Vocalize_INFECTED (C)", i, client, sItemName);
 					}
 				}
 			}
@@ -1243,7 +1245,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "\x01(\x04Vocalize\x01) \x05%N\x01: \x04%s", client, sItemName);
+						PrintHintText(i, "%T", "Announce_Vocalize_INFECTED", i, client, sItemName);
 					}
 				}
 			}
@@ -1252,7 +1254,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "\x01(\x04Vocalize\x01) \x05%N\x01: \x04%s", client, sItemName);
+						PrintCenterText(i, "%T", "Announce_Vocalize_INFECTED", i, client, sItemName);
 					}
 				}
 			}
@@ -1361,7 +1363,7 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
 			{
-				FormatEx(sCaption, sizeof sCaption, "%N Marked Here", client);
+				FormatEx(sCaption, sizeof sCaption, "%t", "Spot_Maker", client);
 				Create_env_instructor_hint(iEntity, view_as<EHintType>(eSpotMarker), vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
 			}
 		}
@@ -1393,8 +1395,8 @@ bool Create_info_target(int iEntity, const float vOrigin[3], const char[] sTarge
 	}
 	else
 	{
-		char szBuffer[36];
-		Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+		static char szBuffer[36];
+		FormatEx(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
 
 		SetVariantString(szBuffer);
 		AcceptEntityInput(entity, "AddOutput");
@@ -1444,8 +1446,8 @@ void Create_env_instructor_hint(int iEntity, EHintType eType, const float vOrigi
 	}
 	else
 	{
-		char szBuffer[36];
-		Format(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+		static char szBuffer[36];
+		FormatEx(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
 
 		SetVariantString(szBuffer);
 		AcceptEntityInput(entity, "AddOutput");
