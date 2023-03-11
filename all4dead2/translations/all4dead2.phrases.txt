@@ -542,9 +542,9 @@
 	}
 	"has been spawned"
 	{
-		"en"			"has been spawned"
-		"chi"			"已经生成"
-		"zho"			"已經生成"
+		"en"			"{green}%s{lightgreen} has been spawned"
+		"chi"			"{green}%s{lightgreen} 已经生成"
+		"zho"			"{green}%s{lightgreen} 已經生成"
 	}
 	"auto"
 	{
@@ -554,81 +554,81 @@
 	}
 	"Automatic placement of spawned infected has been enabled"
 	{
-		"en"			"Automatic placement of spawned infected has been enabled"
-		"chi"			"开启自动放置生成感染者功能"
-		"zho"			"開啟自動放置生成感染者功能"
+		"en"			"{lightgreen} Automatic placement of spawned infected has been enabled"
+		"chi"			"{lightgreen} 开启自动放置生成感染者功能"
+		"zho"			"{lightgreen} 開啟自動放置生成感染者功能"
 	}
 	"Automatic placement of spawned infected has been disabled"
 	{
-		"en"			"Automatic placement of spawned infected has been disabled"
-		"chi"			"关闭自动放置生成感染者功能"
-		"zho"			"关闭自动放置生成感染者功能"
+		"en"			"{lightgreen} Automatic placement of spawned infected has been disabled"
+		"chi"			"{lightgreen} 关闭自动放置生成感染者功能"
+		"zho"			"{lightgreen} 关闭自动放置生成感染者功能"
 	}
 	"Bosses will now spawn continuously"
 	{
-		"en"			"Bosses will now spawn continuously"
-		"chi"			"开始持续生成Tank和Witch"
-		"zho"			"開始持續生成Tank和Witch"
+		"en"			"{lightgreen} Bosses will now spawn continuously"
+		"chi"			"{lightgreen} 开始持续生成Tank和Witch"
+		"zho"			"{lightgreen} 開始持續生成Tank和Witch"
 	}
 	"Bosses will no longer spawn continuously"
 	{
-		"en"			"Bosses will no longer spawn continuously"
-		"chi"			"停止持续生成Tank和Witch"
-		"zho"			"停止持續生成Tank和Witch"
+		"en"			"{lightgreen} Bosses will no longer spawn continuously"
+		"chi"			"{lightgreen} 停止持续生成Tank和Witch"
+		"zho"			"{lightgreen} 停止持續生成Tank和Witch"
 	}
 	"Endless panic events have started"
 	{
-		"en"			"Endless panic events have started"
-		"chi"			"开始无尽尸潮"
-		"zho"			"開始無限屍潮"
+		"en"			"{lightgreen} Endless panic events have started"
+		"chi"			"{lightgreen} 开始无尽尸潮"
+		"zho"			"{lightgreen} 開始無限屍潮"
 	}
 	"Endless panic events have ended"
 	{
-		"en"			"Automatic placement of spawned infected has been disabled"
-		"chi"			"停止无尽尸潮"
-		"zho"			"停止無限屍潮"
+		"en"			"{lightgreen} Automatic placement of spawned infected has been disabled"
+		"chi"			"{lightgreen} 停止无尽尸潮"
+		"zho"			"{lightgreen} 停止無限屍潮"
 	}
 	"A tank is guaranteed to spawn this round"
 	{
-		"en"			"A tank is guaranteed to spawn this round"
-		"chi"			"当前回合Tank固定生成"
-		"zho"			"當前回合Tank固定生成"
+		"en"			"{lightgreen} A tank is guaranteed to spawn this round"
+		"chi"			"{lightgreen} 当前回合Tank固定生成"
+		"zho"			"{lightgreen} 當前回合Tank固定生成"
 	}
 	"A tank is no longer guaranteed to spawn this round"
 	{
-		"en"			"A tank is no longer guaranteed to spawn this round"
-		"chi"			"当前回合Tank生成恢复原样"
-		"zho"			"當前回合Tank生成恢復原樣"
+		"en"			"{lightgreen} A tank is no longer guaranteed to spawn this round"
+		"chi"			"{lightgreen} 当前回合Tank生成恢复原样"
+		"zho"			"{lightgreen} 當前回合Tank生成恢復原樣"
 	}
 	"A witch is guaranteed to spawn this round"
 	{
-		"en"			"Automatic placement of spawned infected has been disabled"
-		"chi"			"当前回合witch固定生成"
-		"zho"			"當前回合witch固定生成"
+		"en"			"{lightgreen} Automatic placement of spawned infected has been disabled"
+		"chi"			"{lightgreen} 当前回合witch固定生成"
+		"zho"			"{lightgreen} 當前回合witch固定生成"
 	}
 	"A witch is no longer guaranteed to spawn this round"
 	{
-		"en"			"Automatic placement of spawned infected has been disabled"
-		"chi"			"当前回合witch生成恢复原样"
-		"zho"			"當前回合witch生成恢復原樣"
+		"en"			"{lightgreen} Automatic placement of spawned infected has been disabled"
+		"chi"			"{lightgreen} 当前回合witch生成恢复原样"
+		"zho"			"{lightgreen} 當前回合witch生成恢復原樣"
 	}
 	"The horde grows larger"
 	{
-		"en"			"The horde grows larger"
-		"chi"			"尸潮数量已增加"
-		"zho"			"屍潮數量已增加"
+		"en"			"{lightgreen} The horde grows larger"
+		"chi"			"{lightgreen} 尸潮数量已增加"
+		"zho"			"{lightgreen} 屍潮數量已增加"
 	}
 	"Player notifications have now been enabled"
 	{
-		"en"			"Player notifications have now been enabled"
-		"chi"			"玩家提醒功能已开启"
-		"zho"			"玩家提醒功能已開啟"
+		"en"			"{lightgreen} Player notifications have now been enabled"
+		"chi"			"{lightgreen} 玩家提醒功能已开启"
+		"zho"			"{lightgreen} 玩家提醒功能已開啟"
 	}
 	"Restored the default settings"
 	{
-		"en"			"Restored the default settings"
-		"chi"			"恢复默认设置"
-		"zho"			"恢復默認設置"
+		"en"			"{lightgreen} Restored the default settings"
+		"chi"			"{lightgreen} 恢复默认设置"
+		"zho"			"{lightgreen} 恢復默認設置"
 	}
 	"Allowing an all bot survivor team"
 	{
@@ -644,9 +644,9 @@
 	}
 	"The zombies are coming!"
 	{
-		"en"			"The zombies are coming!"
-		"chi"			"尸潮来了!"
-		"zho"			"屍潮來了!"
+		"en"			"{lightgreen} The zombies are coming!"
+		"chi"			"{lightgreen} 尸潮来了!"
+		"zho"			"{lightgreen} 屍潮來了!"
 	}
 	"Could not find a valid spawn position for S.I. in 5 tries"
 	{
