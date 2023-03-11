@@ -28,6 +28,9 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 	//grandwazir @ 2009-2010
 	//Harry @ 2020-2023
 	```
+	* v3.6 (2023-3-11)
+		* Fixed translation phrase.
+
 	* v3.5 (2023-1-27)
 		* Translation Support. Thanks to wyxls.
 

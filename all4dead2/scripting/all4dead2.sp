@@ -4,7 +4,7 @@
 // Define constants
 #define PLUGIN_NAME					"All4Dead"
 #define PLUGIN_TAG					"[A4D]"
-#define PLUGIN_VERSION				"3.5"
+#define PLUGIN_VERSION				"3.6"
 #define MENU_DISPLAY_TIME		15
 
 // Include necessary files
@@ -20,7 +20,7 @@
 
 // Create ConVar Handles
 ConVar notify_players, zombies_increment, always_force_bosses, refresh_zombie_location = null;
-ConVar director_force_tank, director_force_witch, director_panic_forever, sb_all_bot_team,
+ConVar director_force_tank, director_force_witch, director_panic_forever,
 	z_mega_mob_size, z_mob_spawn_max_size, z_mob_spawn_min_size;
 
 // Menu handlers
@@ -147,7 +147,6 @@ public void OnPluginStart() {
 	director_force_tank = FindConVar("director_force_tank");
 	director_force_witch = FindConVar("director_force_witch");
 	director_panic_forever = FindConVar("director_panic_forever");
-	sb_all_bot_team = FindConVar("sb_all_bot_team");
 	z_mega_mob_size = FindConVar("z_mega_mob_size");
 	z_mob_spawn_max_size = FindConVar("z_mob_spawn_max_size");
 	z_mob_spawn_min_size = FindConVar("z_mob_spawn_min_size");
@@ -240,7 +239,7 @@ public void OnPluginEnd() {
  * 	Command_SpawnInfected
  * </seealso>
 */
-public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
+void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	/* If something spawns and we have just requested something to spawn - assume it is the same thing and make sure it has max health */
 	if (GetClientTeam(client) == 3 && currently_spawning) {
@@ -268,7 +267,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
  * 	Command_SpawnBossesContinuously
  * </seealso>
 */
-public void Event_BossSpawn(Event event, const char[] name, bool dontBroadcast) {
+void Event_BossSpawn(Event event, const char[] name, bool dontBroadcast) {
 	if (always_force_bosses.BoolValue == false)
 		if (strcmp(name, "tank_spawn") == 0 && director_force_tank.BoolValue)
 			Do_ForceTank(0, false);
@@ -313,7 +312,7 @@ public void OnEntityCreated(int entity, const char[] classname) {
 	}	
 }
 
-public Action Timer_RefreshLocation(Handle timer) {
+Action Timer_RefreshLocation(Handle timer) {
 	if (!IsValidEntity(last_zombie_spawned) || !IsValidEdict(last_zombie_spawned)) return Plugin_Continue;
 	char class_name[128];
 	GetEdictClassname(last_zombie_spawned, class_name, 128);
@@ -323,15 +322,8 @@ public Action Timer_RefreshLocation(Handle timer) {
 }
 
 
-public Action Timer_TeleportZombie(Handle timer, any entity) {
-	TeleportEntity(entity, last_zombie_spawn_location, NULL_VECTOR, NULL_VECTOR);
-	// PrintToChatAll("Zombie being teleported to int location");
-
-	return Plugin_Continue;
-}
-
 /// Handles the top level "All4Dead" category and how it is displayed on the core admin menu
-public int Menu_CategoryHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength) {
+int Menu_CategoryHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength) {
 	if (action == TopMenuAction_DisplayTitle)
 		Format(buffer, maxlength, Translate(client, "%t", "All4Dead Commands"));
 	else if (action == TopMenuAction_DisplayOption)
@@ -340,7 +332,7 @@ public int Menu_CategoryHandler(TopMenu topmenu, TopMenuAction action, TopMenuOb
 	return 0;
 }
 /// Handles what happens someone opens the "All4Dead" category from the menu.
-public int Menu_TopItemHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength) {
+int Menu_TopItemHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength) {
 /* When an item is displayed to a player tell the menu to Format the item */
 	if (action == TopMenuAction_DisplayOption) {
 		if (object_id == director_menu)
@@ -359,19 +351,19 @@ public int Menu_TopItemHandler(TopMenu topmenu, TopMenuAction action, TopMenuObj
 			Format(buffer, maxlength, Translate(client, "%t", "Configuration Options"));
 	} else if (action == TopMenuAction_SelectOption) {
 		if (object_id == director_menu)
-			Menu_CreateDirectorMenu(client, false);
+			Menu_CreateDirectorMenu(client);
 		else if (object_id == spawn_special_infected_menu)
-			Menu_CreateSpecialInfectedMenu(client, false);
+			Menu_CreateSpecialInfectedMenu(client);
 		else if (object_id == spawn_uncommon_infected_menu)
-			Menu_CreateUInfectedMenu(client, false);
+			Menu_CreateUInfectedMenu(client);
 		else if (object_id == spawn_melee_weapons_menu)
-			Menu_CreateMeleeWeaponMenu(client, false);
+			Menu_CreateMeleeWeaponMenu(client);
 		else if (object_id == spawn_weapons_menu)
-			Menu_CreateWeaponMenu(client, false);
+			Menu_CreateWeaponMenu(client);
 		else if (object_id == spawn_items_menu)
-			Menu_CreateItemMenu(client, false);
+			Menu_CreateItemMenu(client);
 		else if (object_id == config_menu)
-			Menu_CreateConfigMenu(client, false);
+			Menu_CreateConfigMenu(client);
 	}
 
 	return 0;
@@ -380,7 +372,7 @@ public int Menu_TopItemHandler(TopMenu topmenu, TopMenuAction action, TopMenuObj
 // Infected spawning functions
 
 /// Creates the infected spawning menu when it is selected from the top menu and displays it to the client.
-public void Menu_CreateSpecialInfectedMenu(int client, int args) {
+void Menu_CreateSpecialInfectedMenu(int client) {
 	Menu menu;
 	menu = new Menu(Menu_SpawnSInfectedHandler);
 	 
@@ -403,7 +395,7 @@ public void Menu_CreateSpecialInfectedMenu(int client, int args) {
 	menu.DisplayAt(client, g_iSpecialInfectedMenuPosition[client], MENU_TIME_FOREVER);
 }
 /// Handles callbacks from a client using the spawning menu.
-public int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	// When a player selects an item do this.		
 	if (action == MenuAction_Select) {
 		switch (itempos) {
@@ -433,7 +425,7 @@ public int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, 
 		}
 		g_iSpecialInfectedMenuPosition[cindex] = menu.Selection;
 		// If none of the above matches show the menu again
-		Menu_CreateSpecialInfectedMenu(cindex, false);
+		Menu_CreateSpecialInfectedMenu(cindex);
 	// If someone closes the menu - close the menu
 	} else if (action == MenuAction_End)
 		delete menu;
@@ -446,7 +438,7 @@ public int Menu_SpawnSInfectedHandler(Menu menu, MenuAction action, int cindex, 
 }
 
 /// Creates the infected spawning menu when it is selected from the top menu and displays it to the client.
-public Action Menu_CreateUInfectedMenu(int client, int args) {
+void Menu_CreateUInfectedMenu(int client) {
 	Menu menu = new Menu(Menu_SpawnUInfectedHandler);
 	menu.SetTitle(Translate(client, "%t", "Spawn Uncommon Infected"));
 	menu.ExitBackButton = true;
@@ -463,10 +455,9 @@ public Action Menu_CreateUInfectedMenu(int client, int args) {
 	menu.AddItem("s6", Translate(client, "%t", "Spawn a jimmie gibbs zombie"));
 	menu.AddItem("s7", Translate(client, "%t", "Spawn a fallen survivor zombie"));
 	menu.DisplayAt(client, g_iUInfectedMenuPosition[client], MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the spawning menu.
-public int Menu_SpawnUInfectedHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_SpawnUInfectedHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	// When a player selects an item do this.		
 	if (action == MenuAction_Select) {
 		switch (itempos) {
@@ -492,7 +483,7 @@ public int Menu_SpawnUInfectedHandler(Menu menu, MenuAction action, int cindex, 
 		}
 		g_iUInfectedMenuPosition[cindex] = menu.Selection;
 		// If none of the above matches show the menu again
-		Menu_CreateUInfectedMenu(cindex, false);
+		Menu_CreateUInfectedMenu(cindex);
 	// If someone closes the menu - close the menu
 	} else if (action == MenuAction_End)
 		delete menu;
@@ -505,7 +496,7 @@ public int Menu_SpawnUInfectedHandler(Menu menu, MenuAction action, int cindex, 
 }
 
 /// Sourcemod Action for the SpawnInfected command.
-public Action Command_SpawnInfected(int client, int args) { 
+Action Command_SpawnInfected(int client, int args) { 
 	if (client == 0)
 	{
 		PrintToServer("[TS] This Command cannot be used by server.");
@@ -530,7 +521,7 @@ public Action Command_SpawnInfected(int client, int args) {
 }
 
 /// Sourcemod Action for the SpawnUncommonInfected command.
-public Action Command_SpawnUInfected(int client, int args) { 
+Action Command_SpawnUInfected(int client, int args) { 
 	if (args < 1) {
 		ReplyToCommand(client, "Usage: a4d_spawn_uinfected <riot|ceda|clown|mud|roadcrew|jimmy>"); 
 	} else {
@@ -691,9 +682,7 @@ void Do_SpawnInfected(int client, const char[] type) {
 		ActivateEntity(bot);
 		TeleportEntity(bot, vPos, NULL_VECTOR, NULL_VECTOR); //移動到相同位置
 
-		char feedback[64];
-		Format(feedback, sizeof(feedback), "{olive}%s {lightgreen}%t", type, "has been spawned");
-		NotifyPlayers(client, feedback);
+		if(notify_players.BoolValue) CPrintToChatAll("%t", "has been spawned", type);
 		LogAction(client, -1, "[NOTICE]: (%L) has spawned a %s", client, type);
 	}
 }
@@ -701,8 +690,6 @@ void Do_SpawnInfected(int client, const char[] type) {
 void Do_SpawnInfected_Old(int client, const char[] type, bool spawning_uncommon ) {
 
 	char arguments[16];
-	char feedback[64];
-	Format(feedback, sizeof(feedback), "{olive}%s {lightgreen}%t", type, "has been spawned");
 	if (automatic_placement == true && !spawning_uncommon)
 		Format(arguments, sizeof(arguments), "%s %t", type, "auto");
 	else
@@ -723,13 +710,13 @@ void Do_SpawnInfected_Old(int client, const char[] type, bool spawning_uncommon 
 		DispatchSpawn(zombie);
 		ActivateEntity(zombie);
 		TeleportEntity(zombie, last_zombie_spawn_location, NULL_VECTOR, NULL_VECTOR);
-		NotifyPlayers(client, feedback);
+		if(notify_players.BoolValue) CPrintToChatAll("%t", "has been spawned", type);
 		LogAction(client, -1, "[NOTICE]: (%L) has spawned a %s", client, type);
 		return;
 	} else {
 		StripAndExecuteClientCommand(client, "z_spawn_old", arguments);
 	}
-	NotifyPlayers(client, feedback);
+	if(notify_players.BoolValue) CPrintToChatAll("%t", "has been spawned", type);
 	LogAction(client, -1, "[NOTICE]: (%L) has spawned a %s", client, type);
 	//PrintToChatAll("Spawned a %s with automatic placement %b and uncommon %b", type, automatic_placement, spawning_uncommon);
 }
@@ -779,20 +766,7 @@ void Do_SpawnUncommonInfected(int client, int type) {
 	change_zombie_model_to = model;
 	Do_SpawnInfected_Old(client, "zombie", true);
 }
-/// Sourcemod Action for the Do_EnableAutoPlacement command.
-public Action Command_EnableAutoPlacement(int client, int args) {
-	if (args < 1) {
-		ReplyToCommand(client, "Usage: a4d_enable_auto_placement <0|1>");
-		return Plugin_Handled;
-	}
-	char value[16];
-	GetCmdArg(1, value, sizeof(value));
-	if (strcmp(value, "0") == 0)
-		Do_EnableAutoPlacement(client, false);		
-	else
-		Do_EnableAutoPlacement(client, true);
-	return Plugin_Handled;
-}
+
 /**
  * <summary>
  * 	Allows (or disallows) the AI Director to place spawned infected automatically.
@@ -803,19 +777,22 @@ public Action Command_EnableAutoPlacement(int client, int args) {
  * 	spawned through z_spawn.
  * </remarks>
 */
-void Do_EnableAutoPlacement(int client, bool value) {
+stock void Do_EnableAutoPlacement(int client, bool value) {
 	automatic_placement = value;
-	if (value == true)
-		NotifyPlayers(client, "{lightgreen}%t", "Automatic placement of spawned infected has been enabled");
-	else
-		NotifyPlayers(client, "{lightgreen}%t", "Automatic placement of spawned infected has been disabled");
+	if (notify_players.BoolValue)
+	{
+		if (value == true)
+			CPrintToChatAll("%t", "Automatic placement of spawned infected has been enabled");
+		else
+			CPrintToChatAll("%t", "Automatic placement of spawned infected has been disabled");
+	}
 	//LogAction(client, -1, "(%L) set %s to %i", client, "a4d_automatic_placement", value);	
 }
 
 // Item spawning functions
 
 /// Creates the item spawning menu when it is selected from the top menu and displays it to the client */
-public Action Menu_CreateItemMenu(int client, int args) {
+void Menu_CreateItemMenu(int client) {
 	Menu menu = new Menu(Menu_SpawnItemsHandler);
 	menu.SetTitle(Translate(client, "%t", "Spawn Items"));
 	menu.ExitBackButton = true;
@@ -838,10 +815,9 @@ public Action Menu_CreateItemMenu(int client, int args) {
 	menu.AddItem("sg", Translate(client, "%t", "Spawn a gnome"));
 	menu.AddItem("sh", Translate(client, "%t", "Spawn cola bottles"));
 	menu.DisplayAt( client, g_iItemMenuPosition[client], MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the spawn item menu.
-public int Menu_SpawnItemsHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_SpawnItemsHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	if (action == MenuAction_Select) {
 		switch (itempos) {
 			case 0: {
@@ -889,7 +865,7 @@ public int Menu_SpawnItemsHandler(Menu menu, MenuAction action, int cindex, int 
 			}
 		}
 		g_iItemMenuPosition[cindex] = menu.Selection;
-		Menu_CreateItemMenu(cindex, false);
+		Menu_CreateItemMenu(cindex);
 	} else if (action == MenuAction_End) {
 		delete menu;
 	} else if (action == MenuAction_Cancel) {
@@ -900,7 +876,7 @@ public int Menu_SpawnItemsHandler(Menu menu, MenuAction action, int cindex, int 
 	return 0;
 }
 /// Sourcemod Action for the Do_SpawnItem command.
-public Action Command_SpawnItem(int client, int args) { 
+Action Command_SpawnItem(int client, int args) { 
 	if (args < 1) {
 		ReplyToCommand(client, "Usage: a4d_spawn_item <item_type>");
 	} else {
@@ -925,13 +901,12 @@ public Action Command_SpawnItem(int client, int args) {
  * </remarks>
 */
 void Do_SpawnItem(int client, const char[] type) {
-	char feedback[64];
-	Format(feedback, sizeof(feedback), "{olive}%s {lightgreen}%t", type, "has been spawned");
+
 	if (client == 0) {
 		ReplyToCommand(client, "Can not use this command from the console."); 
 	} else {
 		StripAndExecuteClientCommand(client, "give", type);
-		NotifyPlayers(client, feedback);
+		if(notify_players.BoolValue) CPrintToChatAll("%t", "has been spawned", type);
 		LogAction(client, -1, "[NOTICE]: (%L) has spawned a %s", client, type);
 	}
 }
@@ -956,7 +931,7 @@ void Do_CreateEntity(int client, const char[] name, const char[] model, float lo
 // Weapon Spawning functions
 
 /// Creates the weapon spawning menu when it is selected from the top menu and displays it to the client.
-public Action Menu_CreateWeaponMenu(int client, int args) {
+void Menu_CreateWeaponMenu(int client) {
 	Menu menu = new Menu(Menu_SpawnWeaponHandler);
 	menu.SetTitle(Translate(client, "%t", "Spawn Weapons"));
 	menu.ExitBackButton = true;
@@ -982,10 +957,9 @@ public Action Menu_CreateWeaponMenu(int client, int args) {
 	menu.AddItem("sh", Translate(client, "%t", "Spawn a grenade launcher"));
 	menu.AddItem("si", Translate(client, "%t", "Spawn a m60"));
 	menu.DisplayAt( client,  g_iWeaponMenuPosition[client], MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the spawn weapon menu.
-public int Menu_SpawnWeaponHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_SpawnWeaponHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	if (action == MenuAction_Select) {
 		switch (itempos) {
 			case 0: {
@@ -1029,7 +1003,7 @@ public int Menu_SpawnWeaponHandler(Menu menu, MenuAction action, int cindex, int
 			}
 		}
 		g_iWeaponMenuPosition[cindex] = menu.Selection;
-		Menu_CreateWeaponMenu(cindex, false);
+		Menu_CreateWeaponMenu(cindex);
 	} else if (action == MenuAction_End)
 		delete menu;
 	/* If someone presses 'back' (8), return to main All4Dead menu */
@@ -1041,7 +1015,7 @@ public int Menu_SpawnWeaponHandler(Menu menu, MenuAction action, int cindex, int
 }
 
 /// Creates the melee weapon spawning menu when it is selected from the top menu and displays it to the client.
-public Action Menu_CreateMeleeWeaponMenu(int client, int args) {
+void Menu_CreateMeleeWeaponMenu(int client) {
 	Menu menu = new Menu(Menu_SpawnMeleeWeaponHandler);
 	menu.SetTitle(Translate(client, "%t", "Spawn Melee Weapons"));
 	menu.ExitBackButton = true;
@@ -1063,10 +1037,9 @@ public Action Menu_CreateMeleeWeaponMenu(int client, int args) {
 	menu.AddItem("mn", Translate(client, "%t", "Spawn a shovel"));
 	
 	menu.DisplayAt( client, g_iMeleeMenuPosition[client], MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the spawn weapon menu.
-public int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	if (action == MenuAction_Select) {
 		switch (itempos) {
 			case 0: {
@@ -1101,7 +1074,7 @@ public int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex
 			
 		}
 		g_iMeleeMenuPosition[cindex] = menu.Selection;
-		Menu_CreateMeleeWeaponMenu(cindex, false);
+		Menu_CreateMeleeWeaponMenu(cindex);
 	} else if (action == MenuAction_End)
 		delete menu;
 	/* If someone presses 'back' (8), return to main All4Dead menu */
@@ -1115,7 +1088,7 @@ public int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex
 // Additional director commands
 
 /// Creates the director commands menu when it is selected from the top menu and displays it to the client.
-public void Menu_CreateDirectorMenu(int client, int args) {
+void Menu_CreateDirectorMenu(int client) {
 	Menu menu = new Menu(Menu_DirectorMenuHandler);
 	menu.SetTitle(Translate(client, "%t", "Director Commands"));
 	menu.ExitBackButton = true;
@@ -1129,7 +1102,7 @@ public void Menu_CreateDirectorMenu(int client, int args) {
 	menu.Display( client, MENU_TIME_FOREVER);
 }
 /// Handles callbacks from a client using the director commands menu.
-public int Menu_DirectorMenuHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_DirectorMenuHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	if (action == MenuAction_Select) {
 		switch (itempos) {
 			case 0: {
@@ -1158,7 +1131,7 @@ public int Menu_DirectorMenuHandler(Menu menu, MenuAction action, int cindex, in
 				Do_AddZombies(cindex, zombies_increment.IntValue);
 			} 
 		}
-		Menu_CreateDirectorMenu(cindex, false);
+		Menu_CreateDirectorMenu(cindex);
 	} else if (action == MenuAction_End) {
 		delete menu;
 	} else if (action == MenuAction_Cancel) {
@@ -1170,7 +1143,7 @@ public int Menu_DirectorMenuHandler(Menu menu, MenuAction action, int cindex, in
 }
 
 /// Sourcemod Action for the AlwaysForceBosses command.
-public Action Command_AlwaysForceBosses(int client, int args) {
+Action Command_AlwaysForceBosses(int client, int args) {
 	if (args < 1) { 
 		ReplyToCommand(client, "Usage: a4d_always_force_bosses <0|1>"); 
 		return Plugin_Handled;
@@ -1192,16 +1165,20 @@ public Action Command_AlwaysForceBosses(int client, int args) {
  * 	or force_witch is enabled.
  * </remarks>
 */
-void Do_AlwaysForceBosses(int client, bool value) {
+stock void Do_AlwaysForceBosses(int client, bool value) {
 	SetConVarBool(always_force_bosses, value);
-	if (value == true)
-		NotifyPlayers(client, "{lightgreen}%t", "Bosses will now spawn continuously");
-	else
-		NotifyPlayers(client, "{lightgreen}%t", "Bosses will no longer spawn continuously");
+
+	if (notify_players.BoolValue)
+	{
+		if (value == true)
+			CPrintToChatAll("%t", "Bosses will now spawn continuously");
+		else
+			CPrintToChatAll("%t", "Bosses will no longer spawn continuously");
+	}
 }
 
 /// Sourcemod Action for the Do_ForcePanic command.
-public Action Command_ForcePanic(int client, int args) { 
+Action Command_ForcePanic(int client, int args) { 
 	Do_ForcePanic(client);
 	return Plugin_Handled;
 }
@@ -1219,11 +1196,11 @@ void Do_ForcePanic(int client) {
 		StripAndExecuteClientCommand(Misc_GetAnyClient(), "director_force_panic_event", "");
 	else
 		StripAndExecuteClientCommand(client, "director_force_panic_event", "");
-	NotifyPlayers(client, "{lightgreen}%t", "The zombies are coming!");	
+	if (notify_players.BoolValue) CPrintToChatAll("%t", "The zombies are coming!");	
 	LogAction(client, -1, "[NOTICE]: (%L) executed %s", client, "a4d_force_panic");
 }
 /// Sourcemod Action for the Do_PanicForever command.
-public Action Command_PanicForever(int client, int args) {
+Action Command_PanicForever(int client, int args) {
 	if (args < 1) { 
 		ReplyToCommand(client, "Usage: a4d_panic_forever <0|1>"); 
 		return Plugin_Handled;
@@ -1249,15 +1226,18 @@ public Action Command_PanicForever(int client, int args) {
  * 	Do_ForcePanic
  * </seealso>
 */
-void Do_PanicForever(int client, bool value) {
+stock void Do_PanicForever(int client, bool value) {
 	StripAndChangeServerConVarBool(client, director_panic_forever, value);
-	if (value == true)
-		NotifyPlayers(client, "{lightgreen}%t", "Endless panic events have started");
-	else
-		NotifyPlayers(client, "{lightgreen}%t", "Endless panic events have ended");
+	if (notify_players.BoolValue)
+	{
+		if (value == true)
+			CPrintToChatAll("%t", "Endless panic events have started");
+		else
+			CPrintToChatAll("%t", "Endless panic events have ended");
+	}
 }
 /// Sourcemod Action for the Do_ForceTank command.
-public Action Command_ForceTank(int client, int args) {
+Action Command_ForceTank(int client, int args) {
 	if (args < 1) { 
 		ReplyToCommand(client, "Usage: a4d_force_tank <0|1>"); 
 		return Plugin_Handled; 
@@ -1273,15 +1253,18 @@ public Action Command_ForceTank(int client, int args) {
 	return Plugin_Handled;
 }
 
-void Do_ForceTank(int client, bool value) {
+stock void Do_ForceTank(int client, bool value) {
 	StripAndChangeServerConVarBool(client, director_force_tank, value);
-	if (value == true)
-		NotifyPlayers(client, "{lightgreen}%t", "A tank is guaranteed to spawn this round");
-	else
-		NotifyPlayers(client, "{lightgreen}%t", "A tank is no longer guaranteed to spawn this round");
+	if (notify_players.BoolValue)
+	{
+		if (value == true)
+			CPrintToChatAll("%t", "A tank is guaranteed to spawn this round");
+		else
+			CPrintToChatAll("%t", "A tank is no longer guaranteed to spawn this round");
+	}
 }
 /// Sourcemod Action for the Do_ForceWitch command.
-public Action Command_ForceWitch(int client, int args) {
+Action Command_ForceWitch(int client, int args) {
 	if (args < 1) { 
 		ReplyToCommand(client, "Usage: a4d_force_witch <0|1>"); 
 		return Plugin_Handled;
@@ -1295,17 +1278,20 @@ public Action Command_ForceWitch(int client, int args) {
 	return Plugin_Handled;
 }
 
-void Do_ForceWitch(int client, bool value) {
+stock void Do_ForceWitch(int client, bool value) {
 	StripAndChangeServerConVarBool(client, director_force_witch, value);
-	if (value == true)
-		NotifyPlayers(client, "{lightgreen}%t", "A witch is guaranteed to spawn this round");
-	else 
-		NotifyPlayers(client, "{lightgreen}%t", "A witch is no longer guaranteed to spawn this round");
+	if (notify_players.BoolValue)
+	{
+		if (value == true)
+			CPrintToChatAll("{lightgreen}%t", "A witch is guaranteed to spawn this round");
+		else 
+			CPrintToChatAll("{lightgreen}%t", "A witch is no longer guaranteed to spawn this round");
+	}
 }
 
 
 /// Sourcemod Action for the AddZombies command.
-public Action Command_AddZombies(int client, int args) {
+Action Command_AddZombies(int client, int args) {
 	if (args < 1) { 
 		ReplyToCommand(client, "Usage: a4d_add_zombies <0..99>"); 
 		return Plugin_Handled;
@@ -1332,13 +1318,13 @@ void Do_AddZombies(int client, int zombies_to_add) {
 	StripAndChangeServerConVarInt(client, z_mob_spawn_max_size, new_zombie_total);
 	new_zombie_total = zombies_to_add + z_mob_spawn_min_size.IntValue;
 	StripAndChangeServerConVarInt(client, z_mob_spawn_min_size, new_zombie_total);
-	NotifyPlayers(client, "{lightgreen}%t", "The horde grows larger");
+	if (notify_players.BoolValue) CPrintToChatAll("%t", "The horde grows larger");
 }
 
 // Configuration commands
 
 /// Creates the configuration commands menu when it is selected from the top menu and displays it to the client.
-public Action Menu_CreateConfigMenu(int client, int args) {
+void Menu_CreateConfigMenu(int client) {
 	Menu menu = new Menu(Menu_ConfigCommandsHandler);
 	menu.SetTitle(Translate(client, "%t", "Configuration Commands"));
 	menu.ExitBackButton = true;
@@ -1346,10 +1332,9 @@ public Action Menu_CreateConfigMenu(int client, int args) {
 	if (notify_players.BoolValue) { menu.AddItem("pn", Translate(client, "%t", "Disable player notifications")); } else { menu.AddItem("pn", Translate(client, "%t", "Enable player notifications")); }
 	menu.AddItem("rs", Translate(client, "%t", "Restore all settings to game defaults now"));
 	menu.Display( client, MENU_TIME_FOREVER);
-	return Plugin_Handled;
 }
 /// Handles callbacks from a client using the configuration menu.
-public int Menu_ConfigCommandsHandler(Menu menu, MenuAction action, int cindex, int itempos) {
+int Menu_ConfigCommandsHandler(Menu menu, MenuAction action, int cindex, int itempos) {
 	
 	if (action == MenuAction_Select) {
 		switch (itempos) {
@@ -1362,7 +1347,7 @@ public int Menu_ConfigCommandsHandler(Menu menu, MenuAction action, int cindex, 
 				Do_ResetToDefaults(cindex);
 			}
 		}
-		Menu_CreateConfigMenu(cindex, false);
+		Menu_CreateConfigMenu(cindex);
 	} else if (action == MenuAction_End) {
 		delete menu;
 	} else if (action == MenuAction_Cancel) {
@@ -1374,7 +1359,7 @@ public int Menu_ConfigCommandsHandler(Menu menu, MenuAction action, int cindex, 
 }
 
 /// Sourcemod Action for the Do_EnableNotifications command.
-public Action Command_EnableNotifications(int client, int args) {
+Action Command_EnableNotifications(int client, int args) {
 	if (args < 1) { 
 		ReplyToCommand (client, "Usage: a4d_enable_notifications <0|1>"); 
 		return Plugin_Handled;
@@ -1397,11 +1382,11 @@ public Action Command_EnableNotifications(int client, int args) {
 */
 void Do_EnableNotifications(int client, bool value) {
 	SetConVarBool(notify_players, value);
-	NotifyPlayers(client, "{lightgreen}%t", "Player notifications have now been enabled");
+	if (notify_players.BoolValue) CPrintToChatAll("%t", "Player notifications have now been enabled");
 	LogAction(client, -1, "(%L) set %s to %i", client, "a4d_notify_players", value);	
 }
 /// Sourcemod Action for the Do_ResetToDefaults command.
-public Action Command_ResetToDefaults(int client, int args) {
+Action Command_ResetToDefaults(int client, int args) {
 	Do_ResetToDefaults(client);
 	return Plugin_Handled;
 }
@@ -1413,46 +1398,12 @@ void Do_ResetToDefaults(int client) {
 	StripAndChangeServerConVarInt(client, z_mega_mob_size, 50);
 	StripAndChangeServerConVarInt(client, z_mob_spawn_max_size, 30);
 	StripAndChangeServerConVarInt(client, z_mob_spawn_min_size, 10);
-	NotifyPlayers(client, "{lightgreen}%t", "Restored the default settings");
+	if (notify_players.BoolValue) CPrintToChatAll("%t", "Restored the default settings");
 	LogAction(client, -1, "(%L) executed %s", client, "a4d_reset_to_defaults");
-}
-
-/// Sourcemod Action for the Do_EnableAllBotTeam command.
-public Action Command_EnableAllBotTeams(int client, int args) {
-	if (args < 1) { 
-		ReplyToCommand(client, "Usage: a4d_enable_all_bot_teams <0|1>"); 
-		return Plugin_Handled;
-	}
-
-	char value[2];
-	GetCmdArg(1, value, sizeof(value));
-
-	if (strcmp(value, "0") == 0)
-		Do_EnableAllBotTeam(client, false);	
-	else
-		Do_EnableAllBotTeam(client, true);
-	return Plugin_Handled;
-}
-/// Allow an all bot survivor team
-void Do_EnableAllBotTeam(int client, bool value) {
-	StripAndChangeServerConVarBool(client, sb_all_bot_team, value);
-	if (value == true)
-		NotifyPlayers(client, "{lightgreen}%t", "Allowing an all bot survivor team");	
-	else
-		NotifyPlayers(client, "{lightgreen}%t", "We now require at least one human survivor before the game can start");
 }
 
 // Helper functions
 
-/// Wrapper for ShowActivity2 in case we want to change how this works later on
-// Replace ShowActivity2 with CPrintToChat to support colors chat and Also translating the text. (Zakikun)
-void NotifyPlayers(int client, const char[] message, any ...) {
-	char buffer[192];
-	SetGlobalTransTarget(client);
-	VFormat(buffer, sizeof(buffer), message, 3);
-	if (notify_players.BoolValue)
-		CPrintToChat(client, "{green}[A4D] %s", buffer);
-}
 /// Strip and change a ConVarBool to another value. This allows modification of otherwise cheat-protected ConVars.
 void StripAndChangeServerConVarBool(int client, ConVar convar, bool value) {
 	char command[32];
@@ -1505,14 +1456,14 @@ bool Misc_TraceClientViewToLocation(int client, float location[3]) {
 	return false;
 }
 
-public bool TraceRayDontHitSelf(int entity, int mask, any data) {
+bool TraceRayDontHitSelf(int entity, int mask, any data) {
 	if(entity == data) { // Check if the TraceRay hit the itself.
 		return false; // Don't let the entity be hit
 	}
 	return true; // It didn't hit itself
 }
 
-public void GetEntityAbsOrigin(int entity, float origin[3]) {
+void GetEntityAbsOrigin(int entity, float origin[3]) {
 	float mins[3], maxs[3];
 	GetEntPropVector(entity,Prop_Send,"m_vecOrigin",origin);
 	GetEntPropVector(entity,Prop_Send,"m_vecMins",mins);
@@ -1521,16 +1472,6 @@ public void GetEntityAbsOrigin(int entity, float origin[3]) {
 	origin[0] += (mins[0] + maxs[0]) * 0.5;
 	origin[1] += (mins[1] + maxs[1]) * 0.5;
 	origin[2] += (mins[2] + maxs[2]) * 0.5;
-}
-
-public Action kickbot(Handle timer, any client)
-{
-	if (IsClientInGame(client) && (!IsClientInKickQueue(client)))
-	{
-		if (IsFakeClient(client)) KickClient(client);
-	}
-
-	return Plugin_Continue;
 }
 
 // ====================================================================================================
@@ -1594,7 +1535,7 @@ bool SetTeleportEndPoint(int client, float vPos[3], float vAng[3])
 	return true;
 }
 
-public bool _TraceFilter(int entity, int contentsMask)
+bool _TraceFilter(int entity, int contentsMask)
 {
 	return entity > MaxClients || !entity;
 }
