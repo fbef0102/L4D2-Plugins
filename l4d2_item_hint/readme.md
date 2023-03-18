@@ -31,6 +31,9 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.7 (2023-3-18)
+        * Add spot maker announce
+
 	* v2.6 (2023-3-8)
         * Translation Support
 
@@ -69,7 +72,7 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 	* cfg/sourcemod/l4d2_item_hint.cfg
         ```php
-        // ---Item Hint---
+        /* ---Item Hint--- */
         // Cold Down Time in seconds a player can use 'Look' Item Hint again.
         l4d2_item_hint_cooldown_time "1.0"
 
@@ -100,7 +103,10 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
         //Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)
         l4d2_item_instructorhint_icon "icon_interact"
             
-        // ---Spot Marker---
+        /* ---Spot Marker--- */
+        // Changes how Spot Marker Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+        l4d2_spot_marker_announce_type "0"
+
         // Cold Down Time in seconds a player can use 'Look' Spot Marker again.
         l4d2_spot_marker_cooldown_time "2.5"
 
@@ -128,7 +134,7 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
         // Instructor icon name on Spot Marker.
         l4d2_spot_marker_instructorhint_icon "icon_info"
             
-        // ---Infected Marker---
+        /* ---Infected Marker--- */
         // Cold Down Time in seconds a player can use 'Look' Infected Marker again.
         l4d2_infected_marker_cooldown_time "0.25"
 

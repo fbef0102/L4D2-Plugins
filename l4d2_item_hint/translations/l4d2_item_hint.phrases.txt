@@ -12,8 +12,8 @@
 	{
 		"#format"	"{1:N},{2:s}"
 		"en"		"(Item) {1}: {2}"
-		"chi"		"(Item) {1}: {2}"
-		"zho"		"(Item) {1}: {2}"
+		"chi"		"(物品) {1}: {2}"
+		"zho"		"(物品) {1}: {2}"
 	}
 	
 	"Announce_Vocalize_INFECTED (C)"
@@ -31,9 +31,26 @@
 		"chi"		"(特感) {1}: {2}"
 		"zho"		"(特感) {1}: {2}"
 	}
-	
-	"Spot_Maker" //不能翻譯的句子
+
+	"Announce_Spot_Marker (C)"
 	{
+		"#format"	"{1:N}"
+		"en"		"({green}Spot{default}) {olive}{1}{default} marked a position"
+		"chi"		"({green}標記{default}) {olive}{1}{default} 標記了一個位置"
+		"zho"		"({green}标记{default}) {olive}{1}{default} 标记了一个位置"
+	}
+	
+	"Announce_Spot_Marker"
+	{
+		"#format"	"{1:N}"
+		"en"		"(Spot) {1} marked a position"
+		"chi"		"(標記) {1} 標記了一個位置"
+		"zho"		"(标记) {1} 标记了一个位置"
+	}
+	
+	"Spot_Maker" 
+	{
+		//不能翻譯的句子
 		"#format"	"{1:N}"
 		"en"		"{1} Marked Here"
 	}
