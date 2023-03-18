@@ -19,6 +19,9 @@ Stop tank props from fading whilst the tank is alive
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.7 (2023-3-18)
+        * Optimize Code
+
 	* v2.5 (2022-12-12)
         * Credit to [Sir, A1m`, Derpduck](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_tank_props_glow.sp)
         
@@ -57,26 +60,29 @@ Stop tank props from fading whilst the tank is alive
 
 	* cfg/sourcemod/l4d2_tank_props_glow.cfg
         ```php
-        // Time it takes for hittables that were punched by Tank to dissapear after the Tank dies.
-        l4d2_tank_prop_dissapear_time "10.0"
-
         // Prop Glow Color, three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
-        l4d2_tank_prop_glow_color "255 255 255"
+        l4d2_tank_props_glow_color "255 255 255"
 
-        // Only Tank can see the glow
-        l4d2_tank_prop_glow_only "0"
+        // Time it takes for hittables that were punched by Tank to dissapear while tank is alive. (0=Off)
+        l4d2_tank_props_glow_dissapear_time_alive "300.0"
 
-        // How near to props do players need to be to enable their glow.
-        l4d2_tank_prop_glow_range "4500"
-
-        // How near to props do players need to be to disable their glow.
-        l4d2_tank_prop_glow_range_min "256"
-
-        // Spectators can see the glow too
-        l4d2_tank_prop_glow_spectators "1"
+        // Time it takes for hittables that were punched by Tank to dissapear after the Tank dies.
+        l4d2_tank_props_glow_dissapear_time_death "10.0"
 
         // Show Hittable Glow for infected team while the tank is alive
-        l4d_tank_props_glow "1"
+        l4d2_tank_props_glow_enable "1"
+
+        // How near to props do players need to be to enable their glow. (0=Any distance)
+        l4d2_tank_props_glow_range_max "4500"
+
+        // How near to props do players need to be to disable their glow. (0=Off)
+        l4d2_tank_props_glow_range_min "256"
+
+        // Spectators can see the glow too
+        l4d2_tank_props_glow_spectators "1"
+
+        // Only Tank can see the glow
+        l4d2_tank_props_glow_tank_only "0"
         ```
 </details>
 
