@@ -5,10 +5,9 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 * Video | 影片展示
 <br/>None
 
-* Image | 圖示
+* Image
     * All 4 Dead
-        > 訊息
-        <br/>![all4dead2_1](image/all4dead2_1.jpg)
+    <br/>![all4dead2_1](image/all4dead2_1.jpg)
 
 * Apply to | 適用於
     ```
@@ -138,6 +137,10 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 - - - -
 # 中文說明
 管理員可以直接操控遊戲導演系統並生成武器、近戰武器、物品、醫療物品、特殊感染者以及特殊一般感染者等等，無須開啟作弊模式
+
+* 圖示
+    * 介面
+    <br/>![all4dead2_1_zho](image/zho/all4dead2_1_zho.jpg)
 
 * 原理
     * 管理員輸入!admin就能看到 "ALL4DEAD" 選項
