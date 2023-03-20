@@ -6,52 +6,53 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 <br/>None
 
 * Image | 圖示
-	* All 4 Dead
-		> 訊息
-		<br/>![all4dead2_1](image/all4dead2_1.jpg)
+    * All 4 Dead
+        > 訊息
+        <br/>![all4dead2_1](image/all4dead2_1.jpg)
 
 * Apply to | 適用於
-	```
-	L4D2
-	```
+    ```
+    L4D2
+    ```
 
 * Translation Support | 支援翻譯
-	```
-	English
-	繁體中文
-	简体中文
-	```
+    ```
+    English
+    繁體中文
+    简体中文
+    ```
 
-* <details><summary>Changelog | 版本日誌</summary>
+    * <details><summary>Changelog | 版本日誌</summary>
 
-	```php
-	//grandwazir @ 2009-2010
-	//Harry @ 2020-2023
-	```
-	* v3.6 (2023-3-11)
-		* Fixed translation phrase.
+    ```php
+    //grandwazir @ 2009-2010
+    //Harry @ 2020-2023
+    ```
+    * v3.6 (2023-3-11)
+        * Fixed translation phrase.
 
-	* v3.5 (2023-1-27)
-		* Translation Support. Thanks to wyxls.
+    * v3.5 (2023-1-27)
+        * Translation Support. Thanks to wyxls.
 
-	* v3.4
-		* [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2719391&postcount=503)
-		* Convert All codes to new syntax.
-		* Add gamedata to support infected spawn (without being limit by director)
-		* Add All weapons、melee、items
-		* Add firework crate
-		* Add L4D2 "The Last Stand" two melee: pitchfork、shovel
-		* Spawn Witch Bride Model in c6m1 to prevent crash
-		* Add Gnome and Cola.
-		* Display menu forever
+    * v3.4
+        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2719391&postcount=503)
+        * Convert All codes to new syntax.
+        * Add gamedata to support infected spawn (without being limit by director)
+        * Add All weapons、melee、items
+        * Add firework crate
+        * Add L4D2 "The Last Stand" two melee: pitchfork、shovel
+        * Spawn Witch Bride Model in c6m1 to prevent crash
+        * Add Gnome and Cola.
+        * Display menu forever
 
-	* v2.0
-		* [Original Plugin by grandwazir](https://forums.alliedmods.net/showthread.php?t=84609)
-</details>
+    * v2.0
+        * [Original Plugin by grandwazir](https://forums.alliedmods.net/showthread.php?t=84609)
+    </details>
 
 * Require | 必要安裝
-	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-	2. To unlock all melee weapons in all campaigns, you MUST use the [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586) plugin which supersedes the extension.
+    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
+    2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
+    3. To unlock all melee weapons in all campaigns, you MUST use the [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586) plugin which supersedes the extension.
 
 * <details><summary>ConVar | 指令</summary>
 
