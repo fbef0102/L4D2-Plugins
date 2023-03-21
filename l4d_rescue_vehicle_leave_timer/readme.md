@@ -90,7 +90,7 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 		```
 
 * Notice
-    * The plugin only supports all valve maps and all custom maps.
+    * The plugin supports all valve maps and all custom maps.
     * If the map finale is sacrifice, disable this plugin.
 
 - - - -
