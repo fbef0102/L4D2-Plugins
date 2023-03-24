@@ -22,8 +22,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-    * v1.2h (2023-2-27)
-        * Request by ligal 
+    * v1.2h (2023-3-24)
         * Separate translation for the jockey and hunter
 		* Fixed Self clear, fast clear smoker tongue in versus/survival/cavenge
         * New Skill Reqport, "boomer vomits all survivors"
