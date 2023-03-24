@@ -571,14 +571,6 @@ public OnPluginStart()
 	g_hCvarChargerHealth = FindConVar("z_charger_health");
 	g_hCvarWitchHealth = FindConVar("z_witch_health");
 	
-	g_hCvarMaxPounceDistance = FindConVar("z_pounce_damage_range_max");
-	g_hCvarMinPounceDistance = FindConVar("z_pounce_damage_range_min");
-	g_hCvarMaxPounceDamage = FindConVar("z_hunter_max_pounce_bonus_damage");
-	if ( g_hCvarMaxPounceDistance == INVALID_HANDLE ) { g_hCvarMaxPounceDistance = CreateConVar( "z_pounce_damage_range_max",  "1000.0", "Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
-	if ( g_hCvarMinPounceDistance == INVALID_HANDLE ) { g_hCvarMinPounceDistance = CreateConVar( "z_pounce_damage_range_min",  "300.0", "Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
-	if ( g_hCvarMaxPounceDamage == INVALID_HANDLE ) { g_hCvarMaxPounceDamage = CreateConVar( "z_hunter_max_pounce_bonus_damage",  "49", "Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
-	
-	
 	// tries
 	g_hTrieWeapons = CreateTrie();
 	SetTrieValue(g_hTrieWeapons, "hunting_rifle",				WPTYPE_SNIPER);
@@ -614,6 +606,16 @@ public OnPluginStart()
 			}
 		}
 	}
+}
+
+public void OnAllPluginsLoaded()
+{
+	g_hCvarMaxPounceDistance = FindConVar("z_pounce_damage_range_max");
+	g_hCvarMinPounceDistance = FindConVar("z_pounce_damage_range_min");
+	g_hCvarMaxPounceDamage = FindConVar("z_hunter_max_pounce_bonus_damage");
+	if ( g_hCvarMaxPounceDistance == null ) { g_hCvarMaxPounceDistance = CreateConVar( "z_pounce_damage_range_max",  		"1000.0", 	"Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
+	if ( g_hCvarMinPounceDistance == null ) { g_hCvarMinPounceDistance = CreateConVar( "z_pounce_damage_range_min",  		"300.0", 	"Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
+	if ( g_hCvarMaxPounceDamage == null ) 	{ g_hCvarMaxPounceDamage = CreateConVar( "z_hunter_max_pounce_bonus_damage",  	"24", 		"Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
 }
 
 void ConVarChanged_Cvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
