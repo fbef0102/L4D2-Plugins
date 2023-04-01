@@ -45,6 +45,10 @@ A spectator who watching the survivor at first person view can now see the infec
 * Require | 必要安裝
 <br/>None
 
+* Similar Plugin | 相似插件
+	1. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
+		> 管理員輸入指令能透視看到特感
+
 * Related Plugin | 相關插件
     1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
 	    > 給死亡玩家或旁觀者手電筒，照亮地圖
