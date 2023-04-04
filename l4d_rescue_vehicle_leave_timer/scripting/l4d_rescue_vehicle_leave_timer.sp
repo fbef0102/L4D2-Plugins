@@ -1,5 +1,5 @@
 
-#define PLUGIN_VERSION 		"1.5"
+#define PLUGIN_VERSION 		"1.6"
 #define PLUGIN_NAME			"[L4D2] Rescue vehicle leave timer"
 #define PLUGIN_AUTHOR		"HarryPotter"
 #define PLUGIN_DES			"When rescue vehicle arrived and a timer will display how many time left for vehicle leaving. If a player is not on rescue vehicle or zone, slay him"
@@ -103,10 +103,10 @@ static const char g_sVocalize[][] =
 ConVar g_hCvarMPGameMode;
 
 // Cvar Handles/Variables
-ConVar g_hCvarAllow, g_hCvarModes, g_hCvarModesOff, g_hCvarModesTog, g_hCvarAnnounceType, g_hCvarEscapeTime;
+ConVar g_hCvarAllow, g_hCvarModes, g_hCvarModesOff, g_hCvarModesTog, g_hCvarAnnounceType, g_hCvarEscapeTime, g_hCvarAirStrike;
 int g_iRoundStart, g_iPlayerSpawn, g_iEscapeTime, g_iCvarEscapeTime;
 int iSystemTime;
-bool g_bFinaleVehicleReady, g_bFinalVehicleLeaving;
+bool g_bFinaleVehicleReady, g_bFinalVehicleLeaving, g_bCvarAirStrike;
 Handle AntiPussyTimer, _AntiPussyTimer, AirstrikeTimer;
 
 Address g_pTheCount;
@@ -183,6 +183,7 @@ public void OnPluginStart()
 	g_hCvarModesTog =		CreateConVar(	"l4d_rescue_vehicle_leave_timer_modes_tog",				"0",			"Turn on the plugin in these game modes. 0=All, 1=Coop, 2=Survival, 4=Versus, 8=Scavenge. Add numbers together.", CVAR_FLAGS );
 	g_hCvarAnnounceType	= 	CreateConVar(	"l4d_rescue_vehicle_leave_timer_announce_type", 		"2", 			"Changes how count down tumer hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	g_hCvarEscapeTime	= 	CreateConVar(	"l4d_rescue_vehicle_leave_timer_escape_time_default", 	"60", 			"Default time to escape.", FCVAR_NOTIFY, true, 1.0);
+	g_hCvarAirStrike	= 	CreateConVar(	"l4d_rescue_vehicle_leave_timer_airstrike_enable", 		"1", 			"If 1, Enable AirStrike (explosion, missile, jets, fire)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	CreateConVar(							"l4d_rescue_vehicle_leave_timer_version",		PLUGIN_VERSION,	"Rescue vehicle leave timer plugin version.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	AutoExecConfig(true,					"l4d_rescue_vehicle_leave_timer");
 
@@ -196,6 +197,7 @@ public void OnPluginStart()
 	GetCvars();
 	g_hCvarAnnounceType.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarEscapeTime.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarAirStrike.AddChangeHook(ConVarChanged_Cvars);
 
 	g_aEndNavArea = new ArrayList();
 	g_aRescueVehicle = new ArrayList();
@@ -269,6 +271,7 @@ void GetCvars()
 {
 	g_iCvarAnnounceType = g_hCvarAnnounceType.IntValue;
 	g_iCvarEscapeTime = g_hCvarEscapeTime.IntValue;
+	g_bCvarAirStrike = g_hCvarAirStrike.BoolValue;
 }
 
 bool g_bCvarAllow;
@@ -436,8 +439,11 @@ void Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast)
 	delete AntiPussyTimer;
 	AntiPussyTimer = CreateTimer(1.0, Timer_AntiPussy, _, TIMER_REPEAT);
 
-	delete AirstrikeTimer;
-	AirstrikeTimer = CreateTimer(2.5, Timer_StartAirstrike, _, TIMER_REPEAT);
+	if(g_bCvarAirStrike)
+	{
+		delete AirstrikeTimer;
+		AirstrikeTimer = CreateTimer(2.5, Timer_StartAirstrike, _, TIMER_REPEAT);
+	}
 }
 
 Action Timer_AntiPussy(Handle timer)
@@ -490,15 +496,18 @@ Action Timer_Strike(Handle timer)
 		if(IsClientInGame(i) && GetClientTeam(i) == TEAM_SURVIVORS)
 		{
 			//fade
-			CreateTimer(0.1, Timer_FadeOut, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
+			if(g_bCvarAirStrike) CreateTimer(0.1, Timer_FadeOut, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
 
 			if(IsInFinalRescueVehicle(i)) continue;
 			
-			//explosion effect
-			GetClientAbsOrigin(i, pos);
-			pos[0] += GetRandomFloat(radius*-1, radius);
-			pos[1] += GetRandomFloat(radius*-1, radius);
-			CreateExplosion(pos);
+			if(g_bCvarAirStrike) 
+			{
+				//explosion effect
+				GetClientAbsOrigin(i, pos);
+				pos[0] += GetRandomFloat(radius*-1, radius);
+				pos[1] += GetRandomFloat(radius*-1, radius);
+				CreateExplosion(pos);
+			}
 
 			//slay
 			CreateTimer(2.2, Timer_SlayPlayer, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);

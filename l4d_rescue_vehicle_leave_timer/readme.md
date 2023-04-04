@@ -15,6 +15,9 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v1.6 (2023-4-4)
+        * Add a cvar to enable or disable AirStrike (explosion, missile, jets, fire)
+
 	* v1.5 (2023-3-21)
         * Support Gamedata, from [End Safearea Teleport by sorallll](https://forums.alliedmods.net/showthread.php?p=2766575)
         * Support All custom map
@@ -47,6 +50,9 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 	* cfg/sourcemod/l4d_rescue_vehicle_leave_timer.cfg
 		```php
+        // If 1, Enable AirStrike (explosion, missile, jets, fire)
+        l4d_rescue_vehicle_leave_timer_airstrike_enable "1"
+
         // 0=Plugin off, 1=Plugin on.
         l4d_rescue_vehicle_leave_timer_allow "1"
 
@@ -104,6 +110,7 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 * 功能
 	* 可自行調整關卡，設置每個章節逃亡倒數時間
+    * 可以關閉空軍轟炸，避免太lag
 
 * Data設定範例
 	* data/l4d_rescue_vehicle.cfg
