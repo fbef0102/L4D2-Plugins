@@ -526,12 +526,16 @@ bool LoadData()
 	char sPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, sPath, sizeof(sPath), CONFIG_SPAWNS);
 	if( !FileExists(sPath) )
+	{
+		SetFailState("File Not Found: %s", sPath);
 		return false;
+	}
 
 	// Load config
 	KeyValues hFile = new KeyValues("rescue_vehicle");
 	if( !hFile.ImportFromFile(sPath) )
 	{
+		SetFailState("File Format Not Corrent: %s", sPath);
 		delete hFile;
 		return false;
 	}
