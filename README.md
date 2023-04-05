@@ -17,7 +17,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[hunter_growl_sound_fix](/hunter_growl_sound_fix)</b>: Fix silence Hunter produces growl sound when player MIC on
 * <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
 * <b>[l4d2_ai_damagefix](/l4d2_ai_damagefix)</b>: Makes AI SI take (and do) damage like human SI.
-* <b>[l4d_pig_infected_notify](/l4d_pig_infected_notify)</b>: show who is pig teammate in infected team
 * <b>[l4d2_Death_Survivor](/l4d2_Death_Survivor)</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>[l4d2_change_m1](/l4d2_change_m1)</b>: If all Survivors die, change level to the current map m1 (coop only)
 * <b>[lfd_both_fixUpgradePack](/lfd_both_fixUpgradePack)</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
