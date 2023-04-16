@@ -19,8 +19,16 @@ enum LMM_GAMEMODE
 	LMM_GAMEMODE_SURVIVAL = 3
 };
 
+/**
+  Return LMM_GAMEMODE_UNKNOWN (-1) if gamemode is unknown
+**/
 native LMM_GAMEMODE LMM_GetCurrentGameMode();
+
+/**
+  Return LMM_GAMEMODE_UNKNOWN (-1) if gamemode string is invalid or gamemode is unknown
+**/
 native LMM_GAMEMODE LMM_StringToGamemode(const char[] name);
+
 native int LMM_GamemodeToString(LMM_GAMEMODE gamemode, char[] name, int length);
 
 native int LMM_GetNumberOfMissions(LMM_GAMEMODE gamemode);

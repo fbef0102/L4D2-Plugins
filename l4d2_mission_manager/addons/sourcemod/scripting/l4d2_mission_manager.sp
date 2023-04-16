@@ -10,14 +10,19 @@ public Plugin myinfo = {
 	name = "L4D2 Mission Manager",
 	author = "Rikka0w0, Harry",
 	description = "Mission manager for L4D2, provide information about map orders for other plugins",
-	version = "v1.0.1",
+	version = "v1.0.2",
 	url = "http://forums.alliedmods.net/showthread.php?t=308725"
 }
 
+
+ConVar mp_gamemode;
 char sFile[128];
 StringMap g_hMissionsMap;
 
 public void OnPluginStart(){
+
+	mp_gamemode = FindConVar("mp_gamemode");
+
 	BuildPath(Path_SM, sFile, PLATFORM_MAX_PATH, "/logs/l4d2_mission_manager.log");
 	g_hMissionsMap = CreateTrie();
 
@@ -60,6 +65,8 @@ public Action Command_List(int iClient, int args) {
 			}
 		} else {
 			LMM_GAMEMODE gamemode = LMM_StringToGamemode(gamemodeName);
+			if(gamemode == LMM_GAMEMODE_UNKNOWN) return Plugin_Handled;
+			
 			DumpMissionInfo(iClient, gamemode);
 		}
 	}
@@ -98,9 +105,6 @@ void DumpMissionInfo(int client, LMM_GAMEMODE gamemode) {
 	ReplyToCommand(client, "-------------------");
 }
 
-/*=======================================
-#########       SDKCalls        #########
-=======================================*/
 
 public int Native_IsOnFinalMap(Handle plugin, int numParams){
   return L4D_IsMissionFinalMap();
@@ -155,7 +159,7 @@ public int Native_GetCurrentGameMode(Handle plugin, int numParams) {
 	LMM_GAMEMODE gamemode;
 	//Get the gamemode string from the game
 	char strGameMode[20];
-	FindConVar("mp_gamemode").GetString(strGameMode, sizeof(strGameMode));
+	mp_gamemode.GetString(strGameMode, sizeof(strGameMode));
 	
 	//Set the global gamemode int for this plugin
 	if(StrEqual(strGameMode, "coop", false))
@@ -225,7 +229,13 @@ public int Native_GetCurrentGameMode(Handle plugin, int numParams) {
 	else if(StrEqual(strGameMode, "nightmaredifficulty", false))	//Nightmare Difficulty
 		gamemode = LMM_GAMEMODE_COOP;
 	else
-		gamemode = LMM_GAMEMODE_UNKNOWN;
+	{
+		if(L4D_IsCoopMode()) gamemode = LMM_GAMEMODE_COOP;
+		else if(L4D_IsVersusMode()) gamemode = LMM_GAMEMODE_VERSUS;
+		else if(L4D_IsSurvivalMode()) gamemode = LMM_GAMEMODE_SURVIVAL;
+		else if(L4D2_IsScavengeMode()) gamemode = LMM_GAMEMODE_SCAVENGE;
+		else gamemode = LMM_GAMEMODE_UNKNOWN;
+	}
 		
 	return view_as<int>(gamemode);
 }
