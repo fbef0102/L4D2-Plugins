@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/4/11)
+>All plugins in here only apply to L4D2 (last edited:2023/4/16)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -69,7 +69,9 @@ If you want any modify or request, free to use or pay me money to do it.
     * 救援來臨之後，未在時間內上救援載具逃亡的玩家將處死
 * <b>[l4d2_release_victim](/l4d2_release_victim)</b>: Allow to release victim
     * 特感可以釋放被抓住的倖存者
-    
+* <b>[l4d2_mission_manager](/l4d2_mission_manager)</b>: Mission manager for L4D2, provide information about map orders for other plugins
+    * 地圖管理器，提供給其他插件做依賴與API串接
+
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 
