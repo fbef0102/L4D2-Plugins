@@ -10,7 +10,7 @@ public Plugin myinfo = {
 	name = "L4D2 Mission Manager",
 	author = "Rikka0w0, Harry",
 	description = "Mission manager for L4D2, provide information about map orders for other plugins",
-	version = "v1.0.2",
+	version = "v1.0.3",
 	url = "http://forums.alliedmods.net/showthread.php?t=308725"
 }
 
@@ -783,6 +783,7 @@ public SMCResult MissionParser_EndSection(SMCParser smc) {
 						g_hStr_InvalidMissionNames.PushString(g_MissionParser_MissionName);
 					}
 					SaveMessage("Mission %s contains invalid map: \"%s\", gamemode: \"%s\"", g_MissionParser_MissionName, mapFile, gamemodeName);
+					continue;
 					//return SMCParse_HaltFail;
 				}
 				else
