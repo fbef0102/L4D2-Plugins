@@ -103,7 +103,7 @@
 	{
 		"en" 	"Dead Before Dawn DC"
 		"zho" 	"活人生吃: 導演版"
-		"chi" 	"活死人黎明: 導演版"
+		"chi" 	"活死人黎明: 导演版"
 	}
 	"QuestionableEthics"
 	{
