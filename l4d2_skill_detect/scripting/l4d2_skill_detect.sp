@@ -42,34 +42,35 @@
  *	only. 'Skeeting' chipped hunters shouldn't count, IMO.
  *
  *	This performs global forward calls to:
- *		OnSkeet( survivor, hunter )
- *		OnSkeetMelee( survivor, hunter )
- *		OnSkeetGL( survivor, hunter )
- *		OnSkeetSniper( survivor, hunter )
- *		OnSkeetHurt( survivor, hunter, damage, isOverkill )
- *		OnSkeetMeleeHurt( survivor, hunter, damage, isOverkill )
- *		OnSkeetSniperHurt( survivor, hunter, damage, isOverkill )
- *		OnHunterDeadstop( survivor, hunter )
- *		OnBoomerPop( survivor, boomer, shoveCount, Float:timeAlive )
- *		OnChargerLevel( survivor, charger )
- *		OnChargerLevelHurt( survivor, charger, damage )
- *		OnWitchCrown( survivor, damage )
- *		OnWitchCrownHurt( survivor, damage, chipdamage )
- *		OnTongueCut( survivor, smoker )
- *		OnSmokerSelfClear( survivor, smoker, withShove )
- *		OnTankRockSkeeted( survivor, tank )
- *		OnTankRockEaten( tank, survivor )
- *		OnHunterHighPounce( hunter, victim, actualDamage, Float:calculatedDamage, Float:height, bool:bReportedHigh, bool:bPlayerIncapped )
- *		OnJockeyHighPounce( jockey, victim, Float:height, bool:bReportedHigh )
- *		OnDeathCharge( charger, victim, Float: height, Float: distance, wasCarried )
- *		OnSpecialShoved( survivor, infected, zombieClass )
- *		OnSpecialClear( clearer, pinner, pinvictim, zombieClass, Float:timeA, Float:timeB, withShove )
- *		OnBoomerVomitLanded( boomer, amount )
- *		OnBunnyHopStreak( survivor, streak, Float:maxVelocity )
- *		OnCarAlarmTriggered( survivor, infected, reason )
+ *		OnSkeet( int survivor, int vicitm, bool isHunter )
+ *		OnSkeetMelee( int survivor, int vicitm, bool isHunter )
+ *		OnSkeetGL( int survivor, int vicitm, bool isHunter )
+ *		OnSkeetSniper( int survivor, int vicitm, bool isHunter )
+ *		OnSkeetHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ *		OnSkeetMeleeHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ *		OnSkeetSniperHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ *		OnHunterDeadstop( int survivor, int hunter )
+ *		OnJocekyDeadstop( int survivor, int joceky )
+ *		OnBoomerPop( int survivor, int boomer, int shoveCount, float timeAlive )
+ *		OnChargerLevel( int survivor, int charger )
+ *		OnChargerLevelHurt( int survivor, int charger, int damage )
+ *		OnWitchCrown( int survivor, int damage )
+ *		OnWitchDrawCrown( int survivor, int damage, int chipdamage )
+ *		OnTongueCut( int survivor, int smoker )
+ *		OnSmokerSelfClear( int survivor, int smoker, bool withShove )
+ *		OnTankRockSkeeted( int survivor, int tank )
+ *		OnTankRockEaten( int tank, int survivor )
+ *		OnHunterHighPounce( int hunter, int victim, int actualDamage, float calculatedDamage, float height, bool bReportedHigh, bool bPlayerIncapped )
+ *		OnJockeyHighPounce( int jockey, int victim, float height, bool bReportedHigh )
+ *		OnDeathCharge( int charger, int victim, float height, float distance, bool wasCarried )
+ *		OnSpecialShoved( int survivor, int infected, int zombieClass )
+ *		OnSpecialClear( int clearer, int pinner, int pinvictim, int zombieClass, float timeA, float timeB, bool withShove )
+ *		OnBoomerVomitLanded( int boomer, int amount )
+ *		OnBunnyHopStreak( int survivor, int streak, float maxVelocity )
+ *		OnCarAlarmTriggered( int survivor, int infected, int reason )
  *
- *		OnDeathChargeAssist( assister, charger, victim )	[ not done yet ]
- *		OnBHop( player, isInfected, speed, streak )			[ not done yet ]
+ *		OnDeathChargeAssist( int assister, int charger, int victim )	[ not done yet ]
+ *		OnBHop( int player, bool isInfected, int speed, int streak )			[ not done yet ]
  *
  *	Where survivor == -2 if it was a team effort, -1 or 0 if unknown or invalid client.
  *	damage is the amount of damage done (that didn't add up to skeeting damage),
@@ -88,7 +89,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.2h"
+#define PLUGIN_VERSION "1.3h"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -246,6 +247,7 @@ new		Handle:			g_hForwardSkeetSniper								= INVALID_HANDLE;
 new		Handle:			g_hForwardSkeetSniperHurt							= INVALID_HANDLE;
 new		Handle:			g_hForwardSkeetGL									= INVALID_HANDLE;
 new		Handle:			g_hForwardHunterDeadstop							= INVALID_HANDLE;
+new		Handle:			g_hForwardJocekyDeadstop							= INVALID_HANDLE;
 new		Handle:			g_hForwardSIShove									= INVALID_HANDLE;
 new		Handle:			g_hForwardBoomerPop									= INVALID_HANDLE;
 new		Handle:			g_hForwardBoomerPopStop								= INVALID_HANDLE;
@@ -461,15 +463,16 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	RegPluginLibrary("skill_detect");
 	
-	g_hForwardSkeet =			CreateGlobalForward("OnSkeet", ET_Ignore, Param_Cell, Param_Cell );
-	g_hForwardSkeetHurt =		CreateGlobalForward("OnSkeetHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetMelee =		CreateGlobalForward("OnSkeetMelee", ET_Ignore, Param_Cell, Param_Cell );
-	g_hForwardSkeetMeleeHurt =	CreateGlobalForward("OnSkeetMeleeHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetSniper =		CreateGlobalForward("OnSkeetSniper", ET_Ignore, Param_Cell, Param_Cell );
-	g_hForwardSkeetSniperHurt = CreateGlobalForward("OnSkeetSniperHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetGL =			CreateGlobalForward("OnSkeetGL", ET_Ignore, Param_Cell, Param_Cell );
+	g_hForwardSkeet =			CreateGlobalForward("OnSkeet", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetHurt =		CreateGlobalForward("OnSkeetHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetMelee =		CreateGlobalForward("OnSkeetMelee", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetMeleeHurt =	CreateGlobalForward("OnSkeetMeleeHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetSniper =		CreateGlobalForward("OnSkeetSniper", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetSniperHurt = CreateGlobalForward("OnSkeetSniperHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetGL =			CreateGlobalForward("OnSkeetGL", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardSIShove =			CreateGlobalForward("OnSpecialShoved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardHunterDeadstop =	CreateGlobalForward("OnHunterDeadstop", ET_Ignore, Param_Cell, Param_Cell );
+	g_hForwardJocekyDeadstop =	CreateGlobalForward("OnJocekyDeadstop", ET_Ignore, Param_Cell, Param_Cell );
 	g_hForwardBoomerPop =		CreateGlobalForward("OnBoomerPop", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float );
 	g_hForwardBoomerPopStop =	CreateGlobalForward("OnBoomerPopStop", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float );
 	g_hForwardLevel =			CreateGlobalForward("OnChargerLevel", ET_Ignore, Param_Cell, Param_Cell );
@@ -865,7 +868,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 							
 							// charger was killed, was it a full level?
 							DebugPrint("health: %d, damage: %d, chip-level: %d", health, damage, iChargeHealth * 0.8);
-							if ( damage > (iChargeHealth * 0.75) ) {
+							if ( damage >= (iChargeHealth * 0.5) ) {
 								HandleLevel( attacker, victim );
 							}
 							else {
@@ -2849,10 +2852,20 @@ stock HandleDeadstop( attacker, victim, bool:hunter = true )
 	
 	// PrintToConsoleAll("%d deadstop %d", attacker, victim);
 	
-	Call_StartForward(g_hForwardHunterDeadstop);
-	Call_PushCell(attacker);
-	Call_PushCell(victim);
-	Call_Finish();
+	if(hunter)
+	{
+		Call_StartForward(g_hForwardHunterDeadstop);
+		Call_PushCell(attacker);
+		Call_PushCell(victim);
+		Call_Finish();
+	}
+	else
+	{
+		Call_StartForward(g_hForwardJocekyDeadstop);
+		Call_PushCell(attacker);
+		Call_PushCell(victim);
+		Call_Finish();
+	}
 }
 stock HandleShove( attacker, victim, zombieClass )
 {
@@ -3060,6 +3073,7 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 		Call_StartForward(g_hForwardSkeetSniper);
 		Call_PushCell(attacker);
 		Call_PushCell(victim);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 	else if ( bGL )
@@ -3067,6 +3081,7 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 		Call_StartForward(g_hForwardSkeetGL);
 		Call_PushCell(attacker);
 		Call_PushCell(victim);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 	else if ( bMelee )
@@ -3074,6 +3089,7 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 		Call_StartForward(g_hForwardSkeetMelee);
 		Call_PushCell(attacker);
 		Call_PushCell(victim);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 	else
@@ -3081,6 +3097,7 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 		Call_StartForward(g_hForwardSkeet);
 		Call_PushCell(attacker);
 		Call_PushCell(victim);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 }
@@ -3162,6 +3179,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 		Call_PushCell(victim);
 		Call_PushCell(damage);
 		Call_PushCell(bOverKill);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 	else if ( bMelee )
@@ -3171,6 +3189,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 		Call_PushCell(victim);
 		Call_PushCell(damage);
 		Call_PushCell(bOverKill);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 	else
@@ -3180,6 +3199,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, bool:bMe
 		Call_PushCell(victim);
 		Call_PushCell(damage);
 		Call_PushCell(bOverKill);
+		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
 }
