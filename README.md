@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/4/16)
+>All plugins in here only apply to L4D2 (last edited:2023/5/4)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -24,7 +24,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[multitanks_a-l4d2](/multitanks_a-l4d2)</b>: An improved version of the MultiTanks plugin originally created by Red Alex.
 * <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
 * <b>[l4d2_melee_swing](/l4d2_melee_swing)</b>: Adjustable melee swing rate for each melee weapon.
-* <b>[AI_HardSI](/AI_HardSI)</b>: Improves the AI behaviour of special infected
 * <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
 * <b>[l4d_witch_realism_door_fix](/l4d_witch_realism_door_fix)</b>: Fixing witch can't break the door on Realism Normal、Advanced、Expert
@@ -71,6 +70,8 @@ If you want any modify or request, free to use or pay me money to do it.
     * 特感可以釋放被抓住的倖存者
 * <b>[l4d2_mission_manager](/l4d2_mission_manager)</b>: Mission manager for L4D2, provide information about map orders for other plugins
     * 地圖管理器，提供給其他插件做依賴與API串接
+* <b>[AI_HardSI](/AI_HardSI)</b>: Improves the AI behaviour of special infected
+    * 強化每個AI 特感的行為與提高智商，積極攻擊倖存者
 
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder

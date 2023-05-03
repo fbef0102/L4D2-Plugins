@@ -394,70 +394,14 @@ stock bool IsBotTank(int client) {
                                                                     
 ***********************************************************************************************************************************************************************************/
 
-/**
- * Executes a cheat command through a dummy client
- *
- * @param command: The command to execute
- * @param argument1: Optional argument for command
- * @param argument2: Optional argument for command
- * @param dummyName: The name to use for the dummy client 
- *
-**/
-stock void CheatCommand( char[] commandName, char[] argument1 = "",  char[] argument2 = "", bool doUseCommandBot = false ) {
-    int flags = GetCommandFlags(commandName);       
-    if ( flags != INVALID_FCVAR_FLAGS ) {
-		int commandDummy = -1;
-		if( doUseCommandBot ) {
-			// Search for an existing bot named '[CommandBot]'
-			for( int i = 1; i < MAXPLAYERS; i++ ) {
-				if( IsValidClient(i) && IsClientInGame(i) && IsFakeClient(i) ) {
-					char clientName[32];
-					GetClientName( i, clientName, sizeof(clientName) );
-					if( StrContains( clientName, "[CommandBot]", true ) != -1 ) {
-						commandDummy = i;
-					}
-				}  		
-			}
-			// Create a command bot if necessary
-			if ( !IsValidClient(commandDummy) || IsClientInKickQueue(commandDummy) ) { // Command bot may have been kicked by SMAC_Antispam.smx
-			    commandDummy = CreateFakeClient("[CommandBot]");
-			    if( IsValidClient(commandDummy) ) {
-			    	ChangeClientTeam(commandDummy, L4D2Team_Spectator);	
-			    } else {
-			    	commandDummy = GetRandomSurvivor(1, -1);	 // wanted to use a bot, but failed; last resort
-			    }			
-			}
-		} else {
-			commandDummy = GetRandomSurvivor(1, -1);
-		}
-		
-		// Execute command
-		if ( IsValidClient(commandDummy) ) {
-		    int originalUserFlags = GetUserFlagBits(commandDummy);
-		    int originalCommandFlags = GetCommandFlags(commandName);            
-		    SetUserFlagBits(commandDummy, ADMFLAG_ROOT); 
-		    SetCommandFlags(commandName, originalCommandFlags ^ FCVAR_CHEAT);               
-		    FakeClientCommand(commandDummy, "%s %s %s", commandName, argument1, argument2); //could be kicked (reason: run too many commands or other reason else)
-		    SetCommandFlags(commandName, originalCommandFlags);
-		    if(IsClientConnected(commandDummy)) SetUserFlagBits(commandDummy, originalUserFlags);            
-		}
-    }
-}
 
-// Executes vscript code through the "script" console command
-stock void ScriptCommand(const char[] arguments, any ...) {
-    // format vscript input
-    char vscript[PLATFORM_MAX_PATH];
-    VFormat(vscript, sizeof(vscript), arguments, 2);
-    
-    // Execute vscript input
-    CheatCommand("script", vscript, "");
-}
-
-// Sets the spawn direction for SI, relative to the survivors
-// Yet to test whether map specific scripts override this option, and if so, how to rewrite this script line
-stock void SetSpawnDirection(int direction) {
-    ScriptCommand("g_ModeScript.DirectorOptions.PreferredSpecialDirection<-%i", direction);   
+stock void CheatServerCommand(char[] command)
+{
+    int flags = GetCommandFlags(command);
+    SetCommandFlags(command, flags & ~FCVAR_CHEAT);
+    ServerCommand("%s", command);
+    ServerExecute();
+    SetCommandFlags(command, flags);
 }
 
 /**

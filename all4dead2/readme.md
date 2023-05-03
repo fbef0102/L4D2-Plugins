@@ -21,7 +21,7 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
     简体中文
     ```
 
-    * <details><summary>Changelog | 版本日誌</summary>
+* <details><summary>Changelog | 版本日誌</summary>
 
     ```php
     //grandwazir @ 2009-2010
@@ -46,7 +46,7 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
     * v2.0
         * [Original Plugin by grandwazir](https://forums.alliedmods.net/showthread.php?t=84609)
-    </details>
+</details>
 
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)

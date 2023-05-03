@@ -22,7 +22,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "1.4",
+	version = "1.5",
 	url = "github.com/breezyplease"
 };
 
@@ -70,7 +70,7 @@ public Action L4D_OnFirstSurvivorLeftSafeArea(int client) {
 }
 
 public Action Timer_ForceInfectedAssault( Handle timer ) {
-	CheatCommand("nb_assault");
+	CheatServerCommand("nb_assault");
 
 	return Plugin_Continue;
 }
