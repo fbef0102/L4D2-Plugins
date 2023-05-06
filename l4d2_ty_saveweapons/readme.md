@@ -34,7 +34,7 @@ L4D2 coop save weapon when map transition if more than 4 players
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
 
 * Related Plugin | 相關插件
-	1. [l4dmultislots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dmultislots): Allows additional survivor players in coop/survival/realism when 5+ player joins the server
+	1. [l4dmultislots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dmultislots): Allows additional survivor players in server when 5+ player joins the server
 	    > 創造5位以上倖存者遊玩伺服器
 
 * <details><summary>ConVar | 指令</summary>
