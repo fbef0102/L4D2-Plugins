@@ -230,7 +230,7 @@ public int Native_GetCurrentGameMode(Handle plugin, int numParams) {
 		gamemode = LMM_GAMEMODE_COOP;
 	else
 	{
-		if(L4D_IsCoopMode()) gamemode = LMM_GAMEMODE_COOP;
+		if(L4D_IsCoopMode() || L4D2_IsRealismMode()) gamemode = LMM_GAMEMODE_COOP;
 		else if(L4D_IsVersusMode()) gamemode = LMM_GAMEMODE_VERSUS;
 		else if(L4D_IsSurvivalMode()) gamemode = LMM_GAMEMODE_SURVIVAL;
 		else if(L4D2_IsScavengeMode()) gamemode = LMM_GAMEMODE_SCAVENGE;
