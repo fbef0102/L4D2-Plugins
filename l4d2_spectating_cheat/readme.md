@@ -53,11 +53,11 @@ A spectator who watching the survivor at first person view can now see the infec
     1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
 	    > 給死亡玩家或旁觀者手電筒，照亮地圖
 
-	2. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
-	    > 頭上有血量提示，給旁觀者更好的觀賞性
+    2. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener): Allows spectator listen others team voice and see others team chat for l4d
+	    > 旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
 
-	3. [HP Laser](https://forums.alliedmods.net/showthread.php?t=330590): Shows a laser beam at the client head based on its HP
-	    > 頭上有血量激光束提示，給旁觀者更好的觀賞性 (比較卡)
+	3. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
+	    > 頭上有血量提示，給旁觀者更好的觀賞性
 
 * <details><summary>ConVar | 指令</summary>
 
