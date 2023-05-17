@@ -18,6 +18,9 @@ A spectator who watching the survivor at first person view can now see the infec
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v2.7 (2023-5-17)
+		* Optimize code and improve performance
+
 	* v2.6 (2023-2-4)
         * Remove glow if client leaves the game
 
