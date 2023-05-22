@@ -1,6 +1,6 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/5/4)
+>All plugins in here only apply to L4D2 (last edited:2023/5/22)
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -72,6 +72,8 @@ If you want any modify or request, free to use or pay me money to do it.
     * 地圖管理器，提供給其他插件做依賴與API串接
 * <b>[AI_HardSI](/AI_HardSI)</b>: Improves the AI behaviour of special infected
     * 強化每個AI 特感的行為與提高智商，積極攻擊倖存者
+* <b>[pill_passer](/pill_passer)</b>: Lets players pass pills and adrenaline with +Reload key
+    * 用R鍵直接傳送藥丸與腎上腺素給隊友
 
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
