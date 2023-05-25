@@ -22,6 +22,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.4h (2023-5-26)
+        * Safely check client id when pass by timer
+
     * v1.3h (2023-4-28)
         * Add More Api
 

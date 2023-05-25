@@ -89,7 +89,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.3h"
+#define PLUGIN_VERSION "1.4h"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -642,6 +642,7 @@ public OnClientPostAdminCheck(client)
 public OnClientDisconnect(client)
 {
 	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamageByWitch);
+	delete g_hBoomerVomitTimer[client];
 }
 
 public OnMapStart()
@@ -976,7 +977,7 @@ public Action: Event_PlayerSpawn( Handle:event, const String:name[], bool:dontBr
 		{
 			g_bBoomerHitSomebody[client] = false;
 			g_bBoomerNearSomebody[client] = false;
-			g_hBoomerVomitTimer[client] = null;
+			delete g_hBoomerVomitTimer[client];
 			g_bBoomerLanded[client] = false;
 			g_iBoomerGotShoved[client] = 0;
 		}
@@ -1438,8 +1439,8 @@ public Action: Event_LungePounce( Handle:event, const String:name[], bool:dontBr
 	}
 	
 	new Handle: pack = CreateDataPack();
-	WritePackCell( pack, client );
-	WritePackCell( pack, victim );
+	WritePackCell( pack, GetClientUserId(client) );
+	WritePackCell( pack, GetClientUserId(victim) );
 	WritePackFloat( pack, fDamage );
 	WritePackFloat( pack, fHeight );
 	CreateTimer( 0.05, Timer_HunterDP, pack );
@@ -1450,8 +1451,8 @@ public Action: Event_LungePounce( Handle:event, const String:name[], bool:dontBr
 public Action: Timer_HunterDP( Handle:timer, Handle:pack )
 {
 	ResetPack( pack );
-	new client = ReadPackCell( pack );
-	new victim = ReadPackCell( pack );
+	new client = GetClientOfUserId(ReadPackCell( pack ));
+	new victim = GetClientOfUserId(ReadPackCell( pack ));
 	new Float: fDamage = ReadPackFloat( pack );
 	new Float: fHeight = ReadPackFloat( pack );
 	CloseHandle( pack );
@@ -1533,17 +1534,17 @@ public Action: Event_PlayerJumped( Handle:event, const String:name[], bool:dontB
 		if ( g_iHops[client] != 0 )
 		{
 			// check when the player returns to the ground
-			CreateTimer( HOP_CHECK_TIME, Timer_CheckHop, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
+			CreateTimer( HOP_CHECK_TIME, Timer_CheckHop, GetClientUserId(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 		}
 	}
 	
 	return Plugin_Continue;
 }
 
-public Action: Timer_CheckHop (Handle:timer, any:client)
+public Action Timer_CheckHop (Handle timer, int userid)
 {
 	// player back to ground = end of hop (streak)?
-	
+	int client = GetClientOfUserId(userid);
 	if ( !IS_VALID_INGAME(client) || !IsPlayerAlive(client) )
 	{
 		// streak stopped by dying / teamswitch / disconnect?
@@ -1559,7 +1560,7 @@ public Action: Timer_CheckHop (Handle:timer, any:client)
 		
 		g_bHopCheck[client] = true;
 		
-		CreateTimer( HOPEND_CHECK_TIME, Timer_CheckHopStreak, client, TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( HOPEND_CHECK_TIME, Timer_CheckHopStreak, userid, TIMER_FLAG_NO_MAPCHANGE );
 		
 		return Plugin_Stop;
 	}
@@ -1567,8 +1568,9 @@ public Action: Timer_CheckHop (Handle:timer, any:client)
 	return Plugin_Continue;
 }
 
-public Action: Timer_CheckHopStreak (Handle:timer, any:client)
+public Action Timer_CheckHopStreak (Handle timer, int userid)
 {
+	int client = GetClientOfUserId(userid);
 	if ( !IS_VALID_INGAME(client) || !IsPlayerAlive(client) ) { return Plugin_Continue; }
 	
 	// check if we have any sort of hop streak, and report
@@ -1668,6 +1670,7 @@ public Action: Event_AbilityUse( Handle:event, const String:name[], bool:dontBro
 			g_bBoomerLanded[client] = true;
 			g_iBoomerVomitHits[client] = 0;
 			g_fBoomerVomitStart[client] = GetGameTime();
+			delete g_hBoomerVomitTimer[client];
 			g_hBoomerVomitTimer[client] = CreateTimer( VOMIT_DURATION_TIME, Timer_BoomVomitCheck,
 				client, TIMER_FLAG_NO_MAPCHANGE );
 		}
@@ -1700,7 +1703,7 @@ public Action: Event_ChargeCarryStart( Handle:event, const String:name[], bool:d
 	GetClientAbsOrigin( victim, g_fChargeVictimPos[victim] );
 	
 	//CreateTimer( CHARGE_CHECK_TIME, Timer_ChargeCheck, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
-	CreateTimer( CHARGE_CHECK_TIME, Timer_ChargeCheck, victim, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( CHARGE_CHECK_TIME, Timer_ChargeCheck, GetClientUserId(victim), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public Action: Event_ChargeImpact( Handle:event, const String:name[], bool:dontBroadcast )
@@ -1717,7 +1720,7 @@ public Action: Event_ChargeImpact( Handle:event, const String:name[], bool:dontB
 	g_fChargeTime[victim] = GetGameTime();	// store time per victim, for impacts
 	g_iVictimMapDmg[victim] = 0;
 	
-	CreateTimer( CHARGE_CHECK_TIME, Timer_ChargeCheck, victim, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( CHARGE_CHECK_TIME, Timer_ChargeCheck, GetClientUserId(victim), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public Action: Event_ChargePummelStart( Handle:event, const String:name[], bool:dontBroadcast )
@@ -1747,9 +1750,10 @@ public Action: Timer_ChargeCarryEnd( Handle:timer, any:client )
 	g_iChargeVictim[client] = 0;		// unset this so the repeated timer knows to stop for an ongroundcheck
 }
 
-public Action: Timer_ChargeCheck( Handle:timer, any:client )
+Action Timer_ChargeCheck( Handle timer, int userid )
 {
 	// if something went wrong with the survivor or it was too long ago, forget about it
+	int client = GetClientOfUserId(userid);
 	if ( !IS_VALID_SURVIVOR(client) || !IS_VALID_INFECTED(g_iVictimCharger[client]) ||
 		g_fChargeTime[client] == 0.0 || ( GetGameTime() - g_fChargeTime[client]) > MAX_CHARGE_TIME ||
 		GetEntProp(g_iVictimCharger[client], Prop_Send, "m_zombieClass") != ZC_CHARGER )
@@ -1769,7 +1773,7 @@ public Action: Timer_ChargeCheck( Handle:timer, any:client )
 		g_iVictimFlags[client] = g_iVictimFlags[client] | VICFLG_AIRDEATH;
 		
 		// check conditions now
-		CreateTimer( 0.0, Timer_DeathChargeCheck, client, TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 0.0, Timer_DeathChargeCheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE );
 		
 		return Plugin_Stop;
 	}
@@ -1780,7 +1784,7 @@ public Action: Timer_ChargeCheck( Handle:timer, any:client )
 		//		(in which case it doesn't matter that they're on the ground)
 		
 		// check conditions with small delay (to see if they still die soon)
-		CreateTimer( CHARGE_END_CHECK, Timer_DeathChargeCheck, client, TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( CHARGE_END_CHECK, Timer_DeathChargeCheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE );
 		
 		return Plugin_Stop;
 	}
@@ -1788,9 +1792,10 @@ public Action: Timer_ChargeCheck( Handle:timer, any:client )
 	return Plugin_Continue;
 }
 
-public Action: Timer_DeathChargeCheck( Handle:timer, any:client )
+Action Timer_DeathChargeCheck( Handle timer, int userid )
 {
-	if ( !IS_VALID_INGAME(client) ) { return; }
+	int client = GetClientOfUserId(userid);
+	if ( !IS_VALID_INGAME(client) ) { return Plugin_Continue; }
 	
 	// check conditions.. if flags match up, it's a DC
 	DebugPrint("Checking charge victim: %i - %i - flags: %i (alive? %i)", g_iVictimCharger[client], client, g_iVictimFlags[client], IsPlayerAlive(client) );
@@ -1831,8 +1836,10 @@ public Action: Timer_DeathChargeCheck( Handle:timer, any:client )
 		// flag only gets set on preincap, so don't need to check for incap
 		g_iVictimFlags[client] = g_iVictimFlags[client] | VICFLG_WEIRDFLOWDONE;
 		
-		CreateTimer( CHARGE_END_RECHECK, Timer_DeathChargeCheck, client, TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( CHARGE_END_RECHECK, Timer_DeathChargeCheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE );
 	}
+
+	return Plugin_Continue;
 }
 
 stock ResetHunter(client, bool:death = false)
@@ -2043,13 +2050,19 @@ public Action: Event_PlayerBoomed (Handle:event, const String:name[], bool:dontB
 	}
 }
 // check how many booms landed
-public Action: Timer_BoomVomitCheck ( Handle:timer, any:client )
+Action Timer_BoomVomitCheck ( Handle timer, int client )
 {
-	HandleVomitLanded( client, g_iBoomerVomitHits[client] );
+	if ( IS_VALID_INGAME(client) )
+	{
+		HandleVomitLanded( client, g_iBoomerVomitHits[client] );
+	}
+
 	g_iBoomerVomitHits[client] = 0;
 	g_bBoomerLanded[client] = false;
 	g_hBoomerVomitTimer[client] = null;
 	g_fBoomerVomitStart[client] = 0.0;
+
+	return Plugin_Continue;
 }
 
 // boomers that didn't bile anyone
@@ -2102,7 +2115,7 @@ public Action: Event_WitchKilled ( Handle:event, const String:name[], bool:dontB
 	
 	// is it a crown / drawcrown?
 	new Handle: pack = CreateDataPack();
-	WritePackCell( pack, attacker );
+	WritePackCell( pack, GetClientUserId(attacker) );
 	WritePackCell( pack, witch );
 	WritePackCell( pack, (bOneShot) ? 1 : 0 );
 	CreateTimer( WITCH_CHECK_TIME, Timer_CheckWitchCrown, pack );
@@ -2217,7 +2230,7 @@ public OnTakeDamagePost_Witch ( victim, attacker, inflictor, Float:damage, damag
 public Action: Timer_CheckWitchCrown(Handle:timer, Handle:pack)
 {
 	ResetPack( pack );
-	new attacker = ReadPackCell( pack );
+	new attacker = GetClientOfUserId(ReadPackCell( pack ));
 	new witch = ReadPackCell( pack );
 	new bool:bOneShot = bool:ReadPackCell( pack );
 	CloseHandle( pack );
