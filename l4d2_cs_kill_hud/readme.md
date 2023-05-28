@@ -5,7 +5,7 @@ HUD with cs kill info list.
 
 * Image | 圖示
 	* CS kill info list
-		> 版面一 (人類方)
+		> 右上角擊殺提示 (仿CS遊戲)
 		<br/>![l4d2_cs_kill_hud_1](image/l4d2_cs_kill_hud_1.gif)
 	* Custom icon
 		> 【L4D2】 (●｀・ω・)=Ｏ)｀-д゜)【你】
@@ -64,7 +64,7 @@ HUD with cs kill info list.
 	None
 </details>
 
-* How to custom weapon icon
+* How to customize weapon icon
 	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L137-L171) line 137 ~ 171
     * Recompile, done.
 
