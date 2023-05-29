@@ -221,7 +221,7 @@ Improves the AI behaviour of special infected
 
         * 更動的官方指令
             ```php
-            // AI Smoker的舌頭準備拉走倖存者的期間，被攻擊超過250HP或自身血量才會死亡 (預設: 50)
+            // AI Smoker的舌頭拉走倖存者的期間，被攻擊超過250HP或自身血量才會死亡 (預設: 50)
             tongue_break_from_damage_amount 250
 
             // 當倖存者靠近範圍內的0.1秒後立刻吐舌頭 (預設: 1.5)
