@@ -68,6 +68,13 @@ HUD with cs kill info list.
 	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L137-L171) line 137 ~ 171
     * Recompile, done.
 
+* <details><summary>Known Conflicts</summary>
+	
+	If you don't use any of these at all, no need to worry about conflicts.
+	1. [Mod - Admin System](https://steamcommunity.com/sharedfiles/filedetails/?id=214630948)
+		* Please Remove
+</details>
+
 - - - -
 # 中文說明
 L4D2擊殺提示改成CS遊戲的擊殺列表
@@ -87,3 +94,10 @@ L4D2擊殺提示改成CS遊戲的擊殺列表
 * 自製武器圖案
 	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L137-L171) 137 ~ 171 行
     * 重新編譯，完成
+
+* <details><summary>會衝突的插件or模組</summary>
+	
+	如果沒安裝以下內容就不需要擔心衝突
+	1. [Mod - Admin System](https://steamcommunity.com/sharedfiles/filedetails/?id=214630948)
+		* 請移除
+</details>
