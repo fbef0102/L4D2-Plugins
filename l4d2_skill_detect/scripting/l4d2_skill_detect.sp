@@ -2958,7 +2958,7 @@ stock HandleSkeet( attacker, victim, bool:bMelee = false, bool:bSniper = false, 
 					if(isHunter)
 						CPrintToChatAll( "%t", "HandleSkeet_1_H", victim, assist );
 					else
-						CPrintToChatAll( "%t", "HandleSkeet_2_J", victim, assist );
+						CPrintToChatAll( "%t", "HandleSkeet_1_J", victim, assist );
 
 				} else {
 					if(isHunter)
