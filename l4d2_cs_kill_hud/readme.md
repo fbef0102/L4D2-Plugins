@@ -18,6 +18,9 @@ HUD with cs kill info list.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.1h (2023-6-2)
+        * Support Versus mode and witch killed
+
     * v1.0h (2023-5-28)
         * Merge inc with main sp file
         * Delete all functions, only cs kill info

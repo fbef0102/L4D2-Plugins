@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION			"1.0-2023/5/28"
+#define PLUGIN_VERSION			"1.1h-2023/6/2"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -282,37 +282,47 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 		return;
 
 	int victim = GetClientOfUserId( event.GetInt("userid") );
-	if( victim < 1 || victim > MaxClients || !IsClientInGame(victim) )
-		return;
+	bool bIsVictimPlayer = true;
+	if( victim <= 0 || victim > MaxClients || !IsClientInGame(victim) )
+		bIsVictimPlayer = false;
 
 	int attacker = GetClientOfUserId( event.GetInt("attacker") );
-	if( attacker < 0 || attacker > MaxClients || !IsClientInGame(victim) ) // because attacker = 0 mean it is world.
-		return;
+	bool bIsAttackerPlayer = true;
+	if( attacker <= 0 || attacker > MaxClients || !IsClientInGame(attacker) ) // because attacker = 0 mean it is world.
+		bIsAttackerPlayer = false;
+
+	int entityid = event.GetInt("entityid");
+	bool headshot = event.GetBool("headshot");
 
 	if(g_bCvarBlockMessage) event.BroadcastDisabled = true; // by prehook, set this to prevent the red font of kill info.
 
 	static char killinfo[128];
-	if( attacker == 0 ) // kill by world of fall 
+	if( bIsAttackerPlayer == false)
 	{
-		int attackid = event.GetInt("attackerentid");
-		if(IsWitch(attackid))
+		if(bIsVictimPlayer == true) // something killed player
 		{
-			FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[16],victim);
+			int attackid = event.GetInt("attackerentid");
+			if(IsWitch(attackid))
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[16],victim);
+			}
+			else if(IsCommonInfected(attackid))
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[17],victim);
+			}
+			else
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[12],victim);
+			}
+			
+			DisplayKillList(killinfo);
 		}
-		else if(IsCommonInfected(attackid))
-		{
-			FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[17],victim);
-		}
-		else
-		{
-			FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[12],victim);
-		}
-		
-		DisplayKillList(killinfo);
+
 		return;
 	}
 
-	if( GetClientTeam(attacker) == TEAM_INFECTED && GetClientTeam(victim) == TEAM_SURVIVOR ) // kill by specials.
+	if( GetClientTeam(attacker) == TEAM_INFECTED 
+		&& bIsVictimPlayer && GetClientTeam(victim) == TEAM_SURVIVOR ) // infected kill survivor
 	{
 		FormatEx(killinfo,sizeof(killinfo),"%N  %s  %N",attacker,g_kill_type[13],victim);
 		DisplayKillList(killinfo);
@@ -321,12 +331,26 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 
 	static char weapon_type[64], victim_name[64];
 	event.GetString("weapon",weapon_type,sizeof(weapon_type));
-	if( IsFakeClient(victim) )
+	if(bIsVictimPlayer)
 	{
-		FormatEx(victim_name,sizeof(victim_name),"%N",victim);
-		int index = StrContains(victim_name,")");
-		if( index != -1 )
-			FormatEx(victim_name,sizeof(victim_name),"%s",victim_name[index + 1]);
+		if( IsFakeClient(victim) )
+		{
+			FormatEx(victim_name,sizeof(victim_name),"%N",victim);
+			int index = StrContains(victim_name,")");
+			if( index != -1 )
+				FormatEx(victim_name,sizeof(victim_name),"%s",victim_name[index + 1]);
+		}
+		else
+		{
+			FormatEx(victim_name,sizeof(victim_name),"%N",victim);
+		}
+	}
+	else
+	{
+		if(IsWitch(entityid))
+		{
+			FormatEx(victim_name,sizeof(victim_name),"Witch");
+		}
 	}
 
 	// add kill type
@@ -341,19 +365,40 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 		return;
 		
 	g_weapon_name.GetString(weapon_type,weapon_type,sizeof(weapon_type));
-	if( event.GetBool("headshot") )
+
+	if(bIsVictimPlayer)
 	{
-		if( IsKilledBehindWall(attacker,victim) )
-			FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],weapon_type,victim_name);
+		if( headshot )
+		{
+			if( IsPlayerKilledBehindWall(attacker, victim) )
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],weapon_type,victim_name);
+			else
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],weapon_type,victim_name);
+		}
 		else
-			FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],weapon_type,victim_name);
+		{
+			if( IsPlayerKilledBehindWall(attacker, victim) )
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],weapon_type,victim_name);
+			else
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,weapon_type,victim_name);
+		}
 	}
 	else
 	{
-		if( IsKilledBehindWall(attacker,victim) )
-			FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],weapon_type,victim_name);
+		if( headshot )
+		{
+			if( IsEntityKilledBehindWall(attacker, entityid) )
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],weapon_type,victim_name);
+			else
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],weapon_type,victim_name);
+		}
 		else
-			FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,weapon_type,victim_name);
+		{
+			if( IsEntityKilledBehindWall(attacker, entityid) )
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],weapon_type,victim_name);
+			else
+				FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,weapon_type,victim_name);
+		}
 	}
 
 	DisplayKillList(killinfo);
@@ -423,7 +468,7 @@ void DisplayKillList(const char[] info)
 	g_hKillHUDDecreaseTimer = CreateTimer(g_fCvarHudDecrease, Timer_KillHUDDecrease, _, TIMER_REPEAT);
 }
 
-bool IsKilledBehindWall(int attacker,int client)
+bool IsPlayerKilledBehindWall(int attacker,int client)
 {
 	float vPos_a[3],vPos_c[3];
 	GetClientEyePosition(attacker, vPos_a);
@@ -442,6 +487,38 @@ bool IsKilledBehindWall(int attacker,int client)
 }
 
 bool TraceRayNoPlayers(int entity, int mask, any data)
+{
+    if( entity == data || (entity >= 1 && entity <= MaxClients) )
+    {
+        return false;
+    }
+    return true;
+}
+
+bool IsEntityKilledBehindWall(int attacker, int entity)
+{
+	float vAngles[3],vOrigin[3];
+	
+	GetClientEyePosition(attacker, vOrigin);
+	GetClientEyeAngles(attacker, vAngles);
+	
+	//get endpoint for teleport
+	Handle trace = TR_TraceRayFilterEx(vOrigin, vAngles, MASK_SHOT, RayType_Infinite, TraceRayNoEntities);
+	
+	if(TR_DidHit(trace))
+	{
+		if(TR_GetEntityIndex(trace)==entity)
+		{
+			delete trace;
+			return false;
+		}
+	}
+
+	delete trace;
+	return true;
+}
+
+bool TraceRayNoEntities(int entity, int mask, any data)
 {
     if( entity == data || (entity >= 1 && entity <= MaxClients) )
     {
