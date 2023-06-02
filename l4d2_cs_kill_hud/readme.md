@@ -18,6 +18,9 @@ HUD with cs kill info list.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.2h (2023-6-2)
+        * Fixed common infected null string
+
     * v1.1h (2023-6-2)
         * Support Versus mode and witch killed
 

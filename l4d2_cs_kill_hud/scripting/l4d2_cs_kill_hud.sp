@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION			"1.1h-2023/6/2"
+#define PLUGIN_VERSION			"1.2h-2023/6/2"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -350,6 +350,10 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 		if(IsWitch(entityid))
 		{
 			FormatEx(victim_name,sizeof(victim_name),"Witch");
+		}
+		else
+		{
+			return;
 		}
 	}
 
