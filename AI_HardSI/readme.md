@@ -1,6 +1,7 @@
 
 # Description | 內容
 Improves the AI behaviour of special infected
+(Execute ```nb_assault``` every 2.0 seconds)
 
 * Video | 影片展示
 <br/>None
@@ -204,6 +205,7 @@ Improves the AI behaviour of special infected
 
 * 原理
     * 改變各種特感的行為
+    * 每兩秒執行```nb_assault```命令 (往下看說明)
 
 * 功能
     * <details><summary><b>AI Tank</b></summary>
