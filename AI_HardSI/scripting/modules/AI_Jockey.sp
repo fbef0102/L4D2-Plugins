@@ -17,25 +17,57 @@ bool bDoNormalJump[MAXPLAYERS]; // used to alternate pounces and normal jumps
 
 // Bibliography: "hunter pounce push" by "Pan XiaoHai & Marcus101RR & AtomicStryker"
 
+static ConVar g_hCvarEnable; 
+static bool g_bCvarEnable;
+
 public void Jockey_OnModuleStart() {
+	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Jockey_enable",   "1",   "0=Improves the Jockey behaviour off, 1=Improves the Jockey behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+	GetCvars();
+	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
+	
 	// CONSOLE VARIABLES
 	// jockeys will move to attack survivors within this range
 	z_jockey_leap_again_timer = FindConVar("z_jockey_leap_again_timer");
 	hCvarJockeyLeapRange = FindConVar("z_jockey_leap_range");
-	hCvarJockeyLeapRange.SetInt(1000); 
+
+	if(g_bCvarEnable) _OnModuleStart();
 	hCvarJockeyLeapRange.AddChangeHook(OnJockeyCvarChange);
 	
 	// proximity when plugin will start forcing jockeys to hop
 	hCvarHopActivationProximity = CreateConVar("ai_hop_activation_proximity", "500", "How close a jockey will approach before it starts hopping");
 }
 
+static void _OnModuleStart()
+{
+	hCvarJockeyLeapRange.SetInt(1000); 
+}
+
 public void Jockey_OnModuleEnd() {
 	hCvarJockeyLeapRange.RestoreDefault();
 }
 
+static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+    GetCvars();
+    if(g_bCvarEnable)
+    {
+        _OnModuleStart();
+    }
+    else
+    {
+        Jockey_OnModuleEnd();
+    }
+}
+
+static void GetCvars()
+{
+    g_bCvarEnable = g_hCvarEnable.BoolValue;
+}
+
 // Game tries to reset these cvars
 public void OnJockeyCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
-	hCvarJockeyLeapRange.SetInt(1000);
+	if(g_bCvarEnable) _OnModuleStart();
 }
 
 /***********************************************************************************************************************************************************************************
@@ -45,6 +77,8 @@ public void OnJockeyCvarChange(ConVar convar, const char[] oldValue, const char[
 ***********************************************************************************************************************************************************************************/
 
 public Action Jockey_OnPlayerRunCmd(int jockey, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, bool hasBeenShoved) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	float jockeyPos[3];
 	GetClientAbsOrigin(jockey, jockeyPos);
 	int iSurvivorsProximity = GetSurvivorProximity(jockeyPos);
@@ -91,6 +125,8 @@ public Action Jockey_OnPlayerRunCmd(int jockey, int &buttons, int &impulse, floa
 
 // Enable hopping on spawned jockeys
 public Action Jockey_OnSpawn(int botJockey) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+	
 	bCanLeap[botJockey] = true;
 	return Plugin_Handled;
 }

@@ -8,7 +8,15 @@ ConVar hCvarAimOffsetSensitivityCharger;
 ConVar hCvarHealthThresholdCharger;
 int bShouldCharge[MAXPLAYERS]; // manual tracking of charge cooldown
 
+static ConVar g_hCvarEnable; 
+static bool g_bCvarEnable;
+
 public void Charger_OnModuleStart() {
+	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Charger_enable",   "1",   "0=Improves the Charger behaviour off, 1=Improves the Charger behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+	GetCvars();
+	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
+
 	// Charge proximity
 	hCvarChargeProximity = CreateConVar("ai_charge_proximity", "300", "How close a charger will approach before charging");	
 	// Aim offset sensitivity
@@ -21,7 +29,30 @@ public void Charger_OnModuleStart() {
 	hCvarHealthThresholdCharger = CreateConVar("ai_health_threshold_charger", "300", "Charger will charge if its health drops to this level");	
 }
 
-public void Charger_OnModuleEnd() {
+static void _OnModuleStart()
+{
+}
+
+public void Charger_OnModuleEnd() 
+{
+}
+
+static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+    GetCvars();
+    if(g_bCvarEnable)
+    {
+        _OnModuleStart();
+    }
+    else
+    {
+        Charger_OnModuleEnd();
+    }
+}
+
+static void GetCvars()
+{
+    g_bCvarEnable = g_hCvarEnable.BoolValue;
 }
 
 /***********************************************************************************************************************************************************************************
@@ -32,11 +63,15 @@ public void Charger_OnModuleEnd() {
 
 // Initialise spawned chargers
 public Action Charger_OnSpawn(int botCharger) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	bShouldCharge[botCharger] = false;
 	return Plugin_Handled;
 }
 
 public Action Charger_OnPlayerRunCmd(int charger, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+	
 	// prevent charge until survivors are within the defined proximity
 	float chargerPos[3];
 	GetClientAbsOrigin(charger, chargerPos);

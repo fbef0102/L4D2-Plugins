@@ -16,6 +16,9 @@ Improves the AI behaviour of special infected
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.6 (2023-6-4)
+        * Enable or Disable Each special infected behaviour
+
     * v1.5 (2023-5-4)
         * Use server console to execute command "nb_assault"
 
@@ -32,6 +35,27 @@ Improves the AI behaviour of special infected
 
 	* cfg\sourcemod\AI_HardSI.cfg
 		```php
+        // 0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.
+        AI_HardSI_Boomer_enable "1"
+
+        // 0=Improves the Charger behaviour off, 1=Improves the Charger behaviour on.
+        AI_HardSI_Charger_enable "1"
+
+        // 0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.
+        AI_HardSI_Hunter_enable "1"
+
+        // 0=Improves the Jockey behaviour off, 1=Improves the Jockey behaviour on.
+        AI_HardSI_Jockey_enable "1"
+
+        // 0=Improves the Smoker behaviour off, 1=Improves the Smoker behaviour on.
+        AI_HardSI_Smoker_enable "1"
+
+        // 0=Improves the Spitter behaviour off, 1=Improves the Spitter behaviour on.
+        AI_HardSI_Spitter_enable "1"
+
+        // 0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.
+        AI_HardSI_Tank_enable "1"
+
         // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
         ai_aim_offset_sensitivity_charger "20"
 
@@ -61,6 +85,9 @@ Improves the AI behaviour of special infected
 
         // Vertical angle to which AI hunter pounces will be restricted
         ai_pounce_vertical_angle "7"
+
+        // Flag to enable bhop facsimile on AI spitters
+        ai_spitter_bhop "1"
 
         // Distance to nearest survivor at which hunter will consider pouncing straight
         ai_straight_pounce_proximity "200"
@@ -164,7 +191,7 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Spitter</b></summary>
 
-        * None
+        * Behop
     </details>
 
     * <details><summary><b>AI Jockey</b></summary>
@@ -205,6 +232,7 @@ Improves the AI behaviour of special infected
 
 * 原理
     * 改變各種特感的行為
+    * 可以開關各特感的強化行為
     * 每兩秒執行```nb_assault```命令 (往下看說明)
 
 * 功能
@@ -288,7 +316,7 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Spitter</b></summary>
 
-        * 無
+        * 連跳
     </details>
 
     * <details><summary><b>AI Jockey</b></summary>

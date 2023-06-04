@@ -13,16 +13,49 @@ ConVar hCvarTankBhop, hCvarTankRock;
 // Bibliography: 
 // TGMaster, Chanz - Infinite Jumping
 
-public void Tank_OnModuleStart() {
+static ConVar g_hCvarEnable; 
+static bool g_bCvarEnable;
+
+public void Tank_OnModuleStart() 
+{
+	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Tank_enable",   "1",   "0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+	GetCvars();
+	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
+
 	hCvarTankBhop = CreateConVar("ai_tank_bhop", "1", "Flag to enable bhop facsimile on AI tanks");
 	hCvarTankRock = CreateConVar("ai_tank_rock", "1", "Flag to enable rocks on AI tanks");
 }
+static void _OnModuleStart()
+{
+}
 
-public void Tank_OnModuleEnd() {
+public void Tank_OnModuleEnd() 
+{
+}
+
+static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+    GetCvars();
+    if(g_bCvarEnable)
+    {
+        _OnModuleStart();
+    }
+    else
+    {
+        Tank_OnModuleEnd();
+    }
+}
+
+static void GetCvars()
+{
+    g_bCvarEnable = g_hCvarEnable.BoolValue;
 }
 
 // Tank bhop and blocking rock throw
 public Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	// block rock throws
 	if( hCvarTankRock.BoolValue == false ) {
 		buttons &= ~IN_ATTACK2;
@@ -121,9 +154,12 @@ stock void Client_Push(int client, float clientEyeAngle[3], float power, int ove
 }
 
 public Action L4D2_OnSelectTankAttack(int client, int &sequence) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	if (IsFakeClient(client) && sequence == 50) {
 		sequence = GetRandomInt(0, 1) ? 49 : 51;
 		return Plugin_Handled;
 	}
-	return Plugin_Changed;
+	
+	return Plugin_Continue;
 }

@@ -17,6 +17,7 @@ ConVar hCvarHunterPounceReadyRange;
 ConVar hCvarHunterLeapAwayGiveUpRange; 
 ConVar hCvarHunterPounceMaxLoftAngle; 
 ConVar hCvarLungeInterval; 
+ConVar z_pounce_damage_interrupt;
 // Gaussian random number generator for pounce angles
 ConVar hCvarPounceAngleMean;
 ConVar hCvarPounceAngleStd; // standard deviation
@@ -31,38 +32,43 @@ ConVar hCvarAimOffsetSensitivityHunter;
 // Wall detection
 ConVar hCvarWallDetectionDistance;
 
+static ConVar g_hCvarEnable; 
+static bool g_bCvarEnable;
+
 bool bHasQueuedLunge[MAXPLAYERS];
 bool bCanLunge[MAXPLAYERS];
 
 public void Hunter_OnModuleStart() {
+	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Hunter_enable",   "1",   "0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+	GetCvars();
+	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
+
 	// Set aggressive hunter cvars		
 	hCvarHunterCommittedAttackRange = FindConVar("hunter_committed_attack_range"); // range at which hunter is committed to attack	
 	hCvarHunterPounceReadyRange = FindConVar("hunter_pounce_ready_range"); // range at which hunter prepares pounce	
 	hCvarHunterLeapAwayGiveUpRange = FindConVar("hunter_leap_away_give_up_range"); // range at which shooting a non-committed hunter will cause it to leap away	
 	hCvarLungeInterval = FindConVar("z_lunge_interval"); // cooldown on lunges
 	hCvarHunterPounceMaxLoftAngle = FindConVar("hunter_pounce_max_loft_angle"); // maximum vertical angle hunters can pounce
-	
-	hCvarHunterCommittedAttackRange.SetInt(10000);
-	hCvarHunterPounceReadyRange.SetInt(1000);
-	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
-	hCvarHunterPounceMaxLoftAngle.SetInt(0);
+	z_pounce_damage_interrupt = FindConVar("z_pounce_damage_interrupt");
 
+	if(g_bCvarEnable) _OnModuleStart();
 	hCvarHunterCommittedAttackRange.AddChangeHook(OnHunterCvarChange);
 	hCvarHunterPounceReadyRange.AddChangeHook(OnHunterCvarChange);
 	hCvarHunterLeapAwayGiveUpRange.AddChangeHook(OnHunterCvarChange);
 	hCvarHunterPounceMaxLoftAngle.AddChangeHook(OnHunterCvarChange);
-	
+
 	// proximity to nearest survivor when plugin starts to force hunters to lunge ASAP
 	hCvarFastPounceProximity = CreateConVar("ai_fast_pounce_proximity", "1000", "At what distance to start pouncing fast");
-	
+
 	// Verticality
 	hCvarPounceVerticalAngle = CreateConVar("ai_pounce_vertical_angle", "7", "Vertical angle to which AI hunter pounces will be restricted");
-	
+
 	// Pounce angle
 	hCvarPounceAngleMean = CreateConVar( "ai_pounce_angle_mean", "10", "Mean angle produced by Gaussian RNG" );
 	hCvarPounceAngleStd = CreateConVar( "ai_pounce_angle_std", "20", "One standard deviation from mean as produced by Gaussian RNG" );
 	hCvarStraightPounceProximity = CreateConVar( "ai_straight_pounce_proximity", "200", "Distance to nearest survivor at which hunter will consider pouncing straight");
-	
+
 	// Aim offset sensitivity
 	hCvarAimOffsetSensitivityHunter = CreateConVar("ai_aim_offset_sensitivity_hunter",
 									"30",
@@ -71,8 +77,15 @@ public void Hunter_OnModuleStart() {
 									true, 0.0, true, 179.0 );
 	// How far in front of hunter to check for a wall
 	hCvarWallDetectionDistance = CreateConVar("ai_wall_detection_distance", "-1", "How far in front of himself infected bot will check for a wall. Use '-1' to disable feature");
-	
-	SetConVarInt(FindConVar("z_pounce_damage_interrupt"), 150);
+}
+
+static void _OnModuleStart()
+{
+	hCvarHunterCommittedAttackRange.SetInt(10000);
+	hCvarHunterPounceReadyRange.SetInt(1000);
+	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
+	hCvarHunterPounceMaxLoftAngle.SetInt(0);
+	z_pounce_damage_interrupt.SetInt(150);
 }
 
 public void Hunter_OnModuleEnd() {
@@ -81,19 +94,35 @@ public void Hunter_OnModuleEnd() {
 	ResetConVar(hCvarHunterPounceReadyRange);
 	ResetConVar(hCvarHunterLeapAwayGiveUpRange);
 	ResetConVar(hCvarHunterPounceMaxLoftAngle);
-	
-	ResetConVar(FindConVar("z_pounce_damage_interrupt"));
+	ResetConVar(z_pounce_damage_interrupt);
+}
+
+static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+    GetCvars();
+    if(g_bCvarEnable)
+    {
+        _OnModuleStart();
+    }
+    else
+    {
+        Hunter_OnModuleEnd();
+    }
+}
+
+static void GetCvars()
+{
+    g_bCvarEnable = g_hCvarEnable.BoolValue;
 }
 
 // Game tries to reset these cvars
 public void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
-	hCvarHunterCommittedAttackRange.SetInt(10000);
-	hCvarHunterPounceReadyRange.SetInt(1000);
-	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
-	hCvarHunterPounceMaxLoftAngle.SetInt(0);
+	if(g_bCvarEnable) _OnModuleStart();
 }
 
 public Action Hunter_OnSpawn(int botHunter) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	bHasQueuedLunge[botHunter] = false;
 	bCanLunge[botHunter] = true;
 	return Plugin_Handled;
@@ -106,6 +135,8 @@ public Action Hunter_OnSpawn(int botHunter) {
 ***********************************************************************************************************************************************************************************/
 
 public Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {	
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	buttons &= ~IN_ATTACK2; // block scratches
 	int flags = GetEntityFlags(hunter);
 	//Proceed if the hunter is in a position to pounce
@@ -142,6 +173,8 @@ public Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, floa
 ***********************************************************************************************************************************************************************************/
 
 public Action Hunter_OnPounce(int botHunter) {	
+	if(!g_bCvarEnable) return Plugin_Continue;
+	
 	int entLunge = GetEntPropEnt(botHunter, Prop_Send, "m_customAbility"); // get the hunter's lunge entity				
 	float lungeVector[3]; 
 	GetEntPropVector(entLunge, Prop_Send, "m_queuedLunge", lungeVector); // get the vector from the lunge entity

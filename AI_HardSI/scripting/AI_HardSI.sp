@@ -22,7 +22,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "1.5",
+	version = "1.6-2023/6/4",
 	url = "github.com/breezyplease"
 };
 
@@ -90,6 +90,10 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			case (L4D2Infected_Hunter): {
 				if( !bHasBeenShoved[botInfected] ) return Hunter_OnPlayerRunCmd( botInfected, buttons, impulse, vel, angles, weapon );
 			}		
+
+			case (L4D2Infected_Spitter): {
+				return Spitter_OnPlayerRunCmd( botInfected, buttons, impulse, vel, angles, weapon );
+			}	
 			
 			case (L4D2Infected_Charger): {
 				return Charger_OnPlayerRunCmd( botInfected, buttons, impulse, vel, angles, weapon );
