@@ -140,7 +140,7 @@ static const char g_kill_type[][] =
 
 	"⌐╤═─",         //2 smg
 
-	"⌐╦╦═─",   //3 rifle
+	"︻╦╦═─",   //3 rifle
 
 	"▄︻═══∶∷",      //4 shotgun
 
