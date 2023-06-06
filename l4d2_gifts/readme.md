@@ -24,8 +24,11 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 	```php
 	//[X]Aceleracion @ 2017
-	//HarryPotter @ 2022
+	//HarryPotter @ 2022-2023
 	```
+    * v3.1 (2023-6-6)
+		* Add a convar, prevent survivors from switching into new weapons and items when they open gifts
+
     * v3.0 (2022-12-26)
 		* Request by Anzu
 		* Add health gift, survivor could increase or lose health
@@ -50,7 +53,8 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-	2. [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586): To unlock all melee weapons in all campaigns
+	2. [[INC] l4d2_weapons](https://github.com/fbef0102/Game-Private_Plugin/blob/main/left4dead2/scripting/include/l4d2_weapons.inc)
+	3. [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586): To unlock all melee weapons in all campaigns
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -58,6 +62,9 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		```php
 		// Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
 		l4d2_gifts_announce_type "3"
+
+		// If 1, prevent survivors from switching into new weapons and items when they open gifts
+		l4d2_gifts_block_switch "1"
 
 		// Chance (%) of infected drop special standard gift.
 		l4d2_gifts_chance "50"
