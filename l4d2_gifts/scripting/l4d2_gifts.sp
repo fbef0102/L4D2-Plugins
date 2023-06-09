@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION		"3.1-2023/6/6"
+#define PLUGIN_VERSION		"3.2-2023/6/9"
 
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -964,7 +964,7 @@ void OnTouchPost(int gift, int other)
 
 Action WeaponCanUse(int client, int weapon)
 {
-	if(!g_bCvarBlockSwitch) return Plugin_Continue;
+	if(!g_bGiftEnable || !g_bCvarBlockSwitch) return Plugin_Continue;
 
 	if(IsClientInGame(client) && GetClientTeam(client) == 2)
 	{
@@ -979,12 +979,29 @@ Action WeaponCanUse(int client, int weapon)
 				wepid == WEPID_FIREWORKS_BOX ||
 				wepid == WEPID_COLA_BOTTLES ||
 				wepid == WEPID_GNOME_CHOMPSKI) 
+			{
+				Event hEvent = CreateEvent("weapon_drop");
+				if( hEvent != null )
+				{
+					hEvent.SetInt("userid", GetClientUserId(client));
+					hEvent.SetInt("propid", weapon);
+					hEvent.Fire();
+				}
 				return Plugin_Handled;
+			}
 
 			int slot = GetSlotFromWeaponId(wepid);
 			if(slot == L4D2WeaponSlot_None) return Plugin_Continue;
 
 			if(GetPlayerWeaponSlot(client, slot) == -1) return Plugin_Continue;
+
+			Event hEvent = CreateEvent("weapon_drop");
+			if( hEvent != null )
+			{
+				hEvent.SetInt("userid", GetClientUserId(client));
+				hEvent.SetInt("propid", weapon);
+				hEvent.Fire();
+			}
 
 			return Plugin_Handled;
 		}

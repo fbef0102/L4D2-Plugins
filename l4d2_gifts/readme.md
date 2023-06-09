@@ -26,8 +26,9 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 	//[X]Aceleracion @ 2017
 	//HarryPotter @ 2022-2023
 	```
-    * v3.1 (2023-6-6)
+    * v3.2 (2023-6-9)
 		* Add a convar, prevent survivors from switching into new weapons and items when they open gifts
+		* Create Fake weapon_drop event
 
     * v3.0 (2022-12-26)
 		* Request by Anzu
