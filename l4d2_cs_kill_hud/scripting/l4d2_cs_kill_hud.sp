@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION			"1.2h-2023/6/2"
+#define PLUGIN_VERSION			"1.3h-2023/6/11"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -75,8 +75,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #define HUD_FLAG_TEXT			(1<<13)	//	?
 #define HUD_FLAG_NOTVISIBLE		(1<<14) //	if you want to keep the slot data but keep it from displaying
 
-ConVar g_hCvarEnable, g_hCvarKillInfoNumber, g_hCvarHudDecrease, g_hCvarBlockMessage, g_hCvarHUDBlink;
-bool g_bCvarEnable, g_bCvarBlockMessage, g_bCvarHUDBlink;
+ConVar g_hCvarEnable, g_hCvarKillInfoNumber, g_hCvarHudDecrease, g_hCvarBlockMessage, 
+	g_hCvarHUDBlink, g_hCvarHUDBackground;
+bool g_bCvarEnable, g_bCvarBlockMessage, g_bCvarHUDBlink, g_bCvarHUDBackground;
 int g_iCvarKillInfoNumber;
 float g_fCvarHudDecrease;
 
@@ -186,13 +187,13 @@ static const float g_HUDpos[][] =
     {0.00,0.00,0.00,0.00},
 
     // kill list
-    {0.00,0.06,1.00,0.04}, // 8
-    {0.00,0.10,1.00,0.04},
-    {0.00,0.14,1.00,0.04}, // 10
-    {0.00,0.18,1.00,0.04},
-    {0.00,0.22,1.00,0.04},
-    {0.00,0.26,1.00,0.04},
-    {0.00,0.30,1.00,0.04}, // 14
+    {0.50,0.06,0.49,0.04}, // 8
+    {0.50,0.10,0.49,0.04},
+    {0.50,0.14,0.49,0.04}, // 10
+    {0.50,0.18,0.49,0.04},
+    {0.50,0.22,0.49,0.04},
+    {0.50,0.26,0.49,0.04},
+    {0.50,0.30,0.49,0.04}, // 14
 };
 
 enum struct HUD
@@ -219,6 +220,7 @@ public void OnPluginStart()
 	g_hCvarHudDecrease 		= CreateConVar( PLUGIN_NAME ... "_notice_time",   				"7.0", "Time in seconds to erase kill list on hud.", CVAR_FLAGS, true, 1.0);
 	g_hCvarBlockMessage 	= CreateConVar( PLUGIN_NAME ... "_disable_standard_message", 	"1",   "If 1, disable offical player death message (the red font of kill info)", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarHUDBlink         = CreateConVar( PLUGIN_NAME ... "_blink", 						"1",   "If 1, Makes the text blink from white to red.", CVAR_FLAGS, true, 0.0, true, 1.0);
+	g_hCvarHUDBackground    = CreateConVar( PLUGIN_NAME ... "_background", 					"0",   "If 1, Shows the text inside a black transparent background.\nNote: the background may not draw properly when initialized as \"0\", start the map with \"1\" to render properly.\n", CVAR_FLAGS, true, 0.0, true, 1.0);
 	CreateConVar(                       	PLUGIN_NAME ... "_version",       PLUGIN_VERSION, PLUGIN_NAME ... " Plugin Version", CVAR_FLAGS_PLUGIN_VERSION);
 	AutoExecConfig(true,                	PLUGIN_NAME);
 
@@ -228,6 +230,7 @@ public void OnPluginStart()
 	g_hCvarHudDecrease.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarBlockMessage.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarHUDBlink.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarHUDBackground.AddChangeHook(ConVarChanged_Cvars);
 
 	HookEvent("player_death",Event_PlayerDeathInfo,EventHookMode_Pre);
 }
@@ -246,8 +249,12 @@ void GetCvars()
 	g_fCvarHudDecrease = g_hCvarHudDecrease.FloatValue;
 	g_bCvarBlockMessage = g_hCvarBlockMessage.BoolValue;
 	g_bCvarHUDBlink = g_hCvarHUDBlink.BoolValue;
+	g_bCvarHUDBackground = g_hCvarHUDBackground.BoolValue;
 
-	g_iHUDFlags = HUD_FLAG_ALIGN_RIGHT|HUD_FLAG_NOBG;
+	g_iHUDFlags = HUD_FLAG_ALIGN_RIGHT;
+
+	if(!g_bCvarHUDBackground)
+		g_iHUDFlags |= HUD_FLAG_NOBG;
 
 	if(g_bCvarHUDBlink)
 		g_iHUDFlags |= HUD_FLAG_BLINK;
@@ -358,7 +365,8 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 	}
 
 	// add kill type
-	if( strcmp("world",weapon_type) == 0 || strcmp(weapon_type,"worldspawn") == 0 || strcmp(weapon_type,"trigger_hurt") == 0 )
+	if( strncmp(weapon_type, "world", 5, false) == 0 || // "wordl", "worldspawn"
+		strncmp(weapon_type, "trigger_hurt", 12, false) == 0 ) // "trigger_hurt"
 	{
 		FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[12],victim_name);
 		DisplayKillList(killinfo);
@@ -368,40 +376,53 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 	if( !g_weapon_name.ContainsKey(weapon_type) )
 		return;
 		
-	g_weapon_name.GetString(weapon_type,weapon_type,sizeof(weapon_type));
+	static char sWeaponType[64];
+	g_weapon_name.GetString(weapon_type, sWeaponType, sizeof(sWeaponType));
 
-	if(bIsVictimPlayer)
+	if(strcmp(weapon_type, "pipe_bomb", false) == 0 ||
+		strcmp(weapon_type, "inferno", false) == 0 ||
+		strcmp(weapon_type, "entityflame", false) == 0 ||
+		strcmp(weapon_type, "boomer", false) == 0 ||
+		strcmp(weapon_type, "player", false) == 0 )
 	{
-		if( headshot )
-		{
-			if( IsPlayerKilledBehindWall(attacker, victim) )
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],weapon_type,victim_name);
-			else
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],weapon_type,victim_name);
-		}
-		else
-		{
-			if( IsPlayerKilledBehindWall(attacker, victim) )
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],weapon_type,victim_name);
-			else
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,weapon_type,victim_name);
-		}
+		FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker, sWeaponType, victim_name);
 	}
 	else
 	{
-		if( headshot )
+		if(bIsVictimPlayer)
 		{
-			if( IsEntityKilledBehindWall(attacker, entityid) )
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],weapon_type,victim_name);
+
+			if( headshot )
+			{
+				if( IsPlayerKilledBehindWall(attacker, victim) )
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],sWeaponType,victim_name);
+				else
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],sWeaponType,victim_name);
+			}
 			else
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],weapon_type,victim_name);
+			{
+				if( IsPlayerKilledBehindWall(attacker, victim) )
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],sWeaponType,victim_name);
+				else
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,sWeaponType,victim_name);
+			}
 		}
 		else
 		{
-			if( IsEntityKilledBehindWall(attacker, entityid) )
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],weapon_type,victim_name);
+			if( headshot )
+			{
+				if( IsEntityKilledBehindWall(attacker, entityid) )
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],sWeaponType,victim_name);
+				else
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],sWeaponType,victim_name);
+			}
 			else
-				FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,weapon_type,victim_name);
+			{
+				if( IsEntityKilledBehindWall(attacker, entityid) )
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],sWeaponType,victim_name);
+				else
+					FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,sWeaponType,victim_name);
+			}
 		}
 	}
 

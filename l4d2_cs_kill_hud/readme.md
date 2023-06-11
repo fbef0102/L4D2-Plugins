@@ -18,6 +18,10 @@ HUD with cs kill info list.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.3h (2023-6-11)
+        * Shows the text inside a black transparent background.
+        * Remove headshot or behind wall text if weapon is "pipe bomb", "fire", "melee punch"
+
     * v1.2h (2023-6-2)
         * Fixed common infected null string
 
@@ -48,6 +52,10 @@ HUD with cs kill info list.
 
 	* cfg/sourcemod/l4d2_cs_kill_hud.cfg
         ```php
+        // If 1, Shows the text inside a black transparent background.
+        // Note: the background may not draw properly when initialized as "0", start the map with "1" to render properly.
+        l4d2_cs_kill_hud_background "0"
+
         // If 1, Makes the text blink from white to red.
         l4d2_cs_kill_hud_blink "1"
 
