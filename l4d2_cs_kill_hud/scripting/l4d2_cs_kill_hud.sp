@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION			"1.3h-2023/6/11"
+#define PLUGIN_VERSION			"1.4h-2023/6/11"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -331,7 +331,20 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 	if( GetClientTeam(attacker) == TEAM_INFECTED 
 		&& bIsVictimPlayer && GetClientTeam(victim) == TEAM_SURVIVOR ) // infected kill survivor
 	{
-		FormatEx(killinfo,sizeof(killinfo),"%N  %s  %N",attacker,g_kill_type[13],victim);
+		static char attacker_name[64];
+		if( IsFakeClient(attacker) )
+		{
+			FormatEx(attacker_name, sizeof(attacker_name), "%N", attacker);
+			int index = StrContains(attacker_name,")");
+			if( index != -1 )
+				FormatEx(attacker_name,sizeof(attacker_name),"%s", attacker_name[index + 1]);
+		}
+		else
+		{
+			FormatEx(attacker_name, sizeof(attacker_name), "%N", attacker);
+		}
+
+		FormatEx(killinfo,sizeof(killinfo),"%s  %s  %N",attacker_name,g_kill_type[13],victim);
 		DisplayKillList(killinfo);
 		return;
 	}
