@@ -11,7 +11,7 @@ Quickswitch Reloading like CS:GO in L4D2
     L4D2
     ```
 
-* [L4D1 Version | 適用於L4D1的版本](https://github.com/fbef0102/L4D1-Competitive-Plugins/tree/master/l4d_weapon_csgo_reload)
+* [L4D1 Version | 適用於L4D1的版本](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/l4d_weapon_csgo_reload.sp)
 
 * <details><summary>Changelog | 版本日誌</summary>
 
