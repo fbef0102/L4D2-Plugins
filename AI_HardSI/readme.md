@@ -31,6 +31,12 @@ Improves the AI behaviour of special infected
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
 
+* Related Plugin | 相關插件
+	1. [l4dinfectedbots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dinfectedbots): Spawns infected bots in L4D1 versus, and gives greater control of the infected bots in L4D1/L4D2 without being limited by the director.
+		> 生成多特感控制插件
+	1. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
+		> 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
+
 * <details><summary>ConVar | 指令</summary>
 
 	* cfg\sourcemod\AI_HardSI.cfg
@@ -224,7 +230,7 @@ Improves the AI behaviour of special infected
     * Tell all special infected bots to assault, attack survivors actively instead of not moving like idiots
     * This is official command
     * Can't use this command in multiplayer, unless the server has sv_cheats set to 1
-    * By Default, the plugin forces server to execue this command every 2 seconds
+    * By Default, the plugin forces server to execue this command every 2 seconds (without sv_cheats)
 
 - - - -
 # 中文說明
@@ -234,6 +240,11 @@ Improves the AI behaviour of special infected
     * 改變各種特感的行為
     * 可以開關各特感的強化行為
     * 每兩秒執行```nb_assault```命令 (往下看說明)
+
+* 用意在哪?
+    * 每一個特感的攻擊對倖存者造成巨大的壓力
+    * 有效解決許多特感長期站著不動也不攻擊的智商與行為
+    * 伺服器遊玩難度提升10倍以上
 
 * 功能
     * <details><summary><b>AI Tank</b></summary>
@@ -349,4 +360,4 @@ Improves the AI behaviour of special infected
     * 強迫所有特感Bots主動往前攻擊倖存者而非像智障一樣待在原地等倖存者過來
     * 這是官方的指令
     * Server沒有開啟sv_cheats 作弊模式就不能輸入這條指令
-    * 這插件預設會每2秒執行這條指令
+    * 這插件運行時會每2秒強制執行這條指令 (不管server有沒有開sv_cheats 作弊模式)
