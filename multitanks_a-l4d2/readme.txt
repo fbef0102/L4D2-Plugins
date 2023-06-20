@@ -1,6 +1,9 @@
 An improved version of the MultiTanks plugin originally created by Red Alex.
 
 -ChangeLog-
+v2.2 (2023-6-20)
+* Require lef4dhooks v1.33 or above
+
 v2.1
 - ProdigySim's method for indirectly getting signatures added, created the whole code for indirectly getting signatures so the plugin can now withstand most updates to L4D2!
 (Thanks to Shadowysn: https://forums.alliedmods.net/showthread.php?t=320849 and ProdigySim: https://github.com/ProdigySim/DirectInfectedSpawn)

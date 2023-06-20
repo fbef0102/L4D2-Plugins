@@ -15,6 +15,9 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.7 (2023-6-20)
+        * Require lef4dhooks v1.33 or above
+
 	* v1.6 (2023-4-4)
         * Add a cvar to enable or disable AirStrike (explosion, missile, jets, fire)
 
@@ -78,9 +81,10 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 	None
 </details>
 
-* Data Example
-	* data/l4d_rescue_vehicle.cfg
-		```php
+* <details><summary>Data Example</summary>
+
+    * data/l4d_rescue_vehicle.cfg
+        ```php
         "rescue_vehicle"
         {
             "c2m5_concert" // Map name
@@ -93,7 +97,8 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
                 "num"		"0" // 0=Turn off the plugin in this map
             } 
         }
-		```
+        ```
+</details>
 
 * Notice
     * The plugin supports all valve maps and all custom maps.
@@ -112,9 +117,10 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 	* 可自行調整關卡，設置每個章節逃亡倒數時間
     * 可以關閉空軍轟炸，避免太lag
 
-* Data設定範例
-	* data/l4d_rescue_vehicle.cfg
-		```php
+* <details><summary>Data設定範例</summary>
+
+    * data/l4d_rescue_vehicle.cfg
+        ```php
         "rescue_vehicle"
         {
             "c2m5_concert" //地圖名
@@ -127,7 +133,8 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
                 "num"		"0" // 0=在這張地圖上關閉插件
             } 
         }
-		```
+        ```
+</details>
 
 * 注意事項
     * 此插件適用二代所有官方地圖與三方圖

@@ -10,7 +10,7 @@ public Plugin myinfo = {
 	name = "L4D2 Mission Manager",
 	author = "Rikka0w0, Harry",
 	description = "Mission manager for L4D2, provide information about map orders for other plugins",
-	version = "v1.0.3",
+	version = "v1.0.4-2023/6/20",
 	url = "http://forums.alliedmods.net/showthread.php?t=308725"
 }
 
@@ -107,7 +107,7 @@ void DumpMissionInfo(int client, LMM_GAMEMODE gamemode) {
 
 
 public int Native_IsOnFinalMap(Handle plugin, int numParams){
-  return L4D_IsMissionFinalMap();
+  return L4D_IsMissionFinalMap(true);
 }
 
 /* ========== Register Native APIs ========== */

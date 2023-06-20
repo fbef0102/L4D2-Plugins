@@ -8,7 +8,7 @@
 #include <sdktools>
 #include <left4dhooks>
 
-#define PLUGIN_VERSION "2.1"
+#define PLUGIN_VERSION "2.2-2023/6/20"
 #define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
 
 enum GameModeStatus
@@ -327,6 +327,12 @@ public void OnPluginEnd()
 	UnhookEvent("tank_spawn", OnTankSpawn);
 }
 
+bool g_bFinalMap;
+public void OnMapStart()
+{	
+	g_bFinalMap = L4D_IsMissionFinalMap(true);
+}
+
 public void OnRoundEvents(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!bTSOn)
@@ -627,8 +633,8 @@ void LaunchTSParameters()
 			{
 				case MS_REGULAR:
 				{
-					iTankHP = (L4D_IsMissionFinalMap()) ? iTSHealthCoop[1] : iTSHealthCoop[0];
-					iMaxTankCount = (L4D_IsMissionFinalMap()) ? iTSCountCoop[1] : iTSCountCoop[0];
+					iTankHP = (g_bFinalMap) ? iTSHealthCoop[1] : iTSHealthCoop[0];
+					iMaxTankCount = (g_bFinalMap) ? iTSCountCoop[1] : iTSCountCoop[0];
 				}
 				case MS_FINALE:
 				{
@@ -650,8 +656,8 @@ void LaunchTSParameters()
 			{
 				case MS_REGULAR:
 				{
-					iTankHP = (L4D_IsMissionFinalMap()) ? iTSHealthVersus[1] : iTSHealthVersus[0]; 	
-					iMaxTankCount = (L4D_IsMissionFinalMap()) ? iTSCountVersus[1] : iTSCountVersus[0];
+					iTankHP = (g_bFinalMap) ? iTSHealthVersus[1] : iTSHealthVersus[0]; 	
+					iMaxTankCount = (g_bFinalMap) ? iTSCountVersus[1] : iTSCountVersus[0];
 				}
 				case MS_FINALE:
 				{

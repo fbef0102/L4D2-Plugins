@@ -1,5 +1,5 @@
 
-#define PLUGIN_VERSION 		"1.6"
+#define PLUGIN_VERSION 		"1.7-2023/6/20"
 #define PLUGIN_NAME			"[L4D2] Rescue vehicle leave timer"
 #define PLUGIN_AUTHOR		"HarryPotter"
 #define PLUGIN_DES			"When rescue vehicle arrived and a timer will display how many time left for vehicle leaving. If a player is not on rescue vehicle or zone, slay him"
@@ -215,7 +215,7 @@ public void OnMapStart()
 	g_bMapStarted = true;
 	g_bValidMap = true;
 	
-	if(L4D_IsMissionFinalMap() == false) //not final map
+	if(L4D_IsMissionFinalMap(true) == false) //not final map
 	{
 		g_bValidMap = false;
 	}
@@ -535,7 +535,7 @@ bool LoadData()
 	KeyValues hFile = new KeyValues("rescue_vehicle");
 	if( !hFile.ImportFromFile(sPath) )
 	{
-		SetFailState("File Format Not Corrent: %s", sPath);
+		SetFailState("File Format Not Correct: %s", sPath);
 		delete hFile;
 		return false;
 	}

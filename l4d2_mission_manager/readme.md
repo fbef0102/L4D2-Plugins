@@ -21,6 +21,9 @@ Mission manager for L4D2, provide information about map orders for other plugins
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.0.4 (2023-6-20)
+        * Require lef4dhooks v1.33 or above
+
     * v1.0.3 (2023-4-18)
         * Optimize code
 
