@@ -26,6 +26,9 @@ Notifies selected team(s) when someone is on final strike and add glow
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v1.1h (2023-6-23)
+        * Fixed glow disappear when B&W player switches team
+
 	* v1.0h (2022-11-26)
         * Request by Yabi
         * Remake Code

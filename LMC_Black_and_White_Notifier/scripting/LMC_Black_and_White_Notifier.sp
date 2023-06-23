@@ -11,7 +11,7 @@
 
 native int LMC_GetClientOverlayModel(int iClient);
 
-#define PLUGIN_VERSION "1.0h"
+#define PLUGIN_VERSION "1.1h-2023/6/23"
 
 ConVar hCvar_Enabled = null;
 ConVar hCvar_GlowEnabled = null;
@@ -579,7 +579,7 @@ public void ePlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	}
 }
 
-public void ePlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
+void ePlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 		return;
@@ -592,6 +592,21 @@ public void ePlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 	
 	if(!IsClientInGame(iClient) || GetClientTeam(iClient) != 2)
 		return;
+	
+	CreateTimer(0.1, Timer_ePlayerSpawn, event.GetInt("userid"), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+Action Timer_ePlayerSpawn(Handle timer, int userid)
+{
+	int iClient = GetClientOfUserId(userid);
+
+	if(iClient < 1 || iClient > MaxClients)
+		return Plugin_Continue;
+	
+	if(!IsClientInGame(iClient) || GetClientTeam(iClient) != 2 || !IsPlayerAlive(iClient))
+		return Plugin_Continue;
+
+	//PrintToChatAll("%d %d", GetEntProp(iClient, Prop_Send, "m_currentReviveCount"), L4D_GetMaxReviveCount());
 		
 	if(GetEntProp(iClient, Prop_Send, "m_currentReviveCount") < L4D_GetMaxReviveCount())
 	{
@@ -613,9 +628,8 @@ public void ePlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 			ResetGlows(iClient);
 		}
 		bGlow[iClient] = false;
-		return;
+		return Plugin_Continue;
 	}
-	
 	
 	bGlow[iClient] = true;
 	if(bLMC_Available)
@@ -642,9 +656,11 @@ public void ePlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 		SetEntProp(iClient, Prop_Send, "m_glowColorOverride", iGlowColour);
 		SetEntProp(iClient, Prop_Send, "m_nGlowRange", iGlowRange);
 	}
+
+	return Plugin_Continue;
 }
 
-public void eTeamChange(Event event, const char[] name, bool dontBroadcast) 
+void eTeamChange(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 		return;
