@@ -6,19 +6,39 @@
  * 
  * sm_cvar sb_transition 0 
  * 
- * =============================================================================
- * L4D2 coop save weapon
- * Copyright 2011 - 2021 steamcommunity.com/profiles/76561198025355822/
- * Fixed 2015 steamcommunity.com/id/Electr0n
- * Fixed 2016 steamcommunity.com/id/mixjayrus
- * Fixed 2016 user Merudo
- * Copyright 2022 steamcommunity.com/profiles/76561198026784913
 */
 #pragma semicolon 1
 #pragma newdecls required
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
+#define PLUGIN_VERSION			"6.0-2023/6/25"
+#define DEBUG 0
+
+public Plugin myinfo =
+{
+	name = "[L4D2] Save Weapon",
+	author = "MAKS, HarryPotter",
+	description = "L4D2 coop save weapon when map transition if more than 4 players",
+	version = PLUGIN_VERSION,
+	url = "https://steamcommunity.com/profiles/76561198026784913/"
+};
+
+GlobalForward g_hForwardSaveWeaponGive;
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+
+	g_hForwardSaveWeaponGive = new GlobalForward("L4D2_OnSaveWeaponHxGiveC", ET_Ignore, Param_Cell);
+	return APLRes_Success;
+}
 
 #define	MAX_WEAPONS2		29
 
@@ -108,30 +128,8 @@ int ammoOffset, g_iCountDownTime;
 Handle PlayerLeftStartTimer = null, CountDownTimer = null;
 int g_iReviveTempHealth = 30, g_iSurvivorMaxInc;
 
-public Plugin myinfo =
-{
-	name = "[L4D2] Save Weapon",
-	author = "MAKS, HarryPotter",
-	description = "L4D2 coop save weapon when map transition if more than 4 players",
-	version = "5.9",
-	url = "forums.alliedmods.net/showthread.php?p=2304407"
-};
-
-GlobalForward g_hForwardSaveWeaponGive;
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	EngineVersion test = GetEngineVersion();
-	
-	if( test != Engine_Left4Dead2 )
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
-
-	g_hForwardSaveWeaponGive = new GlobalForward("L4D2_OnSaveWeaponHxGiveC", ET_Ignore, Param_Cell);
-	return APLRes_Success;
-}
+static char g_sMeleeClass[16][32];
+static int g_iMeleeClassCount;
 
 public void OnPluginStart()
 {
@@ -165,7 +163,7 @@ public void OnPluginStart()
 	HookEvent("mission_lost", 			Event_RoundEnd,			EventHookMode_PostNoCopy); //戰役滅團重來該關卡的時候 (之後有觸發round_end)
 	HookEvent("finale_vehicle_leaving", Event_RoundEnd,			EventHookMode_PostNoCopy); //救援載具離開之時  (沒有觸發round_end)
 	HookEvent("map_transition", 		Event_MapTransition, 	EventHookMode_PostNoCopy);
-	HookEvent("player_bot_replace", evtBotReplacedPlayer);
+	HookEvent("player_bot_replace", 	evtBotReplacedPlayer);
 
 	HxCleaningAll();
 }
@@ -236,6 +234,8 @@ public void OnMapStart()
 	PrecacheGeneric("scripts/melee/tonfa.txt", true);
 	PrecacheGeneric("scripts/melee/pitchfork.txt", true);
 	PrecacheGeneric("scripts/melee/shovel.txt", true);
+
+	CreateTimer(1.0, Timer_GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnMapEnd()
@@ -854,22 +854,22 @@ void HxGetSlot0Ammo (int client, const char[] sWeaponName)
 void HxGetSlot1(int client, int iSlot1)
 {
 	char wep_name[64]; wep_name[0] = '\0';
-	if (HasEntProp(iSlot1, Prop_Data, "m_strMapSetScriptName")) //support custom melee
+	GetEntityClassname(iSlot1, wep_name, sizeof(wep_name));
+	if (strcmp(wep_name, "weapon_melee") == 0) //support custom melee
 	{
-		GetEntPropString(iSlot1, Prop_Data, "m_strMapSetScriptName", wep_name, sizeof(wep_name));		
+		int meleeWeaponId = GetEntProp(iSlot1, Prop_Send, "m_hMeleeWeaponInfo");
+		if(meleeWeaponId < 0 && meleeWeaponId > g_iMeleeClassCount) return;
+
+		strcopy(wep_name, sizeof(wep_name), g_sMeleeClass[meleeWeaponId]);
 		g_bSlot1_IsMelee[client] = true;
 	}
 	else
 	{
 		g_bSlot1_IsMelee[client]= false;
-		if (HasEntProp(iSlot1, Prop_Send, "m_isDualWielding") && 
+		if (strcmp(wep_name, "weapon_pistol") == 0 && 
 		GetEntProp(iSlot1, Prop_Send, "m_isDualWielding") > 0) //dual pistol
 		{
 			strcopy(wep_name, sizeof(wep_name), "dual_pistol");
-		}
-		else
-		{
-			GetEntityClassname(iSlot1, wep_name, sizeof(wep_name));
 		}
 		
 		if (StrContains(wep_name, "chainsaw", false) >= 0 || StrContains(wep_name, "pistol", false) >= 0) //chainsaw, pistol, dual_pistol, pistol_magnum
@@ -989,4 +989,29 @@ bool HasIdlePlayer(int bot)
 	}
 	
 	return false;
+}
+
+Action Timer_GetMeleeTable(Handle timer)
+{
+	GetMeleeClasses();
+	return Plugin_Continue;
+}
+
+//credit spirit12 for auto melee detection
+void GetMeleeClasses()
+{
+	int MeleeStringTable = FindStringTable( "MeleeWeapons" );
+	g_iMeleeClassCount = GetStringTableNumStrings( MeleeStringTable );
+	
+	int len = sizeof(g_sMeleeClass[]);
+	
+	for( int i = 0; i < g_iMeleeClassCount; i++ )
+	{
+		ReadStringTable( MeleeStringTable, i, g_sMeleeClass[i], len );
+		#if DEBUG
+			char sMap[64];
+			GetCurrentMap(sMap, sizeof(sMap));
+			LogMessage( "[%s] Function::GetMeleeClasses - Getting melee classes: %s", sMap, g_sMeleeClass[i]);
+		#endif
+	}	
 }

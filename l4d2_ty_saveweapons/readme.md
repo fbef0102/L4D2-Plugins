@@ -14,6 +14,9 @@ L4D2 coop save weapon when map transition if more than 4 players
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v6.0 (2023-6-25)
+        * Fixed melee disapear after map transition
+
 	* v5.9 (2022-9-17)
         * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2757629&postcount=113)
         * Remake code
