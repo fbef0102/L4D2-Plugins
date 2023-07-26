@@ -18,6 +18,9 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v1.4 (2023-7-26)
+        * Add hunting Rifle
+
 	* v1.3 (2022-9-12)
         * Remove gascan,  propanecanister, oxygentank if no one picks up
 
@@ -53,51 +56,12 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
 	    > 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
 
-* <details><summary>ConVar | 指令</summary>
+* <details><summary>ConVar</summary>
 
 	* cfg\sourcemod\l4d2_supply_woodbox.cfg
 		```php
 		// 0=Plugin off, 1=Plugin on.
 		l4d2_supply_woodbox_allow "1"
-
-		// Changes how Supply box hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
-		l4d2_supply_woodbox_announce_type "3"
-
-		// Set the life time for Supply box.
-		l4d2_supply_woodbox_box_life "180"
-
-		// The default Supply box color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue. (empty=disable)
-		l4d2_supply_woodbox_color "0 145 200"
-
-		// If 1, still dorp supply box in final stage rescue
-		l4d2_supply_woodbox_drop_final "0"
-
-		// Max Supply boxes that could drop once.
-		l4d2_supply_woodbox_drop_max "2"
-
-		// Min Supply boxes that could drop once.
-		l4d2_supply_woodbox_drop_min "1"
-
-		// The default Supply box glow range.
-		l4d2_supply_woodbox_glow_range "1800"
-
-		// Item chance to drop Weapons/Melee/Medic/Throwable/Others, separate by commas (no spaces), the sum of 5 value must be 100
-		l4d2_supply_woodbox_item_chance "30,5,45,15,5"
-
-		// Time in seconds to remove item if no one picks up after it drops from box (0=off)
-		l4d2_supply_woodbox_item_life "60"
-
-		// Max Items that could drop in woodbox.
-		l4d2_supply_woodbox_item_max "4"
-
-		// Min Items that could drop in woodbox.
-		l4d2_supply_woodbox_item_min "2"
-
-		// Set the limit for Supply box spawned by the plugin.
-		l4d2_supply_woodbox_limit "6"
-
-		// Turn off the plugin in these maps, separate by commas (no spaces). (0=All maps, Empty = none).
-		l4d2_supply_woodbox_map_off ""
 
 		// Turn on the plugin in these game modes, separate by commas (no spaces). (Empty = all).
 		l4d2_supply_woodbox_modes ""
@@ -108,8 +72,26 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 		// Turn on the plugin in these game modes. 0=All, 1=Coop, 2=Survival, 4=Versus, 8=Scavenge. Add numbers together.
 		l4d2_supply_woodbox_modes_tog "0"
 
-		// Supply Box - Drop sound file (relative to to sound/, empty=random helicopter sound, -1: disable)
-		l4d2_supply_woodbox_soundfile ""
+		// Turn off the plugin in these maps, separate by commas (no spaces). (0=All maps, Empty = none).
+		l4d2_supply_woodbox_map_off ""
+
+		// Max Items that could drop in woodbox.
+		l4d2_supply_woodbox_item_max "4"
+
+		// Min Items that could drop in woodbox.
+		l4d2_supply_woodbox_item_min "2"
+
+		// Item chance to drop Weapons/Melee/Medic/Throwable/Others, separate by commas (no spaces), the sum of 5 value must be 100
+		l4d2_supply_woodbox_item_chance "30,5,45,15,5"
+
+		// Time in seconds to remove item if no one picks up after it drops from box (0=off)
+		l4d2_supply_woodbox_item_life "60"
+
+		// The default Supply box color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue. (empty=disable)
+		l4d2_supply_woodbox_color "0 145 200"
+
+		// The default Supply box glow range.
+		l4d2_supply_woodbox_glow_range "1800"
 
 		// Set the max spawn time for Supply box drop.
 		l4d2_supply_woodbox_time_max "80"
@@ -117,12 +99,33 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 		// Set the min spawn time for Supply box drop.
 		l4d2_supply_woodbox_time_min "60"
 
+		// Max Supply boxes that could drop once.
+		l4d2_supply_woodbox_drop_max "2"
+
+		// Min Supply boxes that could drop once.
+		l4d2_supply_woodbox_drop_min "1"
+
+		// Set the limit for Supply box spawned by the plugin.
+		l4d2_supply_woodbox_limit "6"
+
+		// Set the life time for Supply box.
+		l4d2_supply_woodbox_box_life "180"
+
+		// Supply Box - Drop sound file (relative to to sound/, empty=random helicopter sound, -1: disable)
+		l4d2_supply_woodbox_soundfile ""
+
+		// If 1, still dorp supply box in final stage rescue
+		l4d2_supply_woodbox_drop_final "0"
+
 		// Supply box model type, 1: wood_crate001a, 2: wood_crate001a_damagedMAX, 3: wood_crate002a (0=random)
 		l4d2_supply_woodbox_type "1"
+
+		// Changes how Supply box hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+		l4d2_supply_woodbox_announce_type "3"
 		```
 </details>
 
-* <details><summary>Command | 命令</summary>
+* <details><summary>Command</summary>
 
 	* **Spawn a supply box at your crosshair (Admin Flag: ADMFLAG_ROOT)**
 		```php
@@ -138,17 +141,89 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 * 原理
     * 靈感來自CSO 殭屍模式，在這款遊戲中每隔一段時間地圖上出現補給箱，提供人類火力強大的武器
     * 地圖上隨機出現補給箱，只有人類才能看到補給箱位置
-    * 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。問就是直升機飛行員迷路了
-    * 用子彈或近戰武器打破這些補給箱箱子
+    * 用子彈或近戰武器打破這些補給箱，特感不能打破
     * 補給箱不會擋住特感與普通感染者，他們可以穿透
+	* 沒人打破補給箱，過一段時間會自動消失
+	* 沒人拿取補給箱掉落物品，過一段時間會自動消失
+    * 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。問就是直升機飛行員迷路了
 
 * 功能
-    * 可調整補給箱發光顏色、發光範圍、
-    * 可調整救援章節也能有空投補給箱
-	* 可調整補給箱種類
-	* 可設置空投補給箱的音效
-	* 可設置每隔一段時間空投補給箱
-	* 可設置補給箱內各種物資掉落的機率
-	* 可設置每個補給箱裡面能掉落幾個物品
-	* 可設置補給箱存在時間，沒人打破會自動消失
-	* 可設置補給箱掉落物品的存在時間，沒人拿取會自動消失
+  * 見下方"指令中文介紹"與"命令中文介紹"
+
+* <details><summary>指令中文介紹 (點我展開)</summary>
+
+	* cfg\sourcemod\l4d2_supply_woodbox.cfg
+		```php
+		// 0=關閉插件, 1=啟動插件
+		l4d2_supply_woodbox_allow "1"
+
+		// 什麼模式下啟動此插件, 逗號區隔 (無空白). (留白 = 所有模式)
+		l4d2_supply_woodbox_modes ""
+
+		// 什麼模式下關閉此插件, 逗號區隔 (無空白). (留白 = 無)
+		l4d2_supply_woodbox_modes_off ""
+
+		// 什麼模式下啟動此插件. 0=所有模式, 1=戰役, 2=生存, 4=對抗, 8=清道夫. 請將數字相加起來
+		l4d2_supply_woodbox_modes_tog "0"
+
+		// 在某些地圖裡關閉此插件，請填入地圖名，逗號區隔 (無空白). (0 = 所有地圖, 留白 = 無)
+		l4d2_supply_woodbox_map_off ""
+
+		// 從補給箱掉落的物品最大數量.
+		l4d2_supply_woodbox_item_max "4"
+
+		// 從補給箱掉落的物品最小數量.
+		l4d2_supply_woodbox_item_min "2"
+
+		// 從補給箱掉落的物品，變成槍枝武器/近戰武器/醫療物品/投擲物品/其他(汽油桶、瓦斯罐...)的機率，逗號區隔 (無空白)，這五個數字加起來必須是100
+		l4d2_supply_woodbox_item_chance "30,5,45,15,5"
+
+		// 如果沒人拿取補給箱掉落的物品，過60秒後會自動移除 (0=不移除)
+		l4d2_supply_woodbox_item_life "60"
+
+		// 補給箱的光圈顏色. 三個介於0-255的數字，空白區隔. 為RGB三色 - 紅 綠 藍. (留白=沒有光圈顏色)
+		l4d2_supply_woodbox_color "0 145 200"
+
+		// 補給箱的光圈發光範圍.
+		l4d2_supply_woodbox_glow_range "1800"
+
+		// 空投補給箱的最大間隔時間
+		l4d2_supply_woodbox_time_max "80"
+
+		// 空投補給箱的最小間隔時間
+		l4d2_supply_woodbox_time_min "60"
+
+		// 每次空投補給箱的最多數量.
+		l4d2_supply_woodbox_drop_max "2"
+
+		// 每次空投補給箱的最少數量.
+		l4d2_supply_woodbox_drop_min "1"
+
+		// 場上只能同時存在6個補給箱.
+		l4d2_supply_woodbox_limit "6"
+
+		// 沒人打破補給箱的場合，180秒後會自動消失
+		l4d2_supply_woodbox_box_life "180"
+
+		// 補給箱空投音效 (路徑相對於 sound 資料夾, 留白=隨機的直升機駕駛員語音, -1=關閉音效)
+		l4d2_supply_woodbox_soundfile ""
+
+		// 為1時，最後救援開始之後，照樣空投補給箱
+		l4d2_supply_woodbox_drop_final "0"
+
+		// 補給箱的箱子模型, 1: wood_crate001a, 2: wood_crate001a_damagedMAX, 3: wood_crate002a (0=隨機模型)
+		l4d2_supply_woodbox_type "1"
+
+		// 如何提示有空投補給箱?. (0: 不提示, 1: 聊天框, 2: 螢幕下方黑底白字框, 3: 螢幕正中間)
+		l4d2_supply_woodbox_announce_type "3"
+		```
+</details>
+
+* <details><summary>命令中文介紹 (點我展開)</summary>
+
+	* **在準心指向的地方生成補給箱 (管理員權限: ADMFLAG_ROOT)**
+		```php
+		sm_supplybox
+		sm_box
+		```
+</details>

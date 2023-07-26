@@ -21,10 +21,11 @@
 
 #define g_iRandomShotgunAmmo	GetRandomInt(30, 60)
 #define g_iRandomRifleAmmo		GetRandomInt(200, 400)
-#define g_iRandomM60Ammo		GetRandomInt(100, 150)
+#define g_iRandomM60Ammo		GetRandomInt(50, 150)
 #define g_iRandomGLAmmo			GetRandomInt(10, 25)
 #define g_iRandomSmgAmmo		GetRandomInt(300, 500)
-#define g_iRandomSniperAmmo		GetRandomInt(50, 100)
+#define g_iRandomSniperAmmo		GetRandomInt(60, 120)
+#define g_iRandomHuntingAmmo	GetRandomInt(50, 100)
 #define CVAR_FLAGS			FCVAR_NOTIFY
 
 // Cvar Handles/Variables
@@ -45,7 +46,7 @@ char g_sDropItemChance[5][3], g_sCvarSupplyBoxSoundFile[PLATFORM_MAX_PATH];
 int g_iBoxCount;
 Handle PlayerLeftStartTimer = null, SupplyBoxDropTimer = null;
 bool g_bSupplyBoxSpawnFinal, g_bFinaleStarted;
-Handle g_ItemDeleteTimer[MAXENTITIES];
+Handle g_ItemDeleteTimer[MAXENTITIES+1];
 
 int g_iMeleeClassCount;
 char g_sMeleeClass[16][32];
@@ -61,7 +62,7 @@ public Plugin myinfo =
 	name = "[L4D2] CSO Random Supply Boxes drop", 
 	author = "Lux & HarryPotter", 
 	description = "CSO Random Supply Boxes in l4d2", 
-	version = "1.3", 
+	version = "1.4-2023/7/26", 
 	url = "https://steamcommunity.com/profiles/76561198026784913"
 };
 
@@ -425,7 +426,7 @@ public void eBreakBreakable(const char[] Output, int Caller, int Activator, floa
 		iItemChance = GetRandomInt(1, iChanceMax);
 		if(0 < iItemChance && iItemChance <= g_iDropItemChance_Weapon) {
 			int iWeapon;
-			switch (GetRandomInt(1, 13)) {
+			switch (GetRandomInt(1, 14)) {
 				case 1: {
 					iWeapon = SpawnItem("weapon_rifle", fPos);
 					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
@@ -467,13 +468,17 @@ public void eBreakBreakable(const char[] Output, int Caller, int Activator, floa
 					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
 				}
 				case 11: {
+					iWeapon = SpawnItem("weapon_hunting_rifle", fPos);
+					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomHuntingAmmo);
+				}
+				case 12: {
 					iWeapon = SpawnItem("weapon_sniper_military", fPos);
 					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
 				}
-				case 12: {
+				case 13: {
 					if(iWeapon != -1) SpawnItem("weapon_pistol_magnum", fPos);
 				}
-				case 13: {
+				case 14: {
 					if(iWeapon != -1) SpawnItem("weapon_chainsaw", fPos);
 				}
 			}
@@ -944,7 +949,7 @@ void ResetTimer()
 {
 	delete PlayerLeftStartTimer;
 	delete SupplyBoxDropTimer;
-	for (int entity = 1; entity < MAXENTITIES; entity++)
+	for (int entity = 1; entity <= MAXENTITIES; entity++)
 	{
 		delete g_ItemDeleteTimer[entity];
 	}
