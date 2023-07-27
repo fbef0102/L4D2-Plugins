@@ -1,6 +1,7 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
->All plugins in here only apply to L4D2 (last edited:2023/5/28)
+> All plugins in here only apply to L4D2 <br/>
+> 2023/7/27 Updated
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -14,8 +15,6 @@ If you want any modify or request, free to use or pay me money to do it.
 > __Note__  
 > **[>>Click here to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**<br/>
 > **[>>點擊我查看更多私人插件<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**
-* <b>[hunter_growl_sound_fix](/hunter_growl_sound_fix)</b>: Fix silence Hunter produces growl sound when player MIC on
-* <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
 * <b>[l4d2_ai_damagefix](/l4d2_ai_damagefix)</b>: Makes AI SI take (and do) damage like human SI.
 * <b>[l4d2_Death_Survivor](/l4d2_Death_Survivor)</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>[l4d2_change_m1](/l4d2_change_m1)</b>: If all Survivors die, change level to the current map m1 (coop only)
@@ -76,7 +75,10 @@ If you want any modify or request, free to use or pay me money to do it.
     * 用R鍵直接傳送藥丸與腎上腺素給隊友
 * <b>[l4d2_cs_kill_hud](/l4d2_cs_kill_hud)</b>: HUD with cs kill info list.
     * L4D2擊殺提示改成CS遊戲的擊殺列表
-
+* <b>[hunter_growl_sound_fix](/hunter_growl_sound_fix)</b>: Fix silence Hunter produces growl sound when player MIC on
+    * 修復使用Mic的Hunter玩家會發出聲音
+* <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
+    * 強制蹲下安靜的Hunter發出聲音
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 

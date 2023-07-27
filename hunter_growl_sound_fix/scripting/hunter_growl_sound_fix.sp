@@ -23,7 +23,7 @@ public Plugin myinfo =
 	author = "Harry Potter",
 	description = "Fix silence Hunter produces growl sound when player MIC on",
 	version = PLUGIN_VERSION,
-	url = "https://steamcommunity.com/id/fbef0102/"
+	url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 

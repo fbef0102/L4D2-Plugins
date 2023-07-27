@@ -16,7 +16,7 @@
 
 static char sHunterSound[MAX_HUNTERSOUND + 1][] =
 {
-  "player/hunter/voice/idle/hunter_stalk_01.wav",
+  	"player/hunter/voice/idle/hunter_stalk_01.wav",
 	"player/hunter/voice/idle/hunter_stalk_04.wav",
 	"player/hunter/voice/idle/hunter_stalk_05.wav",
 	"player/hunter/voice/idle/hunter_stalk_06.wav",
@@ -47,10 +47,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public Plugin myinfo = 
 {
     name = "Hunter Crouch Sounds",
-    author = "High Cookie & Harry",
+    author = "Harry",
     description = "Forces silent but crouched hunters to emitt sounds",
-    version = "1.4",
-    url = ""
+    version = "1.5-2023/7/27",
+    url = "https://steamcommunity.com/profiles/76561198026784913/"
 };
 
 public void OnPluginStart()
@@ -72,7 +72,7 @@ public void OnMapStart()
 }
 
 
-public Action event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+void event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
 	int i;
 	for(i=0;i<=MAXPLAYERS;++i)
@@ -81,7 +81,7 @@ public Action event_RoundStart(Event event, const char[] name, bool dontBroadcas
 	}
 }
 
-public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
+void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
 {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if ( !IS_VALID_INFECTED(client) ) { return; }
@@ -94,7 +94,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 	}
 }
 
-public Action HunterCrouchTracking(Handle timer, any client) 
+Action HunterCrouchTracking(Handle timer, any client) 
 {
 	if (!isHunter[client]) {return Plugin_Stop;}
 
@@ -118,10 +118,11 @@ public Action HunterCrouchTracking(Handle timer, any client)
 		#endif
 		CreateTimer(0.2, HunterCrouchReallyCheck, client, _);
 	}
+
 	return Plugin_Continue;
 }
 
-public Action HunterCrouchReallyCheck(Handle timer, any client) 
+Action HunterCrouchReallyCheck(Handle timer, any client) 
 {
 	if ( !IsClientAndInGame(client) || GetClientTeam(client) != 3 || GetEntProp(client, Prop_Send, "m_zombieClass") != HUNTER || !IsPlayerAlive(client))
 	{
@@ -140,7 +141,7 @@ public Action HunterCrouchReallyCheck(Handle timer, any client)
 	return Plugin_Continue;
 }
 
-public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)  
+void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)  
 {
 	int victim = GetEventInt(event, "userid");
 	int client = GetClientOfUserId(victim);
