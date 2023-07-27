@@ -5,7 +5,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.3-2023/7/27"
 #define DEBUG 0
 
 public Plugin myinfo = 
@@ -120,12 +120,12 @@ public void OnConfigsExecuted()
 	IsAllowed();
 }
 
-public void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	IsAllowed();
 }
 
-public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	GetCvars();
 	for (int i = 1; i <= MaxClients; i++)
@@ -186,7 +186,7 @@ void UnhookEvents()
 	UnhookEvent("player_team", evtPlayerTeam);
 }
 
-public Action evtPlayerTeam(Event event, const char[] name, bool dontBroadcast) 
+void evtPlayerTeam(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
@@ -195,7 +195,7 @@ public Action evtPlayerTeam(Event event, const char[] name, bool dontBroadcast)
 	g_flMANextTime[client] = 0.0;
 }
 
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bIsLoading = false;
 	for (int i = 1; i <= MaxClients; i++)
@@ -276,7 +276,7 @@ void Melee_OnGameFrame()
 	}
 }
 
-public Action Event_WeaponFire(Event event, const char[] name, bool dontBroadcast) 
+void Event_WeaponFire(Event event, const char[] name, bool dontBroadcast) 
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVORS)
@@ -316,7 +316,7 @@ public Action Event_WeaponFire(Event event, const char[] name, bool dontBroadcas
 	}
 }
 
-public void OnWeaponSwitched(int client, int weapon)
+void OnWeaponSwitched(int client, int weapon)
 {
 	if (GetClientTeam(client) == TEAM_SURVIVORS && weapon > 0 && IsValidEntity(weapon))
 	{

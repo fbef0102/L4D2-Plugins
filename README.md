@@ -22,7 +22,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[clear_dead_body](/clear_dead_body)</b>: Remove Dead Body Entity
 * <b>[multitanks_a-l4d2](/multitanks_a-l4d2)</b>: An improved version of the MultiTanks plugin originally created by Red Alex.
 * <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
-* <b>[l4d2_melee_swing](/l4d2_melee_swing)</b>: Adjustable melee swing rate for each melee weapon.
 * <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
 * <b>[l4d_witch_realism_door_fix](/l4d_witch_realism_door_fix)</b>: Fixing witch can't break the door on Realism Normal、Advanced、Expert
@@ -79,6 +78,8 @@ If you want any modify or request, free to use or pay me money to do it.
     * 修復使用Mic的Hunter玩家會發出聲音
 * <b>[huntercrouchsound](/huntercrouchsound)</b>: Forces silent but crouched hunters to emitt sounds
     * 強制蹲下安靜的Hunter發出聲音
+* <b>[l4d2_melee_swing](/l4d2_melee_swing)</b>: Adjustable melee swing rate for each melee weapon.
+    * 調整每個近戰武器的揮砍速度
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 
