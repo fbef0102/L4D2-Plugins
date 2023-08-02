@@ -20,7 +20,6 @@ If you want any modify or request, free to use or pay me money to do it.
 * <b>[l4d2_change_m1](/l4d2_change_m1)</b>: If all Survivors die, change level to the current map m1 (coop only)
 * <b>[lfd_both_fixUpgradePack](/lfd_both_fixUpgradePack)</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
 * <b>[clear_dead_body](/clear_dead_body)</b>: Remove Dead Body Entity
-* <b>[multitanks_a-l4d2](/multitanks_a-l4d2)</b>: An improved version of the MultiTanks plugin originally created by Red Alex.
 * <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
 * <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
