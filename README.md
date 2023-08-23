@@ -1,7 +1,7 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
 > All plugins in here only apply to L4D2 <br/>
-> 2023/7/27 Updated
+> 2023/8/24 Updated
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
 If you want any modify or request, free to use or pay me money to do it.
 # Require
@@ -79,6 +79,8 @@ If you want any modify or request, free to use or pay me money to do it.
     * 強制蹲下安靜的Hunter發出聲音
 * <b>[l4d2_melee_swing](/l4d2_melee_swing)</b>: Adjustable melee swing rate for each melee weapon.
     * 調整每個近戰武器的揮砍速度
+* <b>[l4d_finale_stage_fix](/l4d_finale_stage_fix)</b>: Fixed the final stage get stucked
+    * 解決最後救援卡關，永遠不能來救援載具的問題
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
 
