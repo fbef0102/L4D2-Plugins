@@ -1,15 +1,11 @@
 # L4D2-Plugins by Harry Potter
 L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun plugins.
 > All plugins in here only apply to L4D2 <br/>
-> 2023/8/24 Updated
+> If you have any modify or request, free to use or pay me money to do it.
 # Appreciate my work, you can [PayPal Donate](https://paypal.me/Harry0215?locale.x=zh_TW) me.
-If you want any modify or request, free to use or pay me money to do it.
+
 # Require
-* [Sourcemod 1.11](https://www.sourcemod.net/downloads.php?branch=1.11-dev) (or newer)
-* [Metamod 1.11](https://www.sourcemm.net/downloads.php?branch=1.11-dev) (or newer)
-* [L4DToolZ](https://github.com/Accelerator74/l4dtoolz/releases)
-* [Left 4 DHooks Direct](https://forums.alliedmods.net/showthread.php?p=2684862)
-* [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
+* [L4D2 Server Install](https://github.com/fbef0102/L4D2-Server4Dead#server-install)
 
 # Plugins
 > __Note__  
