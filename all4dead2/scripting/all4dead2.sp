@@ -1192,10 +1192,8 @@ Action Command_ForcePanic(int client, int args) {
  * </remarks>
 */
 void Do_ForcePanic(int client) {
-	if (client == 0)
-		StripAndExecuteClientCommand(Misc_GetAnyClient(), "director_force_panic_event", "");
-	else
-		StripAndExecuteClientCommand(client, "director_force_panic_event", "");
+	L4D_ForcePanicEvent();
+	
 	if (notify_players.BoolValue) CPrintToChatAll("%t", "The zombies are coming!");	
 	LogAction(client, -1, "[NOTICE]: (%L) executed %s", client, "a4d_force_panic");
 }
