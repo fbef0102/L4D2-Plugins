@@ -67,6 +67,9 @@ HUD with cs kill info list.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.5h (2023-9-12)
+        * Add chainsaw
+
     * v1.4h (2023-6-11)
         * Shows the text inside a black transparent background.
         * Remove headshot or behind wall text if weapon is "pipe bomb", "fire", "melee punch"

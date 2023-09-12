@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION			"1.4h-2023/6/11"
+#define PLUGIN_VERSION			"1.5h-2023/9/12"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -88,34 +88,34 @@ int g_iHUDFlags;
 
 static const char g_event_weapon_string[][] = 
 {
-	"melee",
+	"melee", // 0
 
 	"pistol",
 	"pistol_magnum",
 	"dual_pistols",
 
 	"smg",
-	"smg_silenced",
+	"smg_silenced", // 5
 	"smg_mp5",
 
 	"rifle",
 	"rifle_ak47",
 	"rifle_sg552",
-	"rifle_desert",
+	"rifle_desert", //10
 
 	"pumpshotgun",
 	"shotgun_chrome",
 	"autoshotgun",
 	"shotgun_spas",
 
-	"hunting_rifle",
+	"hunting_rifle", //15
 	"sniper_military",
 	"sniper_scout",
 	"sniper_awp",
 
 	"pipe_bomb",
 
-	"inferno",
+	"inferno", //20
 	"entityflame",
 
 	"rifle_m60",
@@ -123,14 +123,16 @@ static const char g_event_weapon_string[][] =
 	"grenade_launcher_projectile",
 
 	"boomer",
-	"player",
+	"player", //25
 
 	"prop_minigun_l4d1",
 	"prop_minigun",
 
 	"world",
 	"worldspawn",
-	"trigger_hurt",
+	"trigger_hurt", //30
+
+	"chainsaw",
 };
 
 static const char g_kill_type[][] =
@@ -170,6 +172,8 @@ static const char g_kill_type[][] =
 	"(ﾒﾟДﾟ)ﾒ彡",           //16 killed by witch
 
 	"☠",         //17 killed by common infected
+
+	"<ʖ͡=::::::⊃",         //18 killed by chainsaw
 };
 
 #define KILL_HUD_BASE 8
@@ -351,6 +355,7 @@ void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
 
 	static char weapon_type[64], victim_name[64];
 	event.GetString("weapon",weapon_type,sizeof(weapon_type));
+	//PrintToChatAll("weapon: %s", weapon_type);
 	if(bIsVictimPlayer)
 	{
 		if( IsFakeClient(victim) )
@@ -609,6 +614,9 @@ void LoadEventWeaponName()
 
 			case 28,29,30: // world, worldspawn, trigger_hurt
 				g_weapon_name.SetString(g_event_weapon_string[i],g_kill_type[12]);
+
+			case 31: // chainsaw
+				g_weapon_name.SetString(g_event_weapon_string[i],g_kill_type[18]);
 		}
 	}
 }
