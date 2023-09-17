@@ -181,6 +181,7 @@ static const char g_kill_type[][] =
 
 static const float g_HUDpos[][] =
 {
+	//{x, y, 寬, 高}
     {0.00,0.00,0.00,0.00}, // 0
     {0.00,0.00,0.00,0.00},
     {0.00,0.00,0.00,0.00},
@@ -220,7 +221,7 @@ public void OnPluginStart()
 	LoadEventWeaponName();
 
 	g_hCvarEnable 			= CreateConVar( PLUGIN_NAME ... "_enable",        				"1",   "0=Plugin off, 1=Plugin on.", CVAR_FLAGS, true, 0.0, true, 1.0);
-	g_hCvarKillInfoNumber 	= CreateConVar( PLUGIN_NAME ... "_number",        				"5",   "Numbers of kill list on hud (Default: 5, MAX: 7)", CVAR_FLAGS, true, 1.0, true, 8.0);
+	g_hCvarKillInfoNumber 	= CreateConVar( PLUGIN_NAME ... "_number",        				"5",   "Numbers of kill list on hud (Default: 5, MAX: 7)", CVAR_FLAGS, true, 1.0, true, 7.0);
 	g_hCvarHudDecrease 		= CreateConVar( PLUGIN_NAME ... "_notice_time",   				"7.0", "Time in seconds to erase kill list on hud.", CVAR_FLAGS, true, 1.0);
 	g_hCvarBlockMessage 	= CreateConVar( PLUGIN_NAME ... "_disable_standard_message", 	"1",   "If 1, disable offical player death message (the red font of kill info)", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarHUDBlink         = CreateConVar( PLUGIN_NAME ... "_blink", 						"1",   "If 1, Makes the text blink from white to red.", CVAR_FLAGS, true, 0.0, true, 1.0);

@@ -43,7 +43,7 @@ HUD with cs kill info list.
 
 * <details><summary>How to customize weapon icon</summary>
 
-	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L137-L171) line 137 ~ 171
+	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L140-L176) line 140 ~ 176
     * Recompile, done.
 </details>
 
@@ -130,7 +130,7 @@ L4D2擊殺提示改成CS遊戲的擊殺列表
 
 * <details><summary>自製武器圖案</summary>
 
-	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L137-L171) 137 ~ 171 行
+	* [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L140-L176) 140 ~ 176 行
     * 重新編譯，完成
 </details>
 
