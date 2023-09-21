@@ -8,7 +8,6 @@
 #define MODEL_CAR2			"models/props_vehicles/police_car.mdl"
 #define MODEL_GLASS			"models/props_vehicles/police_car_glass.mdl"
 #define MODEL_PROPANE 	"models/props_junk/propanecanister001a.mdl"
-#define MODEL_LIGHTBAR 	"models/props_vehicles/police_car_lightbar.mdl.mdl"
 
 Handle l4d_flying_car_color;
 Handle l4d_flying_car_enable;
@@ -77,7 +76,6 @@ public void OnMapStart()
 		PrecacheModel(MODEL_CAR2);
 		PrecacheModel(MODEL_GLASS);
 		PrecacheModel(MODEL_PROPANE);
-		PrecacheModel(MODEL_LIGHTBAR);
 
 		PrecacheParticle("env_fire_medium");
 	}
