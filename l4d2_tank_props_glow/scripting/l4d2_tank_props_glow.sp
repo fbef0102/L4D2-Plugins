@@ -251,13 +251,11 @@ public void PossibleTankPropCreated(int iEntity, const char[] sClassName)
 		return;
 	}
 
-	if (strcmp(sClassName, "prop_physics") != 0) { // Hooks c11m4_terminal World Sphere
-		return;
+	if (strncmp(sClassName, "prop_physics", 12, false) == 0 || strcmp(sClassName, "prop_car_alarm", false) == 0) { // Hooks c11m4_terminal World Sphere
+		// Use SpawnPost to just push it into the Array right away.
+		// These entities get spawned after the Tank has punched them, so doing anything here will not work smoothly.
+		SDKHook(iEntity, SDKHook_SpawnPost, Hook_PropSpawned);
 	}
-
-	// Use SpawnPost to just push it into the Array right away.
-	// These entities get spawned after the Tank has punched them, so doing anything here will not work smoothly.
-	SDKHook(iEntity, SDKHook_SpawnPost, Hook_PropSpawned);
 }
 
 public void OnEntityDestroyed(int entity)
