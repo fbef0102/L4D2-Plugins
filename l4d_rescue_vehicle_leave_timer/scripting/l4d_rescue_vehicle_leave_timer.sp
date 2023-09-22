@@ -546,6 +546,7 @@ bool LoadData()
 
 	if( !hFile.JumpToKey(sMap) )
 	{
+		g_iEscapeTime = g_iCvarEscapeTime;
 		delete hFile;
 		return false;
 	}
@@ -780,7 +781,7 @@ void InitRescueEntity()
 		g_vMaxs = NULL_VECTOR;
 		g_vOrigin = NULL_VECTOR;
 
-		int entity = FindEntityByClassname(MaxClients + 1, "trigger_finale");
+		int entity = FindEntityByClassname(MaxClients + 1, "trigger_finale*");
 		if (entity != INVALID_ENT_REFERENCE) {
 			g_iTriggerFinale = EntIndexToEntRef(entity);
 			g_bIsSacrificeFinale = !!GetEntProp(g_iTriggerFinale, Prop_Data, "m_bIsSacrificeFinale");
@@ -791,7 +792,7 @@ void InitRescueEntity()
 		}
 		else {
 			entity = MaxClients + 1;
-			while ((entity = FindEntityByClassname(entity, "trigger_multiple")) != INVALID_ENT_REFERENCE) {
+			while ((entity = FindEntityByClassname(entity, "trigger_multiple*")) != INVALID_ENT_REFERENCE) {
 				if (GetEntProp(entity, Prop_Data, "m_iEntireTeam") != 2)
 					continue;
 
