@@ -575,7 +575,7 @@ void UnhookTankProps()
 
 bool IsValidEntRef(int iRef)
 {
-	return (iRef > 0 && EntRefToEntIndex(iRef) != INVALID_ENT_REFERENCE);
+	return (iRef && EntRefToEntIndex(iRef) != INVALID_ENT_REFERENCE);
 }
 
 int GetColor(char[] sTemp)
