@@ -187,11 +187,9 @@ public void OnMapStart()
 	CreateTimer(1.0, GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-bool g_bConfigLoaded;
 public void OnMapEnd()
 {
 	g_bMapStarted = false;
-	g_bConfigLoaded = false;
 	ResetTimer();
 }
 
@@ -200,8 +198,6 @@ public void OnMapEnd()
 // ====================================================================================================
 public void OnConfigsExecuted()
 {
-	g_bConfigLoaded = true;
-
 	IsAllowed();
 
 	for (int client = 1; client <= MaxClients; client++)
@@ -754,7 +750,7 @@ void SetTimer_DeleteWeapon(int entity)
 	g_ItemDeleteTimer[entity] = CreateTimer(g_fCvarDropItemTime, Timer_KillWeapon, EntIndexToEntRef(entity));
 }
 
-public Action Timer_KillWeapon(Handle timer, int entRef)
+Action Timer_KillWeapon(Handle timer, int entRef)
 {
 	if(!g_bCvarAllow) return Plugin_Continue;
 
@@ -771,7 +767,7 @@ public Action Timer_KillWeapon(Handle timer, int entRef)
 	return Plugin_Continue;
 }
 
-public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
+Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
 	return Plugin_Handled;
 }
@@ -982,9 +978,6 @@ bool CheckIfEntityMax(int entity)
 
 public void OnEntityDestroyed(int entity)
 {
-	if (!g_bConfigLoaded)
-		return;
-		
 	if (!IsValidEntityIndex(entity))
 		return;
 
@@ -993,9 +986,6 @@ public void OnEntityDestroyed(int entity)
 
 public void OnClientPutInServer(int client)
 {
-    if (!g_bConfigLoaded)
-        return;
-
     SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquipPost);
 }
 
