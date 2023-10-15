@@ -4,33 +4,10 @@ Vomit Jars hit Survivors, Boomer Explosions slime Infected.
 * [Video | 影片展示](https://youtu.be/jdkrz0vJoXo)
 
 * Image | 圖示
-	* Boomer Explosions slime Infected.
-        > Boomer爆炸的膽汁噴到特感身上
-        <br/>![l4d2_biletheworld_1](image/l4d2_biletheworld_1.jpg)
-	* Vomit Jars hit Survivors
-        > 膽汁瓶會噴到倖存者身上
-        <br/>![l4d2_biletheworld_2](image/l4d2_biletheworld_2.jpg)
-
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-	```php
-	//AtomicStryker @ 2010-2017
-	//HarryPotter @ 2022
-	```
-	* v1.3.1 (2022-12-27)
-        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2771151&postcount=124)
-	    * Remake code
-	    * Remove gamedata
-	    * If player throws Vomit Jar to teammate, reduce his hp :D
-
-	* v1.0.7
-	    * [Original Request by AtomicStryker](https://forums.alliedmods.net/showthread.php?t=132264)
-</details>
+	* Boomer Explosions slime Infected. (Boomer爆炸的膽汁噴到特感身上)
+    <br/>![l4d2_biletheworld_1](image/l4d2_biletheworld_1.jpg)
+	* Vomit Jars hit Survivors (膽汁瓶會噴到倖存者身上)
+    <br/>![l4d2_biletheworld_2](image/l4d2_biletheworld_2.jpg)
 
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
@@ -59,6 +36,27 @@ Vomit Jars hit Survivors, Boomer Explosions slime Infected.
 * <details><summary>Command | 命令</summary>
 
 	None
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+	```php
+	//AtomicStryker @ 2010-2017
+	//HarryPotter @ 2022
+	```
+	* v1.3.1 (2022-12-27)
+        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2771151&postcount=124)
+	    * Remake code
+	    * Remove gamedata
+	    * If player throws Vomit Jar to teammate, reduce his hp :D
+
+	* v1.0.7
+	    * [Original Request by AtomicStryker](https://forums.alliedmods.net/showthread.php?t=132264)
 </details>
 
 - - - -

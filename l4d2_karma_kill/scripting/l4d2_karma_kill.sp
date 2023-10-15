@@ -7,10 +7,12 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "4.2"
+#define PLUGIN_VERSION "4.3"
 
 #define CVAR_FLAGS                    FCVAR_NOTIFY
 #define CVAR_FLAGS_PLUGIN_VERSION     FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY
+
+#define ENTITY_SAFE_LIMIT 2000 //don't entity when it's index is above this
 
 bool TEST_DEBUG = false;
 
@@ -33,15 +35,14 @@ float CHARGE_CHECKING_INTERVAL = 0.1;
 float ANGLE_STRAIGHT_DOWN[3] = { 90.0, 0.0, 0.0 };
 char  SOUND_EFFECT[]         = "./level/loud/climber.wav";
 
-ConVar cvarisEnabled, cvarNoFallDamageOnCarry, cvarNoFallDamageProtectFromIncap;
-ConVar karmaPrefix, karmaJump, karmaAwardConfirmed, karmaDamageAwardConfirmed, karmaOnlyConfirmed,
-	karmaBirdCharge, karmaSlowTimeOnServer, karmaSlowTimeOnCouple, karmaSlow, cvarModeSwitch,
+ConVar cvarisEnabled, cvarNoFallDamageProtectFromIncap;
+ConVar karmaJump, karmaAwardConfirmed, karmaDamageAwardConfirmed, karmaOnlyConfirmed,
+	karmaSlowTimeOnServer, karmaSlowTimeOnCouple, karmaSlow, cvarModeSwitch,
 	cvarCooldown, cvarAllowDefib;
-bool g_bEnabled, g_bNoFallDamageOnCarry, g_bkarmaJump, g_bkarmaOnlyConfirmed, g_bkarmaBirdCharge,
+bool g_bEnabled, g_bkarmaJump, g_bkarmaOnlyConfirmed,
 	g_bNoFallDamageProtectFromIncap, g_bModeSwitch, g_bAllowDefib;
 int g_ikarmaAwardConfirmed;
 float g_fkarmaSlowTimeOnServer, g_fkarmaSlowTimeOnCouple, g_fkarmaSlow, g_fCooldown;
-char g_sPrefix[64];
 
 ConVar cvarFatalFallDamage;
 float g_fFatalFallDamage;
@@ -314,17 +315,14 @@ public void OnPluginStart()
 
 	cvarFatalFallDamage = FindConVar("survivor_incap_max_fall_damage");
 
-	karmaPrefix                      = CreateConVar("l4d2_karma_charge_prefix", "TS", "Prefix for announcements. For colors, replace the side the slash points towards, example is /x04[/x05KarmaCharge/x03]", CVAR_FLAGS);
 	karmaJump                        = CreateConVar("l4d2_karma_jump", "1", "Enable karma jumping. Karma jumping only registers on confirmed kills.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	karmaAwardConfirmed              = CreateConVar("l4d2_karma_award_confirmed", "1", "Award a confirmed karma maker with a player_death event.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	karmaDamageAwardConfirmed        = CreateConVar("l4d2_karma_damage_award_confirmed", "300", "Damage to award on confirmed kills, or -1 to disable. Requires l4d2_karma_award_confirmed set to 1", CVAR_FLAGS, true, -1.0);
 	karmaOnlyConfirmed               = CreateConVar("l4d2_karma_only_confirmed", "0", "Whenever or not to make karma announce only happen upon death.", CVAR_FLAGS, true, 0.0, true, 1.0);
-	karmaBirdCharge                  = CreateConVar("l4d2_karma_kill_bird", "1", "Whether or not to enable bird charges, which are unlethal height charges.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	karmaSlowTimeOnServer            = CreateConVar("l4d2_karma_kill_slowtime_on_server", "5.0", " How long does Time get slowed for the server", CVAR_FLAGS, true, 1.0);
 	karmaSlowTimeOnCouple            = CreateConVar("l4d2_karma_kill_slowtime_on_couple", "3.0", " How long does Time get slowed for the karma couple", CVAR_FLAGS, true, 1.0);
 	karmaSlow                        = CreateConVar("l4d2_karma_kill_slowspeed", "0.2", " How slow Time gets. Hardwired to minimum 0.03 or the server crashes", CVAR_FLAGS, true, 0.03);
 	cvarisEnabled                    = CreateConVar("l4d2_karma_kill_enabled", "1", " Turn Karma Kills on and off ", CVAR_FLAGS, true, 0.0, true, 1.0);
-	cvarNoFallDamageOnCarry          = CreateConVar("l4d2_karma_kill_no_fall_damage_on_carry", "1", "Fixes this by disabling fall damage when carried: https://streamable.com/xuipb6", CVAR_FLAGS, true, 0.0, true, 1.0);
 	cvarNoFallDamageProtectFromIncap = CreateConVar("l4d2_karma_kill_no_fall_damage_protect_from_incap", "1", "If you take more than 224 points of damage while incapacitated, you die.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	cvarModeSwitch                   = CreateConVar("l4d2_karma_kill_slowmode", "0", " 0 - Entire Server gets slowed, 1 - Only Charger and Survivor do", CVAR_FLAGS, true, 0.0, true, 1.0);
 	cvarCooldown                     = CreateConVar("l4d2_karma_kill_cooldown", "0.0", "If slowmode is 0, how long does it take for the next karma to freeze the entire map. Begins counting from the end of the previous freeze", CVAR_FLAGS, true, 0.0);
@@ -334,17 +332,14 @@ public void OnPluginStart()
 
 	GetCvars();
 	cvarFatalFallDamage.AddChangeHook(ConVarChanged_Cvars);
-	karmaPrefix.AddChangeHook(ConVarChanged_Cvars);
 	karmaJump.AddChangeHook(ConVarChanged_Cvars);
 	karmaAwardConfirmed.AddChangeHook(ConVarChanged_Cvars);
 	karmaDamageAwardConfirmed.AddChangeHook(ConVarChanged_Cvars);
 	karmaOnlyConfirmed.AddChangeHook(ConVarChanged_Cvars);
-	karmaBirdCharge.AddChangeHook(ConVarChanged_Cvars);
 	karmaSlowTimeOnServer.AddChangeHook(ConVarChanged_Cvars);
 	karmaSlowTimeOnCouple.AddChangeHook(ConVarChanged_Cvars);
 	karmaSlow.AddChangeHook(ConVarChanged_Cvars);
 	cvarisEnabled.AddChangeHook(ConVarChanged_Cvars);
-	cvarNoFallDamageOnCarry.AddChangeHook(ConVarChanged_Cvars);
 	cvarNoFallDamageProtectFromIncap.AddChangeHook(ConVarChanged_Cvars);
 	cvarModeSwitch.AddChangeHook(ConVarChanged_Cvars);
 	cvarCooldown.AddChangeHook(ConVarChanged_Cvars);
@@ -446,7 +441,8 @@ public Action SDKEvent_OnTakeDamage(int victim, int& attacker, int& inflictor, f
 		{
 			SetEntProp(victim, Prop_Send, "m_isFallingFromLedge", false);
 		}
-		if (g_bNoFallDamageOnCarry && L4D_GetAttackerCarry(victim) != 0)
+
+		if ( L4D_GetAttackerCarry(victim) != 0)
 		{
 			damage = 0.0;
 			return Plugin_Changed;
@@ -534,16 +530,13 @@ public void ConVarChanged_Cvars(Handle hCvar, const char[] sOldVal, const char[]
 void GetCvars()
 {
 	g_fFatalFallDamage = cvarFatalFallDamage.FloatValue;
-	karmaPrefix.GetString(g_sPrefix, sizeof(g_sPrefix));
 	g_bkarmaJump = karmaJump.BoolValue;
 	g_ikarmaAwardConfirmed = karmaDamageAwardConfirmed.IntValue;
 	g_bkarmaOnlyConfirmed = karmaOnlyConfirmed.BoolValue;
-	g_bkarmaBirdCharge = karmaBirdCharge.BoolValue;
 	g_fkarmaSlowTimeOnServer = karmaSlowTimeOnServer.FloatValue;
 	g_fkarmaSlowTimeOnCouple = karmaSlowTimeOnCouple.FloatValue;
 	g_fkarmaSlow = karmaSlow.FloatValue;
 	g_bEnabled = cvarisEnabled.BoolValue;
-	g_bNoFallDamageOnCarry = cvarNoFallDamageOnCarry.BoolValue;
 	g_bNoFallDamageProtectFromIncap = cvarNoFallDamageProtectFromIncap.BoolValue;
 	g_bModeSwitch = cvarModeSwitch.BoolValue;
 	g_fCooldown = cvarCooldown.FloatValue;
@@ -1876,8 +1869,7 @@ public Action Timer_CheckCharge(Handle timer, any client)
 		chargerTimer[client] = INVALID_HANDLE;
 		return Plugin_Stop;
 	}
-
-	else if (g_bkarmaBirdCharge)
+	else
 	{
 		// 0.0 is also flat apparently.
 		if ((fPlaneNormal[2] >= 0.7 || fPlaneNormal[2] == 0.0) && !CanClientSurviveFall(victim, catchHeight[client] - fEndOrigin[2]))
@@ -2011,8 +2003,9 @@ void AnnounceKarma(int client, int victim, int type, bool bBird, bool bKillConfi
 		EmitSoundToAll(SOUND_EFFECT);
 
 		if (g_bModeSwitch || cooldownTimer != INVALID_HANDLE)
+		{
 			SlowKarmaCouple(victim, client, KarmaName);
-
+		}
 		else
 		{
 			SlowTime();
@@ -2020,11 +2013,11 @@ void AnnounceKarma(int client, int victim, int type, bool bBird, bool bKillConfi
 
 		if (type == KT_Jump)
 		{
-			CPrintToChatAll("[{olive}%s{default}] {green}%s{olive} [%s] {default} %s %s {olive}%N{default}, for great justice!!", g_sPrefix, LastKarma[victim][type].artistName, LastKarma[victim][type].artistSteamId, bBird ? "Bird" : "Karma", KarmaName, victim);
+			CPrintToChatAll("[{olive}TS{default}] {green}%s{olive} [%s] {default} %s %s {olive}%N{default}, for great justice!!", LastKarma[victim][type].artistName, LastKarma[victim][type].artistSteamId, bBird ? "Bird" : "Karma", KarmaName, victim);
 		}
 		else
 		{
-			CPrintToChatAll("[{olive}%s{default}] {green}%s{default} %s %s {olive}%N{default}, for great justice!!", g_sPrefix, LastKarma[victim][type].artistName, bBird ? "Bird" : "Karma", KarmaName, victim);
+			CPrintToChatAll("[{olive}TS{default}] {green}%s{default} %s %s {olive}%N{default}, for great justice!!", LastKarma[victim][type].artistName, bBird ? "Bird" : "Karma", KarmaName, victim);
 		}
 	}
 
@@ -2177,6 +2170,7 @@ void SlowTime(const char[] re_Acceleration = "2.0", const char[] minBlendRate = 
 	FloatToString(fSlowPower, desiredTimeScale, sizeof(desiredTimeScale));
 
 	int ent = CreateEntityByName("func_timescale");
+	if( CheckIfEntityMax(ent) == false) return;
 
 	DispatchKeyValue(ent, "desiredTimescale", desiredTimeScale);
 	DispatchKeyValue(ent, "acceleration", re_Acceleration);
@@ -2389,7 +2383,7 @@ bool CanClientSurviveFall(int client, float fTotalDistance)
 	// 137.5 is the lowest height of fall damage, making you take 0.000000 damage.
 	float fDistancesVsDamages[][] = {
 
-		{157.5,   2.777781    },
+		{ 157.5,  2.777781    },
 		{ 177.5,  11.111101   },
 		{ 197.5,  24.999961   },
 		{ 220.0,  44.444358   },
@@ -2756,4 +2750,16 @@ void TransferKarmaToVictim(int toVictim, int fromVictim)
 	}
 
 	DettachKarmaFromVictim(fromVictim, KarmaType_MAX);
+}
+
+bool CheckIfEntityMax(int entity)
+{
+	if(entity == -1) return false;
+
+	if(	entity > ENTITY_SAFE_LIMIT)
+	{
+		AcceptEntityInput(entity, "Kill");
+		return false;
+	}
+	return true;
 }

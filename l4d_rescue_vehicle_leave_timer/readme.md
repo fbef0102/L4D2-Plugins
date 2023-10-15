@@ -4,38 +4,8 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 * [Video | 影片展示](https://youtu.be/zC4kZcG8wOA)
 
 * Image | 圖示
-	* Nuke explosion
-		> 核彈爆炸
-		<br/>![l4d_rescue_vehicle_leave_timer_1](image/l4d_rescue_vehicle_leave_timer_1.gif)
-
-* Apply to | 適用於
-	```
-	L4D2
-	```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    * v1.7 (2023-6-20)
-        * Require lef4dhooks v1.33 or above
-
-	* v1.6 (2023-4-4)
-        * Add a cvar to enable or disable AirStrike (explosion, missile, jets, fire)
-
-	* v1.5 (2023-3-21)
-        * Support Gamedata, from [End Safearea Teleport by sorallll](https://forums.alliedmods.net/showthread.php?p=2766575)
-        * Support All custom map
-        * delete data file
-
-	* v1.4
-        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2725525&postcount=7)
-	    * Original Request by darkbret.
-	    * Thanks to Marttt and Crasher_3637.
-	    * Works on l4d1/2 all value maps.
-	    * Custom timer for each final map (edit data).
-	    * Translation support
-	    * The City Will Get Nuked After Countdown Time Passes, Idea from [Nuke | The City Will Get Nuked After Countdown Time Passes by alasfourom](https://forums.alliedmods.net/showthread.php?p=2784677)
-	    * Silvers F18 Airstrike
-</details>
+	* Nuke explosion (核彈爆炸)
+	<br/>![l4d_rescue_vehicle_leave_timer_1](image/l4d_rescue_vehicle_leave_timer_1.gif)
 
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
@@ -103,6 +73,35 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 * Notice
     * The plugin supports all valve maps and all custom maps.
     * If the map finale is sacrifice, disable this plugin.
+
+* Apply to | 適用於
+	```
+	L4D2
+	```
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.7 (2023-6-20)
+        * Require lef4dhooks v1.33 or above
+
+	* v1.6 (2023-4-4)
+        * Add a cvar to enable or disable AirStrike (explosion, missile, jets, fire)
+
+	* v1.5 (2023-3-21)
+        * Support Gamedata, from [End Safearea Teleport by sorallll](https://forums.alliedmods.net/showthread.php?p=2766575)
+        * Support All custom map
+        * delete data file
+
+	* v1.4
+        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2725525&postcount=7)
+	    * Original Request by darkbret.
+	    * Thanks to Marttt and Crasher_3637.
+	    * Works on l4d1/2 all value maps.
+	    * Custom timer for each final map (edit data).
+	    * Translation support
+	    * The City Will Get Nuked After Countdown Time Passes, Idea from [Nuke | The City Will Get Nuked After Countdown Time Passes by alasfourom](https://forums.alliedmods.net/showthread.php?p=2784677)
+	    * Silvers F18 Airstrike
+</details>
 
 - - - -
 # 中文說明

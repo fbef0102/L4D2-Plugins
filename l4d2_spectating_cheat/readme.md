@@ -4,12 +4,10 @@ A spectator who watching the survivor at first person view can now see the infec
 * [Video | 影片展示](https://www.bilibili.com/video/BV1Xq4y1a7ie)
 
 * Image | 圖示
-    * White Glow=Ghost Infected, Red Glow=Alive Infected 
-        > 白光=靈魂特感，紅光=活著的特感
-        <br/>![l4d2_spectating_cheat_1](image/l4d2_spectating_cheat_1.jpg)
-    * Better view for spectator in versus match
-        > 提高對抗模式觀賞性
-        <br/>![l4d2_spectating_cheat_2](image/l4d2_spectating_cheat_2.jpg)
+    * White Glow=Ghost Infected, Red Glow=Alive Infected (白光=靈魂特感，紅光=活著的特感)
+    <br/>![l4d2_spectating_cheat_1](image/l4d2_spectating_cheat_1.jpg)
+    * Better view for spectator in versus match (提高對抗模式觀賞性)
+    <br/>![l4d2_spectating_cheat_2](image/l4d2_spectating_cheat_2.jpg)
 
 * Apply to | 適用於
     ```

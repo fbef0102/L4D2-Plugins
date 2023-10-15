@@ -5,53 +5,22 @@ Notifies selected team(s) when someone is on final strike and add glow
 <br/>None
 
 * Image | 圖示
-	* display who is black and white
-        > 顯示哪個玩家黑白
-        <br/>![LMC_Black_and_White_Notifier_1](image/LMC_Black_and_White_Notifier_1.jpg)
-	* display who healed
-        > 顯示誰治癒了黑白
-        <br/>![LMC_Black_and_White_Notifier_2](image/LMC_Black_and_White_Notifier_2.jpg)
-
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* Translation Support | 支援翻譯
-    ```
-    English
-    繁體中文
-    简体中文
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-	* v1.1h (2023-6-23)
-        * Fixed glow disappear when B&W player switches team
-
-	* v1.0h (2022-11-26)
-        * Request by Yabi
-        * Remake Code
-        * Converted plugin source to the latest syntax
-        * Changes to fix warnings when compiling on SourceMod 1.11.
-        * Support Translation
-        * Check Last Life every 1.0 second (For people using admin cheats and other stuff that changes survivor health)
-	
-    * v2.0.2
-        * [By Lux](https://forums.alliedmods.net/showthread.php?p=2612147)
-</details>
+    * display who is black and white (顯示哪個玩家黑白)
+    <br/>![LMC_Black_and_White_Notifier_1](image/LMC_Black_and_White_Notifier_1.jpg)
+    * display who healed (顯示誰治癒了黑白)
+    <br/>![LMC_Black_and_White_Notifier_2](image/LMC_Black_and_White_Notifier_2.jpg)
 
 * Require | 必要安裝
-	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-	2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
+    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
+    2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
 
 * Similar Plugin | 相似插件
-	1. [l4d_blackandwhite](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_blackandwhite): Notify people when player is black and white.
-		> 顯示誰是黑白狀態，比較少的提示與支援
+    1. [l4d_blackandwhite](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_blackandwhite): Notify people when player is black and white.
+        > 顯示誰是黑白狀態，比較少的提示與支援
 
 * <details><summary>ConVar | 指令</summary>
 
-	* cfg/sourcemod/LMC_Black_and_White_Notifier.cfg
+    * cfg/sourcemod/LMC_Black_and_White_Notifier.cfg
         ```php
         // Enable black and white notification plugin?(1/0 = yes/no)
         lmc_blackandwhite "1"
@@ -86,7 +55,39 @@ Notifies selected team(s) when someone is on final strike and add glow
 </details>
 
 * <details><summary>Command | 命令</summary>
-	None
+    
+    None
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Translation Support | 支援翻譯</summary>
+
+    ```
+    English
+    繁體中文
+    简体中文
+    ```
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.1h (2023-6-23)
+        * Fixed glow disappear when B&W player switches team
+
+    * v1.0h (2022-11-26)
+        * Request by Yabi
+        * Remake Code
+        * Converted plugin source to the latest syntax
+        * Changes to fix warnings when compiling on SourceMod 1.11.
+        * Support Translation
+        * Check Last Life every 1.0 second (For people using admin cheats and other stuff that changes survivor health)
+    
+    * v2.0.2
+        * [By Lux](https://forums.alliedmods.net/showthread.php?p=2612147)
 </details>
 
 - - - -
@@ -96,7 +97,7 @@ Notifies selected team(s) when someone is on final strike and add glow
 * 原理
     * 救起玩家之後判定玩家是否為黑白狀態
     * 支援其他恢复玩家血量的插件
-	* [LMC模組是由Lux大佬創建的插件](https://forums.alliedmods.net/showthread.php?t=286987)，可以自由切換角色為任何模組
+    * [LMC模組是由Lux大佬創建的插件](https://forums.alliedmods.net/showthread.php?t=286987)，可以自由切換角色為任何模組
 
 * 功能
     * 哪些人能看到黑白提示

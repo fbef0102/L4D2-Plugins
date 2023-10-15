@@ -5,52 +5,7 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 * Image | 圖示
 	* Drop Gifts
-		> 掉落禮物
-		<br/>![l4d2_gifts_1](image/l4d2_gifts_1.jpg)
-
-* Apply to | 適用於
-	```
-	L4D2
-	```
-
-* Translation Support | 支援翻譯
-	```
-	English
-	繁體中文
-	简体中文
-	```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-	```php
-	//[X]Aceleracion @ 2017
-	//HarryPotter @ 2022-2023
-	```
-    * v3.2 (2023-6-9)
-		* Add a convar, prevent survivors from switching into new weapons and items when they open gifts
-		* Create Fake weapon_drop event
-
-    * v3.0 (2022-12-26)
-		* Request by Anzu
-		* Add health gift, survivor could increase or lose health
-
-    * v2.9 (2022-12-2)
-		* Add cvars to control glow color and range
-		* Translation Support
-
-    * v2.8
-		* Remake Code
-		* Remove rotation, and some static models
-		* Add L4D2 "The Last Stand" two melee: pitchfork、shovel
-		* Add All weapons、melee、items
-		* Add laser、firework crate、ammo、incendiary ammo、explosive_ammo
-		* Use left4dhooks instead
-		* Remove points
-		* Add glow flashing
-
-	* v1.3.6.1
-		* [Original Plugin by Aceleracion](https://forums.alliedmods.net/showthread.php?t=302731)
-</details>
+	<br/>![l4d2_gifts_1](image/l4d2_gifts_1.jpg)
 
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
@@ -143,6 +98,52 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 	* Standard Gift: l4d2_gifts.sp line 38
 	* Special Gift: l4d2_gifts.sp line 111
 	> __Note__ Recompile after modify
+
+* Apply to | 適用於
+	```
+	L4D2
+	```
+
+* <details><summary>Translation Support | 支援翻譯</summary>
+
+	```
+	English
+	繁體中文
+	简体中文
+	```
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+	```php
+	//[X]Aceleracion @ 2017
+	//HarryPotter @ 2022-2023
+	```
+    * v3.2 (2023-6-9)
+		* Add a convar, prevent survivors from switching into new weapons and items when they open gifts
+		* Create Fake weapon_drop event
+
+    * v3.0 (2022-12-26)
+		* Request by Anzu
+		* Add health gift, survivor could increase or lose health
+
+    * v2.9 (2022-12-2)
+		* Add cvars to control glow color and range
+		* Translation Support
+
+    * v2.8
+		* Remake Code
+		* Remove rotation, and some static models
+		* Add L4D2 "The Last Stand" two melee: pitchfork、shovel
+		* Add All weapons、melee、items
+		* Add laser、firework crate、ammo、incendiary ammo、explosive_ammo
+		* Use left4dhooks instead
+		* Remove points
+		* Add glow flashing
+
+	* v1.3.6.1
+		* [Original Plugin by Aceleracion](https://forums.alliedmods.net/showthread.php?t=302731)
+</details>
 
 - - - -
 # 中文說明

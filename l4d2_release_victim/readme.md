@@ -4,12 +4,10 @@ Allow to release victim
 * [Video | 影片展示](https://youtu.be/IzL-UIF6K-Y)
 
 * Image | 圖示
-	* Press Right Mouse to release the victim
-        > 右鍵釋放抓住的倖存者
-	    <br/>![l4d2_release_victim_1](image/l4d2_release_victim_1.gif)
-	* Can't use attack1 and attack2 for short time after release victim
-        > 釋放後短時間不能攻擊
-	    <br/>![l4d2_release_victim_2](image/l4d2_release_victim_2.jpg)
+	* Press Right Mouse to release the victim (右鍵釋放抓住的倖存者)
+	<br/>![l4d2_release_victim_1](image/l4d2_release_victim_1.gif)
+	* Can't use attack1 and attack2 for short time after release victim (釋放後短時間不能攻擊)
+	 <br/>![l4d2_release_victim_2](image/l4d2_release_victim_2.jpg)
 
 * Require | 必要安裝
     1. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)

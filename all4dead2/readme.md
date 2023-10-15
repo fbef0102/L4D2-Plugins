@@ -9,43 +9,9 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
     * All 4 Dead
     <br/>![all4dead2_1](image/all4dead2_1.jpg)
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
+* <details><summary>How does it work?</summary>
 
-* Translation Support | 支援翻譯
-    ```
-    English
-    繁體中文
-    简体中文
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    ```php
-    //grandwazir @ 2009-2010
-    //Harry @ 2020-2023
-    ```
-    * v3.6 (2023-3-11)
-        * Fixed translation phrase.
-
-    * v3.5 (2023-1-27)
-        * Translation Support. Thanks to wyxls.
-
-    * v3.4
-        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2719391&postcount=503)
-        * Convert All codes to new syntax.
-        * Add gamedata to support infected spawn (without being limit by director)
-        * Add All weapons、melee、items
-        * Add firework crate
-        * Add L4D2 "The Last Stand" two melee: pitchfork、shovel
-        * Spawn Witch Bride Model in c6m1 to prevent crash
-        * Add Gnome and Cola.
-        * Display menu forever
-
-    * v2.0
-        * [Original Plugin by grandwazir](https://forums.alliedmods.net/showthread.php?t=84609)
+    * Type !admin to call adm menu and you will see "ALL4DEAD" option
 </details>
 
 * Require | 必要安裝
@@ -131,8 +97,44 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
 </details>
 
-* How to use
-    * Type !admin to call adm menu and you will see "ALL4DEAD" option
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* Translation Support | 支援翻譯
+    ```
+    English
+    繁體中文
+    简体中文
+    ```
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    ```php
+    //grandwazir @ 2009-2010
+    //Harry @ 2020-2023
+    ```
+    * v3.6 (2023-3-11)
+        * Fixed translation phrase.
+
+    * v3.5 (2023-1-27)
+        * Translation Support. Thanks to wyxls.
+
+    * v3.4
+        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2719391&postcount=503)
+        * Convert All codes to new syntax.
+        * Add gamedata to support infected spawn (without being limit by director)
+        * Add All weapons、melee、items
+        * Add firework crate
+        * Add L4D2 "The Last Stand" two melee: pitchfork、shovel
+        * Spawn Witch Bride Model in c6m1 to prevent crash
+        * Add Gnome and Cola.
+        * Display menu forever
+
+    * v2.0
+        * [Original Plugin by grandwazir](https://forums.alliedmods.net/showthread.php?t=84609)
+</details>
 
 - - - -
 # 中文說明

@@ -6,13 +6,10 @@ Replaces getaway chopper by flying car in L4D2 C8 No Mercy
 <br/>None
 
 * Image | 圖示
-	* It's time to Hogwarts School
-		> 出發前往霍格華茲學院
-		<br/>![l4d_flying_car_1](image/l4d_flying_car_1.gif)
-	* Magic Car
-		> 魔法汽車
-		<br/>![l4d_flying_car_2](image/l4d_flying_car_2.jpg)
-		<br/>![l4d_flying_car_3](image/l4d_flying_car_3.jpg)
+	* Magic Car - It's time to Hogwarts School (魔法汽車 - 出發前往霍格華茲學院)
+	<br/>![l4d_flying_car_1](image/l4d_flying_car_1.gif)
+	<br/>![l4d_flying_car_2](image/l4d_flying_car_2.jpg)
+	<br/>![l4d_flying_car_3](image/l4d_flying_car_3.jpg)
 
 * Apply to | 適用於
 	```

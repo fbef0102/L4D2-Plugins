@@ -5,11 +5,9 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * Image | 圖示
 	* Idea comes from [Counter Strike Online Human Supply boxes](https://cso.fandom.com/wiki/Zombie_2:_Mutation#Supply_boxes)
-        > 靈感來自CSO 殭屍模式
-	    <br/>![l4d2_supply_woodbox_1](image/l4d2_supply_woodbox_1.jpg)
 	* They contain several types of weapons or items inside, depending on the cvar you set.
-        > 補給箱內有各式各樣的物資與武器
-	    <br/>![l4d2_supply_woodbox_2](image/l4d2_supply_woodbox_2.jpg)
+	<br/>![l4d2_supply_woodbox_1](image/l4d2_supply_woodbox_1.jpg)
+	<br/>![l4d2_supply_woodbox_2](image/l4d2_supply_woodbox_2.jpg)
 
 * Apply to | 適用於
 	```
@@ -139,16 +137,13 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 地圖上隨機出現補給箱，提供人類強力支援 (仿CSO惡靈降世 補給箱)
 
 * 原理
-    * 靈感來自CSO 殭屍模式，在這款遊戲中每隔一段時間地圖上出現補給箱，提供人類火力強大的武器
+    * 靈感來自CSO 殭屍模式，在這款遊戲中每隔一段時間地圖上出現補給箱，補給箱內有各式各樣的物資與武器
     * 地圖上隨機出現補給箱，只有人類才能看到補給箱位置
     * 用子彈或近戰武器打破這些補給箱，特感不能打破
     * 補給箱不會擋住特感與普通感染者，他們可以穿透
 	* 沒人打破補給箱，過一段時間會自動消失
 	* 沒人拿取補給箱掉落物品，過一段時間會自動消失
     * 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。問就是直升機飛行員迷路了
-
-* 功能
-  * 見下方"指令中文介紹"與"命令中文介紹"
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 

@@ -4,73 +4,35 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 * [Video | 影片展示](https://youtu.be/YkMDgmmoyts)
 
 * Image | 圖示
-	* Mark weapons and items
-        > 標記武器與物品
-        <br/>![l4d2_item_hint_1](image/l4d2_item_hint_1.jpg)
-	* Glow through wall
-        > 隔著牆壁看到光圈
-        <br/>![l4d2_item_hint_2](image/l4d2_item_hint_2.jpg)
-	* Mark place and infected
-        > 標記地點與特殊感染者
-        <br/>![l4d2_item_hint_3](image/l4d2_item_hint_3.jpg)
-	* Support hint
-        > 支援指導系統圖案提示
-        <br/>![l4d2_item_hint_4](image/l4d2_item_hint_4.jpg)
+    * Mark weapons and items (標記武器與物品)
+    <br/>![l4d2_item_hint_1](image/l4d2_item_hint_1.jpg)
+    * Glow through wall (隔著牆壁看到光圈)
+    <br/>![l4d2_item_hint_2](image/l4d2_item_hint_2.jpg)
+    * Mark place and infected (標記地點與特殊感染者)
+    <br/>![l4d2_item_hint_3](image/l4d2_item_hint_3.jpg)
+    * Support hint (支援指導系統圖案提示)
+    <br/>![l4d2_item_hint_4](image/l4d2_item_hint_4.jpg)
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
+* <details><summary>How does it work?</summary>
 
-* Translation Support | 支援翻譯
-	```
-	English
-	繁體中文
-	简体中文
-	```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-	* v2.7 (2023-3-18)
-        * Add spot maker announce
-
-	* v2.6 (2023-3-8)
-        * Translation Support
-
-	* v2.5 (2022-12-27)
-        * Add MultiColors
-
-	* v2.4 (2022-12-24)
-        * Add Command ```sm_mark```, Mark item/infected/spot for people who don't have 'Look' in vocalize menu
-
-	* v2.3 (2022-10-02)
-        * [AlliedModders Post](https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30)
-        * Add all gun weapons, melee weapons, minigun, ammo and items.
-        * Add cooldown.
-        * Add Item Glow, everyone can see the item through wall.
-        * Add sound.
-        * Fixes custom vocalizers that uses SmartLook with capitals.
-        * Add Spot Marker, using 'Look' in vocalize menu to mark the area.
-        * Add Infected Marker, using 'Look' in vocalize menu to mark the infected.
-        * Add Instructor hint, display instructor hint on Spot Marker/Item Hint
-        * Marker priority: Infected maker > Item hint > Spot marker
-
-	* v0.2
-	    * [Original Post by fdxx](https://forums.alliedmods.net/showthread.php?t=333669)
+    * 'Look' in vocalize menu, mark any weapons, items, infected and spots
+    <br/>![l4d2_item_hint_0.jpg](image/l4d2_item_hint_0.jpg)
+    * The infected is unable to mark and see the mark
+    * You can also type```!mark``` to mark anything
 </details>
 
 * Require | 必要安裝
-	1. [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)
+    1. [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)
     2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
 
 * Note
-	* Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look' item hint. Install [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511) plugin to fix.
-	* Player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer, or they can't see the hint
+    * Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look' item hint. Install [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511) plugin to fix.
+    * Player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer, or they can't see the hint
     * DO NOT modify convar ```sv_gameinstructor_disable``` this force all clients to disable their game instructors.
 
 * <details><summary>ConVar | 指令</summary>
 
-	* cfg/sourcemod/l4d2_item_hint.cfg
+    * cfg/sourcemod/l4d2_item_hint.cfg
         ```php
         /* ---Item Hint--- */
         // Cold Down Time in seconds a player can use 'Look' Item Hint again.
@@ -163,10 +125,52 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Command | 命令</summary>
 
-	* **Mark item/infected/spot**
+    * **Mark item/infected/spot**
         ```php
         sm_mark
         ```
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* Translation Support | 支援翻譯
+    ```
+    English
+    繁體中文
+    简体中文
+    ```
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v2.7 (2023-3-18)
+        * Add spot maker announce
+
+    * v2.6 (2023-3-8)
+        * Translation Support
+
+    * v2.5 (2022-12-27)
+        * Add MultiColors
+
+    * v2.4 (2022-12-24)
+        * Add Command ```sm_mark```, Mark item/infected/spot for people who don't have 'Look' in vocalize menu
+
+    * v2.3 (2022-10-02)
+        * [AlliedModders Post](https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30)
+        * Add all gun weapons, melee weapons, minigun, ammo and items.
+        * Add cooldown.
+        * Add Item Glow, everyone can see the item through wall.
+        * Add sound.
+        * Fixes custom vocalizers that uses SmartLook with capitals.
+        * Add Spot Marker, using 'Look' in vocalize menu to mark the area.
+        * Add Infected Marker, using 'Look' in vocalize menu to mark the infected.
+        * Add Instructor hint, display instructor hint on Spot Marker/Item Hint
+        * Marker priority: Infected maker > Item hint > Spot marker
+
+    * v0.2
+        * [Original Post by fdxx](https://forums.alliedmods.net/showthread.php?t=333669)
 </details>
 
 - - - -
@@ -174,18 +178,18 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 使用語音雷達"看"可以標記任何物品、武器、地點、特感
 
 * 原理
-	* 使用角色語音雷達"看"，可以標記準心指向的任何東西
-    <br/>![image](https://user-images.githubusercontent.com/12229810/203991725-dcccd931-3079-4a32-a560-796da31c44d4.png)
+    * 使用角色語音雷達"看"，可以標記準心指向的任何東西
+    <br/>![zho/l4d2_item_hint_0.jpg](image/zho/l4d2_item_hint_0.jpg)
     * 特感看不見人類標記的光圈
     * 輸入```!mark```也可以標記準心指向的任何東西
 
 * 功能
-	1. 可設置標記物品與武器的顏色、發光範圍、提示顏色、提示圖案、標記時間
-	2. 可設置標記特感的顏色、發光範圍、提示顏色、提示圖案、標記時間
-	3. 可設置是否能標記Witch
-	4. 可設置標記地點的顏色、發光範圍、提示顏色、提示圖案、標記時間
+    1. 可設置標記物品與武器的顏色、發光範圍、提示顏色、提示圖案、標記時間
+    2. 可設置標記特感的顏色、發光範圍、提示顏色、提示圖案、標記時間
+    3. 可設置是否能標記Witch
+    4. 可設置標記地點的顏色、發光範圍、提示顏色、提示圖案、標記時間
 
 * 注意事項
-	* 如果有其他插件會擋住視野的裝飾品譬如帽子插件，你可能無法使用標記功能，請安裝[Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)以修正
-	* 玩家必須啟動[遊戲指導系統](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Tutorial_%E6%95%99%E5%AD%B8%E5%8D%80/Chinese_%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87/Game#%E5%95%9F%E5%8B%95%E9%81%8A%E6%88%B2%E6%8C%87%E5%B0%8E%E7%B3%BB%E7%B5%B1)，否則玩家看不見標記提示
+    * 如果有其他插件會擋住視野的裝飾品譬如帽子插件，你可能無法使用標記功能，請安裝[Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)以修正
+    * 玩家必須啟動[遊戲指導系統](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Tutorial_%E6%95%99%E5%AD%B8%E5%8D%80/Chinese_%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87/Game#%E5%95%9F%E5%8B%95%E9%81%8A%E6%88%B2%E6%8C%87%E5%B0%8E%E7%B3%BB%E7%B5%B1)，否則玩家看不見標記提示
     * 伺服器端不要修改指令 ```sv_gameinstructor_disable```，這會關閉所有玩家的遊戲指導系統

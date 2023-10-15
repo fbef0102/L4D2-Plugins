@@ -7,27 +7,6 @@ Adjustable melee swing rate for each melee weapon.
 * Image | 圖示
 	<br/>![l4d2_melee_swing_1](image/l4d2_melee_swing_1.gif)
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    * v1.3 (2023-7-27)
-		* Fix warnings when compiling on SourceMod 1.11.
-
-    * v1.2 (2021-9-29)
-        * Fixed "m_strMapSetScriptName not found" errors. Thanks to "bald14" for reporting.
-        * Add new Convar "l4d2_melee_swing_incapacitated_multi_rate" to modify melee swinging rate multi when incapacitated (ex. Use 'Incapped Weapons Patch by Silvers' to allow using Weapons while Incapped)
-
-    * v1.1 (2021-9-3)
-        * Optimize code
-
-    * v1.0 (2021-5-30)
-        * [Initial release](https://forums.alliedmods.net/showthread.php?t=332737)
-</details>
-
 * Require | 必要安裝
  <br/>None
 
@@ -92,6 +71,27 @@ Adjustable melee swing rate for each melee weapon.
 * <details><summary>Command | 命令</summary>
 
 	None
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.3 (2023-7-27)
+		* Fix warnings when compiling on SourceMod 1.11.
+
+    * v1.2 (2021-9-29)
+        * Fixed "m_strMapSetScriptName not found" errors. Thanks to "bald14" for reporting.
+        * Add new Convar "l4d2_melee_swing_incapacitated_multi_rate" to modify melee swinging rate multi when incapacitated (ex. Use 'Incapped Weapons Patch by Silvers' to allow using Weapons while Incapped)
+
+    * v1.1 (2021-9-3)
+        * Optimize code
+
+    * v1.0 (2021-5-30)
+        * [Initial release](https://forums.alliedmods.net/showthread.php?t=332737)
 </details>
 
 - - - -
