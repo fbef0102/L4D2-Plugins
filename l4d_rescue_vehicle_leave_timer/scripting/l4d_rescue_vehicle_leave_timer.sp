@@ -1,5 +1,5 @@
 
-#define PLUGIN_VERSION 		"1.7-2023/6/20"
+#define PLUGIN_VERSION 		"1.8-2023/10/21"
 #define PLUGIN_NAME			"[L4D2] Rescue vehicle leave timer"
 #define PLUGIN_AUTHOR		"HarryPotter"
 #define PLUGIN_DES			"When rescue vehicle arrived and a timer will display how many time left for vehicle leaving. If a player is not on rescue vehicle or zone, slay him"
@@ -62,7 +62,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 #define MAX_ENTITIES		8
 
-#define GAMEDATA					"l4d_rescue_vehicle_leave_timer"
+//#define GAMEDATA					"l4d_rescue_vehicle_leave_timer"
 #define CONFIG_SPAWNS				"data/l4d_rescue_vehicle.cfg"
 
 /* =============================================================================================================== *
@@ -106,9 +106,10 @@ ConVar g_hCvarMPGameMode;
 ConVar g_hCvarAllow, g_hCvarModes, g_hCvarModesOff, g_hCvarModesTog, g_hCvarAnnounceType, g_hCvarEscapeTime, g_hCvarAirStrike;
 int g_iRoundStart, g_iPlayerSpawn, g_iEscapeTime, g_iCvarEscapeTime;
 int iSystemTime;
-bool g_bFinaleVehicleReady, g_bFinalVehicleLeaving, g_bCvarAirStrike;
+bool g_bFinalHasTrigger_Multiple, g_bFinalVehicleReady, g_bFinalVehicleLeaving, g_bCvarAirStrike;
+bool g_bClientInVehicle[MAXPLAYERS+1];
 Handle AntiPussyTimer, _AntiPussyTimer, AirstrikeTimer;
-
+/*
 Address g_pTheCount;
 int g_iOff_m_flow, g_iTheCount,
 	g_iRescueVehicle, g_iTriggerFinale;
@@ -170,12 +171,12 @@ methodmap TerrorNavArea {
 			return L4D_GetNavArea_SpawnAttributes(view_as<Address>(this));
 		}
 	}
-};
+};*/
 
 public void OnPluginStart()
 {
 	LoadTranslations("l4d_rescue_vehicle_leave_timer.phrases");
-	InitData();
+	//InitData();
 	
 	g_hCvarAllow =			CreateConVar(	"l4d_rescue_vehicle_leave_timer_allow",					"1",			"0=Plugin off, 1=Plugin on.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarModes =			CreateConVar(	"l4d_rescue_vehicle_leave_timer_modes",					"",				"Turn on the plugin in these game modes, separate by commas (no spaces). (Empty = all).", CVAR_FLAGS );
@@ -199,9 +200,8 @@ public void OnPluginStart()
 	g_hCvarEscapeTime.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarAirStrike.AddChangeHook(ConVarChanged_Cvars);
 
-	g_aEndNavArea = new ArrayList();
-	g_aRescueVehicle = new ArrayList();
-	HookEntityOutput("trigger_finale", "FinaleStart", OnFinaleStart);
+	//g_aEndNavArea = new ArrayList();
+	//g_aRescueVehicle = new ArrayList();
 }
 
 public void OnPluginEnd()
@@ -247,8 +247,8 @@ public void OnMapEnd()
 
 	ResetPlugin();
 
-	g_aEndNavArea.Clear();
-	g_iTheCount = 0;
+	//g_aEndNavArea.Clear();
+	//g_iTheCount = 0;
 }
 
 public void OnConfigsExecuted()
@@ -286,6 +286,8 @@ void IsAllowed()
 		CreateTimer(0.1, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
 		g_bCvarAllow = true;
 		HookEvents();
+
+		//HookEntityOutput("trigger_finale", "FinaleStart", OnFinaleStart);
 	}
 
 	else if( g_bCvarAllow == true && (bCvarAllow == false || bAllowMode == false || g_bValidMap == false) )
@@ -293,6 +295,8 @@ void IsAllowed()
 		ResetPlugin();
 		g_bCvarAllow = false;
 		UnhookEvents();
+
+		//UnhookEntityOutput("trigger_finale", "FinaleStart", OnFinaleStart);
 	}
 }
 
@@ -431,9 +435,11 @@ void Finale_Vehicle_Leaving(Event event, const char[] name, bool dontBroadcast)
 
 void Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast)
 {
-	g_bFinaleVehicleReady = true;
+	g_bFinalVehicleReady = true;
 
-	if(g_bIsSacrificeFinale || !IsValidEntRef(g_iTriggerFinale) || g_iEscapeTime == 0) return;
+	//if(g_bIsSacrificeFinale || !IsValidEntRef(g_iTriggerFinale) || g_iEscapeTime == 0) return;
+
+	if(!g_bFinalHasTrigger_Multiple) return;
 	
 	iSystemTime = g_iEscapeTime;
 	delete AntiPussyTimer;
@@ -493,11 +499,8 @@ Action Timer_Strike(Handle timer)
 	float radius = 1.0, pos[3];
 	for( int i = 1; i <= MaxClients; i++ ) 
 	{
-		if(IsClientInGame(i) && GetClientTeam(i) == TEAM_SURVIVORS)
+		if(IsClientInGame(i) && GetClientTeam(i) == TEAM_SURVIVORS && IsPlayerAlive(i))
 		{
-			//fade
-			if(g_bCvarAirStrike) CreateTimer(0.1, Timer_FadeOut, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
-
 			if(IsInFinalRescueVehicle(i)) continue;
 			
 			if(g_bCvarAirStrike) 
@@ -507,17 +510,20 @@ Action Timer_Strike(Handle timer)
 				pos[0] += GetRandomFloat(radius*-1, radius);
 				pos[1] += GetRandomFloat(radius*-1, radius);
 				CreateExplosion(pos);
+
+				//fade
+				CreateTimer(0.1, Timer_FadeOut, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
 			}
 
 			//slay
-			CreateTimer(2.2, Timer_SlayPlayer, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(2.0, Timer_SlayPlayer, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
 
 			//hint
 			CPrintToChat(i, "{default}[{olive}TS{default}] %T", "You have been executed for not being on rescue vehicle or zone!", i);
 		}
 	}
 
-	_AntiPussyTimer = CreateTimer(3.0, Timer_Strike);
+	_AntiPussyTimer = CreateTimer(3.5, Timer_Strike);
 	return Plugin_Continue;
 }
 
@@ -543,6 +549,7 @@ bool LoadData()
 	// Check for current map in the config
 	char sMap[64];
 	GetCurrentMap(sMap, sizeof(sMap));
+	//StringToLowerCase(sMap);
 
 	if( !hFile.JumpToKey(sMap) )
 	{
@@ -557,7 +564,7 @@ bool LoadData()
 	delete hFile;
 	return true;
 }
-
+/*
 void ResetPlugin()
 {
 	int entRef;
@@ -581,17 +588,58 @@ void ResetPlugin()
 	delete _AntiPussyTimer;
 	delete AirstrikeTimer;
 }
+*/
 
+void ResetPlugin()
+{
+	if( g_bFinalHasTrigger_Multiple )
+	{
+		int entity = -1;
+		while ((entity = FindEntityByClassname(entity, "trigger_multiple")) != -1)
+		{
+			UnhookSingleEntityOutput(entity, "OnStartTouch", OnStartTouch);
+			UnhookSingleEntityOutput(entity, "OnEndTouch", OnEndTouch);
+		}
+	}
+
+	g_iRoundStart = 0;
+	g_iPlayerSpawn = 0;
+	g_bFinalHasTrigger_Multiple = false;
+	g_bFinalVehicleReady = false;
+
+	for( int i = 1; i <= MaxClients; i++ ) 
+	{
+		g_bClientInVehicle[i] = false;
+	}
+
+	delete AntiPussyTimer;
+	delete _AntiPussyTimer;
+	delete AirstrikeTimer;
+}
+/*
 bool IsInFinalRescueVehicle(int client)
 {
 	return IsPlayerInEndArea(client);
 }
-
-stock int Entity_GetHammerId(int entity)
+*/
+bool IsInFinalRescueVehicle(int client)
 {
-	return GetEntProp(entity, Prop_Data, "m_iHammerID");
-}
+	float pos[3];
+	GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
 
+	Address area = L4D_GetNearestNavArea(pos);
+	if (area == Address_Null)
+		return false;
+
+	int spawnAttributes = L4D_GetNavArea_SpawnAttributes(area);
+
+	if (spawnAttributes & NAV_SPAWN_RESCUE_VEHICLE)
+	{
+		return g_bClientInVehicle[client];
+	}
+
+	return false;
+}
 
 void PrecacheParticle(const char[] sEffectName)
 {
@@ -712,9 +760,9 @@ void CreateExplosion(const float pos[3], const float duration = 30.0)
 Action Timer_SlayPlayer(Handle timer, int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if(client && IsClientInGame(client) && IsPlayerAlive(client))
+	if(client && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVORS && IsPlayerAlive(client))
 	{
-		SDKCall(g_hSDK_CTerrorPlayer_CleanupPlayerState, client);
+		//SDKCall(g_hSDK_CTerrorPlayer_CleanupPlayerState, client);
 		ForcePlayerSuicide(client);
 	}
 
@@ -724,7 +772,7 @@ Action Timer_SlayPlayer(Handle timer, int userid)
 /* =============================================================================================================== *
  *               sorallll [L4D2]End Safearea Telepor: https://forums.alliedmods.net/showthread.php?p=2766575			*
  *================================================================================================================ */
-
+/*
 void InitData() {
 	char buffer[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, buffer, sizeof buffer, "gamedata/%s.txt", GAMEDATA);
@@ -805,8 +853,87 @@ void InitRescueEntity()
 				GetBrushEntityVector((g_iRescueVehicle = g_aRescueVehicle.Get(0)));
 		}
 	}
+}*/
+
+void InitRescueEntity()
+{
+	if(g_bFinalHasTrigger_Multiple || g_bValidMap == false) return;
+	if(LoadData() == false) return;
+	if(g_iEscapeTime == 0) return;
+
+	int entity = FindEntityByClassname(MaxClients + 1, "trigger_finale");
+	if(entity > MaxClients && IsValidEntity(entity))
+	{
+		bool bIsSacrificeFinale = view_as<bool>(GetEntProp(entity, Prop_Data, "m_bIsSacrificeFinale"));
+		if(bIsSacrificeFinale)
+		{
+			#if DEBUG
+				LogMessage("\x05Map is sacrifice finale, disable the plugin");
+			#endif
+
+			return;
+		}
+	}
+
+	entity = MaxClients + 1;
+	while ((entity = FindEntityByClassname(entity, "trigger_multiple")) != -1)
+	{
+		if( GetEntProp(entity, Prop_Data, "m_iEntireTeam") != 2 )
+			continue;
+
+		if( !(GetEntProp(entity, Prop_Data, "m_spawnflags") & 1) )
+			continue;
+
+		#if DEBUG
+			LogMessage("trigger_multiple %d HookSingleEntityOutput", entity);
+		#endif
+
+		HookSingleEntityOutput(entity, "OnStartTouch", OnStartTouch);
+		HookSingleEntityOutput(entity, "OnEndTouch", OnEndTouch);
+		g_bFinalHasTrigger_Multiple = true;
+	}
+
+	#if DEBUG
+		if(g_bFinalHasTrigger_Multiple == false)
+		{
+			static char sMap[64];
+			GetCurrentMap(sMap, sizeof(sMap));
+			LogMessage("trigger_multiple not found in this map %s", sMap);
+		}
+	#endif
 }
 
+void OnStartTouch(const char[] output, int caller, int activator, float delay)
+{
+	if (g_bFinalVehicleReady && activator > 0 && activator <= MaxClients && IsClientInGame(activator))
+	{
+		#if DEBUG
+			PrintToChatAll("OnStartTouch, caller: %d, activator: %d", caller, activator);
+		#endif
+		g_bClientInVehicle[activator] = true;
+	}
+}
+
+void OnEndTouch(const char[] output, int caller, int activator, float delay)
+{
+	if (g_bFinalVehicleReady && activator > 0 && activator <= MaxClients && IsClientInGame(activator))
+	{
+		#if DEBUG
+			PrintToChatAll("OnEndTouch, caller: %d, activator: %d", caller, activator);
+		#endif
+		g_bClientInVehicle[activator] = false;
+	}
+}
+
+stock void StringToLowerCase(char[] input)
+{
+    for (int i = 0; i < strlen(input); i++)
+    {
+        input[i] = CharToLower(input[i]);
+    }
+}
+
+/*
 void OnFinaleStart(const char[] output, int caller, int activator, float delay) {
 	if (!g_bValidMap || IsValidEntRef(g_iTriggerFinale))
 		return;
@@ -1006,7 +1133,7 @@ bool IsPlayerInEndArea(int client, bool checkArea = true) {
 bool IsPosInArea(const float vPos[3], const float vMins[3], const float vMaxs[3]) {
 	return vMins[0] <= vPos[0] <= vMaxs[0] && vMins[1] <= vPos[1] <= vMaxs[1] && vMins[2] <= vPos[2] <= vMaxs[2];
 }
-
+*/
 
 /* =============================================================================================================== *
  *               Silvers AirStrike Plugin Edited By SupermenCJ, and Adjusted To Rescue Leav Timer Plugin			*

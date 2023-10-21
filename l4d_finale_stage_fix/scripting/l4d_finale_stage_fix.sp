@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "1.0h"
+#define PLUGIN_VERSION "1.1h-2023/10/21"
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -38,11 +38,10 @@
 */
 
 char g_sMap[64], g_sLog[PLATFORM_MAX_PATH];
-int g_iTankCount, g_iLastTime;
-bool g_bTriggerHooked, g_bLeft4Dead2, g_bLateload, g_bFinaleStarted;
+int g_iLastTime;
+bool g_bTriggerHooked, g_bLeft4Dead2, g_bFinaleStarted;
 Handle g_hTimerWave;
 ConVar g_hCvarPanicTimeout;
-#pragma unused g_iLastTime
 
 public Plugin myinfo = 
 {
@@ -56,12 +55,14 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	EngineVersion test = GetEngineVersion();
-	if (test != Engine_Left4Dead2) {
+
+	if (test != Engine_Left4Dead2) 
+	{
 		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
 		return APLRes_SilentFailure;
 	}
+
 	g_bLeft4Dead2 = true;
-	g_bLateload = late;
 	return APLRes_Success;
 }
 
@@ -86,10 +87,6 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sm_stage", 		CMD_ShowStage, 	ADMFLAG_ROOT, 	"Prints current stage index and time passed.");
 	RegAdminCmd("sm_nextstage", 	CMD_NextStage, 	ADMFLAG_ROOT, 	"Forcibly call the next stage.");
-	
-	if( g_bLateload ) {
-		g_iTankCount = GetTankCount();
-	}
 }
 
 public void OnMapStart()
@@ -103,23 +100,12 @@ public void OnMapStart()
 
 public void OnMapEnd()
 {
-	g_iTankCount = 0;
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
 	#if DEBUG
 		StringToLog("[Trigger] FinaleStart -> FALSE (OnMapEnd)");
 	#endif
 	delete g_hTimerWave;
-}
-
-public void OnClientDisconnect(int client)
-{
-	if (client && IsTank(client)) {
-		g_iTankCount--;
-		#if DEBUG
-			StringToLog("[Tanks] count is: %i", g_iTankCount);
-		#endif
-	}
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
@@ -146,6 +132,8 @@ public void OnEntityCreated(int entity, const char[] classname)
 		}
 	}
 
+	if(g_bTriggerHooked) return;
+
 	switch (classname[0])
 	{
 		case 't':
@@ -170,12 +158,13 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 Action CMD_NextStage(int client, int args)
 {
-	if (!g_bFinaleStarted) return Plugin_Handled;
-
 	if( client == 0) return Plugin_Handled;
 
 	int iOldStage, iNewStage;
-	ForceNextStage(iOldStage, iNewStage);
+	iOldStage = L4D2_GetCurrentFinaleStage();
+	L4D2_ForceNextStage();
+	iNewStage = L4D2_GetCurrentFinaleStage();
+
 	PrintToChatAll("\x05Force Next Final stage: \x04%i \x01=> \x04%i \x01by \x03%N", iOldStage, iNewStage, client);
 
 	return Plugin_Handled;
@@ -192,14 +181,13 @@ Action CMD_ShowStage(int client, int args)
 	if( g_iLastTime == 0 ) delta = 0;
 	
 	PrintToChat(client, "Stage is: %i (%i sec.)", iStage, delta);
-	PrintToChat(client, "Tank count is: %i", g_iTankCount); // L4D2_GetTankCount());
+	PrintToChat(client, "Tank count is: %i", GetTankCount());
 
 	return Plugin_Handled;
 }
 
 void Event_RoundStart(Event hEvent, const char[] name, bool dontBroadcast) 
 {
-	g_iTankCount = 0;
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
 	#if DEBUG
@@ -209,7 +197,6 @@ void Event_RoundStart(Event hEvent, const char[] name, bool dontBroadcast)
 
 void Event_RoundEnd(Event hEvent, const char[] name, bool dontBroadcast) 
 {
-	g_iTankCount = 0;
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
 	#if DEBUG
@@ -277,7 +264,7 @@ void OnFinaleOutput(const char[] output, int caller, int activator, float delay)
 		StringToLog("[Output] %s. Caller: %i, activator: %i, delay: %f", output, caller, activator, delay);
 	#endif
 
-	if(strcmp(output, "FinalePause", false) == 0 || strcmp(output, "FinaleStart", false) == 0) //Fired during the pause between each finale wave.
+	if(strcmp(output, "FinalePause", false) == 0) //Fired during the pause between each finale wave.
 	{
 		#if DEBUG
 			StringToLog("[Timer Start] %s", output);
@@ -329,9 +316,8 @@ void Event_TankSpawn(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	if(!g_bFinaleStarted) return;
 
-	g_iTankCount++;
 	#if DEBUG
-		StringToLog("[Tanks] count is: %i", g_iTankCount);
+		StringToLog("[Tanks] count is: %i", GetTankCount());
 	#endif
 
 	if(g_hTimerWave != null)
@@ -363,8 +349,10 @@ Action tmrCheckStageStuck(Handle timer)
 	PrintToChatAll("\x05[TS]\x01 Force to change next final stage.");
 	PrintToChatAll("\x04Final stage is broken\x01.... Please don't play this map next time!");
 	
-	g_hTimerWave = null;
+	g_hTimerWave = CreateTimer(g_hCvarPanicTimeout.FloatValue, tmrCheckStageStuck);
+
 	ForceNextStage();
+	
 	return Plugin_Continue;
 }
 
@@ -373,13 +361,15 @@ Action tmrCheckStageStuck(Handle timer)
 public void L4D2_OnChangeFinaleStage_Post(int finaleType, const char[] arg) // public forward
 {
 	#if DEBUG
-	int delta;
-	if( g_iLastTime != 0 )
-	{
-		delta = GetTime() - g_iLastTime;
-	}
-	g_iLastTime = GetTime();
-	StringToLog("[Stage] changed to => %i (%i sec.)", finaleType, delta);
+		int delta;
+		if( g_iLastTime != 0 )
+		{
+			delta = GetTime() - g_iLastTime;
+		}
+		g_iLastTime = GetTime();
+		StringToLog("[Stage] changed to => %i (%i sec.)", finaleType, delta);
+	#else
+		g_iLastTime = GetTime();
 	#endif
 	
 	if( g_bFinaleStarted )
@@ -405,15 +395,16 @@ public void L4D2_OnChangeFinaleStage_Post(int finaleType, const char[] arg) // p
 	}
 }
 
-stock void ForceNextStage(int iOldStage = 0, int iNewStage = 0)
+void ForceNextStage()
 {
-	iOldStage = L4D2_GetCurrentFinaleStage();
-	L4D2_ForceNextStage();
-	iNewStage = L4D2_GetCurrentFinaleStage();
-	
 	#if DEBUG
+		int iOldStage = L4D2_GetCurrentFinaleStage();
+		L4D2_ForceNextStage();
+		int iNewStage = L4D2_GetCurrentFinaleStage();
 		StringToLog("[Forced] Next stage: %i => %i", iOldStage, iNewStage);
-	#endif
+	#else
+		L4D2_ForceNextStage();
+	#endif	
 }
 
 int GetTankCount()
@@ -428,7 +419,7 @@ int GetTankCount()
 
 bool IsTank(int client)
 {
-	if( client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 3 )
+	if( client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 3 && IsPlayerAlive(client) )
 	{
 		int class = GetEntProp(client, Prop_Send, "m_zombieClass");
 		if( class == (g_bLeft4Dead2 ? 8 : 5 ))
