@@ -39,7 +39,7 @@
 
 char g_sMap[64], g_sLog[PLATFORM_MAX_PATH];
 int g_iLastTime;
-bool g_bTriggerHooked, g_bLeft4Dead2, g_bFinaleStarted;
+bool g_bTriggerHooked, g_bLeft4Dead2, g_bFinaleStarted, g_bFinaleEscape;
 Handle g_hTimerWave;
 ConVar g_hCvarPanicTimeout;
 
@@ -102,6 +102,7 @@ public void OnMapEnd()
 {
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
+	g_bFinaleEscape = false;
 	#if DEBUG
 		StringToLog("[Trigger] FinaleStart -> FALSE (OnMapEnd)");
 	#endif
@@ -110,7 +111,7 @@ public void OnMapEnd()
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-	if(g_bFinaleStarted)
+	if(g_bFinaleStarted && !g_bFinaleEscape)
 	{
 		switch (classname[0])
 		{
@@ -158,6 +159,9 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 Action CMD_NextStage(int client, int args)
 {
+	if (!g_bFinaleStarted) return Plugin_Handled;
+	if (g_bFinaleEscape) return Plugin_Handled;
+
 	if( client == 0) return Plugin_Handled;
 
 	int iOldStage, iNewStage;
@@ -190,6 +194,7 @@ void Event_RoundStart(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
+	g_bFinaleEscape = false;
 	#if DEBUG
 		StringToLog("[Trigger] FinaleStart -> FALSE (%s)", name);
 	#endif
@@ -197,8 +202,6 @@ void Event_RoundStart(Event hEvent, const char[] name, bool dontBroadcast)
 
 void Event_RoundEnd(Event hEvent, const char[] name, bool dontBroadcast) 
 {
-	g_bTriggerHooked = false;
-	g_bFinaleStarted = false;
 	#if DEBUG
 		StringToLog("[Trigger] FinaleStart -> FALSE (%s)", name);
 	#endif
@@ -230,7 +233,7 @@ void Event_RoundFreezeEnd(Event hEvent, const char[] name, bool dontBroadcast)
 
 void Finale_Escape_Start(Event event, const char[] name, bool dontBroadcast) 
 {
-	g_bFinaleStarted = false;
+	g_bFinaleEscape = true;
 	if(g_hTimerWave != null)
 	{
 		#if DEBUG
@@ -247,7 +250,7 @@ void OnFinaleEscapeStarted(const char[] output, int caller, int activator, float
 		StringToLog("[Output] %s. Caller: %i, activator: %i, delay: %f", output, caller, activator, delay);
 	#endif
 
-	g_bFinaleStarted = false;
+	g_bFinaleEscape = true;
 	if(g_hTimerWave != null)
 	{
 		#if DEBUG
@@ -293,7 +296,7 @@ void OnFinaleStart(const char[] output, int caller, int activator, float delay)
 
 void Event_PlayerSpawn(Event hEvent, const char[] name, bool dontBroadcast) 
 {
-	if(!g_bFinaleStarted) return;
+	if(!g_bFinaleStarted || g_bFinaleEscape) return;
 
 	int client = GetClientOfUserId(hEvent.GetInt("userid"));
 	if (!client || !IsClientInGame(client) || !IsFakeClient(client) || GetClientTeam(client) != 3) return;
@@ -314,7 +317,7 @@ void Event_PlayerSpawn(Event hEvent, const char[] name, bool dontBroadcast)
 
 void Event_TankSpawn(Event hEvent, const char[] name, bool dontBroadcast) 
 {
-	if(!g_bFinaleStarted) return;
+	if(!g_bFinaleStarted || g_bFinaleEscape) return;
 
 	#if DEBUG
 		StringToLog("[Tanks] count is: %i", GetTankCount());
@@ -336,6 +339,16 @@ Action tmrCheckStageStuck(Handle timer)
 	{
 		#if DEBUG
 			StringToLog("[Timer Stop] g_bFinaleStarted is false");
+		#endif
+
+		g_hTimerWave = null;
+		return Plugin_Continue;
+	}
+
+	if(g_bFinaleEscape)
+	{
+		#if DEBUG
+			StringToLog("[Timer Stop] g_bFinaleEscape is true");
 		#endif
 
 		g_hTimerWave = null;
@@ -372,7 +385,7 @@ public void L4D2_OnChangeFinaleStage_Post(int finaleType, const char[] arg) // p
 		g_iLastTime = GetTime();
 	#endif
 	
-	if( g_bFinaleStarted )
+	if( g_bFinaleStarted && !g_bFinaleEscape)
 	{
 		if( finaleType == FINALE_CUSTOM_PANIC )
 		{
