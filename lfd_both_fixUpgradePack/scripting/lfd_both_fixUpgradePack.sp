@@ -6,7 +6,7 @@
 
 #define sDENY_SOUND "buttons/button11.wav"
 int g_UpgradePackCanUseCount;
-Handle usedUpgrades[MAXPLAYERS+1];
+ArrayList usedUpgrades[MAXPLAYERS+1];
 float lastSoundTime[MAXPLAYERS+1];
 bool bUsingExplosive[MAXPLAYERS+1];
 bool bDeleteEntity[2048];
@@ -111,7 +111,7 @@ public void OnBotSwap(Event event, const char[] name, bool dontBroadcast)
 	int entity;
 	if (bot > 0 && bot <= MaxClients && player > 0 && player<= MaxClients) 
 	{
-		if(usedUpgrades[player] != INVALID_HANDLE && usedUpgrades[bot] != INVALID_HANDLE)
+		if(usedUpgrades[player] != null && usedUpgrades[bot] != null)
 		{
 			if (strcmp(name, "player_bot_replace") == 0) 
 			{
@@ -146,9 +146,8 @@ void ResetAllUsedUpgrades() {
 }
 
 void ResetUsedUpgrades(int client) {
-	if (usedUpgrades[client] != INVALID_HANDLE)
-		CloseHandle(usedUpgrades[client]);
-	usedUpgrades[client] = CreateArray();
+	delete usedUpgrades[client];
+	usedUpgrades[client] = new ArrayList();
 }
 
 public void OnEntityCreated(int entity, const char[] classname) {
