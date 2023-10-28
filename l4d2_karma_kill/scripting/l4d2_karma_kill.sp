@@ -763,6 +763,8 @@ public Action Timer_CheckVictim(Handle timer, DataPack DP)
 			AnnounceKarma(lastKarma, client, type, false, false, victimTimer[client].timer, hIgnoreTimer);
 			victimTimer[client].timer = INVALID_HANDLE;
 			victimTimer[client].dp    = null;
+
+			delete aEntities;
 			return Plugin_Stop;
 		}
 		else
