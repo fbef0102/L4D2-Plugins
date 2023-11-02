@@ -803,6 +803,7 @@ public Action Timer_CheckVictim(Handle timer, DataPack DP)
 			}
 		}
 	}
+	delete aEntities;
 
 	return Plugin_Continue;
 }
