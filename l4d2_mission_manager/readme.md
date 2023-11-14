@@ -11,46 +11,8 @@ Mission manager for L4D2, provide information about map orders for other plugins
 * Image | 圖示
 <br/>None
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* Translation Support | 支援翻譯
-	```
-	English
-	繁體中文
-	简体中文
-	```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    * v1.0.4 (2023-6-20)
-        * Require lef4dhooks v1.33 or above
-
-    * v1.0.3 (2023-4-18)
-        * Optimize code
-
-    * v1.0.2 (2023-4-17)
-        * Get correct gamemode
-
-	* v1.0.1 (2023-4-16)
-        * Check if mission/map name translation phrase exists to prevent error
-        * Do not check some missions.cache files if there are no corresponding map.
-        * Separate error log, save error into logs\l4d2_mission_manager.log.
-        * Reduce some annoying error
-        * Replace Gamedata with left4dhooks
-
-	* v1.0.0
-        * [Original Plugin by rikka0w0](https://github.com/rikka0w0/l4d2_mission_manager)
-</details>
-
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-
-* Related Plugin | 相關插件
-	1. [sm_l4d_mapchanger](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Map_%E9%97%9C%E5%8D%A1/sm_l4d_mapchanger): Force change to next mission when current mission(final stage) end + Force change to next level when survivors wipe out + Vote to next map (Apply to Versus/Survival/Scavenge).
-        > 最後一關結束時自動換圖 + 滅團N次後自動切換到下一個關卡 + 玩家投票下一張地圖 (生存/對抗/清道夫模式也適用)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -72,6 +34,122 @@ Mission manager for L4D2, provide information about map orders for other plugins
 
 * Function & API Usage & Notes & FAQ
     * For better description, read [this](https://github.com/rikka0w0/l4d2_mission_manager#function-description)
+
+* <details><summary>API | 串接</summary>
+
+	```c++
+    /**
+    * @return	Return LMM_GAMEMODE_UNKNOWN (-1) if gamemode is unknown
+    */
+    native LMM_GAMEMODE LMM_GetCurrentGameMode();
+
+    /**
+    * @return	Return LMM_GAMEMODE_UNKNOWN (-1) if gamemode string is invalid or gamemode is unknown
+    */
+    native LMM_GAMEMODE LMM_StringToGamemode(const char[] name);
+
+    native int LMM_GamemodeToString(LMM_GAMEMODE gamemode, char[] name, int length);
+
+    native int LMM_GetNumberOfMissions(LMM_GAMEMODE gamemode);
+    native int LMM_FindMissionIndexByName(LMM_GAMEMODE gamemode, const char[] missionName);
+    native int LMM_GetMissionName(LMM_GAMEMODE gamemode, int missionIndex, char[] missionName, int length);
+    
+    /**
+	* Attempt to localize the mission name
+    * @return	return 1 for success, 0 for no localization and -1 for error.
+    */
+    native int LMM_GetMissionLocalizedName(LMM_GAMEMODE gamemode, int missionIndex, char[] missionName, int length, int client);
+
+    native int LMM_GetNumberOfMaps(LMM_GAMEMODE gamemode, int missionIndex);
+    native int LMM_FindMapIndexByName(LMM_GAMEMODE gamemode, int& missionIndex, const char[] mapName);
+    native int LMM_GetMapName(LMM_GAMEMODE gamemode, int missionIndex, int mapIndex, char[] mapName, int length);
+    
+    /** 
+	* Attempt to localize the map name, return 1 for success, 0 for no localization and -1 for error. 
+	* mapName will be converted to lower case internally. Entries in maps.phrases.txt can only have lower case English letters and numbers
+    */
+    native int LMM_GetMapLocalizedName(LMM_GAMEMODE gamemode, int missionIndex, int mapIndex, char[] mapName, int length, int client);
+    
+    /**
+	* Get the unique ID of the map, which contains the information of both missionIndex and mapIndex
+    */
+    native int LMM_GetMapUniqueID(LMM_GAMEMODE gamemode, int missionIndex, int mapIndex);
+    
+    /**
+	* Decode the unique ID of the map, and return both missionIndex and mapIndex
+    */
+    native int LMM_DecodeMapUniqueID(LMM_GAMEMODE gamemode, int& missionIndex, int mapUID);
+    
+    /**
+	* Get the number of map unique id, also the number of maps for the given gamemode
+    */
+    native int LMM_GetMapUniqueIDCount(LMM_GAMEMODE gamemode);
+
+    native int LMM_GetNumberOfInvalidMissions();
+    native int LMM_GetInvalidMissionName(int missionIndex, char[] mapName, int length);
+
+    /**
+    * This forward is called during the OnPluginStart() phase.
+    * Do NOT use any LMM APIs in OnPluginStart, due to the chance that your plugin is loaded prior to LMM.
+    * LMM APIs become available in OnAllPluginsLoaded().
+    */
+    forward void OnLMMUpdateList();
+
+    /**
+    * This can only work while a client is ingame.
+    * To call while no clients are not in game requires a signiture @CDirector
+    *   
+    * Call this before you force change level to close HSCRIPT.
+    * Any other way of level changing is fine e.g. level transition L4D "callvote missionchange" ect.
+    */
+    stock void ShutDownScriptedMode()
+	```
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Translation Support | 支援翻譯</summary>
+
+	```
+	English
+	繁體中文
+	简体中文
+	```
+</details>
+
+* <details><summary>Related Plugin | 相關插件</summary>
+
+	1. [sm_l4d_mapchanger](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Map_%E9%97%9C%E5%8D%A1/sm_l4d_mapchanger): Force change to next mission when current mission(final stage) end + Force change to next level when survivors wipe out + Vote to next map (Apply to Versus/Survival/Scavenge).
+        > 最後一關結束時自動換圖 + 滅團N次後自動切換到下一個關卡 + 玩家投票下一張地圖 (生存/對抗/清道夫模式也適用)
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.0h (2023-11-15)
+        * Fix memory leak
+
+    * v1.0.4 (2023-6-20)
+        * Require lef4dhooks v1.33 or above
+
+    * v1.0.3 (2023-4-18)
+        * Optimize code
+
+    * v1.0.2 (2023-4-17)
+        * Get correct gamemode
+
+	* v1.0.1 (2023-4-16)
+        * Check if mission/map name translation phrase exists to prevent error
+        * Do not check some missions.cache files if there are no corresponding map.
+        * Separate error log, save error into logs\l4d2_mission_manager.log.
+        * Reduce some annoying error
+        * Replace Gamedata with left4dhooks
+
+	* v1.0.0
+        * [Original Plugin by rikka0w0](https://github.com/rikka0w0/l4d2_mission_manager)
+</details>
 
 - - - -
 # 中文說明

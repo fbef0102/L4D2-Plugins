@@ -10,20 +10,20 @@ public Plugin myinfo = {
 	name = "L4D2 Mission Manager",
 	author = "Rikka0w0, Harry",
 	description = "Mission manager for L4D2, provide information about map orders for other plugins",
-	version = "v1.0.4-2023/6/20",
-	url = "http://forums.alliedmods.net/showthread.php?t=308725"
+	version = "v1.0h - 2023/11/15",
+	url = "https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_mission_manager"
 }
 
 
 ConVar mp_gamemode;
-char sFile[128];
+char g_sFile[128];
 StringMap g_hMissionsMap;
 
 public void OnPluginStart(){
 
 	mp_gamemode = FindConVar("mp_gamemode");
 
-	BuildPath(Path_SM, sFile, PLATFORM_MAX_PATH, "/logs/l4d2_mission_manager.log");
+	BuildPath(Path_SM, g_sFile, PLATFORM_MAX_PATH, "/logs/l4d2_mission_manager.log");
 	g_hMissionsMap = CreateTrie();
 
 	CacheMissions();
@@ -304,12 +304,18 @@ ArrayList g_hInt_Entries[COUNT_LMM_GAMEMODE];		// g_hInt_CoopEntries.Length = Nu
 ArrayList g_hStr_Maps[COUNT_LMM_GAMEMODE];			// The value of nth element in g_hInt_CoopEntries is the offset of nth mission's first map 
 
 void LMM_InitLists() {
+	delete g_hStr_InvalidMissionNames;
 	g_hStr_InvalidMissionNames = new ArrayList(LEN_MISSION_NAME);
 
 	for (int i=0; i<COUNT_LMM_GAMEMODE; i++) {
+		delete g_hStr_MissionNames[i];
 		g_hStr_MissionNames[i] = new ArrayList(LEN_MISSION_NAME);
+
+		delete g_hInt_Entries[i];
 		g_hInt_Entries[i] = new ArrayList(1);
 		g_hInt_Entries[i].Push(0);
+
+		delete g_hStr_Maps[i];
 		g_hStr_Maps[i] = new ArrayList(LEN_MAP_FILENAME);
 	}
 }
@@ -906,7 +912,9 @@ void ParseMissions() {
 		parser.OnLeaveSection = MissionParser_EndSection;
 		parser.OnKeyValue = MissionParser_KeyValue;
 		
+		delete g_hIntMap_Index;
 		g_hIntMap_Index = new ArrayList(1);
+		delete g_hStrMap_FileName;
 		g_hStrMap_FileName = new ArrayList(LEN_MAP_FILENAME);
 	
 		char missionCache[PLATFORM_MAX_PATH];
@@ -932,6 +940,7 @@ void ParseMissions() {
 		delete g_hIntMap_Index;
 		delete g_hStrMap_FileName;
 		delete dirList;	
+		delete parser;
 	}
 }
 
@@ -943,7 +952,10 @@ void LMM_NewLocalizedList(LMM_GAMEMODE gamemode) {
 	ArrayList missionLocalizedList = new ArrayList(1, LMM_GetNumberOfMissions(gamemode));
 	ArrayList mapLocalizedList = new ArrayList(1, LMM_GetMapList(gamemode).Length);
 	
+	delete g_hBool_MissionNameLocalized[view_as<int>(gamemode)];
 	g_hBool_MissionNameLocalized[view_as<int>(gamemode)] = missionLocalizedList;
+
+	delete g_hBool_MapNameLocalized[view_as<int>(gamemode)];
 	g_hBool_MapNameLocalized[view_as<int>(gamemode)] = mapLocalizedList;
 	
 	for (int i=0; i<missionLocalizedList.Length; i++) {
@@ -1091,6 +1103,8 @@ void ParseLocalization(LMM_GAMEMODE gamemode) {
 	if (err != SMCError_Okay) {
 		SaveMessage("An error occured while parsing maps.phrases.txt(English), code:%d", err);
 	}
+
+	delete parser;
 }
 
 /* ========== Utils ========== */
@@ -1132,7 +1146,7 @@ void SaveMessage(const char[] message, any ...)
 
 	Format(DebugBuff, sizeof(DebugBuff), "[%s] %s", time, DebugBuff);
 		
-	Handle fileHandle = OpenFile(sFile, "a");  /* Append */
+	Handle fileHandle = OpenFile(g_sFile, "a");  /* Append */
 	if(fileHandle == null)
 	{
 		return;
