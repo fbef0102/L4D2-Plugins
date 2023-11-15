@@ -9,50 +9,8 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 	<br/>![l4d2_supply_woodbox_1](image/l4d2_supply_woodbox_1.jpg)
 	<br/>![l4d2_supply_woodbox_2](image/l4d2_supply_woodbox_2.jpg)
 
-* Apply to | 適用於
-	```
-	L4D2
-	```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-	* v1.4 (2023-7-26)
-        * Add hunting Rifle
-
-	* v1.3 (2022-9-12)
-        * Remove gascan,  propanecanister, oxygentank if no one picks up
-
-	* v1.2 (2022-8-13)
-        * Optimize code.
-
-	* v1.1 (2022-3-29)
-        * Support Survival Mode.
-
-	* v1.0 (2022-1-11)
-        * [Initial release](https://forums.alliedmods.net/showthread.php?t=335862)
-        * Add convars to turn off this plugin
-        * Random box model available
-        * Item chance to drop Weapons/Melee/Medic/Throwable/Others
-        * Custom sound
-        * Detect custom melee and spawn
-        * Translation Support
-        * Supply box life time
-        * Remove item if no one picks up after it drops from box after a while
-        * Compatibility support for SourceMod 1.11. Fixed various warnings.
-
-	* v0.0
-        * Credit: [Lux](https://forums.alliedmods.net/member.php?u=257841) - original code
-</details>
-
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-
-* Related Plugin | 相關插件
-	1. [l4d_cso_zombie_Regeneration](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_cso_zombie_Regeneration): The zombies have grown stronger, now they are able to heal their injuries by standing still without receiving any damage.
-	    > 殭屍變得更強大，他們只要站著不動便可以自癒傷勢　(仿CSO惡靈降世 殭屍技能)
-
-	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
-	    > 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
 
 * <details><summary>ConVar</summary>
 
@@ -132,6 +90,60 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 		```
 </details>
 
+* Apply to | 適用於
+	```
+	L4D2
+	```
+
+* <details><summary>Translation Support | 支援翻譯</summary>
+
+    ```
+    English
+    繁體中文
+    简体中文
+    Русский
+    ```
+</details>
+
+* <details><summary>Related Plugin | 相關插件</summary>
+
+	1. [l4d_cso_zombie_Regeneration](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_cso_zombie_Regeneration): The zombies have grown stronger, now they are able to heal their injuries by standing still without receiving any damage.
+	    > 殭屍變得更強大，他們只要站著不動便可以自癒傷勢　(仿CSO惡靈降世 殭屍技能)
+
+	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
+	    > 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+	* v1.4 (2023-7-26)
+        * Add hunting Rifle
+
+	* v1.3 (2022-9-12)
+        * Remove gascan,  propanecanister, oxygentank if no one picks up
+
+	* v1.2 (2022-8-13)
+        * Optimize code.
+
+	* v1.1 (2022-3-29)
+        * Support Survival Mode.
+
+	* v1.0 (2022-1-11)
+        * [Initial release](https://forums.alliedmods.net/showthread.php?t=335862)
+        * Add convars to turn off this plugin
+        * Random box model available
+        * Item chance to drop Weapons/Melee/Medic/Throwable/Others
+        * Custom sound
+        * Detect custom melee and spawn
+        * Translation Support
+        * Supply box life time
+        * Remove item if no one picks up after it drops from box after a while
+        * Compatibility support for SourceMod 1.11. Fixed various warnings.
+
+	* v0.0
+        * Credit: [Lux](https://forums.alliedmods.net/member.php?u=257841) - original code
+</details>
+
 - - - -
 # 中文說明
 地圖上隨機出現補給箱，提供人類強力支援 (仿CSO惡靈降世 補給箱)
@@ -141,9 +153,7 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
     * 地圖上隨機出現補給箱，只有人類才能看到補給箱位置
     * 用子彈或近戰武器打破這些補給箱，特感不能打破
     * 補給箱不會擋住特感與普通感染者，他們可以穿透
-	* 沒人打破補給箱，過一段時間會自動消失
-	* 沒人拿取補給箱掉落物品，過一段時間會自動消失
-    * 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。問就是直升機飛行員迷路了
+    * 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。認真你就輸了，問就是飛行員迷路
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 

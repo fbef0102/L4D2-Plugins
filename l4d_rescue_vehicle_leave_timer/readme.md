@@ -71,6 +71,16 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 	L4D2
 	```
 
+* <details><summary>Translation Support | 支援翻譯</summary>
+
+    ```
+    English
+    繁體中文
+    简体中文
+    Русский
+    ```
+</details>
+
 * <details><summary>Similar Plugin | 相似插件</summary>
 
 	1. [l4d_elevator_getin_timer](https://github.com/fbef0102/Game-Private_Plugin/blob/main/Plugin_%E6%8F%92%E4%BB%B6/Anti_Griefer_%E9%98%B2%E6%83%A1%E6%84%8F%E8%B7%AF%E4%BA%BA/l4d_elevator_getin_timer): When someone presses the elevator button or enters the CEDA Trailer, a timer will display how many time left. If a player is not inside the evelator/CEDA Trailer, slay him
