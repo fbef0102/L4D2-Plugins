@@ -3006,7 +3006,7 @@ stock HandleSkeetAssist(attacker, victim)
 }
 
 // real skeet
-stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
+stock HandleSkeet( attacker, victim, strWeaponType eWeaponType,
 	shots = 1, assist = -1, bool:isHunter = true )
 {
 	// report?
@@ -3048,35 +3048,35 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 		}
 		else if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(victim) )
 		{
-			if(WeaponType == WPTYPE_MELEE)
+			if(eWeaponType == WPTYPE_MELEE)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_5_H", attacker, victim);
 				else
 					CPrintToChatAll("%t", "HandleSkeet_5_J", attacker, victim);
 			}
-			else if(WeaponType == WPTYPE_SNIPER)
+			else if(eWeaponType == WPTYPE_SNIPER)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_6_H", attacker, victim);
 				else
 					CPrintToChatAll("%t", "HandleSkeet_6_J", attacker, victim);
 			}
-			else if(WeaponType == WPTYPE_MAGNUM)
+			else if(eWeaponType == WPTYPE_MAGNUM)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_M_H", attacker, victim);
 				else
 					CPrintToChatAll("%t", "HandleSkeet_M_J", attacker, victim);
 			}
-			else if(WeaponType == WPTYPE_GL)
+			else if(eWeaponType == WPTYPE_GL)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_7_H", attacker, victim);
 				else
 					CPrintToChatAll("%t", "HandleSkeet_7_J", attacker, victim);
 			}
-			else if(WeaponType == WPTYPE_SHOTGUN)
+			else if(eWeaponType == WPTYPE_SHOTGUN)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_S_H", attacker, victim);
@@ -3115,35 +3115,35 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 				);
 			*/
 			
-			if(WeaponType == WPTYPE_MELEE)
+			if(eWeaponType == WPTYPE_MELEE)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_10_H", attacker, "Hunter");
 				else
 					CPrintToChatAll("%t", "HandleSkeet_10_J", attacker, "Jockey");
 			}
-			else if(WeaponType == WPTYPE_SNIPER)
+			else if(eWeaponType == WPTYPE_SNIPER)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_11_H", attacker, "Hunter");
 				else
 					CPrintToChatAll("%t", "HandleSkeet_11_J", attacker, "Jockey");
 			}
-			else if(WeaponType == WPTYPE_MAGNUM)
+			else if(eWeaponType == WPTYPE_MAGNUM)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_M_S_H", attacker, "Hunter");
 				else
 					CPrintToChatAll("%t", "HandleSkeet_M_S_J", attacker, "Jockey");
 			}
-			else if(WeaponType == WPTYPE_GL)
+			else if(eWeaponType == WPTYPE_GL)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_12_H", attacker, "Hunter");
 				else
 					CPrintToChatAll("%t", "HandleSkeet_12_J", attacker, "Jockey");
 			}
-			else if(WeaponType == WPTYPE_SHOTGUN)
+			else if(eWeaponType == WPTYPE_SHOTGUN)
 			{
 				if(isHunter)
 					CPrintToChatAll("%t", "HandleSkeet_S_S_H", attacker, "Hunter");
@@ -3173,7 +3173,7 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 	// PrintToConsoleAll("%d skeet %d", attacker, victim);
 	
 	// call forward
-	if ( WeaponType == WPTYPE_SNIPER )
+	if ( eWeaponType == WPTYPE_SNIPER )
 	{
 		Call_StartForward(g_hForwardSkeetSniper);
 		Call_PushCell(attacker);
@@ -3181,7 +3181,7 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if ( WeaponType == WPTYPE_GL )
+	else if ( eWeaponType == WPTYPE_GL )
 	{
 		Call_StartForward(g_hForwardSkeetGL);
 		Call_PushCell(attacker);
@@ -3189,7 +3189,7 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if ( WeaponType == WPTYPE_MELEE )
+	else if ( eWeaponType == WPTYPE_MELEE )
 	{
 		Call_StartForward(g_hForwardSkeetMelee);
 		Call_PushCell(attacker);
@@ -3197,7 +3197,7 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if(WeaponType == WPTYPE_MAGNUM)
+	else if(eWeaponType == WPTYPE_MAGNUM)
 	{
 		Call_StartForward(g_hForwardSkeetMagnum);
 		Call_PushCell(attacker);
@@ -3205,7 +3205,7 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if(WeaponType == WPTYPE_SHOTGUN)
+	else if(eWeaponType == WPTYPE_SHOTGUN)
 	{
 		Call_StartForward(g_hForwardSkeetShotGun);
 		Call_PushCell(attacker);
@@ -3225,7 +3225,7 @@ stock HandleSkeet( attacker, victim, strWeaponType WeaponType,
 
 // hurt skeet / non-skeet
 //	NOTE: bSniper not set yet, do this
-stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeaponType WeaponType,
+stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeaponType eWeaponType,
 	shots = 1, bool:isHunter = true )
 {
 	// report?
@@ -3237,28 +3237,28 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 			{
 				// CPrintToChatAll( "{lightgreen}[提示] {olive}%N{default} 在飛撲時被打死 (傷害 {lightgreen}%i{default}).%s", victim, damage, (bOverKill) ? "(可能會觸發空中擊殺)" : "" );
 				
-				if(WeaponType == WPTYPE_MELEE)
+				if(eWeaponType == WPTYPE_MELEE)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_1_H", attacker, victim, damage);
 					else
 						CPrintToChatAll("%t", "HandleNonSkeet_1_J", attacker, victim, damage);
 				}
-				else if(WeaponType == WPTYPE_SNIPER)
+				else if(eWeaponType == WPTYPE_SNIPER)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_SN_H", attacker, victim, damage);
 					else
 						CPrintToChatAll("%t", "HandleNonSkeet_SN_J", attacker, victim, damage);
 				}
-				else if(WeaponType == WPTYPE_MAGNUM)
+				else if(eWeaponType == WPTYPE_MAGNUM)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_M_H", attacker, victim, damage);
 					else
 						CPrintToChatAll("%t", "HandleNonSkeet_M_J", attacker, victim, damage);
 				}
-				else if(WeaponType == WPTYPE_SHOTGUN)
+				else if(eWeaponType == WPTYPE_SHOTGUN)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_S_H", attacker, victim, damage);
@@ -3284,28 +3284,28 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 			{
 				// CPrintToChatAll( "{lightgreen}[提示] {default}Hunter 在飛撲時被打死 (傷害 {lightgreen}%i{default}).%s", damage, (bOverKill) ? "(可能會觸發空中擊殺)" : "" );
 				
-				if(WeaponType == WPTYPE_MELEE)
+				if(eWeaponType == WPTYPE_MELEE)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_4_H", attacker, "Hunter", damage);
 					else
 						CPrintToChatAll("%t", "HandleNonSkeet_4_J", attacker, "Jockey", damage);
 				}
-				else if(WeaponType == WPTYPE_SNIPER)
+				else if(eWeaponType == WPTYPE_SNIPER)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_SN_S_H", attacker, "Hunter", damage);
 					else
 						CPrintToChatAll("%t", "HandleNonSkeet_SN_S_J", attacker, "Hunter", damage);
 				}
-				else if(WeaponType == WPTYPE_MAGNUM)
+				else if(eWeaponType == WPTYPE_MAGNUM)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_M_S_H", attacker, "Hunter", damage);
 					else
 						CPrintToChatAll("%t", "HandleNonSkeet_M_S_J", attacker, "Hunter", damage);
 				}
-				else if(WeaponType == WPTYPE_SHOTGUN)
+				else if(eWeaponType == WPTYPE_SHOTGUN)
 				{
 					if(isHunter)
 						CPrintToChatAll("%t", "HandleNonSkeet_S_S_H", attacker, "Hunter", damage);
@@ -3335,7 +3335,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 	// PrintToConsoleAll("%d non-skeet %d", attacker, victim);
 	
 	// call forward
-	if ( WeaponType == WPTYPE_SNIPER )
+	if ( eWeaponType == WPTYPE_SNIPER )
 	{
 		Call_StartForward(g_hForwardSkeetSniperHurt);
 		Call_PushCell(attacker);
@@ -3345,7 +3345,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if ( WeaponType == WPTYPE_MELEE )
+	else if ( eWeaponType == WPTYPE_MELEE )
 	{
 		Call_StartForward(g_hForwardSkeetMeleeHurt);
 		Call_PushCell(attacker);
@@ -3355,7 +3355,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if ( WeaponType == WPTYPE_MAGNUM )
+	else if ( eWeaponType == WPTYPE_MAGNUM )
 	{
 		Call_StartForward(g_hForwardSkeetMagnumHurt);
 		Call_PushCell(attacker);
@@ -3365,7 +3365,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_Finish();
 	}
-	else if ( WeaponType == WPTYPE_SHOTGUN )
+	else if ( eWeaponType == WPTYPE_SHOTGUN )
 	{
 		Call_StartForward(g_hForwardSkeetShotGunHurt);
 		Call_PushCell(attacker);
