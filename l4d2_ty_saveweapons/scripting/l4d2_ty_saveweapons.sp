@@ -12,7 +12,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
-#define PLUGIN_VERSION			"6.0-2023/6/25"
+#define PLUGIN_VERSION			"6.1-2023/11/27"
 #define DEBUG 0
 
 public Plugin myinfo =
@@ -41,6 +41,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 
 #define	MAX_WEAPONS2		29
+#define GAMEDATA	"l4d2_ty_saveweapons"
 
 static char g_sWeaponModels2[MAX_WEAPONS2][] =
 {
@@ -131,8 +132,21 @@ int g_iReviveTempHealth = 30, g_iSurvivorMaxInc;
 static char g_sMeleeClass[16][32];
 static int g_iMeleeClassCount;
 
+int
+	g_iOff_m_hHiddenWeapon;
+
 public void OnPluginStart()
 {
+	GameData hGameData = new GameData(GAMEDATA);
+	if (!hGameData)
+		SetFailState("Failed to load \"%s.txt\" gamedata.", GAMEDATA);
+
+	g_iOff_m_hHiddenWeapon = hGameData.GetOffset("CTerrorPlayer::OnIncapacitatedAsSurvivor::m_hHiddenWeapon");
+	if (g_iOff_m_hHiddenWeapon == -1)
+		SetFailState("Failed to find offset: CTerrorPlayer::OnIncapacitatedAsSurvivor::m_hHiddenWeapon");
+	
+	delete hGameData;
+
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 
 	g_hFullHealth = 	CreateConVar("l4d2_ty_saveweapons_health", "0", "If 1, restore 100 full health when end of chapter.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -255,12 +269,12 @@ public void OnConfigsExecuted()
 	IsAllowed();
 }
 
-public void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	IsAllowed();
 }
 
-public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	GetCvars();
 }
@@ -310,7 +324,7 @@ void CheckGameMode()
 	}
 }
 
-public void OnGamemode(const char[] output, int caller, int activator, float delay)
+void OnGamemode(const char[] output, int caller, int activator, float delay)
 {
 	if( strcmp(output, "OnCoop") == 0 )
 		g_iCurrentMode = 1;
@@ -326,11 +340,11 @@ public void OnClientPutInServer(int client)
 {
 	if (g_iCurrentMode == 1 && IsClientInGame(client) && g_bGiveWeaponBlock == false)
 	{
-		CreateTimer(0.5, HxTimerRestore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+		CreateTimer(0.4, HxTimerRestore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
 
-public Action HxTimerRestore(Handle timer, int userid)
+Action HxTimerRestore(Handle timer, int userid)
 {
 	if(g_bGiveWeaponBlock) return Plugin_Stop;
 
@@ -371,7 +385,7 @@ public Action HxTimerRestore(Handle timer, int userid)
 
 
 int g_iRoundStart, g_iPlayerSpawn;
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	for( int i = 1; i <= MaxClients; i++) g_bGiven[i] = false;
 	g_bGiveWeaponBlock = false;
@@ -381,14 +395,14 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 	g_iRoundStart = 1;
 }
 
-public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
 		CreateTimer(0.5, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
 	g_iPlayerSpawn = 1;
 }
 
-public Action tmrStart(Handle timer)
+Action tmrStart(Handle timer)
 {
 	ResetPlugin();
 
@@ -399,7 +413,7 @@ public Action tmrStart(Handle timer)
 		{
 			if (IsClientInGame(i))
 			{
-				CreateTimer(0.2, HxTimerRestore, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+				CreateTimer(0.1, HxTimerRestore, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
 		}
 	}
@@ -410,7 +424,7 @@ public Action tmrStart(Handle timer)
 	return Plugin_Continue;
 }
 
-public Action Timer_PlayerLeftStart(Handle Timer)
+Action Timer_PlayerLeftStart(Handle Timer)
 {
 	if (L4D_HasAnySurvivorLeftSafeArea())
 	{
@@ -427,7 +441,7 @@ public Action Timer_PlayerLeftStart(Handle Timer)
 	return Plugin_Continue; 
 }
 
-public Action Timer_CountDown(Handle timer)
+Action Timer_CountDown(Handle timer)
 {
 	if(g_iCountDownTime <= 0) 
 	{
@@ -439,13 +453,13 @@ public Action Timer_CountDown(Handle timer)
 	return Plugin_Continue;
 }
 
-public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	ResetPlugin();
 	ResetTimer();
 }
 
-public void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
+void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bMapTransition = true;
 	if (g_iCurrentMode == 1)
@@ -485,24 +499,25 @@ public void Event_MapTransition(Event event, const char[] name, bool dontBroadca
 				}
 			}
 		}
-		else
+		
+		for (int client = 1; client <= MaxClients; client++)
 		{
-			for (int client = 1; client <= MaxClients; client++)
+			if (!IsClientInGame(client)) continue;
+
+			if (GetClientTeam(client) == 1 && !IsFakeClient(client))
 			{
-				if (IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
+				if (IsClientIdle(client))
 				{
-					if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1)
-					{
-						CreateTimer(0.1, Timer_AdjustHealth, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE); //fixed missing second slot weapon
-					}
+					L4D_TakeOverBot(client);
 				}
 			}
 		}
+
 		CreateTimer(1.5, Timer_Event_MapTransition, _, TIMER_FLAG_NO_MAPCHANGE); //delay is necessary for waiting all afk human players to take over bot or slot 2 throwable weapon is gone
 	}
 }
 
-public Action Timer_Event_MapTransition(Handle timer)
+Action Timer_Event_MapTransition(Handle timer)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -518,7 +533,7 @@ public Action Timer_Event_MapTransition(Handle timer)
 	return Plugin_Continue;
 }
 
-public void evtBotReplacedPlayer(Event event, const char[] name, bool dontBroadcast) 
+void evtBotReplacedPlayer(Event event, const char[] name, bool dontBroadcast) 
 {
 	int bot = GetClientOfUserId(event.GetInt("bot"));
 	if(bot && IsClientInGame(bot) && GetClientTeam(bot) == 2 && IsPlayerAlive(bot)) g_bGiven[bot] = true;
@@ -712,7 +727,16 @@ void HxSaveC(int client)
 	}
 	
 	iSlot0 = GetPlayerWeaponSlot(client, 0);
-	iSlot1 = GetPlayerWeaponSlot(client, 1);
+
+	if(L4D_IsPlayerIncapacitated(client))
+	{
+		iSlot1 = GetEntDataEnt2(client, g_iOff_m_hHiddenWeapon);
+	}
+	if(iSlot1 <= MaxClients || !IsValidEntity(iSlot1))
+	{
+		iSlot1 = GetPlayerWeaponSlot(client, 1);
+	}
+
 	iSlot2 = GetPlayerWeaponSlot(client, 2);
 	iSlot3 = GetPlayerWeaponSlot(client, 3);
 	iSlot4 = GetPlayerWeaponSlot(client, 4);
@@ -950,8 +974,8 @@ void HxCleaningAll()
 		HxCleaning(i);
 	}
 }
-
-public Action Timer_AdjustHealth(Handle timer, int UserId)
+/*
+Action Timer_AdjustHealth(Handle timer, int UserId)
 {
 	int client = GetClientOfUserId(UserId);
 	if( client && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client) && GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1 )
@@ -977,7 +1001,7 @@ public Action Timer_AdjustHealth(Handle timer, int UserId)
 	}
 	return Plugin_Continue;
 }
-
+*/
 bool HasIdlePlayer(int bot)
 {
 	if(HasEntProp(bot, Prop_Send, "m_humanSpectatorUserID"))
@@ -1014,4 +1038,20 @@ void GetMeleeClasses()
 			LogMessage( "[%s] Function::GetMeleeClasses - Getting melee classes: %s", sMap, g_sMeleeClass[i]);
 		#endif
 	}	
+}
+
+bool IsClientIdle(int client)
+{
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == 1 && IsPlayerAlive(i))
+		{
+			if(HasEntProp(i, Prop_Send, "m_humanSpectatorUserID"))
+			{
+				if(GetClientOfUserId(GetEntProp(i, Prop_Send, "m_humanSpectatorUserID")) == client)
+						return true;
+			}
+		}
+	}
+	return false;
 }
