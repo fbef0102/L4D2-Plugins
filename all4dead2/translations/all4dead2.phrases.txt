@@ -637,13 +637,6 @@
 		"zho"			"{green}%s{lightgreen} 已經生成"
 		"es"            "{green}%s{lightgreen} has sido invocado"
 	}
-	"auto"
-	{
-		"en"			"auto"
-		"chi"			"自动"
-		"zho"			"自動"
-		"es"            "auto"
-	}
 	"Automatic placement of spawned infected has been enabled"
 	{
 		"en"			"{lightgreen} Automatic placement of spawned infected has been enabled"

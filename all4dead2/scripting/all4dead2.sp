@@ -691,7 +691,7 @@ void Do_SpawnInfected_Old(int client, const char[] type, bool spawning_uncommon 
 
 	char arguments[16];
 	if (automatic_placement == true && !spawning_uncommon)
-		Format(arguments, sizeof(arguments), "%s %t", type, "auto");
+		Format(arguments, sizeof(arguments), "%s %s", type, "auto");
 	else
 		Format(arguments, sizeof(arguments), "%s", type);
 	// If we are spawning an uncommon
@@ -699,7 +699,7 @@ void Do_SpawnInfected_Old(int client, const char[] type, bool spawning_uncommon 
 		currently_spawning = true;
 	// If we are spawning from the console make sure we force auto placement on	
 	if (client == 0) {
-		Format(arguments, sizeof(arguments), "%s %t", type, "auto");
+		Format(arguments, sizeof(arguments), "%s %s", type, "auto");
 		StripAndExecuteClientCommand(Misc_GetAnyClient(), "z_spawn_old", arguments);
 	} else if (spawning_uncommon && automatic_placement == true) {
 		currently_spawning = false;
