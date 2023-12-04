@@ -47,7 +47,7 @@ public Plugin myinfo =
 {
     name = "l4d2 specating cheat",
     author = "Harry Potter",
-    description = "A spectator who watching the survivor at first person view would see the infected model glows though the wall",
+    description = "A spectator can now see the special infected model glows though the wall",
     version = "2.8-2023/6/19",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
@@ -291,7 +291,7 @@ void CreateInfectedModelGlow(int client)
 	// Spawn dynamic prop entity
 	int entity = CreateEntityByName("prop_dynamic_ornament");
 	
-	if (CheckIfEntityMax( entity ) == false)
+	if (CheckIfEntitySafe( entity ) == false)
 		return;
 		
 	// Delete previous glow first just in case
@@ -516,7 +516,7 @@ void StartAllModelGlow()
 	}
 }
 
-bool CheckIfEntityMax(int entity)
+bool CheckIfEntitySafe(int entity)
 {
 	if(entity == -1) return false;
 

@@ -1,5 +1,5 @@
 # Description | 內容
-A spectator who watching the survivor at first person view can now see the infected model glows though the wall
+A spectator can now see the special infected model glows though the wall
 
 * [Video | 影片展示](https://www.bilibili.com/video/BV1Xq4y1a7ie)
 
@@ -69,17 +69,17 @@ A spectator who watching the survivor at first person view can now see the infec
 
     * cfg\sourcemod\l4d2_specting_cheat.cfg
         ```php
-        // Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
-        l4d2_specting_cheat_alive_color "255 0 0"
-
-        // Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]
-        l4d2_specting_cheat_default_value "0"
-
         // Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
         l4d2_specting_cheat_ghost_color "255 255 255"
 
+        // Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
+        l4d2_specting_cheat_alive_color "255 0 0"
+
         // Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)
         l4d2_specting_cheat_use_command_flag "z"
+
+        // Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]
+        l4d2_specting_cheat_default_value "0"
         ```
 </details>
 
@@ -107,9 +107,41 @@ A spectator who watching the survivor at first person view can now see the infec
 * 原理
     * 生成特感或變成靈魂特感時在特感玩家身上創造光圈，只有旁觀者能看見
     * 即使旁觀者觀看人類視角第一人稱，也能看到特感光圈
-    * 此插件本意只是拿來抓鬼(偷看倖存者誰開了透視外掛)，誰知道意外地提供了旁觀者非常好的觀賞性(被各個對抗伺服器拿去用)
 
-* 功能
-    * 特定權限的人可以使用指令關閉或開啟光圈
-    * 可調整預設所有旁觀者能看到
-    * 可調整活著的特感與靈魂特感的顏色
+* 用意在哪?
+    * 此插件本意只是拿來抓鬼(偷看倖存者誰開了透視外掛)，誰知道意外地提供了旁觀者非常好的觀賞性 (被各個對抗伺服器拿去用)
+
+* <details><summary>指令中文介紹 (點我展開)</summary>
+
+    * cfg\sourcemod\l4d2_specting_cheat.cfg
+        ```php
+        // 靈魂特感的光圈顏色. 三個0-255的數值，需要空白間隔. (RGB 三色)
+        l4d2_specting_cheat_ghost_color "255 255 255"
+
+        // 活著特感的光圈顏色. 三個0-255的數值，需要空白間隔. (RGB 三色)
+        l4d2_specting_cheat_alive_color "255 0 0"
+
+        // 擁有這些權限的玩家，才可以輸入命令開關 (留白 = 任何人都能, -1: 無人)
+        l4d2_specting_cheat_use_command_flag "z"
+
+        // 為1時，自動幫旁觀者打開特感的光圈
+        l4d2_specting_cheat_default_value "0"
+        ```
+</details>
+
+* <details><summary>命令中文介紹 (點我展開)</summary>
+
+    * **使用指令關閉或開啟光圈 (旁觀者專用)**
+        ```php
+        sm_speccheat
+        sm_watchcheat
+        sm_lookcheat
+        sm_seecheat
+        sm_meetcheat
+        sm_starecheat
+        sm_hellocheat
+        sm_areyoucheat
+        sm_fuckyoucheat
+        sm_zzz
+        ```
+</details>
