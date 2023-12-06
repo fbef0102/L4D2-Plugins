@@ -4,7 +4,6 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 * [Video | 影片展示](https://youtu.be/komzEmVvtH0)
 
 * Image | 圖示
-	* Drop Gifts
 	<br/>![l4d2_gifts_1](image/l4d2_gifts_1.jpg)
 
 * Require | 必要安裝
@@ -12,25 +11,25 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 	2. [[INC] l4d2_weapons](https://github.com/fbef0102/Game-Private_Plugin/blob/main/left4dead2/scripting/include/l4d2_weapons.inc)
 	3. [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586): To unlock all melee weapons in all campaigns
 
+* <details><summary>How does it work?</summary>
+
+	* Drop "Standard Gift" when special infected dies
+	* Drop "Special Gift" when a tank/witch dies
+	* Survivor needs to touch the gifts to get weapons/items/health
+</details>
+
 * <details><summary>ConVar | 指令</summary>
 
     * cfg/sourcemod/l4d2_gifts.cfg
 		```php
-		// Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
-		l4d2_gifts_announce_type "3"
-
-		// If 1, prevent survivors from switching into new weapons and items when they open gifts
-		l4d2_gifts_block_switch "1"
-
-		// Chance (%) of infected drop special standard gift.
-		l4d2_gifts_chance "50"
-
 		// Enable gifts 0: Disable, 1: Enable
-		// Maximum: "1.000000"
 		l4d2_gifts_enabled "1"
 
 		// How long the gift stay on ground (seconds)
 		l4d2_gifts_gift_life "30"
+
+		// Chance (%) of infected drop special standard gift.
+		l4d2_gifts_chance "50"
 
 		// Standard gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
 		// -1 -1 -1: Random
@@ -39,8 +38,15 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		// Standard gift glow range.
 		l4d2_gifts_glow_range "600"
 
-		// Increase Infected health if they pick up gift. (0=Off)
-		l4d2_gifts_infected_reward_hp "200"
+		// Chance (%) of tank and witch drop second special gift.
+		l4d2_specail_gifts_chance "100"
+
+		// Special gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
+		// -1 -1 -1: Random
+		l4d2_special_gifts_glow_color "-1 -1 -1"
+
+		// Special gift glow range.
+		l4d2_specail_gifts_glow_range "600"
 
 		// Maximum of gifts that all survivors can pick up per map [0 = Disabled]
 		l4d2_gifts_maxcollectMap "0"
@@ -48,18 +54,17 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		// Maximum of gifts that all survivors can pick up per round [0 = Disabled]
 		l4d2_gifts_maxcollectRound "0"
 
+		// Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
+		l4d2_gifts_announce_type "3"
+
+		// Increase Infected health if they pick up gift. (0=Off)
+		l4d2_gifts_infected_reward_hp "200"
+
 		// Increase Infected health if they pick up special gift. (0=Off)
 		l4d2_gifts_special_infected_reward_hp "400"
 
-		// Chance (%) of tank and witch drop second special gift.
-		l4d2_specail_gifts_chance "100"
-
-		// Special gift glow range.
-		l4d2_specail_gifts_glow_range "600"
-
-		// Special gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
-		// -1 -1 -1: Random
-		l4d2_special_gifts_glow_color "-1 -1 -1"
+		// If 1, prevent survivors from switching into new weapons and items when they open gifts
+		l4d2_gifts_block_switch "1"
 		```
 </details>
 
@@ -73,7 +78,8 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 	* **Spawn a gift in your position (Adm required: ADMFLAG_CHEATS)**
 		```php
-		sm_gifts <standard or special>
+		sm_gifts <standard>
+		sm_gifts <special>
 		```
 
 	* **Reload the config file of gifts (data/l4d2_gifts.cfg)**
@@ -82,7 +88,8 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		```
 </details>
 
-* How to modify the gift Model
+* <details><summary>How to modify the gift Model</summary>
+
 	* data\l4d2_gifts.cfg
 		```php
 		"1"
@@ -93,11 +100,14 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 			"scale"		"1.0"	  					// scale of model (default 1.0) [optional] (Not all models accept scale)
 		}
 		```
+</details>
 
-* How to modify the gift item
-	* Standard Gift: l4d2_gifts.sp line 38
-	* Special Gift: l4d2_gifts.sp line 111
+* <details><summary>How to modify the gift item</summary>
+
+	* Standard Gift: l4d2_gifts.sp line 41~109
+	* Special Gift: l4d2_gifts.sp line 114~125
 	> __Note__ Recompile after modify
+</details>
 
 * Apply to | 適用於
 	```
@@ -150,17 +160,83 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 殺死特感會掉落禮物盒，會獲得驚喜物品，聖誕嘉年華
 
 * 原理
-    * 特感死亡時會掉落禮物盒，人類只要碰觸到便會自動拆開
-	* 禮物盒會有各式各樣的武器與物品，也有可能為空或失去血量，驚喜一瞬間
-	* 特感也能碰到禮盒，會增加血量
+    * 殺死特感掉落普通禮盒，殺死Tank或Witch掉落特殊禮盒
+	* 人類只要碰觸到盒便會自動拆開，禮物盒會有各式各樣的武器與物品，也有可能為空或失去血量，驚喜一瞬間
+	* 特感也能碰禮盒，會自動增加血量
 
-* 功能
-	1. 殺死特感掉落普通禮盒，殺死Tank或Witch掉落特殊禮盒
-    2. 可調整禮盒的顏色與發光範圍
-    3. 可調整禮盒的存活時間，如果沒有人撿起會自動消失
-    4. 可調整特感碰到禮盒獲得的血量
+* <details><summary>指令中文介紹 (點我展開)</summary>
 
-* 如何修改禮盒模組
+    * cfg/sourcemod/l4d2_gifts.cfg
+		```php
+		// 0=關閉插件, 1=啟動插件
+		l4d2_gifts_enabled "1"
+
+		// 禮盒的存活時間，如果沒有人撿起會自動消失 (單位: 秒數)
+		l4d2_gifts_gift_life "30"
+
+		// 特感掉落普通禮盒的機率
+		l4d2_gifts_chance "50"
+
+		// 普通禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格)
+		// -1 -1 -1: 隨機顏色
+		l4d2_gifts_glow_color "-1 -1 -1"
+
+		// 普通禮盒的顏色發光範圍
+		l4d2_gifts_glow_range "600"
+
+		// Tank/Witch掉落特殊禮盒的機率
+		l4d2_specail_gifts_chance "100"
+
+		// 特殊禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格)
+		// -1 -1 -1: 隨機顏色
+		l4d2_special_gifts_glow_color "-1 -1 -1"
+
+		// 特殊禮盒的顏色發光範圍
+		l4d2_specail_gifts_glow_range "600"
+
+		// 每張圖人類能撿起禮盒的數量限制 [0 = 無限制]
+		l4d2_gifts_maxcollectMap "0"
+
+		// 每一回合人類能撿起禮盒的數量限制 [0 = 無限制]
+		l4d2_gifts_maxcollectRound "0"
+
+		// 獲得禮物盒的提示該如何顯示. (0: 不提示, 1: 聊天框, 2: 黑底白字框, 3: 螢幕正中間)
+		l4d2_gifts_announce_type "3"
+
+		// 特感撿到普通禮盒所增加的血量. (0=關閉這項功能)
+		l4d2_gifts_infected_reward_hp "200"
+
+		// 特感撿到特殊禮盒所增加的血量. (0=關閉這項功能)
+		l4d2_gifts_special_infected_reward_hp "400"
+
+		// 1=人類撿起禮盒時，物資直接掉在地上
+		// 0=人類撿起禮盒時，物資直接拿在手上
+		l4d2_gifts_block_switch "1"
+		```
+</details>
+
+* <details><summary>命令中文介紹 (點我展開)</summary>
+    
+	* **檢視已撿起禮物盒的數量**
+		```php
+		sm_giftcollect
+		sm_giftc
+		```
+
+	* **在準心指向的地方生成禮盒 (權限: ADMFLAG_CHEATS)**
+		```php
+		sm_gifts <standard> //生成普通禮盒
+		sm_gifts <special> //生成特殊禮盒
+		```
+
+	* **重載禮盒的模組設定文件 (data/l4d2_gifts.cfg)**
+		```php
+		sm_reloadgifts
+		```
+</details>
+
+* <details><summary>如何修改禮盒模組</summary>
+
 	* data\l4d2_gifts.cfg
 		```php
 		"1"
@@ -171,8 +247,11 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 			"scale"		"1.0"	  					// 禮盒模型尺寸 (預設是 1.0，非所有模組能改變尺寸)
 		}
 		```
+</details>
 
-* 如何設定禮盒驚喜物品
-	* 普通禮盒: l4d2_gifts.sp 第38行開始
-	* 特殊禮盒: l4d2_gifts.sp 第111行開始
+* <details><summary>如何設定禮盒驚喜物品</summary>
+
+	* 普通禮盒: l4d2_gifts.sp 第41~109行
+	* 特殊禮盒: l4d2_gifts.sp 第114~125行
 	> __Note__ 修改完後必須重新編譯
+</details>
