@@ -29,23 +29,6 @@
 		"chi"			"%N 获得 礼物 + %d HP!"
 		"ru"			"%N Нашёл в подарке %d HP!"
 	}
-	"Number of gifts collected"
-	{
-		"en"			"Number of gifts collected"
-		"es"			"Cantidad de regalos recogidos"
-		"zho"			"已蒐集的禮物數量"
-		"chi"			"已搜集的礼物数量"
-		"ru"			"Подарков собрано"
-
-	}
-	"In current map and round"
-	{
-		"en"			"In current map: %d | In current round: %d"
-		"es"			"En el mapa actual: %d | En la ronda actual: %d"
-		"zho"			"目前地圖: %d | 當前回合: %d" 
-		"chi"			"目前地图: %d | 当前回合: %d"
-		"ru"			"На этой карте: %d | В этом раунде: %d"
-	}
 
 	"Pistol"
 	{

@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION		"3.2-2023/6/9"
+#define PLUGIN_VERSION		"3.3-2023/12/11"
 
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -189,29 +189,28 @@ int ColorCyan[3], ColorBlue[3], ColorGreen[3], ColorPink[3], ColorRed[3],
 
 ConVar pain_pills_decay_rate, survivor_max_incapacitated_count;
 
-ConVar cvar_gift_enable, cvar_gift_life, cvar_gift_color, cvar_gift_chance, cvar_gift_glowrange,
-	cvar_special_gift_color, cvar_special_gift_chance, cvar_special_gift_glowrange,
+ConVar cvar_gift_enable, cvar_gift_life, cvar_gift_chance,
+	cvar_special_gift_chance,
 	cvar_gift_infected_hp, cvar_special_gift_infected_hp,
-	cvar_gift_maxcollectMap, cvar_gift_maxcollectRound, cvar_gift_Announce,
+	cvar_gift_Announce,
 	cvar_blockSwitch;
 
-char g_sCvarGiftCols[12], g_sCvarSpecialGiftCols[12];
 bool g_bGiftEnable, g_bCvarBlockSwitch;
 float g_fGiftLife;
 int g_iGiftChance, g_iSpecialGiftChance, g_iGiftMaxMap, g_iGiftMaxRound,
-	g_iGiftGlowRange, g_iSpecialGiftGlowRange, g_iGiftHP, g_iSpecialGiftHP;
+	g_iGiftHP, g_iSpecialGiftHP;
 float pain_pills_decay_rate_float;
 int g_iCvarAnnounce;
-
-int CurrentGiftsForMap[MAXPLAYERS+1][MAX_TYPEGIFTS];
-int CurrentGiftsForRound[MAXPLAYERS+1][MAX_TYPEGIFTS];
-int CurrentGiftsTotalForMap[MAXPLAYERS+1];
-int CurrentGiftsTotalForRound[MAXPLAYERS+1];
 
 char g_sModel[MAX_GIFTS][MAX_STRING_WIDTH];
 char g_sTypeModel[MAX_GIFTS][10];
 char g_sTypeGift[MAX_GIFTS][10];
 float g_fScale[MAX_GIFTS];
+char g_sGiftGlowCols[MAX_GIFTS][12],
+	g_sGiftEntityCols[MAX_GIFTS][12];
+
+int g_iGiftGlowRange[MAX_GIFTS], 
+	g_iSpecialGiftGlowRange[MAX_GIFTS];
 
 char g_sGifType[MAXENTITIES + 1][10];
 
@@ -222,7 +221,10 @@ char sPath_gifts[PLATFORM_MAX_PATH];
 int g_iCountGifts;
 int g_iOffset_Incapacitated;        // Used to check if tank is dying
 int ammoOffset;	
+
 bool 
+	g_bGiftGlowEnable[MAX_GIFTS],
+	g_bGiftEntityEnable[MAX_GIFTS],
 	g_bFinalHasStart, 
 	g_bIsOpenSafeRoom,
 	g_bHooked[MAXPLAYERS+1];
@@ -285,13 +287,7 @@ public void OnPluginStart()
 	cvar_gift_enable = CreateConVar("l4d2_gifts_enabled",									"1", 		"Enable gifts 0: Disable, 1: Enable", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvar_gift_life = CreateConVar("l4d2_gifts_gift_life",									"30",		"How long the gift stay on ground (seconds)", FCVAR_NOTIFY, true, 0.0);
 	cvar_gift_chance = CreateConVar("l4d2_gifts_chance", 									"50",		"Chance (%) of infected drop special standard gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
-	cvar_gift_color = CreateConVar("l4d2_gifts_glow_color", 								"-1 -1 -1",	"Standard gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.\n-1 -1 -1: Random", FCVAR_NOTIFY);
-	cvar_gift_glowrange = CreateConVar("l4d2_gifts_glow_range", 							"600",		"Standard gift glow range.", FCVAR_NOTIFY, true, 0.0);
 	cvar_special_gift_chance = CreateConVar("l4d2_specail_gifts_chance", 					"100",		"Chance (%) of tank and witch drop second special gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
-	cvar_special_gift_color = CreateConVar("l4d2_special_gifts_glow_color",	 				"-1 -1 -1",	"Special gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.\n-1 -1 -1: Random", FCVAR_NOTIFY);
-	cvar_special_gift_glowrange = CreateConVar("l4d2_specail_gifts_glow_range", 			"600",		"Special gift glow range.", FCVAR_NOTIFY, true, 0.0);
-	cvar_gift_maxcollectMap = CreateConVar("l4d2_gifts_maxcollectMap", 						"0", 		"Maximum of gifts that all survivors can pick up per map [0 = Disabled]", FCVAR_NOTIFY, true, 0.0);
-	cvar_gift_maxcollectRound = CreateConVar("l4d2_gifts_maxcollectRound", 					"0", 		"Maximum of gifts that all survivors can pick up per round [0 = Disabled]", FCVAR_NOTIFY, true, 0.0);
 	cvar_gift_Announce = CreateConVar("l4d2_gifts_announce_type",							"3",		"Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	cvar_gift_infected_hp = CreateConVar("l4d2_gifts_infected_reward_hp",					"200",		"Increase Infected health if they pick up gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
 	cvar_special_gift_infected_hp = CreateConVar("l4d2_gifts_special_infected_reward_hp",	"400",		"Increase Infected health if they pick up special gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
@@ -305,13 +301,7 @@ public void OnPluginStart()
 	cvar_gift_enable.AddChangeHook(Cvar_Changed);
 	cvar_gift_life.AddChangeHook(Cvar_Changed);
 	cvar_gift_chance.AddChangeHook(Cvar_Changed);
-	cvar_gift_color.AddChangeHook(Cvar_Changed);
-	cvar_gift_glowrange.AddChangeHook(Cvar_Changed);
 	cvar_special_gift_chance.AddChangeHook(Cvar_Changed);
-	cvar_special_gift_color.AddChangeHook(Cvar_Changed);
-	cvar_special_gift_glowrange.AddChangeHook(Cvar_Changed);
-	cvar_gift_maxcollectMap.AddChangeHook(Cvar_Changed);
-	cvar_gift_maxcollectRound.AddChangeHook(Cvar_Changed);
 	cvar_gift_Announce.AddChangeHook(Cvar_Changed);
 	cvar_gift_infected_hp.AddChangeHook(Cvar_Changed);
 	cvar_special_gift_infected_hp.AddChangeHook(Cvar_Changed);
@@ -322,9 +312,6 @@ public void OnPluginStart()
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("witch_killed", OnWitchKilled);
 	HookEvent("finale_vehicle_ready", Finale_Vehicle_Ready);
-
-	RegConsoleCmd("sm_giftcollect", Command_GiftCollected, "View number of gifts collected");
-	RegConsoleCmd("sm_giftc", Command_GiftCollected, "View number of gifts collected");
 
 	RegAdminCmd("sm_gifts", Command_Gift, ADMFLAG_CHEATS, "Spawn a gift in your position");
 	RegAdminCmd("sm_reloadgifts", Command_ReloadGift, ADMFLAG_CONFIG, " Reload the config file of gifts (data/l4d2_gifts.cfg)");
@@ -359,13 +346,7 @@ void GetCvars()
 	g_bGiftEnable = cvar_gift_enable.BoolValue;
 	g_fGiftLife = cvar_gift_life.FloatValue;
 	g_iGiftChance = cvar_gift_chance.IntValue;
-	cvar_gift_color.GetString(g_sCvarGiftCols, sizeof(g_sCvarGiftCols));
-	g_iGiftGlowRange = cvar_gift_glowrange.IntValue;
 	g_iSpecialGiftChance = cvar_special_gift_chance.IntValue;
-	cvar_special_gift_color.GetString(g_sCvarSpecialGiftCols, sizeof(g_sCvarSpecialGiftCols));
-	g_iSpecialGiftGlowRange = cvar_special_gift_glowrange.IntValue;
-	g_iGiftMaxMap = cvar_gift_maxcollectMap.IntValue;
-	g_iGiftMaxRound = cvar_gift_maxcollectRound.IntValue;
 	g_iCvarAnnounce = cvar_gift_Announce.IntValue;
 	g_iGiftHP = cvar_gift_infected_hp.IntValue;
 	g_iSpecialGiftHP = cvar_special_gift_infected_hp.IntValue;
@@ -382,18 +363,6 @@ public void OnMapStart()
 	{
 		SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
 	}
-	
-	
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		for (int j=0; j < MAX_TYPEGIFTS; j++)
-		{
-			CurrentGiftsForMap[i][j] = 0;
-		}
-		CurrentGiftsTotalForMap[i] = 0;
-	}
-
-	gifts_collected_map = 0;
 	
 	int max = MAX_WEAPONS;
 	for( int i = 0; i < max; i++ )
@@ -471,26 +440,6 @@ Action Command_Gift(int client, int args)
 	return Plugin_Handled;
 }
 
-Action Command_GiftCollected(int client, int args)
-{
-	if (!g_bGiftEnable)
-		return Plugin_Handled;
-	
-	if(!IsValidClient(client))
-		return Plugin_Handled;
-	
-	if(GetClientTeam(client) != 2 || IsFakeClient(client))
-		return Plugin_Handled;
-	
-
-	PrintToChat(client, "[Gift] %T", "Number of gifts collected", client);
-	PrintToChat(client, "Standard: %T", "In current map and round", client, CurrentGiftsForMap[client][TYPE_STANDARD], CurrentGiftsForRound[client][TYPE_STANDARD]);
-	PrintToChat(client, "Special: %T", "In current map and round", client, CurrentGiftsForMap[client][TYPE_SPECIAL], CurrentGiftsForRound[client][TYPE_SPECIAL]);
-	PrintToChat(client, "Total: %T", "In current map and round", client, CurrentGiftsTotalForMap[client], CurrentGiftsTotalForRound[client]);
-
-	return Plugin_Handled;
-}
-
 Action Command_ReloadGift(int client, int args)
 {
 	if(!LoadConfigGifts(true))
@@ -532,7 +481,7 @@ bool LoadConfigGifts(bool precache)
 		if(num > MAX_GIFTS || i >= MAX_GIFTS)
 			break;
 		
-		KvGetString(hFile, "model", sTemp, MAX_STRING_WIDTH);
+		hFile.GetString("model", sTemp, MAX_STRING_WIDTH);
 			
 		if(strlen(sTemp) == 0)
 			continue;
@@ -540,9 +489,14 @@ bool LoadConfigGifts(bool precache)
 		if(FileExists(sTemp, true))
 		{
 			strcopy(g_sModel[i], MAX_STRING_WIDTH, sTemp);
-			KvGetString(hFile, "type", g_sTypeModel[i], sizeof(g_sTypeModel[]), "static");
-			KvGetString(hFile, "gift", g_sTypeGift[i], sizeof(g_sTypeGift[]));
-			g_fScale[i] = KvGetFloat(hFile, "scale", 1.0);
+			hFile.GetString("type", g_sTypeModel[i], sizeof(g_sTypeModel[]), "static");
+			hFile.GetString("gift", g_sTypeGift[i], sizeof(g_sTypeGift[]));
+			g_fScale[i] = hFile.GetFloat("scale", 1.0);
+			g_bGiftEntityEnable[i] = view_as<bool>(hFile.GetNum("entity_enable", 1));
+			hFile.GetString("entity_color", g_sGiftEntityCols[i], sizeof(g_sGiftEntityCols[]));
+			g_bGiftGlowEnable[i] = view_as<bool>(hFile.GetNum("glow_enable", 1));
+			hFile.GetString("glow_color", g_sGiftGlowCols[i], sizeof(g_sGiftGlowCols[]));
+			g_iGiftGlowRange[i] = hFile.GetNum("glow_range", 0);
 			g_iCountGifts++;
 			i++;
 		}
@@ -563,19 +517,6 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
 	g_bIsOpenSafeRoom = false;
-	gifts_collected_round = 0;
-	
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if(IsClientConnected(i) && IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == TEAM_SURVIVOR)
-		{
-			for (int j=0; j < MAX_TYPEGIFTS; j++)
-			{
-				CurrentGiftsForRound[i][j] = 0;
-			}
-			CurrentGiftsTotalForRound[i] = 0;
-		}
-	}
 }
 
 void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -687,7 +628,6 @@ void NotifyGift(int client, int type, int gift = -1)
 		AnnounceToChat(client, weapons_name_standard[index][1], hp);
 
 		PlaySound(client,SOUND_STANDARD);
-		AddCollect(client, type);
 	}
 	else if(type == TYPE_SPECIAL)
 	{
@@ -730,7 +670,6 @@ void NotifyGift(int client, int type, int gift = -1)
 		AnnounceToChat(client, weapons_name_special[index][1], hp);
 
 		PlaySound(client, SOUND_SPECIAL);
-		AddCollect(client, type);
 	}
 
 }
@@ -779,7 +718,7 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 		gift = CreateEntityByName("prop_dynamic_override");
 	}
 	
-	if( CheckIfEntityMax(gift) )
+	if( CheckIfEntitySafe(gift) )
 	{
 		DispatchKeyValue(gift, "model", g_sModel[random]);
 		// char sScale[4];
@@ -793,10 +732,10 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 		DispatchSpawn(gift);
 		SetEntPropFloat(gift, Prop_Send, "m_flModelScale", g_fScale[random]);
 
-		int entitycolor[3], glowcolor[3];
-		if(strcmp(g_sGifType[gift], STRING_STANDARD, false) == 0)
+		if(g_bGiftEntityEnable[random])
 		{
-			if(strcmp(g_sCvarGiftCols, "-1 -1 -1", false) == 0)
+			int entitycolor[3];
+			if(strcmp(g_sGiftEntityCols[random], "-1 -1 -1", false) == 0)
 			{
 				switch(GetRandomInt(1, 8))
 				{
@@ -809,6 +748,19 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 					case 7: {entitycolor[0] = ColorYellow[0]; entitycolor[1] = ColorYellow[1]; entitycolor[2] = ColorYellow[2];}
 					case 8: {entitycolor[0] = 255; entitycolor[1] = 255; entitycolor[2] = 255;}
 				}
+			}
+			else
+			{
+				GetColor(g_sGiftEntityCols[random], entitycolor);
+			}
+
+			SetEntityRenderColor(gift, entitycolor[0], entitycolor[1], entitycolor[2]);
+		}
+		if(g_bGiftGlowEnable[random])
+		{
+			int glowcolor[3];
+			if(strcmp(g_sGiftGlowCols[random], "-1 -1 -1", false) == 0)
+			{
 				switch(GetRandomInt(1, 13))
 				{
 					case 1: {glowcolor[0] = ColorRed[0]; glowcolor[1] = ColorRed[1]; glowcolor[2] = ColorRed[2];}
@@ -828,55 +780,15 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 			}
 			else
 			{
-				GetColor(g_sCvarGiftCols, entitycolor);
-				GetColor(g_sCvarGiftCols, glowcolor);
+				GetColor(g_sGiftGlowCols[random], glowcolor);
 			}
-		}
-		else
-		{
-			if(strcmp(g_sCvarSpecialGiftCols, "-1 -1 -1", false) == 0)
-			{
-				switch(GetRandomInt(1, 8))
-				{
-					case 1: {entitycolor[0] = ColorCyan[0]; entitycolor[1] = ColorCyan[1]; entitycolor[2] = ColorCyan[2];}
-					case 2: {entitycolor[0] = ColorLightGreen[0]; entitycolor[1] = ColorLightGreen[1]; entitycolor[2] = ColorLightGreen[2];}
-					case 3: {entitycolor[0] = ColorPurple[0]; entitycolor[1] = ColorPurple[1]; entitycolor[2] = ColorPurple[2];}
-					case 4: {entitycolor[0] = ColorPink[0]; entitycolor[1] = ColorPink[1]; entitycolor[2] = ColorPink[2];}
-					case 5: {entitycolor[0] = ColorRed[0]; entitycolor[1] = ColorRed[1]; entitycolor[2] = ColorRed[2];}
-					case 6: {entitycolor[0] = ColorOrange[0]; entitycolor[1] = ColorOrange[1]; entitycolor[2] = ColorOrange[2];}
-					case 7: {entitycolor[0] = ColorYellow[0]; entitycolor[1] = ColorYellow[1]; entitycolor[2] = ColorYellow[2];}
-					case 8: {entitycolor[0] = 255; entitycolor[1] = 255; entitycolor[2] = 255;}
-				}
-				switch(GetRandomInt(1, 13))
-				{
-					case 1: {glowcolor[0] = ColorRed[0]; glowcolor[1] = ColorRed[1]; glowcolor[2] = ColorRed[2];}
-					case 2: {glowcolor[0] = ColorGreen[0]; glowcolor[1] = ColorGreen[1]; glowcolor[2] = ColorGreen[2];}
-					case 3: {glowcolor[0] = ColorBlue[0]; glowcolor[1] = ColorBlue[1]; glowcolor[2] = ColorBlue[2];}
-					case 4: {glowcolor[0] = ColorPurple[0]; glowcolor[1] = ColorPurple[1]; glowcolor[2] = ColorPurple[2];}
-					case 5: {glowcolor[0] = ColorCyan[0]; glowcolor[1] = ColorCyan[1]; glowcolor[2] = ColorCyan[2];}
-					case 6: {glowcolor[0] = ColorOrange[0]; glowcolor[1] = ColorOrange[1]; glowcolor[2] = ColorOrange[2];}
-					case 7: {glowcolor[0] = ColorWhite[0]; glowcolor[1] = ColorWhite[1]; glowcolor[2] = ColorWhite[2];}
-					case 8: {glowcolor[0] = ColorPink[0]; glowcolor[1] = ColorPink[1]; glowcolor[2] = ColorPink[2];}
-					case 9: {glowcolor[0] = ColorLime[0]; glowcolor[1] = ColorLime[1]; glowcolor[2] = ColorLime[2];}
-					case 10: {glowcolor[0] = ColorMaroon[0]; glowcolor[1] = ColorMaroon[1]; glowcolor[2] = ColorMaroon[2];}
-					case 11: {glowcolor[0] = ColorTeal[0]; glowcolor[1] = ColorTeal[1]; glowcolor[2] = ColorTeal[2];}
-					case 12: {glowcolor[0] = ColorYellow[0]; glowcolor[1] = ColorYellow[1]; glowcolor[2] = ColorYellow[2];}
-					case 13: {glowcolor[0] = 255; glowcolor[1] = 255; glowcolor[2] = 255;}
-				}
-			}
-			else
-			{
-				GetColor(g_sCvarSpecialGiftCols, entitycolor);
-				GetColor(g_sCvarSpecialGiftCols, glowcolor);
-			}
-		}
 
-		int glowrange = 0;
-		if(strcmp(type, STRING_STANDARD, false) == 0) glowrange = g_iGiftGlowRange;
-		else glowrange = g_iSpecialGiftGlowRange;
+			int glowrange = 0;
+			if(strcmp(type, STRING_STANDARD, false) == 0) glowrange = g_iGiftGlowRange[random];
+			else glowrange = g_iSpecialGiftGlowRange[random];
 
-		SetEntityRenderColor(gift, entitycolor[0], entitycolor[1], entitycolor[2]); //COLOR_CYAN
-		L4D2_SetEntityGlow(gift, L4D2Glow_Constant, glowrange, 0, glowcolor, true);
+			L4D2_SetEntityGlow(gift, L4D2Glow_Constant, glowrange, 0, glowcolor, true);
+		}
 
 		CreateTimer(g_fGiftLife, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_FLAG_NO_MAPCHANGE);
 		CreateTimer(1.0, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
@@ -1039,14 +951,6 @@ Action Timer_GiftLife( Handle timer, any ref)
 	return Plugin_Continue;
 }
 
-void AddCollect(int client, int type)
-{
-	CurrentGiftsForRound[client][type] += 1;
-	CurrentGiftsForMap[client][type] += 1;
-	CurrentGiftsTotalForRound[client] += 1;
-	CurrentGiftsTotalForMap[client] += 1;
-}
-
 void GetColor(const char[] str_color, int color[3])
 {
 	char sColors[3][4];
@@ -1156,7 +1060,7 @@ float GetTempHealth(int client)
 	return fHealth < 0.0 ? 0.0 : fHealth;
 }
 
-bool CheckIfEntityMax(int entity)
+bool CheckIfEntitySafe(int entity)
 {
 	if(entity == -1) return false;
 

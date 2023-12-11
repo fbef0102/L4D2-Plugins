@@ -31,28 +31,8 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		// Chance (%) of infected drop special standard gift.
 		l4d2_gifts_chance "50"
 
-		// Standard gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
-		// -1 -1 -1: Random
-		l4d2_gifts_glow_color "-1 -1 -1"
-
-		// Standard gift glow range.
-		l4d2_gifts_glow_range "600"
-
 		// Chance (%) of tank and witch drop second special gift.
 		l4d2_specail_gifts_chance "100"
-
-		// Special gift glow color. Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.
-		// -1 -1 -1: Random
-		l4d2_special_gifts_glow_color "-1 -1 -1"
-
-		// Special gift glow range.
-		l4d2_specail_gifts_glow_range "600"
-
-		// Maximum of gifts that all survivors can pick up per map [0 = Disabled]
-		l4d2_gifts_maxcollectMap "0"
-
-		// Maximum of gifts that all survivors can pick up per round [0 = Disabled]
-		l4d2_gifts_maxcollectRound "0"
 
 		// Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
 		l4d2_gifts_announce_type "3"
@@ -69,12 +49,6 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 </details>
 
 * <details><summary>Command | 命令</summary>
-    
-	* **View number of gifts collected**
-		```php
-		sm_giftcollect
-		sm_giftc
-		```
 
 	* **Spawn a gift in your position (Adm required: ADMFLAG_CHEATS)**
 		```php
@@ -98,6 +72,13 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 			"type"		"physics" 					// type of model: physics or static (Not all models can be physical)
 			"gift"		"special" 					// type of gift: standard or special
 			"scale"		"1.0"	  					// scale of model (default 1.0) [optional] (Not all models accept scale)
+			
+			"entity_enable"		"1"					// Enable Gift Color [0: Disable Color]		
+			"entity_color"		"-1 -1 -1"			// Set Gift Color [-1 -1 -1: Random]
+			
+			"glow_enable"		"1"					// Enable Glow [0: Disable Glow]
+			"glow_color"		"-1 -1 -1"			// Set Glow Color [-1 -1 -1: Random]
+			"glow_range"		"600"				// Set Glow Range [0: No distance]
 		}
 		```
 </details>
@@ -129,6 +110,11 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 	//[X]Aceleracion @ 2017
 	//HarryPotter @ 2022-2023
 	```
+    * v3.2 (2023-12-11)
+		* Remove collect limit
+		* Remove some cvars
+		* Update translation and data file
+
     * v3.2 (2023-6-9)
 		* Add a convar, prevent survivors from switching into new weapons and items when they open gifts
 		* Create Fake weapon_drop event
@@ -177,28 +163,8 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		// 特感掉落普通禮盒的機率
 		l4d2_gifts_chance "50"
 
-		// 普通禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格)
-		// -1 -1 -1: 隨機顏色
-		l4d2_gifts_glow_color "-1 -1 -1"
-
-		// 普通禮盒的顏色發光範圍
-		l4d2_gifts_glow_range "600"
-
 		// Tank/Witch掉落特殊禮盒的機率
 		l4d2_specail_gifts_chance "100"
-
-		// 特殊禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格)
-		// -1 -1 -1: 隨機顏色
-		l4d2_special_gifts_glow_color "-1 -1 -1"
-
-		// 特殊禮盒的顏色發光範圍
-		l4d2_specail_gifts_glow_range "600"
-
-		// 每張圖人類能撿起禮盒的數量限制 [0 = 無限制]
-		l4d2_gifts_maxcollectMap "0"
-
-		// 每一回合人類能撿起禮盒的數量限制 [0 = 無限制]
-		l4d2_gifts_maxcollectRound "0"
 
 		// 獲得禮物盒的提示該如何顯示. (0: 不提示, 1: 聊天框, 2: 黑底白字框, 3: 螢幕正中間)
 		l4d2_gifts_announce_type "3"
@@ -217,12 +183,6 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 * <details><summary>命令中文介紹 (點我展開)</summary>
     
-	* **檢視已撿起禮物盒的數量**
-		```php
-		sm_giftcollect
-		sm_giftc
-		```
-
 	* **在準心指向的地方生成禮盒 (權限: ADMFLAG_CHEATS)**
 		```php
 		sm_gifts <standard> //生成普通禮盒
@@ -245,6 +205,13 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 			"type"		"physics" 					// 禮盒的物理效果: physics[能移動] 或是 static[固態] (非所有模組能接受physics)
 			"gift"		"special" 					// 禮盒種類: standard[普通禮盒] or special[特殊禮盒]
 			"scale"		"1.0"	  					// 禮盒模型尺寸 (預設是 1.0，非所有模組能改變尺寸)
+
+			"entity_enable"		"1"					// 1=設置禮盒顏色, 0=不設置禮盒顏色
+			"entity_color"		"-1 -1 -1"			// 設置禮盒顏色，填入RGB三色 (三個數值介於0~255，需要空格) [-1 -1 -1: 隨機顏色]
+			
+			"glow_enable"		"1"					// 1=開啟禮盒光圈, 0=關閉禮盒光圈
+			"glow_color"		"-1 -1 -1"			// 禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格) [-1 -1 -1: 隨機顏色]
+			"glow_range"		"600"				// 禮盒的顏色發光範圍
 		}
 		```
 </details>
