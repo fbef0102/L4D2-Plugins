@@ -79,7 +79,7 @@ Fixed the final stage get stucked
     * 最後救援階段過程中如果超過60秒時沒有特感、小殭屍、Tank生成時，就會視為卡關
     * 卡關之後，插件會強制下一個救援階段，救援載具直接來臨讓倖存者上去
 
-* <details><summary>ConVar | 指令</summary>
+* <details><summary>指令中文介紹 (點我展開)</summary>
 
 	* cfg/sourcemod/l4d_finale_stage_fix.cfg
         ```php
@@ -89,7 +89,7 @@ Fixed the final stage get stucked
         ```
 </details>
 
-* <details><summary>Command | 命令</summary>
+* <details><summary>命令中文介紹 (點我展開)</summary>
 
 	* **強制跳到下一個救援階段 (救援開始之後才能使用) (權限: ADMFLAG_ROOT)**
 		```php
