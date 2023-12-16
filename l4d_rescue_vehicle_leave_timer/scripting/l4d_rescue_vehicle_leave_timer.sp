@@ -629,7 +629,9 @@ bool IsInFinalRescueVehicle(int client)
 
 	Address area = L4D_GetNearestNavArea(pos);
 	if (area == Address_Null)
-		return false;
+	{
+		return g_bClientInVehicle[client];
+	}
 
 	int spawnAttributes = L4D_GetNavArea_SpawnAttributes(area);
 
@@ -726,7 +728,7 @@ void CreateExplosion(const float pos[3], const float duration = 30.0)
 		AcceptEntityInput(ent, "AddOutput");
 		AcceptEntityInput(ent, "FireUser1");
 	}
-	if((ent = CreateEntityByName("env_explosion")) != -1)
+	/*if((ent = CreateEntityByName("env_explosion")) != -1)
 	{
 		DispatchKeyValue(ent, "fireballsprite", SPRITE_MODEL);
 		DispatchKeyValue(ent, "iMagnitude", "1");
@@ -751,7 +753,7 @@ void CreateExplosion(const float pos[3], const float duration = 30.0)
 		SetVariantString(buffer);
 		AcceptEntityInput(ent, "AddOutput");
 		AcceptEntityInput(ent, "FireUser1");
-	}
+	}*/
 
 	EmitAmbientSound(EXPLOSION_SOUND_L4D2, pos);
 	EmitAmbientSound(EXPLOSION_DEBRIS_L4D2, pos);
