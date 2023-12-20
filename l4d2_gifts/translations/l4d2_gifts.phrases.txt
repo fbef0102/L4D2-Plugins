@@ -8,26 +8,28 @@
 		"es"			"%N obtuvo un regalo + {1}!"
 		"zho"			"%N 取得 禮物 + {1}!"
 		"chi"			"%N 取得 礼物 + {1}!"
-		"ru"			"%N Нашёл в подарке {1}!"
+		"ru"			"%N получил подарок + {1}!"
 	}
 	"Got Gift (+hp)"
 	{
 		"en"			"%N got health +%d HP!"
 		"zho"			"%N 取得 血量 +%d HP!"
 		"chi"			"%N 取得 血量 +%d HP!"
+		"ru"			"%N получил здоровье +%d HP!"
 	}
 	"Got Gift (-hp)"
 	{
 		"en"			"%N lost health %d HP!"
 		"zho"			"%N 失去 血量 %d HP!"
 		"chi"			"%N 失去 血量 %d HP!"
+		"ru"			"%N потерял здоровье %d HP!"
 	}
 	"Infected Got Gift"
 	{
 		"en"			"%N got Health + %d HP!"
 		"zho"			"%N 獲得 禮物 + %d HP!"
 		"chi"			"%N 获得 礼物 + %d HP!"
-		"ru"			"%N Нашёл в подарке %d HP!"
+		"ru"			"%N Получил Здоровье %d HP!"
 	}
 
 	"Pistol"
@@ -46,7 +48,7 @@
 		"zho"	"沙漠之鷹"
 		"chi"	"沙漠之鹰"
 		"es"	"Magnum"
-		"ru"	"Дезерт игл"
+		"ru"	"Магнум"
 	}
 	"Pumpshotgun"
 	{
@@ -55,7 +57,7 @@
 		"zho"	"木製霰彈槍"
 		"chi"	"木制霰弹枪"
 		"es"	"Escopeta de bomba"
-		"ru"	"Ружьё"
+		"ru"	"Помп.Дробовик"
 	}
 	"Chrome Shotgun"
 	{
@@ -64,7 +66,7 @@
 		"zho"	"鐵製霰彈槍"
 		"chi"	"铁制霰弹枪"
 		"es"	"Escopeta cromada"
-		"ru"	"Хромовый дробовик"
+		"ru"	"Хром.Дробовик"
 	}
 	"Smg"
 	{
@@ -73,7 +75,7 @@
 		"zho"	"機槍"
 		"chi"	"机枪"
 		"es"	"Smg"
-		"ru"	"Узи"
+		"ru"	"UZI"
 	}
 	"Silenced Smg"
 	{
@@ -82,7 +84,7 @@
 		"zho"	"消音機槍"
 		"chi"	"消音机枪"
 		"es"	"Smg silenciador"
-		"ru"	"Mак10"
+		"ru"	"MAC-10"
 	}
 	"MP5"
 	{
@@ -91,7 +93,7 @@
 		"zho"	"MP5衝鋒槍"
 		"chi"	"MP5冲锋枪"
 		"es"	"MP5"
-		"ru"	"МП5"
+		"ru"	"МP5"
 	}
 	"Rifle"
 	{
@@ -118,7 +120,7 @@
 		"zho"	"三連發步槍"
 		"chi"	"三连发步枪"
 		"es"	"Rifle del desierto"
-		"ru"	"Скар"
+		"ru"	"SCAR"
 	}
 	"SG552"
 	{
@@ -127,7 +129,7 @@
 		"zho"	"SG552步槍"
 		"chi"	"SG552步枪"
 		"es"	"Rifle CSS SG552"
-		"ru"	"СГ552"
+		"ru"	"SG552"
 	}
 	"Spas Shotgun"
 	{
@@ -136,7 +138,7 @@
 		"zho"	"戰鬥霰彈槍"
 		"chi"	"战斗霰弹枪"
 		"es"	"Escopeta Spas"
-		"ru"	"Спас 12"
+		"ru"	"SPAS12"
 	}
 	"Autoshotgun"
 	{
@@ -154,7 +156,7 @@
 		"zho"	"獵槍"
 		"chi"	"猎枪"
 		"es"	"Rifle de caza"
-		"ru"	"Охотничья снайперка"
+		"ru"	"Снайп.Hunting"
 	}
 	"Military Sniper"
 	{
@@ -163,7 +165,7 @@
 		"zho"	"軍用狙擊槍"
 		"chi"	"军用狙击枪"
 		"es"	"Francotirador militar"
-		"ru"	"Военная снайперка"
+		"ru"	"Снайп.Millitary"
 	}
 	"SCOUT"
 	{
@@ -172,7 +174,7 @@
 		"zho"	"SCOUT狙擊槍"
 		"chi"	"SCOUT狙击枪"
 		"es"	"CSS SCOUT"
-		"ru"	"Муха"
+		"ru"	"Scout"
 	}
 	"AWP"
 	{
@@ -181,7 +183,7 @@
 		"zho"	"AWP"
 		"chi"	"AWP"
 		"es"	"AWP"
-		"ru"	"Авп"
+		"ru"	"AWP"
 	}
 	"Grenade Launcher"
 	{
@@ -199,7 +201,7 @@
 		"zho"	"殲滅者 M60"
 		"chi"	"毁灭者 M60"
 		"es"	"Rifle M60"
-		"ru"	"M60 Пулик"
+		"ru"	"M60"
 	}
 	"Chainsaw"
 	{
@@ -289,7 +291,7 @@
 		"zho"	"警棍"
 		"chi"	"警棍"
 		"es"	"Tonfa"
-		"ru"	"Резиновая дубинка"
+		"ru"	"Полицейская дубинка"
 	}
 	"Golf Club"
 	{
@@ -334,7 +336,7 @@
 		"zho"	"電擊器"
 		"chi"	"电击器"
 		"es"	"Desfibrilador"
-		"ru"	"Дефиб"
+		"ru"	"Дефибриллятор"
 	}
 	"First Aid Kit"
 	{
@@ -352,7 +354,7 @@
 		"zho"	"止痛藥丸"
 		"chi"	"止痛药丸"
 		"es"	"Pildoras"
-		"ru"	"Болеутоляющие таблетки"
+		"ru"	"Таблетки"
 	}
 	"Adrenaline"
 	{
@@ -361,7 +363,7 @@
 		"zho"	"腎上腺素"
 		"chi"	"肾上腺素"
 		"es"	"Adrenalina"
-		"ru"	"Шприц адреналина"
+		"ru"	"Адреналин"
 	}
 	"Pipe Bomb"
 	{
@@ -379,7 +381,7 @@
 		"zho"	"火瓶"
 		"chi"	"火瓶"
 		"es"	"Molotov"
-		"ru"	"Коктейль молотова"
+		"ru"	"Молотов"
 	}
 	"Vomitjar"
 	{
@@ -451,7 +453,7 @@
 		"zho"	"瓦斯桶"
 		"chi"	"煤气罐"
 		"es"	"Tanque de propano"
-		"ru"	"Балон пропана"
+		"ru"	"Проп.бочка"
 	}
 	"Oxygen Tank"
 	{
@@ -460,7 +462,7 @@
 		"zho"	"氧氣罐"
 		"chi"	"氧气瓶"
 		"es"	"Tanque de oxígeno"
-		"ru"	"Кислородный балон"
+		"ru"	"Кислородная бочка"
 	}
 	"Firework Crate"
 	{
@@ -469,7 +471,7 @@
 		"zho"	"煙火盒"
 		"chi"	"烟花盒"
 		"es"	"Caja de fuegos artificiales"
-		"ru"	"Коробка фейерверков"
+		"ru"	"Фейерверки"
 	}
 	"Gascan"
 	{
@@ -478,7 +480,7 @@
 		"zho"	"汽油"
 		"chi"	"油桶"
 		"es"	"Lata de gas"
-		"ru"	"Канистра бензина"
+		"ru"	"Канистра"
 	}
 	"Gnome"
 	{
@@ -503,5 +505,6 @@
 		"en"	"Empty (Have a good day)"
 		"zho"	"空(謝謝惠顧)"
 		"chi"	"空(谢谢惠顾)"
+		"ru"	"Пусто (Хорошего дня)"
 	}
 }
