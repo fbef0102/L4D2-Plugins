@@ -25,10 +25,13 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
     1. [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)
     2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
 
-* Note
+* <details><summary>Important</summary>
+
     * Hats and others attaching stuff to players could block the players "use" function, which makes you unable to use 'look' item hint. Install [Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511) plugin to fix.
     * Player must Enabled GAME INSTRUCTOR, in ESC -> Options -> Multiplayer, or they can't see the hint
+    <br/>![l4d2_item_hint_5.jpg](image/l4d2_item_hint_5.jpg)
     * DO NOT modify convar ```sv_gameinstructor_disable``` this force all clients to disable their game instructors.
+</details>
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -142,6 +145,12 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
     繁體中文
     简体中文
     ```
+
+* <details><summary>Related Plugin | 相關插件</summary>
+
+	1. [l4d2_infected_hp_hint](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d2_infected_hp_hint): Display corresponding health value hint of all Special Infected
+        > 在特感身上顯示剩餘血量
+</details>
 
 * <details><summary>Changelog | 版本日誌</summary>
 
