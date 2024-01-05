@@ -41,18 +41,18 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
 	* **Usage: a4d_spawn_infected <infected_type> (does not work for uncommon infected, use a4d_spawn_uinfected instead)**
         ```php
-        a4d_spawn_infected
+        a4d_spawn_infected <zombie|mob|witch|tank|boomer|hunter|smoker|spitter|jockey|charger>
         ```
 
-	* **Usage: a4d_spawn_uinfected <riot|ceda|clown|mud|roadcrew|jimmy>**
+	* **Usage: a4d_spawn_uinfected <uncommon_infected_type>**
         ```php
-        a4d_spawn_uinfected
+        a4d_spawn_uinfected <riot|ceda|clown|mud|roadcrew|jimmy>
         ``` 
 
-	* **Usage: a4d_spawn_item <item_type>**
+	* **Usage: a4d_spawn_item <item_type>, read more item [here](https://commands.gg/l4d2/give)**
         ```php
-        a4d_spawn_item
-        a4d_spawn_weapon
+        a4d_spawn_item <rifle|first_aid_kit|ammo....>
+        a4d_spawn_weapon <rifle|first_aid_kit|ammo....>
         ``` 
 
 	* **This command forces the AI director to start a panic event**
@@ -67,34 +67,33 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
 	* **Usage: a4d_force_tank <0|1>**
         ```php
-        a4d_force_tank
+        a4d_force_tank <0|1>
         ``` 
 
 	* **Usage: a4d_force_witch <0|1>**
         ```php
-        a4d_force_witch
+        a4d_force_witch <0|1>
         ``` 
 
 	* **Usage: a4d_always_force_bosses <0|1>**
         ```php
-        a4d_continuous_bosses
+        a4d_continuous_bosses <0|1>
         ``` 
 
 	* **Usage: a4d_add_zombies <0..99>**
         ```php
-        a4d_add_zombies
+        a4d_add_zombies <0~99>
         ``` 
 
 	* **Usage: a4d_enable_notifications <0|1>**
         ```php
-        a4d_enable_notifications
+        a4d_enable_notifications <0|1>
         ``` 
 
 	* **Usage: Resets all ConVars to their default settings.**
         ```php
         a4d_reset_to_defaults
-        ``` 
-
+        ```
 </details>
 
 * Apply to | 適用於
