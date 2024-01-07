@@ -142,6 +142,22 @@ public void OnMapStart()
 	g_bMapStarted = true;
 	g_bValidMap = true;
 
+	CreateTimer(1.0, GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public void OnMapEnd()
+{
+	g_bMapStarted = false;
+	ResetTimer();
+}
+
+// ====================================================================================================
+//					CVARS
+// ====================================================================================================
+public void OnConfigsExecuted()
+{
+	IsAllowed();
+
 	char sCvar[512];
 	g_hCvarMapOff.GetString(sCvar, sizeof(sCvar));
 
@@ -169,9 +185,7 @@ public void OnMapStart()
 		PrecacheSound(SOUND_DROP3);
 		PrecacheSound(SOUND_DROP4);
 		PrecacheSound(SOUND_DROP5);
-		g_hSupplyBoxSoundFile.GetString(g_sCvarSupplyBoxSoundFile, sizeof(g_sCvarSupplyBoxSoundFile));
-		if (strlen(g_sCvarSupplyBoxSoundFile) > 0 && strcmp(g_sCvarSupplyBoxSoundFile, "-1") != 0) PrecacheSound(g_sCvarSupplyBoxSoundFile);
-	
+
 		PrecacheModel(BOX_1, true);
 		PrecacheModel(BOX_2, true);
 		PrecacheModel(BOX_3, true);
@@ -182,30 +196,6 @@ public void OnMapStart()
 		PrecacheModel("models/props_junk/wood_crate001a_chunk03.mdl", true);
 		PrecacheModel("models/props_junk/wood_crate001a_chunk02.mdl", true);
 		PrecacheModel("models/props_junk/wood_crate001a_chunk01.mdl", true);
-	}
-	
-	CreateTimer(1.0, GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public void OnMapEnd()
-{
-	g_bMapStarted = false;
-	ResetTimer();
-}
-
-// ====================================================================================================
-//					CVARS
-// ====================================================================================================
-public void OnConfigsExecuted()
-{
-	IsAllowed();
-
-	for (int client = 1; client <= MaxClients; client++)
-	{
-		if (!IsClientInGame(client))
-			continue;
-
-		SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquipPost);
 	}
 }
 
@@ -650,7 +640,7 @@ public Action CmdSpawnBox(int iClient, int iArgs)
 bool SpawnBox(float fPos[3], float fAng[3] = NULL_VECTOR)
 {
 	int iBox = CreateEntityByName("prop_physics");
-	if (CheckIfEntityMax( iBox ) == false)
+	if (CheckIfEntitySafe( iBox ) == false)
 		return false;
 	
 	TeleportEntity(iBox, fPos, fAng, NULL_VECTOR);
@@ -701,13 +691,13 @@ int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false
 	if(bUsePropPhysics == false)
 	{
 		entity = CreateEntityByName(sClassname);
-		if (CheckIfEntityMax( entity ) == false)
+		if (CheckIfEntitySafe( entity ) == false)
 			return -1;
 	}
 	else if (strcmp(sClassname, "weapon_melee") == 0)
 	{
 		entity = CreateEntityByName(sClassname);
-		if (CheckIfEntityMax( entity ) == false)
+		if (CheckIfEntitySafe( entity ) == false)
 			return -1;
 
 		DispatchKeyValue(entity, "solid", "6");
@@ -718,13 +708,13 @@ int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false
 		if(sClassname[0] == 'w' && strcmp(sClassname, "weapon_gascan") == 0)
 		{
 			entity = CreateEntityByName(sClassname);
-			if (CheckIfEntityMax( entity ) == false)
+			if (CheckIfEntitySafe( entity ) == false)
 				return -1;
 		}
 		else
 		{
 			entity = CreateEntityByName("prop_physics");
-			if (CheckIfEntityMax( entity ) == false)
+			if (CheckIfEntitySafe( entity ) == false)
 				return -1;
 
 			DispatchKeyValue(entity, "model", sClassname);
@@ -964,7 +954,7 @@ int my_GetRandomClient()
 	return (iClientCount == 0) ? 0 : iClients[GetRandomInt(0, iClientCount - 1)];
 }
 
-bool CheckIfEntityMax(int entity)
+bool CheckIfEntitySafe(int entity)
 {
 	if(entity == -1) return false;
 
