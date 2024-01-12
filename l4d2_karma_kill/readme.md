@@ -21,7 +21,7 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         // Award a confirmed karma maker with a player_death event.
         l4d2_karma_award_confirmed "1"
 
-        // Damage to award on confirmed kills, or -1 to disable. Requires l4d2_karma_award_confirmed set to 1
+        // Damage to award on confirmed kills, or -1 to disable. Requires _karma_award_confirmed set to 1
         l4d2_karma_damage_award_confirmed "300"
 
         // Whenever or not to make karma announce only happen upon death.
@@ -30,7 +30,7 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         // How long does Time get slowed for the server
         l4d2_karma_kill_slowtime_on_server "5.0"
 
-        // How long does Time get slowed for the karma couple
+        // How long does Time get slowed for the karma couple (Infected atacker and Survivor victim only)
         l4d2_karma_kill_slowtime_on_couple "3.0"
 
         // How slow Time gets. Hardwired to minimum 0.03 or the server crashes
@@ -39,10 +39,7 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         // Turn Karma Kills on and off 
         l4d2_karma_kill_enabled "1"
 
-        // If you take more than 224 points of damage while incapacitated, you die.
-        l4d2_karma_kill_no_fall_damage_protect_from_incap "1"
-
-        // 0 - Entire Server gets slowed, 1 - Only Charger and Survivor do
+        // 0 - Entire Server gets slowed, 1 - Only Infected atacker and Survivor victim do
         l4d2_karma_kill_slowmode "0"
 
         // If slowmode is 0, how long does it take for the next karma to freeze the entire map. Begins counting from the end of the previous freeze
@@ -65,8 +62,9 @@ Very Very loudly announces the predicted event of a player leaving the map and o
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-    * v4.2
-        * Remove <autoexecconfig>
+    * v1.0h (2024-1-13)
+        * Remove some useless cvars
+        * Remove stupid <autoexecconfig>
         * Remove <updater>
         * Fix error: timer invalid handle
         * Add <multicolors>
@@ -74,8 +72,8 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         * Fix error: client is not in game
         * Optimize code
 
-    * v4.1
-        * [By AtomicStryker, Eyal282](https://forums.alliedmods.net/showthread.php?t=336225)
+    * v4.8
+        * [Original Plugin By AtomicStryker, Eyal282](https://forums.alliedmods.net/showthread.php?t=336225)
 </details>
 
 - - - -
@@ -92,10 +90,10 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         // 為1時，玩家自己跳樓自殺也會有慢動作效果
         l4d2_karma_jump "1"
 
-        // 為1時，玩家死亡會有慢動作效果
+        // 為1時，抓人的特感如果攻擊人類死亡並且有慢動作特效，則特感會有獎勵分數 (對抗模式用)
         l4d2_karma_award_confirmed "1"
 
-        // 多少傷害以上才會有慢動作效果 [-1=關閉，_award_confirmed 的指令值必須為1]
+        // 獎勵分數 (對抗模式用) [-1=關閉，_award_confirmed 的指令值必須為1]
         l4d2_karma_damage_award_confirmed "300"
 
         // 為1時，只有倖存者死亡才會有提示
@@ -112,9 +110,6 @@ Very Very loudly announces the predicted event of a player leaving the map and o
 
         // 為1時，慢動作時有音效
         l4d2_karma_kill_enabled "1"
-
-        // 為1時，當倒地的倖存者墬樓或淹水時超過224滴的傷害時，立刻死亡.
-        l4d2_karma_kill_no_fall_damage_protect_from_incap "1"
 
         // 0 - 整個伺服器的時間都會慢下來, 1 - 只有抓人的特感與被抓的倖存者，兩個人的時間會慢下來
         l4d2_karma_kill_slowmode "0"
