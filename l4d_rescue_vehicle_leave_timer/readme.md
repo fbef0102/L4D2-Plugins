@@ -95,6 +95,9 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.9 (2024-1-20)
+        * Fix some custom maps not working
+
     * v1.8 (2023-10-21)
         * New method to detect if player is in rescue vehicle
         * Remove gamedata
