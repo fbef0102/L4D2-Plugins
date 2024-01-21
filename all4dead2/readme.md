@@ -112,8 +112,11 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
     ```php
     //grandwazir @ 2009-2010
-    //Harry @ 2020-2023
+    //Harry @ 2020-2024
     ```
+    * v3.7 (2024-1-20)
+        * Custom melee spawn support
+
     * v3.6 (2023-3-11)
         * Fixed translation phrase.
 

@@ -1,22 +1,38 @@
 #pragma semicolon 1
 #pragma newdecls required
-
-// Define constants
-#define PLUGIN_NAME					"All4Dead"
-#define PLUGIN_TAG					"[A4D]"
-#define PLUGIN_VERSION				"3.6"
-#define MENU_DISPLAY_TIME		15
-
-// Include necessary files
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-// Make the admin menu optional
-#undef REQUIRE_PLUGIN
 #include <adminmenu>
-// Make the left4dhooks optional
 #include <left4dhooks>
 #include <multicolors>
+
+#define PLUGIN_NAME					"All4Dead"
+#define PLUGIN_TAG					"[A4D]"
+#define PLUGIN_VERSION				"3.7-2024/1/21"
+
+public Plugin myinfo = {
+	name = PLUGIN_NAME,
+	author = "James Richardson (grandwazir) & HarryPotter",
+	description = "Enables admins to have control over the AI Director and spawn all weapons, melee, items, special infected, and Uncommon Infected without using sv_cheats 1",
+	version = PLUGIN_VERSION,
+	url = "https://github.com/fbef0102/L4D2-Plugins/tree/master/all4dead2"
+};
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+	
+	return APLRes_Success; 
+}
+
+#define MENU_DISPLAY_TIME		15
 
 // Create ConVar Handles
 ConVar notify_players, zombies_increment, always_force_bosses, refresh_zombie_location = null;
@@ -114,29 +130,12 @@ static Handle hCreateCharger = null;
 static Handle hCreateTank = null;
 #define NAME_CreateTank "NextBotCreatePlayerBot<Tank>"
 
-/// Metadata for the mod - used by SourceMod
-public Plugin myinfo = {
-	name = PLUGIN_NAME,
-	author = "James Richardson (grandwazir) & HarryPotter",
-	description = "Enables admins to have control over the AI Director and spawn all weapons, melee, items, special infected, and Uncommon Infected without using sv_cheats 1",
-	version = PLUGIN_VERSION,
-	url = "https://github.com/fbef0102/L4D2-Plugins/tree/master/all4dead2"
-};
+ArrayList
+	g_aMeleeScripts;
 
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
-{
-	EngineVersion test = GetEngineVersion();
-	
-	if( test != Engine_Left4Dead2 )
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
-	
-	return APLRes_Success; 
-}
+StringMap
+	g_smMeleeTrans;
 
-/// Create plugin Convars, register all our commands and hook any events we need. View the generated all4dead.cfg file for a list of generated Convars.
 public void OnPluginStart() {
 
 	// Translations
@@ -155,34 +154,50 @@ public void OnPluginStart() {
 	notify_players = CreateConVar("a4d_notify_players", "1", "Whether or not we announce changes in game.", FCVAR_NOTIFY);	
 	zombies_increment = CreateConVar("a4d_zombies_to_add", "10", "The amount of zombies to add when an admin requests more zombies.", FCVAR_NOTIFY, true, 10.0, true, 100.0);
 	refresh_zombie_location = CreateConVar("a4d_refresh_zombie_location", "20.0", "The amount of time in seconds between location refreshes. Used only for placing uncommon infected automatically.", FCVAR_NOTIFY, true, 5.0, true, 30.0);
-	// Register all spawning commands
+	AutoExecConfig(true, "all4dead2");	
+
 	RegAdminCmd("a4d_spawn_infected", Command_SpawnInfected, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_spawn_uinfected", Command_SpawnUInfected, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_spawn_item", Command_SpawnItem, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_spawn_weapon", Command_SpawnItem, ADMFLAG_CHEATS);
-	// Director commands
+
 	RegAdminCmd("a4d_force_panic", Command_ForcePanic, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_panic_forever", Command_PanicForever, ADMFLAG_CHEATS);	
 	RegAdminCmd("a4d_force_tank", Command_ForceTank, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_force_witch", Command_ForceWitch, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_continuous_bosses", Command_AlwaysForceBosses, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_add_zombies", Command_AddZombies, ADMFLAG_CHEATS);	
-	// Config settings
+
 	RegAdminCmd("a4d_enable_notifications", Command_EnableNotifications, ADMFLAG_CHEATS);
 	RegAdminCmd("a4d_reset_to_defaults", Command_ResetToDefaults, ADMFLAG_CHEATS);
 	// RegAdminCmd("a4d_debug_teleport", Command_TeleportToZombieSpawn, ADMFLAG_CHEATS);
-	// Hook events
+
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("tank_spawn", Event_BossSpawn, EventHookMode_PostNoCopy);
 	HookEvent("witch_spawn", Event_BossSpawn, EventHookMode_PostNoCopy);
 
-	// Create location refresh timer
 	refresh_timer = CreateTimer(refresh_zombie_location.FloatValue, Timer_RefreshLocation, _, TIMER_REPEAT);
-	// If the Admin menu has been loaded start adding stuff to it
 	if (LibraryExists("adminmenu") && ((top_menu = GetAdminTopMenu()) != null))
 		OnAdminMenuReady(top_menu);
 
-	AutoExecConfig(true, "all4dead2");	
+	g_smMeleeTrans = new StringMap();
+	g_aMeleeScripts = new ArrayList(ByteCountToCells(64));
+
+	g_smMeleeTrans.SetString("fireaxe", "Spawn a fire axe");
+	g_smMeleeTrans.SetString("frying_pan", "Spawn a frying pan");
+	g_smMeleeTrans.SetString("machete", "Spawn a machete");
+	g_smMeleeTrans.SetString("baseball_bat", "Spawn a baseball bat");
+	g_smMeleeTrans.SetString("crowbar", "Spawn a crowbar");
+	g_smMeleeTrans.SetString("cricket_bat", "Spawn a cricket bat");
+	g_smMeleeTrans.SetString("tonfa", "Spawn a police baton");
+	g_smMeleeTrans.SetString("katana", "Spawn a katana");
+	g_smMeleeTrans.SetString("electric_guitar", "Spawn an electric guitar");
+	g_smMeleeTrans.SetString("knife", "Spawn a knife");
+	g_smMeleeTrans.SetString("golfclub", "Spawn a golf club");
+	g_smMeleeTrans.SetString("shovel", "Spawn a shovel");
+	g_smMeleeTrans.SetString("pitchfork", "Spawn a pitchfork");
+	g_smMeleeTrans.SetString("riotshield", "Spawn a shield");
+	g_smMeleeTrans.SetString("riot_shield", "Spawn a shield");
 }
 
 public void OnMapStart() {
@@ -218,6 +233,23 @@ public void OnMapStart() {
 		g_bSpawnWitchBride = true;
 	else
 		g_bSpawnWitchBride = false;
+
+	CreateTimer(1.0, Timer_GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+Action Timer_GetMeleeTable(Handle timer)
+{
+	g_aMeleeScripts.Clear();
+	int table = FindStringTable("meleeweapons");
+	if (table != INVALID_STRING_TABLE) {
+		int num = GetStringTableNumStrings(table);
+		char melee[64];
+		for (int i; i < num; i++) {
+			ReadStringTable(table, i, melee, sizeof melee);
+			g_aMeleeScripts.PushString(melee);
+		}
+	}
+	return Plugin_Continue;
 }
 
 public void OnPluginEnd() {
@@ -1021,66 +1053,49 @@ void Menu_CreateMeleeWeaponMenu(int client) {
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
 	
-	menu.AddItem("ma", Translate(client, "%t", "Spawn a baseball bat"));
-	menu.AddItem("mb", Translate(client, "%t", "Spawn a chainsaw"));
-	menu.AddItem("mc", Translate(client, "%t", "Spawn a cricket bat"));
-	menu.AddItem("md", Translate(client, "%t", "Spawn a crowbar"));
-	menu.AddItem("me", Translate(client, "%t", "Spawn an electric guitar"));
-	menu.AddItem("mf", Translate(client, "%t", "Spawn a fire axe"));
-	menu.AddItem("mg", Translate(client, "%t", "Spawn a frying pan"));
-	menu.AddItem("mh", Translate(client, "%t", "Spawn a katana"));
-	menu.AddItem("mi", Translate(client, "%t", "Spawn a machete"));
-	menu.AddItem("mj", Translate(client, "%t", "Spawn a police baton"));
-	menu.AddItem("mk", Translate(client, "%t", "Spawn a knife"));
-	menu.AddItem("ml", Translate(client, "%t", "Spawn a golf club"));
-	menu.AddItem("mm", Translate(client, "%t", "Spawn a pitchfork"));
-	menu.AddItem("mn", Translate(client, "%t", "Spawn a shovel"));
+	char melee[64];
+	char trans[64];
+	int count = g_aMeleeScripts.Length;
+	for (int i; i < count; i++) 
+	{
+		g_aMeleeScripts.GetString(i, melee, sizeof melee);
+		if (!g_smMeleeTrans.GetString(melee, trans, sizeof trans))
+			strcopy(trans, sizeof trans, melee);
+
+		if(TranslationPhraseExists(trans))
+		{
+			menu.AddItem(melee, Translate(client, "%t", trans));
+		}
+		else
+		{
+			menu.AddItem(melee, trans);
+		}
+	}
 	
 	menu.DisplayAt( client, g_iMeleeMenuPosition[client], MENU_TIME_FOREVER);
 }
 /// Handles callbacks from a client using the spawn weapon menu.
-int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex, int itempos) {
-	if (action == MenuAction_Select) {
-		switch (itempos) {
-			case 0: {
-				Do_SpawnItem(cindex, "baseball_bat");
-			} case 1: {
-				Do_SpawnItem(cindex, "chainsaw");
-			} case 2: {
-				Do_SpawnItem(cindex, "cricket_bat");
-			} case 3: {
-				Do_SpawnItem(cindex, "crowbar");
-			} case 4: {
-				Do_SpawnItem(cindex, "electric_guitar");
-			} case 5: {
-				Do_SpawnItem(cindex, "fireaxe");
-			} case 6: {
-				Do_SpawnItem(cindex, "frying_pan");
-			} case 7: {
-				Do_SpawnItem(cindex, "katana");
-			} case 8: {
-				Do_SpawnItem(cindex, "machete");
-			} case 9: {
-				Do_SpawnItem(cindex, "tonfa");
-			} case 10: {
-				Do_SpawnItem(cindex, "knife");
-			} case 11: {
-				Do_SpawnItem(cindex, "golfclub");
-			} case 12: {
-				Do_SpawnItem(cindex, "pitchfork");
-			} case 13: {
-				Do_SpawnItem(cindex, "shovel");
-			} 
-			
-		}
+int Menu_SpawnMeleeWeaponHandler(Menu menu, MenuAction action, int cindex, int itempos) 
+{
+	if (action == MenuAction_Select) 
+	{
+		char item[64];
+		menu.GetItem(itempos, item, sizeof item);
+
+		Do_SpawnItem(cindex, item);
+
 		g_iMeleeMenuPosition[cindex] = menu.Selection;
 		Menu_CreateMeleeWeaponMenu(cindex);
-	} else if (action == MenuAction_End)
+	}
+	else if (action == MenuAction_End)
+	{
 		delete menu;
-	/* If someone presses 'back' (8), return to main All4Dead menu */
+	}
 	else if (action == MenuAction_Cancel)
+	{
 		if (itempos == MenuCancel_ExitBack && admin_menu != null)
 			admin_menu.Display( cindex, TopMenuPosition_LastCategory);
+	}
 
 	return 0;
 }

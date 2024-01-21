@@ -539,6 +539,12 @@
 		"zho"			"鏟子"
 		"es"            "Invocar una Pala"
 	}
+	"Spawn a shield"
+	{
+		"en"			"Spawn a shield"
+		"chi"			"盾牌"
+		"zho"			"盾牌"
+	}
 	"End non-stop panic events"
 	{
 		"en"			"End non-stop panic events"
