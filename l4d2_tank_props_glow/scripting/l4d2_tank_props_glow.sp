@@ -232,8 +232,11 @@ public void OnMapEnd()
 {
 	DHookRemoveEntityListener(ListenType_Created, PossibleTankPropCreated);
 
-	g_hTankPropsList.Clear();
-	g_hTankPropsHitList.Clear();
+	delete g_hTankPropsList;
+	delete g_hTankPropsHitList;
+
+	g_hTankPropsList = new ArrayList();
+	g_hTankPropsHitList = new ArrayList();
 }
 
 public void OnClientDisconnect(int client)
@@ -286,7 +289,9 @@ void TankPropRoundReset(Event hEvent, const char[] sEventName, bool bDontBroadca
 	g_bTankSpawned = false;
 
 	UnhookTankProps();
-	g_hTankPropsHitList.Clear();
+
+	delete g_hTankPropsHitList;
+	g_hTankPropsHitList = new ArrayList();
 }
 
 void TankPropTankSpawn(Event hEvent, const char[] sEventName, bool bDontBroadcast)
@@ -296,7 +301,8 @@ void TankPropTankSpawn(Event hEvent, const char[] sEventName, bool bDontBroadcas
 	}
 
 	UnhookTankProps();
-	g_hTankPropsHitList.Clear();
+	delete g_hTankPropsHitList;
+	g_hTankPropsHitList = new ArrayList();
 
 	HookTankProps();
 
@@ -448,8 +454,11 @@ void PluginDisable()
 	}
 
 	g_bTankSpawned = false;
-	g_hTankPropsList.Clear();
-	g_hTankPropsHitList.Clear();
+	delete g_hTankPropsList;
+	delete g_hTankPropsHitList;
+
+	g_hTankPropsList = new ArrayList();
+	g_hTankPropsHitList = new ArrayList();
 }
 
 void CreateTankPropGlow(int iTarget)
@@ -569,8 +578,11 @@ void UnhookTankProps()
 	}
 	g_bKillTankProp = false;
 
-	g_hTankPropsList.Clear();
-	g_hTankPropsHitList.Clear();
+	delete g_hTankPropsList;
+	delete g_hTankPropsHitList;
+
+	g_hTankPropsList = new ArrayList();
+	g_hTankPropsHitList = new ArrayList();
 }
 
 bool IsValidEntRef(int iRef)

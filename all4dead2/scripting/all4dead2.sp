@@ -239,7 +239,8 @@ public void OnMapStart() {
 
 Action Timer_GetMeleeTable(Handle timer)
 {
-	g_aMeleeScripts.Clear();
+	delete g_aMeleeScripts;
+	g_aMeleeScripts = new ArrayList(ByteCountToCells(64));
 	int table = FindStringTable("meleeweapons");
 	if (table != INVALID_STRING_TABLE) {
 		int num = GetStringTableNumStrings(table);

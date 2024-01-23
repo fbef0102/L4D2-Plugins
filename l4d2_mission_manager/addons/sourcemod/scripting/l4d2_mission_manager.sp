@@ -24,7 +24,7 @@ public void OnPluginStart(){
 	mp_gamemode = FindConVar("mp_gamemode");
 
 	BuildPath(Path_SM, g_sFile, PLATFORM_MAX_PATH, "/logs/l4d2_mission_manager.log");
-	g_hMissionsMap = CreateTrie();
+	g_hMissionsMap = new StringMap();
 
 	CacheMissions();
 	LMM_InitLists();
@@ -42,7 +42,7 @@ public void OnPluginStart(){
 public void OnPluginEnd() {
 	LMM_FreeLists();
 	LMM_FreeLocalizedLists();
-	g_hMissionsMap.Clear();
+	delete g_hMissionsMap;
 }
 
 public Action Command_List(int iClient, int args) {
@@ -692,8 +692,11 @@ public SMCResult MissionParser_NewSection(SMCParser smc, const char[] name, bool
 				g_MissionParser_State = MPS_UNKNOWN;
 				// PrintToServer("MissionParser_NewSection found an unknown structure: %s",name);
 			} else {
-				g_hIntMap_Index.Clear();
-				g_hStrMap_FileName.Clear();
+				delete g_hIntMap_Index;
+				delete g_hStrMap_FileName;
+				g_hIntMap_Index = new ArrayList(1);
+				g_hStrMap_FileName = new ArrayList(LEN_MAP_FILENAME);
+
 				g_MissionParser_State = MPS_GAMEMODE;
 			}
 			
@@ -914,6 +917,7 @@ void ParseMissions() {
 		
 		delete g_hIntMap_Index;
 		g_hIntMap_Index = new ArrayList(1);
+		
 		delete g_hStrMap_FileName;
 		g_hStrMap_FileName = new ArrayList(LEN_MAP_FILENAME);
 	
