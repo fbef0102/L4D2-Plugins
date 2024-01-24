@@ -1053,6 +1053,8 @@ void Menu_CreateMeleeWeaponMenu(int client) {
 	menu.SetTitle(Translate(client, "%t", "Spawn Melee Weapons"));
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
+
+	menu.AddItem("chainsaw", Translate(client, "%t", "Spawn a chainsaw"));
 	
 	char melee[64];
 	char trans[64];
