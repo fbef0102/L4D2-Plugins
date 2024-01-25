@@ -1,22 +1,43 @@
 #pragma semicolon 1
+#pragma newdecls required //強制1.7以後的新語法
 #include <sourcemod>
 #include <sdkhooks>
 #include <sdktools>
 #define DEBUG 0
 
+public Plugin myinfo = 
+{
+	name = "Modify every weapon damage done to Tank,SI,Witch,Common in l4d2",
+	author = "Harry Potter",
+	description = "as the name says, you dumb fuck",
+	version = "1.2-2024/1/25",
+	url = "https://steamcommunity.com/profiles/76561198026784913"
+}
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+	return APLRes_Success;
+}
+
 #define L4D_TEAM_INFECTED  	3
 #define L4D_TEAM_SURVIVOR  	2
 #define L4D_TEAM_SPECTATOR 	1
+
 #define ZC_SMOKER       	1
 #define ZC_BOOMER       	2
 #define ZC_HUNTER       	3
 #define ZC_JOCKEY       	5
 #define ZC_CHARGER      	6
 #define ZC_TANK         	8
-#define L4D_TEAM_SURVIVOR  	2
-#define L4D_TEAM_SPECTATOR 	1
+
 #define CLASSNAME_LENGTH 	64
-#pragma newdecls required //強制1.7以後的新語法
 
 //enum
 enum WeaponID
@@ -42,7 +63,7 @@ enum WeaponID
 	ID_AWP,
 	ID_SCOUT,
 	ID_SPASSHOTGUN,
-	ID_MELEE,
+	//ID_Melee,
 	ID_WEAPON_MAX
 }
 
@@ -65,27 +86,6 @@ char Weapon_Name[view_as<int>(ID_WEAPON_MAX)][CLASSNAME_LENGTH];
 int g_iOffset_Incapacitated;
 WeaponID Cw[view_as<int>(ID_WEAPON_MAX)];
 VictimID Cv[view_as<int>(Victim_MAX)];
-
-public Plugin myinfo = 
-{
-	name = "Modify every weapon damage done to Tank,SI,Witch,Common including melee in l4d2",
-	author = "Harry Potter",
-	description = "as the name says, you dumb fuck",
-	version = "1.1",
-	url = "https://steamcommunity.com/id/fbef0102/"
-}
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	EngineVersion test = GetEngineVersion();
-	
-	if( test != Engine_Left4Dead2 )
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
-	return APLRes_Success;
-}
 
 public void OnPluginStart()
 {
@@ -315,29 +315,17 @@ public void OnPluginStart()
 	g_hCvarWeaponDamageModfiy[Cw[ID_SCOUT]][Cv[Victim_Common]] = CreateConVar("l4d_scout_damage_common_multi", "1.0",
 								"Modfiy scout Damage to Common multi.",	
 								FCVAR_NOTIFY, true, 0.0);		
-	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_Tank]] = CreateConVar("l4d_spassshotgun_damage_tank_multi", "1.0",
-								"Modfiy spass shotgun Damage to tank multi.",
+	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_Tank]] = CreateConVar("l4d_spasshotgun_damage_tank_multi", "1.0",
+								"Modfiy spas shotgun Damage to tank multi.",
 								FCVAR_NOTIFY, true, 0.0);
-	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_Witch]] = CreateConVar("l4d_spassshotgun_damage_witch_multi", "1.0",
-								"Modfiy spass shotgun Damage to witch multi.",
+	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_Witch]] = CreateConVar("l4d_spasshotgun_damage_witch_multi", "1.0",
+								"Modfiy spas shotgun Damage to witch multi.",
 								FCVAR_NOTIFY, true, 0.0);		
-	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_SI]] = CreateConVar("l4d_spassshotgun_damage_SI_multi", "1.0",
-								"Modfiy spass shotgun Damage to SI multi.",
+	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_SI]] = CreateConVar("l4d_spasshotgun_damage_SI_multi", "1.0",
+								"Modfiy spas shotgun Damage to SI multi.",
 								FCVAR_NOTIFY, true, 0.0);		
-	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_Common]] = CreateConVar("l4d_spassshotgun_damage_common_multi", "1.0",
-								"Modfiy spass shotgun Damage to Common multi.",	
-								FCVAR_NOTIFY, true, 0.0);	
-	g_hCvarWeaponDamageModfiy[Cw[ID_MELEE]][Cv[Victim_Tank]] = CreateConVar("l4d_melee_damage_tank_multi", "1.0",
-								"Modfiy melee weapon Damage to tank multi.",
-								FCVAR_NOTIFY, true, 0.0);
-	g_hCvarWeaponDamageModfiy[Cw[ID_MELEE]][Cv[Victim_Witch]] = CreateConVar("l4d_melee_damage_witch_multi", "1.0",
-								"Modfiy melee weapon Damage to witch multi.",
-								FCVAR_NOTIFY, true, 0.0);		
-	g_hCvarWeaponDamageModfiy[Cw[ID_MELEE]][Cv[Victim_SI]] = CreateConVar("l4d_melee_damage_SI_multi", "1.0",
-								"Modfiy melee weapon Damage to SI multi.",
-								FCVAR_NOTIFY, true, 0.0);		
-	g_hCvarWeaponDamageModfiy[Cw[ID_MELEE]][Cv[Victim_Common]] = CreateConVar("l4d_melee_damage_common_multi", "1.0",
-								"Modfiy melee weapon Damage to Common multi.",	
+	g_hCvarWeaponDamageModfiy[Cw[ID_SPASSHOTGUN]][Cv[Victim_Common]] = CreateConVar("l4d_spasshotgun_damage_common_multi", "1.0",
+								"Modfiy spas shotgun Damage to Common multi.",	
 								FCVAR_NOTIFY, true, 0.0);																	
 
 	g_hCvarAllow.AddChangeHook(ConVarChanged_Allowed);
@@ -350,7 +338,7 @@ public void OnConfigsExecuted()
 	IsAllowed();
 }
 
-public void ConVarChanged_Allowed(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Allowed(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	IsAllowed();
 }
@@ -394,15 +382,39 @@ void SetSettings()
 	Weapon_Name[ID_AWP] = "weapon_sniper_awp";
 	Weapon_Name[ID_SCOUT] = "weapon_sniper_scout";
 	Weapon_Name[ID_SPASSHOTGUN] = "weapon_shotgun_spas";
-	Weapon_Name[ID_MELEE] = "weapon_melee";
+	//Weapon_Name[ID_Melee] = "weapon_melee";
+}
+
+public void OnClientPutInServer(int client)
+{
+    SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage); 
 }
 
 public void OnEntityCreated(int entity, const char[] classname) 
 { 
-    SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage); 
+	if (!IsValidEntityIndex(entity))
+		return;
+
+	switch (classname[0])
+	{
+		case 'i':
+		{
+			if(strncmp(classname, "infected", 18) == 0)
+			{
+				SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage); 
+			}
+		}
+		case 'w':
+		{
+			if(strncmp(classname, "witch", 18) == 0)
+			{
+				SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage);
+			}
+		}
+	}
 }
 
-public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
+Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
 	if(damage <= 0.0 || g_bEnable == false) return Plugin_Continue;
 	if(!IsClientAndInGame(attacker) || 
@@ -457,7 +469,7 @@ WeaponID GetWeaponID(char[] sWeaponName)
 {
 	for(WeaponID i = ID_NONE; i < ID_WEAPON_MAX ; ++i)
 	{
-		if(StrEqual(sWeaponName,Weapon_Name[i],false))
+		if(StrEqual(sWeaponName, Weapon_Name[i],false))
 			return i;
 	}
 	return ID_NONE;
@@ -490,4 +502,9 @@ bool IsTankDying(int tankclient)
 	if (!tankclient) return false;
  
 	return view_as<bool>(GetEntData(tankclient, g_iOffset_Incapacitated));
+}
+
+bool IsValidEntityIndex(int entity)
+{
+    return (MaxClients+1 <= entity <= GetMaxEntities());
 }

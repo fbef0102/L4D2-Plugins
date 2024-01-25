@@ -16,7 +16,6 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
 * <b>[l4d2_change_m1](/l4d2_change_m1)</b>: If all Survivors die, change level to the current map m1 (coop only)
 * <b>[lfd_both_fixUpgradePack](/lfd_both_fixUpgradePack)</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
 * <b>[clear_dead_body](/clear_dead_body)</b>: Remove Dead Body Entity
-* <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common including melee in l4d2
 * <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
 * <b>[l4d_witch_realism_door_fix](/l4d_witch_realism_door_fix)</b>: Fixing witch can't break the door on Realism Normal、Advanced、Expert
@@ -75,7 +74,9 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 調整每個近戰武器的揮砍速度
 * <b>[l4d_finale_stage_fix](/l4d_finale_stage_fix)</b>: Fixed the final stage get stucked
     * 解決最後救援卡關，永遠不能來救援載具的問題
-    
+* <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common in l4d2
+    * 修改每一種槍械武器對普通殭屍/Tank/Witch/特感 的傷害倍率
+
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
     * 使用 sourcemod v1.11 的編譯環境
