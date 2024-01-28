@@ -9,38 +9,19 @@ Improves the AI behaviour of special infected
 * Image｜ 圖示
 <br/>None
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    * v1.6 (2023-6-4)
-        * Enable or Disable Each special infected behaviour
-
-    * v1.5 (2023-5-4)
-        * Use server console to execute command "nb_assault"
-
-    * v1.4
-        * Remake code
-        * Replace left4downtown with left4dhooks
-        *Compatibility support for SourceMod 1.11. Fixed various warnings.
-    </details>
-
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-
-* Related Plugin | 相關插件
-	1. [l4dinfectedbots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dinfectedbots): Spawns infected bots in L4D1 versus, and gives greater control of the infected bots in L4D1/L4D2 without being limited by the director.
-		> 生成多特感控制插件
-	1. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
-		> 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
 
 * <details><summary>ConVar | 指令</summary>
 
 	* cfg\sourcemod\AI_HardSI.cfg
 		```php
+        // 0=Plugin off, 1=Plugin on.
+        AI_HardSI_enable "1"
+
+        // Frequency(sec) at which the 'nb_assault' command is fired to make SI attack
+        ai_assault_reminder_interval "2"
+
         // 0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.
         AI_HardSI_Boomer_enable "1"
 
@@ -67,9 +48,6 @@ Improves the AI behaviour of special infected
 
         // If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
         ai_aim_offset_sensitivity_hunter "30"
-
-        // Frequency(sec) at which the 'nb_assault' command is fired to make SI attack
-        ai_assault_reminder_interval "2"
 
         // How close a charger will approach before charging
         ai_charge_proximity "300"
@@ -118,7 +96,14 @@ Improves the AI behaviour of special infected
     * <details><summary><b>AI Tank</b></summary>
 
         * Stop throwing the rock after approaching the survivors
-        * Behop
+        * Plugin ConVar
+            ```php
+            // Flag to enable bhop facsimile on AI tanks
+            ai_tank_bhop "1"
+
+            // Flag to enable rocks on AI tanks
+            ai_tank_rock "1"
+            ```
     </details>
 
     * <details><summary><b>Witch</b></summary>
@@ -170,6 +155,7 @@ Improves the AI behaviour of special infected
             // AI Hunter skeet damage (Default: 50)
             z_pounce_damage_interrupt 150
             ```
+
         * Plugin ConVar
             ```php
             // At what distance to start pouncing fast
@@ -197,7 +183,11 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Spitter</b></summary>
 
-        * Behop
+        * Plugin ConVar
+            ```php
+            // Flag to enable bhop facsimile on AI spitters
+            ai_spitter_bhop "1"
+            ```
     </details>
 
     * <details><summary><b>AI Jockey</b></summary>
@@ -207,6 +197,7 @@ Improves the AI behaviour of special infected
             // AI Jockeys will move to attack survivors within this range (Default: 200)
             z_jockey_leap_range 1000
             ```
+
         * Plugin ConVar
             ```php
             // How close a jockey will approach before it starts hopping
@@ -223,14 +214,45 @@ Improves the AI behaviour of special infected
 
             // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
             ai_aim_offset_sensitivity_charger 20
+
+            // Charger will charge if its health drops to this level
+            ai_health_threshold_charger "300"
             ```
     </details>
 
 * What is ```nb_assault```?
     * Tell all special infected bots to assault, attack survivors actively instead of not moving like idiots
     * This is official command
-    * Can't use this command in multiplayer, unless the server has sv_cheats set to 1
-    * By Default, the plugin forces server to execue this command every 2 seconds (without sv_cheats)
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Related Plugin | 相關插件</summary>
+
+	1. [l4dinfectedbots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dinfectedbots): Spawns infected bots in L4D1 versus, and gives greater control of the infected bots in L4D1/L4D2 without being limited by the director.
+		> 生成多特感控制插件
+	1. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
+		> 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.7 (2024-1-28)
+        * Update Cvars
+
+    * v1.6 (2023-6-4)
+        * Enable or Disable Each special infected behaviour
+
+    * v1.5 (2023-5-4)
+        * Use server console to execute command "nb_assault"
+
+    * v1.4
+        * Remake code
+        * Replace left4downtown with left4dhooks
+        *Compatibility support for SourceMod 1.11. Fixed various warnings.
+    </details>
 
 - - - -
 # 中文說明
@@ -246,11 +268,68 @@ Improves the AI behaviour of special infected
     * 有效解決許多特感長期站著不動也不攻擊的智商與行為
     * 伺服器遊玩難度提升10倍以上
 
+* <details><summary>指令中文介紹 (點我展開)</summary>
+
+	* cfg\sourcemod\AI_HardSI.cfg
+		```php
+        // 0=關閉插件, 1=啟動插件
+        AI_HardSI_enable "1"
+
+        // 每兩秒執行 nb_assault 命令，強迫所有特感Bots主動往前攻擊倖存者
+        ai_assault_reminder_interval "2"
+
+        // 0=不強化AI Boomer, 1=強化AI Boomer
+        AI_HardSI_Boomer_enable "1"
+
+        // 0=不強化AI Charger, 1=強化AI Charger
+        AI_HardSI_Charger_enable "1"
+
+        // 0=不強化AI Hunter, 1=強化AI Hunter
+        AI_HardSI_Hunter_enable "1"
+
+        // 0=不強化AI Jockey, 1=強化AI Jockey
+        AI_HardSI_Jockey_enable "1"
+
+        // 0=不強化AI Smoker, 1=強化AI Smoker
+        AI_HardSI_Smoker_enable "1"
+
+        // 0=不強化AI Spitter, 1=強化AI Spitter
+        AI_HardSI_Spitter_enable "1"
+
+        // 0=不強化AI Tank, 1=強化AI Tank
+        AI_HardSI_Tank_enable "1"
+
+        // 以下指令說明請查看下方"功能" 各特感介紹
+        ai_aim_offset_sensitivity_charger "20"
+        ai_aim_offset_sensitivity_hunter "30"
+        ai_charge_proximity "300"
+        ai_fast_pounce_proximity "1000"
+        ai_health_threshold_charger "300"
+        ai_hop_activation_proximity "500"
+        ai_pounce_angle_mean "10"
+        ai_pounce_angle_std "20"
+        ai_pounce_vertical_angle "7"
+        ai_spitter_bhop "1"
+        ai_straight_pounce_proximity "200"
+        ai_tank_bhop "1"
+        ai_tank_rock "1"
+        ai_wall_detection_distance "-1"
+        ```
+</details> 
+
 * 功能
     * <details><summary><b>AI Tank</b></summary>
 
         * 靠近倖存者一定範圍內不會主動丟石頭
-        * 連跳
+        * 插件自帶的指令
+            ```php
+            // 為1時，AI Tank會連跳
+            ai_tank_bhop "1"
+
+            // 1=AI tanks會丟石頭
+            // 0=AI tanks不丟石頭
+            ai_tank_rock "1"
+            ```
     </details>
 
     * <details><summary><b>Witch</b></summary>
@@ -302,6 +381,7 @@ Improves the AI behaviour of special infected
             // AI Hunter飛撲在空中的過程中受到150HP傷害或自身血量以上才會死亡 (避免飛撲過程中容易被殺死，預設: 50)
             z_pounce_damage_interrupt 150
             ```
+
         * 插件自帶的指令
             ```php
             // 強迫AI Hunter在1000公尺範圍內蹲下準備撲人
@@ -327,7 +407,11 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Spitter</b></summary>
 
-        * 連跳
+        * 插件自帶的指令
+            ```php
+            // 為1時，AI Spitter會連跳
+            ai_spitter_bhop "1"
+            ```
     </details>
 
     * <details><summary><b>AI Jockey</b></summary>
@@ -337,6 +421,7 @@ Improves the AI behaviour of special infected
             // 1000公尺範圍內才會飛撲 (預設: 200)
             z_jockey_leap_range 1000
             ```
+
         * 插件自帶的指令
             ```php
             // 強迫AI Jockey在500公尺範圍內開始連跳
@@ -353,11 +438,12 @@ Improves the AI behaviour of special infected
 
             // 目標倖存者的準心如果在瞄自身AI Charger的身體低於20度視野範圍內則強制衝刺
             ai_aim_offset_sensitivity_charger 20
+
+            // 當Charger低於300血量時，強迫AI Charger開始衝刺
+            ai_health_threshold_charger "300"
             ```
     </details>
 
 * 甚麼是 ```nb_assault```?
     * 強迫所有特感Bots主動往前攻擊倖存者而非像智障一樣待在原地等倖存者過來
     * 這是官方的指令
-    * Server沒有開啟sv_cheats 作弊模式就不能輸入這條指令
-    * 這插件運行時會每2秒強制執行這條指令 (不管server有沒有開sv_cheats 作弊模式)

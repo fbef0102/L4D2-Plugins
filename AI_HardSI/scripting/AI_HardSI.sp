@@ -13,7 +13,12 @@
 #include "modules/AI_Jockey.sp"
 #include "modules/AI_Tank.sp"
 
-ConVar hCvarAssaultReminderInterval;
+#define CVAR_FLAGS                    FCVAR_NOTIFY
+#define CVAR_FLAGS_PLUGIN_VERSION     FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY
+
+ConVar g_hCvarEnable, g_hCvarAssaultReminderInterval;
+bool g_bCvarEnable;
+float g_fCvarAssaultReminderInterval;
 
 bool bHasBeenShoved[MAXPLAYERS]; // shoving resets SI movement 
 
@@ -22,18 +27,25 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "1.6-2023/6/4",
+	version = "1.7-2024/1/28",
 	url = "github.com/breezyplease"
 };
 
-public void OnPluginStart() { 
+public void OnPluginStart() 
+{ 
 	// Cvars
-	hCvarAssaultReminderInterval = CreateConVar( "ai_assault_reminder_interval", "2", "Frequency(sec) at which the 'nb_assault' command is fired to make SI attack" );
+	g_hCvarEnable 				 	= CreateConVar( "AI_HardSI_enable",        		"1",   	"0=Plugin off, 1=Plugin on.", CVAR_FLAGS, true, 0.0, true, 1.0);
+	g_hCvarAssaultReminderInterval 	= CreateConVar( "ai_assault_reminder_interval", "2", 	"Frequency(sec) at which the 'nb_assault' command is fired to make SI attack" );
+
+	GetCvars();
+	g_hCvarEnable.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarAssaultReminderInterval.AddChangeHook(ConVarChanged_Cvars);
+	
 	// Event hooks
-	HookEvent("player_spawn", InitialiseSpecialInfected, EventHookMode_Pre);
+	HookEvent("player_spawn", InitialiseSpecialInfected);
 	HookEvent("ability_use", OnAbilityUse, EventHookMode_Pre); 
-	HookEvent("player_shoved", OnPlayerShoved, EventHookMode_Pre);
-	HookEvent("player_jump", OnPlayerJump, EventHookMode_Pre);
+	HookEvent("player_shoved", OnPlayerShoved);
+	HookEvent("player_jump", OnPlayerJump);
 	// Load modules
 	Smoker_OnModuleStart();
 	Hunter_OnModuleStart();
@@ -57,6 +69,17 @@ public void OnPluginEnd() {
 	Tank_OnModuleEnd();
 }
 
+void ConVarChanged_Cvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+	GetCvars();
+}
+
+void GetCvars()
+{
+	g_bCvarEnable = g_hCvarEnable.BoolValue;
+	g_fCvarAssaultReminderInterval = g_hCvarAssaultReminderInterval.FloatValue;
+}
+
 /***********************************************************************************************************************************************************************************
 
 																	KEEP SI AGGRESSIVE
@@ -64,12 +87,14 @@ public void OnPluginEnd() {
 ***********************************************************************************************************************************************************************************/
 
 public Action L4D_OnFirstSurvivorLeftSafeArea(int client) {
-	CreateTimer( hCvarAssaultReminderInterval.FloatValue, Timer_ForceInfectedAssault, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( g_fCvarAssaultReminderInterval, Timer_ForceInfectedAssault, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 
 	return Plugin_Continue;
 }
 
 public Action Timer_ForceInfectedAssault( Handle timer ) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	CheatServerCommand("nb_assault");
 
 	return Plugin_Continue;
@@ -83,6 +108,8 @@ public Action Timer_ForceInfectedAssault( Handle timer ) {
 
 // Modify SI movement
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+	
 	if( IsBotInfected(client) && IsPlayerAlive(client) ) { // bots continue to trigger this callback for a few seconds after death
 		int botInfected = client;
 		switch( GetInfectedClass(botInfected) ) {
@@ -122,7 +149,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 ***********************************************************************************************************************************************************************************/
 
 // Initialise relevant module flags for SI when they spawn
-public Action InitialiseSpecialInfected(Event event, char[] name, bool dontBroadcast) {
+void InitialiseSpecialInfected(Event event, char[] name, bool dontBroadcast) {
+	if(!g_bCvarEnable) return;
+
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if( IsBotInfected(client) ) {
 		int botInfected = client;
@@ -131,27 +160,28 @@ public Action InitialiseSpecialInfected(Event event, char[] name, bool dontBroad
 		switch( GetInfectedClass(botInfected) ) {
 		
 			case (L4D2Infected_Hunter): {
-				return Hunter_OnSpawn(botInfected);
+				Hunter_OnSpawn(botInfected);
 			}
 			
 			case (L4D2Infected_Charger): {
-				return Charger_OnSpawn(botInfected);
+				Charger_OnSpawn(botInfected);
 			}
 			
 			case (L4D2Infected_Jockey): {
-				return Jockey_OnSpawn(botInfected);
+				Jockey_OnSpawn(botInfected);
 			}
 			
 			default: {
-				return Plugin_Handled;	
+				return;	
 			}				
 		}
 	}
-	return Plugin_Handled;
 }
 
 // Modify hunter lunges and block smokers/spitters from fleeing after using their ability
-public Action OnAbilityUse(Event event, char[] name, bool dontBroadcast) {
+Action OnAbilityUse(Event event, char[] name, bool dontBroadcast) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if( IsBotInfected(client) ) {
 		int bot = client;
@@ -165,11 +195,14 @@ public Action OnAbilityUse(Event event, char[] name, bool dontBroadcast) {
 			Charger_OnCharge(bot);
 		}
 	}
-	return Plugin_Handled;
+
+	return Plugin_Continue;
 }
 
 // Pause behaviour modification when shoved
-public Action OnPlayerShoved(Event event, char[] name, bool dontBroadcast) {
+void OnPlayerShoved(Event event, char[] name, bool dontBroadcast) {
+	if(!g_bCvarEnable) return;
+
 	int shovedPlayer = GetClientOfUserId(event.GetInt("userid"));
 	if( IsBotInfected(shovedPlayer) ) {
 		bHasBeenShoved[shovedPlayer] = true;
@@ -177,17 +210,16 @@ public Action OnPlayerShoved(Event event, char[] name, bool dontBroadcast) {
 			Jockey_OnShoved(shovedPlayer);
 		}
 	}
-	return Plugin_Continue;	
 }
 
 // Re-enable forced hopping when a shoved jockey leaps again naturally
-public Action OnPlayerJump(Event event, char[] name, bool dontBroadcast) {
+void OnPlayerJump(Event event, char[] name, bool dontBroadcast) {
+	if(!g_bCvarEnable) return;
+
 	int jumpingPlayer = GetClientOfUserId(event.GetInt("userid"));
 	if( IsBotInfected(jumpingPlayer) )  {
 		bHasBeenShoved[jumpingPlayer] = false;
 	}
-
-	return Plugin_Continue;
 } 
 
 /***********************************************************************************************************************************************************************************

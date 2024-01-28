@@ -421,12 +421,3 @@ stock bool IsValidClient(int client) {
 stock bool IsGenericAdmin(int client) {
 	return CheckCommandAccess(client, "generic_admin", ADMFLAG_GENERIC, false); 
 }
-
-// Kick dummy bot 
-public Action Timer_KickBot(Handle timer, any client) {
-	if (IsClientInGame(client) && (!IsClientInKickQueue(client))) {
-		if (IsFakeClient(client))KickClient(client);
-	}
-
-	return Plugin_Continue;
-}
