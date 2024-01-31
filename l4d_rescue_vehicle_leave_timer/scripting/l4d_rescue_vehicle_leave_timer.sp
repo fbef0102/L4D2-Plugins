@@ -434,6 +434,7 @@ Action tmrStart(Handle timer)
 {
 	ResetPlugin();
 	InitRescueEntity();
+	g_bHookStart = true;
 
 	return Plugin_Continue;
 }
@@ -767,8 +768,6 @@ void InitRescueEntity()
 	if(LoadData() == false) return;
 	if(g_iEscapeTime == 0) return;
 
-	g_bHookStart = true;
-
 	int entity = FindEntityByClassname(MaxClients + 1, "trigger_finale");
 	if(entity > MaxClients && IsValidEntity(entity))
 	{
@@ -857,13 +856,12 @@ Action Timer_StartAirstrike(Handle timer)
 	GetClientAbsOrigin(client, g_pos);
 	GetClientEyeAngles(client, vAng);
 	
-	DataPack h = new DataPack();
+	DataPack h;
+	CreateDataTimer(0.5, UpdateAirstrike, h, TIMER_FLAG_NO_MAPCHANGE);
 	h.WriteFloat(g_pos[0]);
 	h.WriteFloat(g_pos[1]);
 	h.WriteFloat(g_pos[2]);
 	h.WriteFloat(vAng[1]);
-
-	CreateTimer(0.5, UpdateAirstrike, h, TIMER_FLAG_NO_MAPCHANGE);
 
 	return Plugin_Continue;
 }

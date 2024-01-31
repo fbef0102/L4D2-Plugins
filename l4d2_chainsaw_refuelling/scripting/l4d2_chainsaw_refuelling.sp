@@ -309,8 +309,8 @@ public void CheckChainsaw(int i_Client, int i_Weapon, int i_Ent)
 				SetEntProp(i_Weapon, Prop_Data, "m_iClip2", i_PointEnt);
 				g_ClientPour[i_Client] = EntIndexToEntRef(i_Weapon);
 					
-				DataPack data = new DataPack();
-				g_Timer[i_Client] = CreateTimer(0.5, Timer_CheckPourGascan, data, TIMER_REPEAT|TIMER_DATA_HNDL_CLOSE);
+				DataPack data;
+				g_Timer[i_Client] = CreateDataTimer(0.5, Timer_CheckPourGascan, data, TIMER_REPEAT);
 				data.WriteCell(GetClientUserId(i_Client));
 				data.WriteCell(EntIndexToEntRef(i_Weapon));
 			}
