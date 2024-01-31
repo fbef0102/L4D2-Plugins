@@ -1048,6 +1048,7 @@ public Action: Event_PlayerSpawn( Handle:event, const String:name[], bool:dontBr
 		}
 		case ZC_HUNTER:
 		{
+			SDKUnhook(client, SDKHook_TraceAttack, TraceAttack_Hunter);
 			SDKHook(client, SDKHook_TraceAttack, TraceAttack_Hunter);
 	
 			g_fPouncePosition[client][0] = 0.0;
@@ -1057,6 +1058,7 @@ public Action: Event_PlayerSpawn( Handle:event, const String:name[], bool:dontBr
 		}
 		case ZC_JOCKEY:
 		{
+			SDKUnhook(client, SDKHook_TraceAttack, TraceAttack_Jockey);
 			SDKHook(client, SDKHook_TraceAttack, TraceAttack_Jockey);
 			
 			g_fPouncePosition[client][0] = 0.0;
@@ -1066,6 +1068,7 @@ public Action: Event_PlayerSpawn( Handle:event, const String:name[], bool:dontBr
 		}
 		case ZC_CHARGER:
 		{
+			SDKUnhook(client, SDKHook_TraceAttack, TraceAttack_Charger);
 			SDKHook(client, SDKHook_TraceAttack, TraceAttack_Charger);
 			
 			g_iChargerHealth[client] = GetConVarInt(g_hCvarChargerHealth);
@@ -1502,26 +1505,27 @@ public Action: Event_LungePounce( Handle:event, const String:name[], bool:dontBr
 		fDamage = fMaxDmg + 1.0;
 	}
 	
-	new Handle: pack = CreateDataPack();
+	DataPack pack;
+	CreateDataTimer( 0.05, Timer_HunterDP, pack );
 	WritePackCell( pack, GetClientUserId(client) );
 	WritePackCell( pack, GetClientUserId(victim) );
 	WritePackFloat( pack, fDamage );
 	WritePackFloat( pack, fHeight );
-	CreateTimer( 0.05, Timer_HunterDP, pack );
 	
 	return Plugin_Continue;
 }
 
-public Action: Timer_HunterDP( Handle:timer, Handle:pack )
+Action Timer_HunterDP( Handle timer, DataPack pack )
 {
 	ResetPack( pack );
 	new client = GetClientOfUserId(ReadPackCell( pack ));
 	new victim = GetClientOfUserId(ReadPackCell( pack ));
 	new Float: fDamage = ReadPackFloat( pack );
 	new Float: fHeight = ReadPackFloat( pack );
-	CloseHandle( pack );
 	
 	HandleHunterDP( client, victim, g_iPounceDamage[client], fDamage, fHeight );
+
+	return Plugin_Continue;
 }
 
 public Action: Event_PlayerJumped( Handle:event, const String:name[], bool:dontBroadcast )
@@ -2178,11 +2182,11 @@ public Action: Event_WitchKilled ( Handle:event, const String:name[], bool:dontB
 	new bool: bOneShot = GetEventBool(event, "oneshot");
 	
 	// is it a crown / drawcrown?
-	new Handle: pack = CreateDataPack();
+	DataPack pack;
+	CreateDataTimer( WITCH_CHECK_TIME, Timer_CheckWitchCrown, pack );
 	WritePackCell( pack, GetClientUserId(attacker) );
 	WritePackCell( pack, witch );
 	WritePackCell( pack, (bOneShot) ? 1 : 0 );
-	CreateTimer( WITCH_CHECK_TIME, Timer_CheckWitchCrown, pack );
 	
 	return Plugin_Continue;
 }
@@ -2291,15 +2295,16 @@ public OnTakeDamagePost_Witch ( victim, attacker, inflictor, Float:damage, damag
 	}
 }
 
-public Action: Timer_CheckWitchCrown(Handle:timer, Handle:pack)
+Action Timer_CheckWitchCrown(Handle timer, DataPack pack)
 {
 	ResetPack( pack );
 	new attacker = GetClientOfUserId(ReadPackCell( pack ));
 	new witch = ReadPackCell( pack );
 	new bool:bOneShot = bool:ReadPackCell( pack );
-	CloseHandle( pack );
 
 	CheckWitchCrown( witch, attacker, bOneShot );
+
+	return Plugin_Continue;
 }
 
 stock CheckWitchCrown ( witch, attacker, bool: bOneShot = false )

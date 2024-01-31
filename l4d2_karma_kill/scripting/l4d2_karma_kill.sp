@@ -2092,7 +2092,8 @@ void SlowKarmaCouple(int victim, int attacker, char[] sKarmaName)
 
 	SetEntPropFloat(victim, Prop_Send, "m_flLaggedMovementValue", g_fkarmaSlow);
 
-	Handle data = CreateDataPack();
+	DataPack data;
+	CreateDataTimer(g_fkarmaSlowTimeOnCouple, _revertCoupleTimeSlow, data, TIMER_FLAG_NO_MAPCHANGE);
 	WritePackCell(data, GetClientUserId(victim));
 
 	if (StrEqual(sKarmaName, "Charge") && attacker > 0 && IsClientInGame(attacker) && IsPlayerAlive(attacker))
@@ -2100,8 +2101,6 @@ void SlowKarmaCouple(int victim, int attacker, char[] sKarmaName)
 
 	else
 		WritePackCell(data, 0);
-
-	CreateTimer(g_fkarmaSlowTimeOnCouple, _revertCoupleTimeSlow, data, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 Action _revertCoupleTimeSlow(Handle timer, Handle data)
@@ -2109,7 +2108,6 @@ Action _revertCoupleTimeSlow(Handle timer, Handle data)
 	ResetPack(data);
 	int victim   = GetClientOfUserId(ReadPackCell(data));
 	int attacker = GetClientOfUserId(ReadPackCell(data));
-	CloseHandle(data);
 
 	if (victim != 0)
 	{
