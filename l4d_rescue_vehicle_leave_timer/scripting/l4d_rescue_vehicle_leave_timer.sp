@@ -888,7 +888,6 @@ Action UpdateAirstrike(Handle timer, DataPack h)
 	g_pos[1] = h.ReadFloat();
 	g_pos[2] = h.ReadFloat();
 	vAng[1] = h.ReadFloat();
-	delete h;
 	
 	g_pos[2] += 1.0;
 	float radius = 1200.0;
