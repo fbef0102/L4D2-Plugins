@@ -97,51 +97,54 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>Translation Support | 支援翻譯</summary>
 
-    ```
-    English
-    繁體中文
-    简体中文
-    Русский
-    ```
+	```
+	English
+	繁體中文
+	简体中文
+	Русский
+	```
 </details>
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
 	1. [l4d_cso_zombie_Regeneration](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_cso_zombie_Regeneration): The zombies have grown stronger, now they are able to heal their injuries by standing still without receiving any damage.
-	    > 殭屍變得更強大，他們只要站著不動便可以自癒傷勢　(仿CSO惡靈降世 殭屍技能)
+		* 殭屍變得更強大，他們只要站著不動便可以自癒傷勢　(仿CSO惡靈降世 殭屍技能)
 
 	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
-	    > 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
+		* 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
+
+	3. [l4d2_cso_knockback](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Weapons_%E6%AD%A6%E5%99%A8/l4d2_cso_knockback): Weapons and Melees now have knockback power like CSO
+		* 槍械與近戰武器現在有擊退力 (仿CSO惡靈降世)
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
 
 	* v1.4 (2023-7-26)
-        * Add hunting Rifle
+		* Add hunting Rifle
 
 	* v1.3 (2022-9-12)
-        * Remove gascan,  propanecanister, oxygentank if no one picks up
+		* Remove gascan,  propanecanister, oxygentank if no one picks up
 
 	* v1.2 (2022-8-13)
-        * Optimize code.
+		* Optimize code.
 
 	* v1.1 (2022-3-29)
-        * Support Survival Mode.
+		* Support Survival Mode.
 
 	* v1.0 (2022-1-11)
-        * [Initial release](https://forums.alliedmods.net/showthread.php?t=335862)
-        * Add convars to turn off this plugin
-        * Random box model available
-        * Item chance to drop Weapons/Melee/Medic/Throwable/Others
-        * Custom sound
-        * Detect custom melee and spawn
-        * Translation Support
-        * Supply box life time
-        * Remove item if no one picks up after it drops from box after a while
-        * Compatibility support for SourceMod 1.11. Fixed various warnings.
+		* [Initial release](https://forums.alliedmods.net/showthread.php?t=335862)
+		* Add convars to turn off this plugin
+		* Random box model available
+		* Item chance to drop Weapons/Melee/Medic/Throwable/Others
+		* Custom sound
+		* Detect custom melee and spawn
+		* Translation Support
+		* Supply box life time
+		* Remove item if no one picks up after it drops from box after a while
+		* Compatibility support for SourceMod 1.11. Fixed various warnings.
 
 	* v0.0
-        * Credit: [Lux](https://forums.alliedmods.net/member.php?u=257841) - original code
+		* Credit: [Lux](https://forums.alliedmods.net/member.php?u=257841) - original code
 </details>
 
 - - - -
@@ -149,11 +152,11 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 地圖上隨機出現補給箱，提供人類強力支援 (仿CSO惡靈降世 補給箱)
 
 * 原理
-    * 靈感來自CSO 殭屍模式，在這款遊戲中每隔一段時間地圖上出現補給箱，補給箱內有各式各樣的物資與武器
-    * 地圖上隨機出現補給箱，只有人類才能看到補給箱位置
-    * 用子彈或近戰武器打破這些補給箱，特感不能打破
-    * 補給箱不會擋住特感與普通感染者，他們可以穿透
-    * 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。認真你就輸了，問就是飛行員迷路
+	* 靈感來自CSO 殭屍模式，在這款遊戲中每隔一段時間地圖上出現補給箱，補給箱內有各式各樣的物資與武器
+	* 地圖上隨機出現補給箱，只有人類才能看到補給箱位置
+	* 用子彈或近戰武器打破這些補給箱，特感不能打破
+	* 補給箱不會擋住特感與普通感染者，他們可以穿透
+	* 有時候空投的補給箱出現在人類無法到達的區域，譬如屋頂。認真你就輸了，問就是飛行員迷路
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 
