@@ -4,18 +4,19 @@ Allow to release victim
 * [Video | 影片展示](https://youtu.be/IzL-UIF6K-Y)
 
 * Image | 圖示
-	* Press Right Mouse to release the victim (右鍵釋放抓住的倖存者)
-	<br/>![l4d2_release_victim_1](image/l4d2_release_victim_1.gif)
-	* Can't use attack1 and attack2 for short time after release victim (釋放後短時間不能攻擊)
-	 <br/>![l4d2_release_victim_2](image/l4d2_release_victim_2.jpg)
+    * Press Right Mouse to release the victim (右鍵釋放抓住的倖存者)
+    <br/>![l4d2_release_victim_1](image/l4d2_release_victim_1.gif)
+    * Can't use attack1 and attack2 for short time after release victim (釋放後短時間不能攻擊)
+    <br/>![l4d2_release_victim_2](image/l4d2_release_victim_2.jpg)
 
 * Require | 必要安裝
-    1. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
+    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
+    2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
 
 * <details><summary>ConVar | 指令</summary>
 
-	* cfg\sourcemod\l4d2_release_victim.cfg
-		```php
+    * cfg\sourcemod\l4d2_release_victim.cfg
+        ```php
         // Release distance
         l4d2_release_victim_distance "900.0"
 
@@ -42,12 +43,12 @@ Allow to release victim
 
         // Changes how message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
         l4d2_release_victim_announce_type "1"
-		```
+        ```
 </details>
 
 * <details><summary>Command | 命令</summary>
 
-	None
+    None
 </details>
 
 * Apply to | 適用於
@@ -57,29 +58,34 @@ Allow to release victim
 
 * <details><summary>Translation Support | 支援翻譯</summary>
 
-	```
-	English
-	繁體中文
-	简体中文
-	```
+    ```
+    English
+    繁體中文
+    简体中文
+    ```
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-	```php
-	//BHaType @ 2019~2022
+    ```php
+    //BHaType @ 2019~2022
     //Shadowysn @ 2022
-	//HarryPotter @ 2022-2023
-	```
-	* v1.0h (2023-4-11)
+    //HarryPotter @ 2022-2024
+    ```
+    * v1.1h (2023-2-6)
+        * Use better way to release victim
+        * Require left4dhooks
+        * Fixed crash when map change
+
+    * v1.0h (2023-4-11)
         * Translation Support
         * Add cvars, infected can't use attack1 and attack2 for short time after release victim.
 
-	* v2.5 (2023-1-27)
+    * v2.5 (2023-1-27)
         * [Shadowysn's fork](https://forums.alliedmods.net/showpost.php?p=2785929&postcount=25)
         * Remove Gamedata
 
-	* v0.4
+    * v0.4
         * [Original Plugin by BHaType](https://forums.alliedmods.net/showthread.php?p=2676902)
 </details>
 
@@ -93,8 +99,8 @@ Allow to release victim
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 
-	* cfg\sourcemod\l4d2_release_victim.cfg
-		```php
+    * cfg\sourcemod\l4d2_release_victim.cfg
+        ```php
         // 釋放倖存者後彈走的距離
         l4d2_release_victim_distance "900.0"
 
@@ -121,5 +127,5 @@ Allow to release victim
 
         // 提示該如何顯示. (0: 不提示, 1: 聊天框, 2: 黑底白字框, 3: 螢幕正中間)
         l4d2_release_victim_announce_type "1"
-		```
+        ```
 </details>

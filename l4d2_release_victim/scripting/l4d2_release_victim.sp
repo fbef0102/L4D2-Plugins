@@ -1,36 +1,22 @@
 //BHaType @ 2019~2022
 //Shadowysn @ 2022 - No Gamedata Required
-//Harry @ 2022 - Can't use attack1 and attack2 for short time after release victim!!
+//Harry @ 2022-2024 - Can't use attack1 and attack2 for short time after release victim!!
 
 #pragma semicolon 1
 #pragma newdecls required
 
 #include <sourcemod>
 #include <sdktools>
+#include <left4dhooks>
 #include <multicolors>
-
-#define CBaseAbility "CBaseAbility"
-#define m_nextActivationTimer "m_nextActivationTimer"
 
 public Plugin myinfo = 
 {
 	name = "[L4D2] Release Victim Extended version",
 	author = "BHaType, HarryPotter",
 	description = "Allow to release victim",
-	version = "1.0h"
+	version = "1.1h-2024/2/6"
 };
-
-bool g_bReset, g_bEffect;
-int g_iCharger, g_iHunter, g_iJockey, g_iSmoker, g_iZombieClass, g_iVelocity;
-ConVar sm_release_distance, sm_release_height, sm_release_ability_reset, sm_release_effect,
-	g_hConVar_JockeyAttackDelay, g_hConVar_HunterAttackDelay, g_hConVar_ChargerAttackDelay, g_hConVar_SmokerAttackDelay,
-	g_hCvarAnnounceType;
-float g_flDistance, g_flHeight, g_flCharger, g_flSmoker, g_flJockey,
-	g_fJockeyAttackDelay, g_fHunterAttackDelay, g_fChargerAttackDelay, g_fSmokerAttackDelay;
-
-int g_iCvarAnnounceType;
-
-float g_fButtonDelay[MAXPLAYERS+1];
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
 {
@@ -45,19 +31,47 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+bool g_bReset, g_bEffect;
+int g_iZombieClass, g_iVelocity;
+ConVar sm_release_distance, sm_release_height, sm_release_ability_reset, sm_release_effect,
+	g_hConVar_JockeyAttackDelay, g_hConVar_HunterAttackDelay, g_hConVar_ChargerAttackDelay, g_hConVar_SmokerAttackDelay,
+	g_hCvarAnnounceType;
+float g_flDistance, g_flHeight, g_flCharger, g_flSmoker, g_flJockey,
+	g_fJockeyAttackDelay, g_fHunterAttackDelay, g_fChargerAttackDelay, g_fSmokerAttackDelay;
+
+int g_iCvarAnnounceType;
+
+float g_fButtonDelay[MAXPLAYERS+1];
+
+#define CBaseAbility "CBaseAbility"
+#define m_nextActivationTimer "m_nextActivationTimer"
+
+#define ZC_SMOKER		1
+#define ZC_BOOMER		2
+#define ZC_HUNTER		3
+#define ZC_SPITTER		4
+#define ZC_JOCKEY		5
+#define ZC_CHARGER		6
+
 public void OnPluginStart()
 {
-	sm_release_distance = CreateConVar("l4d2_release_victim_distance", "900.0", "Release distance", FCVAR_NONE);
-	sm_release_height = CreateConVar("l4d2_release_victim_height", "600.0", "Release height", FCVAR_NONE);
-	sm_release_ability_reset = CreateConVar("l4d2_release_victim_ability_reset", "0", "Reset ability", FCVAR_NONE);
-	sm_release_effect = CreateConVar("l4d2_release_victim_effect", "0", "Show effect after release", FCVAR_NONE);
+	LoadTranslations("l4d2_release_victim.phrases");
+
+	g_flCharger = FindConVar("z_charge_interval").FloatValue;
+	g_flSmoker = FindConVar("smoker_tongue_delay").FloatValue;
+	g_flJockey = FindConVar("z_jockey_leap_again_timer").FloatValue;
+
+	sm_release_distance 			= CreateConVar( "l4d2_release_victim_distance", 			"900.0", 	"Release distance", FCVAR_NOTIFY, true, 0.0);
+	sm_release_height 				= CreateConVar( "l4d2_release_victim_height", 				"600.0", 	"Release height", FCVAR_NOTIFY, true, 0.0);
+	sm_release_ability_reset 		= CreateConVar( "l4d2_release_victim_ability_reset", 		"1", 		"Reset ability", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	sm_release_effect 				= CreateConVar( "l4d2_release_victim_effect", 				"1", 		"Show effect after release", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	
-	g_hConVar_JockeyAttackDelay = CreateConVar("l4d2_release_victim_jockey_attackdelay", "6.0", "After dismounting with the jockey, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hConVar_HunterAttackDelay = CreateConVar("l4d2_release_victim_hunter_attackdelay", "6.0", "After dismounting with the hunter, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hConVar_ChargerAttackDelay = CreateConVar("l4d2_release_victim_charger_attackdelay", "6.0", "After dismounting with the charger, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hConVar_SmokerAttackDelay = CreateConVar("l4d2_release_victim_smoker_attackdelay", "6.0", "After dismounting with the smoker, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hCvarAnnounceType = 		CreateConVar( "l4d2_release_victim_announce_type", "2", 	"Changes how message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	AutoExecConfig(true, "l4d2_release_victim");
+	g_hConVar_JockeyAttackDelay 	= CreateConVar( "l4d2_release_victim_jockey_attackdelay", 	"6.0", 		"After dismounting with the jockey, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_HunterAttackDelay 	= CreateConVar( "l4d2_release_victim_hunter_attackdelay", 	"6.0", 		"After dismounting with the hunter, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_ChargerAttackDelay 	= CreateConVar( "l4d2_release_victim_charger_attackdelay", 	"6.0", 		"After dismounting with the charger, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_SmokerAttackDelay 	= CreateConVar( "l4d2_release_victim_smoker_attackdelay", 	"10.0", 	"After dismounting with the smoker, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hCvarAnnounceType 			= CreateConVar( "l4d2_release_victim_announce_type", 		"1", 		"Changes how message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	AutoExecConfig(true, 							"l4d2_release_victim");
 	
 	GetCvars();
 	sm_release_ability_reset.AddChangeHook(OnConVarChanged);
@@ -69,33 +83,16 @@ public void OnPluginStart()
 	g_hConVar_ChargerAttackDelay.AddChangeHook(OnConVarChanged);
 	g_hConVar_SmokerAttackDelay.AddChangeHook(OnConVarChanged);
 	g_hCvarAnnounceType.AddChangeHook(OnConVarChanged);
-
-	g_flCharger = FindConVar("z_charge_interval").FloatValue;
-	g_flSmoker = FindConVar("smoker_tongue_delay").FloatValue;
-	g_flJockey = FindConVar("z_jockey_leap_again_timer").FloatValue;
 	
-	
-	g_iCharger = FindSendPropInfo("CTerrorPlayer", "m_pummelVictim"); 
-	g_iHunter = FindSendPropInfo("CTerrorPlayer", "m_pounceVictim");
-	g_iJockey = FindSendPropInfo("CTerrorPlayer", "m_jockeyVictim");
-	g_iSmoker = FindSendPropInfo("CTongue", "m_tongueState");
 	g_iZombieClass = FindSendPropInfo("CTerrorPlayer", "m_zombieClass");
 	g_iVelocity = FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]");
 	
-	HookEvents(EventHandler);
 	HookEvent("round_start", evtRoundStart);
 }
 
 public void OnMapStart()
 {
-	int pTable = FindStringTable("ParticleEffectNames");
-
-	if ( FindStringIndex(pTable, "gen_hit1_c") == INVALID_STRING_INDEX )
-	{
-		bool save = LockStringTables(false);
-		AddToStringTable(pTable, "gen_hit1_c");
-		LockStringTables(save);
-	}
+	PrecacheParticle("gen_hit1_c");
 }
 
 void OnConVarChanged(Handle convar, const char[] oldValue, const char[] newValue)
@@ -139,34 +136,50 @@ public Action OnPlayerRunCmd (int client, int &buttons)
 
 	if(!(buttons & IN_ATTACK2)) return Plugin_Continue;
 	
-	int iClass = GetEntData(client, g_iZombieClass), index;
+	int iClass = GetEntData(client, g_iZombieClass), victim;
 	
 	switch (iClass)
 	{
-		case 6: index = GetEntData(client, g_iCharger);
-		case 3: index = GetEntData(client, g_iHunter);
-		case 5: index = GetEntData(client, g_iJockey);
-		case 1: 
+		case ZC_CHARGER: victim = L4D_GetVictimCharger(client);
+		case ZC_HUNTER: victim = L4D_GetVictimHunter(client);
+		case ZC_JOCKEY: victim = L4D_GetVictimJockey(client);
+		case ZC_SMOKER: 
 		{
-			int iEntity = GetEntPropEnt(client, Prop_Send, "m_customAbility");
-			
-			if (iEntity <= MaxClients)
-				return Plugin_Continue;
-			
-			index = GetEntData(iEntity, g_iSmoker);
+			victim = L4D_GetVictimSmoker(client);
+		}
+		default:
+		{
+			return Plugin_Continue;
 		}
 	}
 
-	if (index <= 0 || (iClass == 1 && index != 3))
-		return Plugin_Continue;
+	if(victim <= 0) return Plugin_Continue;
 	
-	Release(client, iClass);
+	Release(client, victim, iClass);
+
+	if (buttons & IN_ATTACK) buttons &= ~IN_ATTACK;
+	if (buttons & IN_ATTACK2) buttons &= ~IN_ATTACK2;
+	if (buttons & IN_USE) buttons &= ~IN_USE;
+
 	return Plugin_Continue;
 }
 
-void Release (int client, int iClass)
+void Release (int client, int victim, int iClass)
 {
-	KnockAttacker(client);
+	switch (iClass)
+	{
+		case ZC_CHARGER: L4D2_Charger_EndPummel(victim, client);
+		case ZC_HUNTER: L4D_Hunter_ReleaseVictim(victim, client);
+		case ZC_JOCKEY: L4D2_Jockey_EndRide(victim, client);
+		case ZC_SMOKER: 
+		{
+			L4D_Smoker_ReleaseVictim(victim, client);
+		}
+		default:
+		{
+			return;
+		}
+	}
 	
 	float vOrigin[3];
 	GetClientAbsOrigin(client, vOrigin);
@@ -183,19 +196,19 @@ void Release (int client, int iClass)
 	float fDelay = 0.0;
 	switch (iClass)
 	{
-		case 6:
+		case ZC_CHARGER:
 		{
 			fDelay = g_fChargerAttackDelay;
 		}
-		case 3: 
+		case ZC_HUNTER: 
 		{
 			fDelay = g_fHunterAttackDelay;
 		}
-		case 5: 
+		case ZC_JOCKEY: 
 		{
 			fDelay = g_fJockeyAttackDelay;
 		}
-		case 1: 
+		case ZC_SMOKER: 
 		{
 			fDelay = g_fSmokerAttackDelay;
 		}
@@ -207,13 +220,13 @@ void Release (int client, int iClass)
 		switch(g_iCvarAnnounceType)
 		{
 			case 1:{
-				CPrintToChat(client, "[{olive}TS{default}] Can't use {red}attack1{default} and {red}attack2{default} for {green}%.1fs{default} after release victim!!", fDelay);
+				CPrintToChat(client, "%T", "Release (C)", client, fDelay);
 			}
 			case 2:{
-				PrintHintText(client, "[TS] Can't use attack1 and attack2 for %.1fs after release victim!!", fDelay);
+				PrintHintText(client, "%T", "Release", client, fDelay);
 			}
 			case 3:{
-				PrintCenterText(client, "[TS] Can't use attack1 and attack2 for %.1fs after release victim!!", fDelay);
+				PrintCenterText(client, "%T", "Release", client, fDelay);
 			}
 		}
 	}
@@ -259,47 +272,13 @@ Action tReset (Handle timer, int client)
 		{
 			switch (GetEntData(client, g_iZombieClass))
 			{
-				case 6: SetDTCountdownTimer(iEntity, CBaseAbility, m_nextActivationTimer, g_flCharger);
-				case 5: SetDTCountdownTimer(iEntity, CBaseAbility, m_nextActivationTimer, g_flJockey);
-				case 1: SetDTCountdownTimer(iEntity, CBaseAbility, m_nextActivationTimer, g_flSmoker);
+				case ZC_CHARGER: SetDTCountdownTimer(iEntity, CBaseAbility, m_nextActivationTimer, g_flCharger);
+				case ZC_JOCKEY: SetDTCountdownTimer(iEntity, CBaseAbility, m_nextActivationTimer, g_flJockey);
+				case ZC_SMOKER: SetDTCountdownTimer(iEntity, CBaseAbility, m_nextActivationTimer, g_flSmoker);
 			}
 		}
 	}
 	return Plugin_Continue;
-}
-
-void HookEvents(EventHook EventCallback)
-{
-	HookEvent("jockey_ride_end", EventCallback);
-	HookEvent("charger_pummel_end", EventCallback);
-}
-
-void EventHandler (Event event, const char[] name, bool dontbroadcast)
-{
-	int iClient = GetClientOfUserId(event.GetInt("userid"));
-	int iVctim = GetClientOfUserId(event.GetInt("victim"));
-	
-	if (!iClient || !iVctim)
-		return;
-		
-	SetEntProp(iClient, Prop_Send, "m_hOwnerEntity", iVctim);
-}
-
-void KnockAttacker(int attacker)
-{
-	/*int iEntity = GetEntPropEnt(attacker, Prop_Send, "m_customAbility");
-	float duration = -1.0, timestamp = -1.0;
-	if (iEntity > MaxClients)
-	{
-		duration = GetEntDataFloat(iEntity, (FindSendPropInfo(CBaseAbility, m_nextActivationTimer)+4));
-		timestamp = GetEntDataFloat(iEntity, (FindSendPropInfo(CBaseAbility, m_nextActivationTimer)+8));
-	}*/
-	SetVariantString("self.Stagger(self.GetOrigin())");
-	AcceptEntityInput(attacker, "RunScriptCode");
-	SetDTCountdownTimer(attacker, "CTerrorPlayer", "m_staggerTimer", 0.0);
-	
-	//SetEntDataFloat(iEntity, (FindSendPropInfo(CBaseAbility, m_nextActivationTimer)+4), duration, true);
-	//SetEntDataFloat(iEntity, (FindSendPropInfo(CBaseAbility, m_nextActivationTimer)+8), timestamp, true);
 }
 
 void SetDTCountdownTimer(int entity, const char[] classname, const char[] timer_str, float duration)
@@ -329,4 +308,20 @@ void SpoofEffect(float vOrigin[3])
 	SetVariantString("OnUser1 !self:Kill::4.0:1");
 	AcceptEntityInput(entity, "AddOutput");
 	AcceptEntityInput(entity, "FireUser1");
+}
+
+void PrecacheParticle(const char[] sEffectName)
+{
+	static int table = INVALID_STRING_TABLE;
+	if( table == INVALID_STRING_TABLE )
+	{
+		table = FindStringTable("ParticleEffectNames");
+	}
+
+	if( FindStringIndex(table, sEffectName) == INVALID_STRING_INDEX )
+	{
+		bool save = LockStringTables(false);
+		AddToStringTable(table, sEffectName);
+		LockStringTables(save);
+	}
 }
