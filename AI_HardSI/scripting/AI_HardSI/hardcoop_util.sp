@@ -157,7 +157,7 @@ stock float GetFlowDistToSurvivors(const float pos[3]) {
 		return -1.0;
 	}
 	
-	for ( int j = 0; j < MaxClients; j++ ) {
+	for ( int j = 1; j <= MaxClients; j++ ) {
 		if ( IsSurvivor(j) && IsPlayerAlive(j) ) {
 			float origin[3];
 			float flow_dist;
@@ -214,7 +214,7 @@ stock int GetClosestSurvivor( float referencePos[3], int excludeSurvivor = -1 ) 
 	if (closestSurvivor <= 0) return -1;
 	GetClientAbsOrigin( closestSurvivor, survivorPos );
 	int iClosestAbsDisplacement = RoundToNearest( GetVectorDistance(referencePos, survivorPos) );
-	for (int client = 1; client < MaxClients; client++) {
+	for (int client = 1; client <= MaxClients; client++) {
 		if( IsSurvivor(client) && IsPlayerAlive(client) && client != excludeSurvivor ) {
 			GetClientAbsOrigin( client, survivorPos );
 			int iAbsDisplacement = RoundToNearest( GetVectorDistance(referencePos, survivorPos) );			
@@ -351,7 +351,7 @@ stock bool IsTank(int client) {
  * @return client ID or -1 if not found
  */
 stock int FindTankClient(int iTankClient) {
-    for (int i = iTankClient < 0 ? 1 : iTankClient+1; i < MaxClients+1; i++) {
+    for (int i = iTankClient < 0 ? 1 : iTankClient+1; i <= MaxClients; i++) {
         if (IsTank(i)) {
             return i;
         }
