@@ -1,5 +1,6 @@
 #pragma semicolon 1
-#pragma newdecls required //強制1.7以後的新語法
+#pragma newdecls required
+
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
@@ -14,46 +15,53 @@
 #define ZC_JOCKEY               5
 #define ZC_CHARGER              6
 
-#define POUNCE_TIMER            0.1
+// Bit flags to enable individual features of the plugin
+#define SKEET_POUNCING_AI       (0x01)
+#define DEBUFF_CHARGING_AI      (0x02)
+#define ALL_FEATURES            (SKEET_POUNCING_AI | DEBUFF_CHARGING_AI)
 
+// Globals
+bool bLateLoad = false;
 
 // CVars
-bool bLateLoad                                               = false;
-ConVar  hCvarPounceInterrupt                                 = null;
-
-int iHunterSkeetDamage[MAXPLAYERS+1];                                               // how much damage done in a single hunter leap so far
-bool bIsPouncing[MAXPLAYERS+1];                                                      // whether hunter player is currently pouncing/lunging
+int fEnabled                                                = ALL_FEATURES;         // Enables individual features of the plugin
+int iPounceInterrupt                                        = 150;                  // Caches pounce interrupt cvar's value
+int iHunterSkeetDamage[MAXPLAYERS+1]                        = { 0, ... };           // How much damage done in a single hunter leap so far
+bool g_bHunterAttemptingToPounce[MAXPLAYERS+1]               = { false, ... };
 
 public Plugin myinfo =
 {
     name = "Bot SI skeet/level damage fix",
-    author = "Tabun & HarryPotter",
+    author = "Tabun, dcx2, Harry",
     description = "Makes AI SI take (and do) damage like human SI.",
-    version = "1.3",
-    url = "nope"
+    version = "1.0h -2024/2/11",
+    url = "https://steamcommunity.com/profiles/76561198026784913/"
 }
 
-public APLRes AskPluginLoad2( Handle plugin, bool late, char[] error, int errMax)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     bLateLoad = late;
     return APLRes_Success;
 }
 
-
 public void OnPluginStart()
 {
-    // cvars
-    hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
-    
+    // find/create cvars, hook changes, cache current values
+    ConVar hCvarEnabled = CreateConVar("sm_aidmgfix_enable", "3", "Bit flag: Enables plugin features (add together): 1=Skeet pouncing AI, 2=Debuff charging AI, 3=all, 0=off", FCVAR_NONE|FCVAR_NOTIFY);
+    ConVar hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
+
+    fEnabled = hCvarEnabled.IntValue;
+    iPounceInterrupt = hCvarPounceInterrupt.IntValue;
+
+    hCvarEnabled.AddChangeHook(OnAIDamageFixEnableChanged);
+    hCvarPounceInterrupt.AddChangeHook(OnPounceInterruptChanged);
+
     // events
-    HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
-    HookEvent("player_death", Event_PlayerDeath, EventHookMode_Post);
-    HookEvent("player_shoved", Event_PlayerShoved, EventHookMode_Post);
     HookEvent("ability_use", Event_AbilityUse, EventHookMode_Post);
     
     // hook when loading late
     if (bLateLoad) {
-        for (int i = 1; i < MaxClients + 1; i++) {
+        for (int i = 1; i <= MaxClients; i++) {
             if (IsClientAndInGame(i)) {
                 OnClientPutInServer(i);
             }
@@ -61,107 +69,84 @@ public void OnPluginStart()
     }
 }
 
+void OnAIDamageFixEnableChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    fEnabled = StringToInt(newValue);
+}
+
+void OnPounceInterruptChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    iPounceInterrupt = StringToInt(newValue);
+}
 
 public void OnClientPutInServer(int client)
 {
     // hook bots spawning
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-    bIsPouncing[client] = false; 
+    SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
     iHunterSkeetDamage[client] = 0;
 }
 
-public void OnClientDisconnect(int client)
+Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-    SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-}
-
-
-
-public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
-{
-    if (!IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || damage == 0.0) { return Plugin_Continue; }
-    
-    // AI taking damage
-    if (GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
+    // Must be enabled, victim and attacker must be ingame, damage must be greater than 0, victim must be AI infected
+    if (fEnabled && IsClientAndInGame(victim) && IsClientAndInGame(attacker) && damage > 0.0 && GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
     {
-        // check if AI is hit while in lunge/charge
-        
         int zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
-        int abilityEnt = 0;
-        
-        switch (zombieClass) {
+
+        // Is this AI hunter attempting to pounce?
+        if (zombieClass == ZC_HUNTER && (fEnabled & SKEET_POUNCING_AI) && GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce"))
+        {
+            iHunterSkeetDamage[victim] += RoundToFloor(damage);
             
-            case ZC_HUNTER: {
-                // skeeting mechanic is completely disabled for AI,
-                // so we have to replicate it.
-                
-                iHunterSkeetDamage[victim] += RoundToFloor(damage);
-                
-                // have we skeeted it?
-                if (bIsPouncing[victim] && iHunterSkeetDamage[victim] >= GetConVarInt(hCvarPounceInterrupt))
+            // have we skeeted it?
+            if (iHunterSkeetDamage[victim] >= iPounceInterrupt)
+            {
+                // Skeet the hunter
+                iHunterSkeetDamage[victim] = 0;
+                damage = float(GetClientHealth(victim));
+                return Plugin_Changed;
+            }
+            else
+            {
+                if(damagetype & DMG_CLUB || damagetype & DMG_SLASH)
                 {
-                    bIsPouncing[victim] = false; 
-                    iHunterSkeetDamage[victim] = 0;
-                    
-                    // this should be a skeet
-                    damage = float(GetClientHealth(victim));
-                    return Plugin_Changed;
+                    g_bHunterAttemptingToPounce[victim] = true;
+                    SetEntProp(victim, Prop_Send, "m_isAttemptingToPounce", 0);
                 }
             }
-            
-            case ZC_CHARGER: {
-                // all damage gets divided by 3 while AI is charging,
-                // so all we have to do is multiply by 3.
-                
-                abilityEnt = GetEntPropEnt(victim, Prop_Send, "m_customAbility");
-                bool isCharging = false;
-                if (abilityEnt > 0) {
-                    isCharging = (GetEntProp(abilityEnt, Prop_Send, "m_isCharging") > 0) ? true : false;
-                }
-                
-                if (isCharging)
-                {
-                    damage = (damage * 3) + 1;
-                    return Plugin_Changed;
-                }
+        }
+        else if (zombieClass == ZC_CHARGER && (fEnabled & DEBUFF_CHARGING_AI))
+        {
+            // Is this AI charger charging?
+            int abilityEnt = GetEntPropEnt(victim, Prop_Send, "m_customAbility");
+            if (IsValidEntity(abilityEnt) && GetEntProp(abilityEnt, Prop_Send, "m_isCharging") > 0)
+            {
+                // Game does Floor(Floor(damage) / 3 - 1) to charging AI chargers, so multiply Floor(damage)+1 by 3
+                damage = (damage - FloatFraction(damage) + 1.0) * 3.0;
+                return Plugin_Changed;
             }
-            
         }
     }
+    
     return Plugin_Continue;
 }
 
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+void OnTakeDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype)
 {
-    // clear SI tracking stats
-    for (int i=1; i <= MaxClients; i++)
+    if (fEnabled && IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
     {
-        iHunterSkeetDamage[i] = 0;
-        bIsPouncing[i] = false;
+        if(GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER && g_bHunterAttemptingToPounce[victim]) 
+        {
+            SetEntProp(victim, Prop_Send, "m_isAttemptingToPounce", 1);
+        }
+
+        g_bHunterAttemptingToPounce[victim] = false;
     }
 }
 
-public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) 
-{
-    int victim = GetClientOfUserId(event.GetInt("userId"));
-    
-    if (!IsClientAndInGame(victim)) { return; }
-    
-    bIsPouncing[victim] = false;
-}
-
-public void Event_PlayerShoved(Event event, const char[] name, bool dontBroadcast) 
-{
-    int victim = GetClientOfUserId(event.GetInt("userId"));
-    
-    if (!IsClientAndInGame(victim)) { return; }
-    
-    bIsPouncing[victim] = false;
-}
-
-
 // hunters pouncing / tracking
-public void Event_AbilityUse(Event event, const char[] name, bool dontBroadcast) 
+void Event_AbilityUse(Event event, const char[] name, bool dontBroadcast)
 {
     // track hunters pouncing
     int client = GetClientOfUserId(event.GetInt("userid"));
@@ -169,49 +154,16 @@ public void Event_AbilityUse(Event event, const char[] name, bool dontBroadcast)
     
     if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_INFECTED) { return; }
     
-    GetEventString(event, "ability", abilityName, sizeof(abilityName));
+    event.GetString("ability", abilityName, sizeof(abilityName));
     
-    if (!bIsPouncing[client] && strcmp(abilityName, "ability_lunge", false) == 0)
+    if (strcmp(abilityName, "ability_lunge", false) == 0)
     {
-        // Hunter pounce
-        bIsPouncing[client] = true;
-        iHunterSkeetDamage[client] = 0;                                     // use this to track skeet-damage
-        
-        CreateTimer(POUNCE_TIMER, Timer_GroundTouch, client, TIMER_REPEAT); // check every TIMER whether the pounce has ended
-                                                                            // If the hunter lands on another player's head, they're technically grounded.
-                                                                            // Instead of using isGrounded, this uses the bIsPouncing[] array with less precise timer
+        // Clear skeet tracking damage each time the hunter starts a pounce
+        iHunterSkeetDamage[client] = 0;
     }
-}
-
-public Action Timer_GroundTouch(Handle timer, any client)
-{
-    if (IsClientAndInGame(client) && ((IsGrounded(client)) || !IsPlayerAlive(client)|| !IsFakeClient(client) || IsOnLadder(client)) )
-    {
-        // Reached the ground or died in mid-air
-        bIsPouncing[client] = false;
-        return Plugin_Stop;
-    }
-    
-    return Plugin_Continue;
-}
-
-public bool IsGrounded(int client)
-{
-    return (GetEntProp(client,Prop_Data,"m_fFlags") & FL_ONGROUND) > 0;
 }
 
 bool IsClientAndInGame(int index)
 {
-    if (index > 0 && index <= MaxClients)
-    {
-        return IsClientInGame(index);
-    }
-    return false;
+    return (index > 0 && index <= MaxClients && IsClientInGame(index));
 }
-
-
-bool IsOnLadder(int entity)
-{
-    return GetEntityMoveType(entity) == MOVETYPE_LADDER;
-}
-

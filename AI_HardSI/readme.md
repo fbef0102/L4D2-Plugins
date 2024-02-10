@@ -14,8 +14,8 @@ Improves the AI behaviour of special infected
 
 * <details><summary>ConVar | 指令</summary>
 
-	* cfg\sourcemod\AI_HardSI.cfg
-		```php
+    * cfg\sourcemod\AI_HardSI.cfg
+        ```php
         // 0=Plugin off, 1=Plugin on.
         AI_HardSI_enable "1"
 
@@ -84,12 +84,12 @@ Improves the AI behaviour of special infected
 
         // How far in front of himself infected bot will check for a wall. Use '-1' to disable feature
         ai_wall_detection_distance "-1"
-		```
+        ```
 </details>
 
 * <details><summary>Command | 命令</summary>
 
-	None
+    None
 </details>
 
 * Improve Infected
@@ -231,10 +231,10 @@ Improves the AI behaviour of special infected
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
-	1. [l4dinfectedbots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dinfectedbots): Spawns infected bots in L4D1 versus, and gives greater control of the infected bots in L4D1/L4D2 without being limited by the director.
-		> 生成多特感控制插件
-	1. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
-		> 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
+    1. [l4dinfectedbots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dinfectedbots): Spawns infected bots in L4D1 versus, and gives greater control of the infected bots in L4D1/L4D2 without being limited by the director.
+        > 生成多特感控制插件
+    1. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
+        > 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
@@ -270,8 +270,8 @@ Improves the AI behaviour of special infected
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 
-	* cfg\sourcemod\AI_HardSI.cfg
-		```php
+    * cfg\sourcemod\AI_HardSI.cfg
+        ```php
         // 0=關閉插件, 1=啟動插件
         AI_HardSI_enable "1"
 

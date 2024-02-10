@@ -11,7 +11,6 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
 > __Note__  
 > **[>>Click here to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**<br/>
 > **[>>點擊我查看更多私人插件<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**
-* <b>[l4d2_ai_damagefix](/l4d2_ai_damagefix)</b>: Makes AI SI take (and do) damage like human SI.
 * <b>[l4d2_Death_Survivor](/l4d2_Death_Survivor)</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>[l4d2_change_m1](/l4d2_change_m1)</b>: If all Survivors die, change level to the current map m1 (coop only)
 * <b>[lfd_both_fixUpgradePack](/lfd_both_fixUpgradePack)</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
@@ -76,7 +75,8 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 解決最後救援卡關，永遠不能來救援載具的問題
 * <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common in l4d2
     * 修改每一種槍械武器對普通殭屍/Tank/Witch/特感 的傷害倍率
-
+* <b>[l4d2_ai_damagefix](/l4d2_ai_damagefix)</b>: Makes AI SI take (and do) damage like human SI.
+    * 對AI Hunter與 AI Charger造成的傷害數據跟人類玩家一樣
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
     * 使用 sourcemod v1.11 的編譯環境
