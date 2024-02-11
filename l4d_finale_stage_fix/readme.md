@@ -30,6 +30,11 @@ Fixed the final stage get stucked
         ```php
         sm_stage
         ```
+
+    * **Call rescue vehicle immediately. (Adm required: ADMFLAG_ROOT)**
+        ```php
+        sm_callrescue
+        ```
 </details>
 
 * Q&A

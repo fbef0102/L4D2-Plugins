@@ -39,7 +39,7 @@
 
 char g_sMap[64], g_sLog[PLATFORM_MAX_PATH];
 int g_iLastTime;
-bool g_bTriggerHooked, g_bLeft4Dead2, g_bFinaleStarted, g_bFinaleEscape;
+bool g_bTriggerHooked, g_bLeft4Dead2, g_bFinaleStarted, g_bFinaleEscape, g_bFinaleVehicleReady;
 Handle g_hTimerWave;
 ConVar g_hCvarPanicTimeout;
 
@@ -71,7 +71,7 @@ public void OnPluginStart()
 	BuildPath(Path_SM, g_sLog, sizeof(g_sLog), "logs/stage.log");
 	
 	CreateConVar("l4d_finale_stage_fix_version", PLUGIN_VERSION, "Plugin Version", FCVAR_DONTRECORD | CVAR_FLAGS);
-	g_hCvarPanicTimeout = CreateConVar("l4d_finale_stage_fix_panicstage_timeout",		"60",		"Timeout (in sec.) for finale panic stage waiting for tank/painc horde to appear, otherwise stage forcibly changed", CVAR_FLAGS );
+	g_hCvarPanicTimeout = CreateConVar("l4d_finale_stage_fix_panicstage_timeout",		"9999",		"Timeout (in sec.) for finale panic stage waiting for tank/painc horde to appear, otherwise stage forcibly changed", CVAR_FLAGS );
 	AutoExecConfig(true, "l4d_finale_stage_fix");
 	
 	HookEvent("round_start",            Event_RoundStart);
@@ -83,10 +83,11 @@ public void OnPluginStart()
 	HookEvent("round_freeze_end", 		Event_RoundFreezeEnd, 	EventHookMode_PostNoCopy);
 
 	HookEvent("finale_escape_start", Finale_Escape_Start);
-	HookEvent("finale_vehicle_ready", Finale_Escape_Start);
+	HookEvent("finale_vehicle_ready", Finale_Vehicle_Ready);
 	
 	RegAdminCmd("sm_stage", 		CMD_ShowStage, 	ADMFLAG_ROOT, 	"Prints current stage index and time passed.");
 	RegAdminCmd("sm_nextstage", 	CMD_NextStage, 	ADMFLAG_ROOT, 	"Forcibly call the next stage.");
+	RegAdminCmd("sm_callrescue", 	CMD_CallRescue, ADMFLAG_ROOT, 	"Call rescue vehicle immediately.");
 }
 
 public void OnMapStart()
@@ -103,6 +104,7 @@ public void OnMapEnd()
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
 	g_bFinaleEscape = false;
+	g_bFinaleVehicleReady = false;
 	#if DEBUG
 		StringToLog("[Trigger] FinaleStart -> FALSE (OnMapEnd)");
 	#endif
@@ -174,6 +176,23 @@ Action CMD_NextStage(int client, int args)
 	return Plugin_Handled;
 }
 
+Action CMD_CallRescue(int client, int args)
+{
+	if (!g_bFinaleStarted || g_bFinaleVehicleReady)
+	{
+		ReplyToCommand(client, "Not on final stage");
+		return Plugin_Handled;
+	}
+
+	L4D2_SendInRescueVehicle();
+
+	if(client == 0) ReplyToCommand(client, "Call Rescue Vechicle immediately");
+
+	PrintToChatAll("\x05Call Rescue Vechicle immediately: by \x03%N", client);
+
+	return Plugin_Handled;
+}
+
 Action CMD_ShowStage(int client, int args)
 {
 	if (!g_bFinaleStarted) return Plugin_Handled;
@@ -195,6 +214,7 @@ void Event_RoundStart(Event hEvent, const char[] name, bool dontBroadcast)
 	g_bTriggerHooked = false;
 	g_bFinaleStarted = false;
 	g_bFinaleEscape = false;
+	g_bFinaleVehicleReady = false;
 	#if DEBUG
 		StringToLog("[Trigger] FinaleStart -> FALSE (%s)", name);
 	#endif
@@ -238,6 +258,20 @@ void Finale_Escape_Start(Event event, const char[] name, bool dontBroadcast)
 	{
 		#if DEBUG
 			StringToLog("[Timer Stop] OnFinaleEscapeStarted");
+		#endif
+
+		delete g_hTimerWave;
+	}
+}
+
+void Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast) 
+{
+	g_bFinaleEscape = true;
+	g_bFinaleVehicleReady = true;
+	if(g_hTimerWave != null)
+	{
+		#if DEBUG
+			StringToLog("[Timer Stop] Finale_Vehicle_Ready");
 		#endif
 
 		delete g_hTimerWave;
