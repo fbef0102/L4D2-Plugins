@@ -5,6 +5,28 @@
 #include <sdkhooks>
 #include <left4dhooks>
 
+public Plugin myinfo = 
+{
+	name = "[L4D2] CSO Random Supply Boxes drop", 
+	author = "Lux & HarryPotter", 
+	description = "CSO Random Supply Boxes in l4d2", 
+	version = "1.5-2024/2/15", 
+	url = "https://steamcommunity.com/profiles/76561198026784913"
+};
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	EngineVersion test = GetEngineVersion();
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+	return APLRes_Success;
+}
+
+#define DATA_FILE		        "data/l4d2_supply_woodbox.cfg"
+
 #define MAXENTITIES                   2048
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
 
@@ -14,18 +36,12 @@
 #define	OXYGENTANK_MODEL		"models/props_equipment/oxygentank01.mdl"
 #define	FIREWORKCRATE_MODEL		"models/props_junk/explosive_box001.mdl"
 #define	PROPANETANK_MODEL		"models/props_junk/propanecanister001a.mdl"
+#define	GASCAN_MODEL			"models/props_junk/gascan001a.mdl"
 
 #define BOX_1	"models/props_junk/wood_crate001a.mdl"
 #define BOX_2	"models/props_junk/wood_crate001a_damagedMAX.mdl"
 #define BOX_3	"models/props_junk/wood_crate002a.mdl"
 
-#define g_iRandomShotgunAmmo	GetRandomInt(30, 60)
-#define g_iRandomRifleAmmo		GetRandomInt(200, 400)
-#define g_iRandomM60Ammo		GetRandomInt(50, 150)
-#define g_iRandomGLAmmo			GetRandomInt(10, 25)
-#define g_iRandomSmgAmmo		GetRandomInt(300, 500)
-#define g_iRandomSniperAmmo		GetRandomInt(60, 120)
-#define g_iRandomHuntingAmmo	GetRandomInt(50, 100)
 #define CVAR_FLAGS			FCVAR_NOTIFY
 
 // Cvar Handles/Variables
@@ -43,7 +59,6 @@ int g_iItemMax, g_iItemMin, g_iCvarColor, g_iCvarGlowRange,
 	g_iCvarSupplyBoxMaxDrop, g_iCvarSupplyBoxMinDrop, g_iBoxType, g_iItemAnnounceType;
 float g_fSupplyBoxLife, g_fCvarDropItemTime;
 char g_sDropItemChance[5][3], g_sCvarSupplyBoxSoundFile[PLATFORM_MAX_PATH];
-int g_iBoxCount;
 Handle PlayerLeftStartTimer = null, SupplyBoxDropTimer = null;
 bool g_bSupplyBoxSpawnFinal, g_bFinaleStarted;
 Handle g_ItemDeleteTimer[MAXENTITIES+1];
@@ -57,25 +72,18 @@ char g_sMeleeClass[16][32];
 #define SOUND_DROP4 "npc/chopper_pilot/hospital_intro_heli_15.wav"
 #define SOUND_DROP5 "npc/chopper_pilot/hospital_intro_heli_16.wav"
 
-public Plugin myinfo = 
+enum struct EWeaponData
 {
-	name = "[L4D2] CSO Random Supply Boxes drop", 
-	author = "Lux & HarryPotter", 
-	description = "CSO Random Supply Boxes in l4d2", 
-	version = "1.4-2023/7/26", 
-	url = "https://steamcommunity.com/profiles/76561198026784913"
-};
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	EngineVersion test = GetEngineVersion();
-	if( test != Engine_Left4Dead2 )
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
-	return APLRes_Success;
+	char m_sName[64];
+	int m_iAmmoMax;
+	int m_iAmmoMin;
 }
+
+ArrayList
+	g_aeWeaponsList,
+	g_aMedicList,
+	g_aThrowableList,
+	g_aOthersList;
 
 public void OnPluginStart()
 {
@@ -196,15 +204,34 @@ public void OnConfigsExecuted()
 		PrecacheModel("models/props_junk/wood_crate001a_chunk03.mdl", true);
 		PrecacheModel("models/props_junk/wood_crate001a_chunk02.mdl", true);
 		PrecacheModel("models/props_junk/wood_crate001a_chunk01.mdl", true);
+		PrecacheModel(OXYGENTANK_MODEL, true);
+		PrecacheModel(FIREWORKCRATE_MODEL, true);
+		PrecacheModel(PROPANETANK_MODEL, true);
+		PrecacheModel(GASCAN_MODEL, true);
 	}
+
+
+	delete g_aeWeaponsList;
+	g_aeWeaponsList = new ArrayList(sizeof(EWeaponData));
+
+	delete g_aMedicList;
+	g_aMedicList = new ArrayList(ByteCountToCells(64));
+
+	delete g_aThrowableList;
+	g_aThrowableList = new ArrayList(ByteCountToCells(64));
+
+	delete g_aOthersList;
+	g_aOthersList = new ArrayList(ByteCountToCells(64));
+
+	LoadData();
 }
 
-public void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	IsAllowed();
 }
 
-public void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
+void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	GetCvars();
 }
@@ -331,7 +358,7 @@ bool IsAllowedGameMode()
 	return true;
 }
 
-public void OnGamemode(const char[] output, int caller, int activator, float delay)
+void OnGamemode(const char[] output, int caller, int activator, float delay)
 {
 	if( strcmp(output, "OnCoop") == 0 )
 		g_iCurrentMode = 1;
@@ -372,30 +399,30 @@ void UnhookEvents()
 	UnhookEvent("gauntlet_finale_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, only rushing maps trigger (C5M5, C13M4)	
 }
 
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
 	g_bFinaleStarted = false;
 	delete PlayerLeftStartTimer;
 	PlayerLeftStartTimer = CreateTimer(1.0, Timer_PlayerLeftStart, _, TIMER_REPEAT);
 }
 
-public void Event_SurvivalRoundStart(Event event, const char[] name, bool dontBroadcast) 
+void Event_SurvivalRoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
 	GameStart();
 }
 
-public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
+void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast) 
 {
 	ResetTimer();
 }
 
-public void evtFinaleStart(Event event, const char[] name, bool dontBroadcast) 
+void evtFinaleStart(Event event, const char[] name, bool dontBroadcast) 
 {
 	g_bFinaleStarted = true;
 }
 
 //function
-public void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay)
+void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay)
 {
 	float fPos[3];		
 	GetEntPropVector(Caller, Prop_Send, "m_vecOrigin", fPos);
@@ -406,122 +433,71 @@ public void eBreakBreakable(const char[] Output, int Caller, int Activator, floa
 	SetEntProp(Caller, Prop_Send, "m_iGlowType", 0);
 	
 	int iDrops = GetRandomInt(g_iItemMin, g_iItemMax);
-	int iItemChance;
+	int iItemChance, iWeapon, random;
 	int iChanceMax = g_iDropItemChance_Other;
-	for (int i = 1; i <= iDrops; i++) {
+	EWeaponData eWeaponData;
+	char sWeaponName[64];
+	for (int i = 1; i <= iDrops; i++) 
+	{
 		iItemChance = GetRandomInt(1, iChanceMax);
-		if(0 < iItemChance && iItemChance <= g_iDropItemChance_Weapon) {
-			int iWeapon;
-			switch (GetRandomInt(1, 14)) {
-				case 1: {
-					iWeapon = SpawnItem("weapon_rifle", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-				}				
-				case 2: {
-					iWeapon = SpawnItem("weapon_rifle_ak47", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-				}
-				case 3: {
-					iWeapon = SpawnItem("weapon_rifle_desert", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-				}
-				case 4: {
-					iWeapon = SpawnItem("weapon_rifle_m60", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomM60Ammo);
-				}
-				case 5: {
-					iWeapon = SpawnItem("weapon_grenade_launcher", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomGLAmmo);
-				}
-				case 6: {
-					iWeapon = SpawnItem("weapon_rifle_sg552", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomRifleAmmo);
-				}
-				case 7: {
-					iWeapon = SpawnItem("weapon_autoshotgun", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomShotgunAmmo);
-				}
-				case 8: {
-					iWeapon = SpawnItem("weapon_shotgun_spas", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomShotgunAmmo);
-				}
-				case 9: {
-					iWeapon = SpawnItem("weapon_sniper_awp", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
-				}
-				case 10: {
-					iWeapon = SpawnItem("weapon_sniper_scout", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
-				}
-				case 11: {
-					iWeapon = SpawnItem("weapon_hunting_rifle", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomHuntingAmmo);
-				}
-				case 12: {
-					iWeapon = SpawnItem("weapon_sniper_military", fPos);
-					if(iWeapon != -1) SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", g_iRandomSniperAmmo);
-				}
-				case 13: {
-					if(iWeapon != -1) SpawnItem("weapon_pistol_magnum", fPos);
-				}
-				case 14: {
-					if(iWeapon != -1) SpawnItem("weapon_chainsaw", fPos);
-				}
+		if(0 < iItemChance && iItemChance <= g_iDropItemChance_Weapon) 
+		{
+			if(g_aeWeaponsList.Length == 0) continue;
+
+			random = GetRandomInt(0, g_aeWeaponsList.Length-1);
+			g_aeWeaponsList.GetArray(random, eWeaponData);
+			iWeapon = SpawnItem(eWeaponData.m_sName, fPos);
+			if(iWeapon != -1 && eWeaponData.m_iAmmoMin > 0 && eWeaponData.m_iAmmoMax > 0)
+			{
+				SetEntProp(iWeapon, Prop_Send, "m_iExtraPrimaryAmmo", GetRandomInt(eWeaponData.m_iAmmoMin, eWeaponData.m_iAmmoMax));
 			}
 		}
-		else if(g_iDropItemChance_Weapon < iItemChance && iItemChance <= g_iDropItemChance_Melee) {
+		else if(g_iDropItemChance_Weapon < iItemChance && iItemChance <= g_iDropItemChance_Melee) 
+		{
 			SpawnItem("weapon_melee", fPos, true);
 		}
-		else if(g_iDropItemChance_Melee < iItemChance && iItemChance <= g_iDropItemChance_Medic) {
-			switch (GetRandomInt(1, 7)) {
-				case 1:
-					SpawnItem("weapon_first_aid_kit", fPos);
-				case 2:
-					SpawnItem("weapon_first_aid_kit", fPos);
-				case 3:
-					SpawnItem("weapon_first_aid_kit", fPos);
-				case 4:
-					SpawnItem("weapon_pain_pills", fPos);
-				case 5:
-					SpawnItem("weapon_pain_pills", fPos);	
-				case 6:
-					SpawnItem("weapon_adrenaline", fPos);	
-				case 7:
-					SpawnItem("weapon_defibrillator", fPos);
-			}
-		}
-		else if(g_iDropItemChance_Medic < iItemChance && iItemChance <= g_iDropItemChance_Throwable) {
-			switch (GetRandomInt(1, 3)) {
-				case 1:
-					SpawnItem("weapon_pipe_bomb", fPos);
-				case 2:
-					SpawnItem("weapon_molotov", fPos);
-				case 3:
-					SpawnItem("weapon_vomitjar", fPos);		
-			}
-		}
-		else if(g_iDropItemChance_Throwable < iItemChance && iItemChance <= g_iDropItemChance_Other) {
-			switch (GetRandomInt(1, 3)) {
-				case 1:
-					SpawnItem("weapon_upgradepack_explosive", fPos);
-				case 2:
-					SpawnItem("weapon_upgradepack_incendiary", fPos);
-				case 3:
-					SpawnItem(FIREWORKCRATE_MODEL, fPos, true);	
-				case 4:
-					SpawnItem(PROPANETANK_MODEL, fPos, true);	
-				case 5:
-					SpawnItem(OXYGENTANK_MODEL, fPos, true);				
-			}
+		else if(g_iDropItemChance_Melee < iItemChance && iItemChance <= g_iDropItemChance_Medic) 
+		{
+			if(g_aMedicList.Length == 0) continue;
 
-			if(--g_iBoxCount < 0) g_iBoxCount = 0;
+			random = GetRandomInt(0, g_aMedicList.Length-1);
+			g_aMedicList.GetString(random, sWeaponName, sizeof(sWeaponName));
+			iWeapon = SpawnItem(sWeaponName, fPos);
+		}
+		else if(g_iDropItemChance_Medic < iItemChance && iItemChance <= g_iDropItemChance_Throwable) 
+		{
+			if(g_aThrowableList.Length == 0) continue;
+
+			random = GetRandomInt(0, g_aThrowableList.Length-1);
+			g_aThrowableList.GetString(random, sWeaponName, sizeof(sWeaponName));
+			iWeapon = SpawnItem(sWeaponName, fPos);
+		}
+		else if(g_iDropItemChance_Throwable < iItemChance && iItemChance <= g_iDropItemChance_Other) 
+		{
+			if(g_aOthersList.Length == 0) continue;
+
+			random = GetRandomInt(0, g_aOthersList.Length-1);
+
+			g_aOthersList.GetString(random, sWeaponName, sizeof(sWeaponName));
+
+			if(strcmp(sWeaponName, FIREWORKCRATE_MODEL, false) == 0 ||
+				strcmp(sWeaponName, PROPANETANK_MODEL, false) == 0 ||
+				strcmp(sWeaponName, OXYGENTANK_MODEL, false) == 0 ||
+				strcmp(sWeaponName, GASCAN_MODEL, false) == 0)
+			{
+				iWeapon = SpawnItem(sWeaponName, fPos, true);
+			}
+			else
+			{
+				iWeapon = SpawnItem(sWeaponName, fPos);
+			}
 		}
 	}
 
 	AcceptEntityInput(Caller, "Kill");
 }
 
-public Action Timer_SupplyBoxDrop(Handle hTimer)
+Action Timer_SupplyBoxDrop(Handle hTimer)
 {
 	if( g_bCvarAllow == false ) {
 		SupplyBoxDropTimer = null;
@@ -539,16 +515,17 @@ public Action Timer_SupplyBoxDrop(Handle hTimer)
 		int DropNum = GetRandomInt(g_iCvarSupplyBoxMinDrop, g_iCvarSupplyBoxMaxDrop);
 		bool bDrop = false;
 		float vecPos[3];
+		int iBoxCount = CountAllSupplyBox();
 		for(int i = 1 ; i <= DropNum ; ++i )
 		{
-			if(g_iBoxCount > g_iCvarSupplyBoxLimit) break;
+			if(iBoxCount > g_iCvarSupplyBoxLimit) break;
 			else
 			{
 				if(L4D_GetRandomPZSpawnPosition(anyclient, 7, 5, vecPos) == true)
 				{
 					vecPos[2] += 20;
 					if(SpawnBox(vecPos) == true){
-						g_iBoxCount++;
+						iBoxCount++;
 						bDrop = true;				
 					}
 				}
@@ -617,7 +594,7 @@ public Action Timer_SupplyBoxDrop(Handle hTimer)
 	return Plugin_Continue;
 }
 
-public Action CmdSpawnBox(int iClient, int iArgs)
+Action CmdSpawnBox(int iClient, int iArgs)
 {
 	if(g_bCvarAllow == false)
 	return Plugin_Continue;
@@ -632,7 +609,7 @@ public Action CmdSpawnBox(int iClient, int iArgs)
 		return Plugin_Continue;
 	}
 
-	if(SpawnBox(vPos, vAng) == true) g_iBoxCount++;
+	SpawnBox(vPos, vAng);
 
 	return Plugin_Handled;
 }
@@ -654,9 +631,10 @@ bool SpawnBox(float fPos[3], float fAng[3] = NULL_VECTOR)
 	}
 	
 	DispatchSpawn(iBox);
-	DispatchKeyValue(iBox, "solid", "1"); //1: 穿透, 6: 固體
-	DispatchKeyValue(iBox, "targetname", "supplybox");
+	DispatchKeyValue(iBox, "solid", "1"); //1: 穿透 (只有倖存者能碰，特感與小殭屍會穿透), 6: 固體
+	DispatchKeyValue(iBox, "targetname", "l4d2_supply_woodbox");
 	ActivateEntity(iBox);
+	SetEntProp(iBox, Prop_Data, "m_iHealth", 20);
 
 	if(g_iCvarColor > 0) //enable glow
 	{
@@ -666,20 +644,20 @@ bool SpawnBox(float fPos[3], float fAng[3] = NULL_VECTOR)
 		AcceptEntityInput(iBox, "StartGlowing");
 	}
 
-	CreateTimer(g_fSupplyBoxLife, KillBox_Timer, EntIndexToEntRef(iBox), TIMER_FLAG_NO_MAPCHANGE);
 	HookSingleEntityOutput(iBox, "OnBreak", eBreakBreakable);
+
+	CreateTimer(g_fSupplyBoxLife, KillBox_Timer, EntIndexToEntRef(iBox), TIMER_FLAG_NO_MAPCHANGE);
 
 	return true;
 }
 
-public Action KillBox_Timer(Handle timer, int ref)
+Action KillBox_Timer(Handle timer, int ref)
 {
 	if(g_fSupplyBoxLife == 0 || !g_bCvarAllow) return Plugin_Continue;
 
 	if(ref && EntRefToEntIndex(ref) != INVALID_ENT_REFERENCE)
 	{
 		AcceptEntityInput(ref, "kill"); //remove box
-		if(--g_iBoxCount < 0) g_iBoxCount = 0;
 	}
 
 	return Plugin_Continue;
@@ -688,11 +666,17 @@ public Action KillBox_Timer(Handle timer, int ref)
 int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false)
 {
 	int entity;
-	if(bUsePropPhysics == false)
+	if(bUsePropPhysics)
 	{
-		entity = CreateEntityByName(sClassname);
+		entity = CreateEntityByName("prop_physics");
 		if (CheckIfEntitySafe( entity ) == false)
 			return -1;
+
+		DispatchKeyValue(entity, "solid", "6");
+		DispatchKeyValue(entity, "model", sClassname);
+		SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage);
+		SDKHook(entity, SDKHook_Use, Use);
+		CreateTimer(5.0, UnHookEnt, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else if (strcmp(sClassname, "weapon_melee") == 0)
 	{
@@ -705,28 +689,15 @@ int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false
 	}
 	else
 	{
-		if(sClassname[0] == 'w' && strcmp(sClassname, "weapon_gascan") == 0)
-		{
-			entity = CreateEntityByName(sClassname);
-			if (CheckIfEntitySafe( entity ) == false)
-				return -1;
-		}
-		else
-		{
-			entity = CreateEntityByName("prop_physics");
-			if (CheckIfEntitySafe( entity ) == false)
-				return -1;
-
-			DispatchKeyValue(entity, "model", sClassname);
-		}
-		SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage);
-		SDKHook(entity, SDKHook_Use, Use);
-		CreateTimer(5.0, UnHookEnt, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+		entity = CreateEntityByName(sClassname);
+		if (CheckIfEntitySafe( entity ) == false)
+			return -1;
 	}
+
 	TeleportEntity(entity, fPos, NULL_VECTOR, NULL_VECTOR);
 	DispatchSpawn(entity);
 	ActivateEntity(entity);
-
+	
 	if(g_fCvarDropItemTime > 0.0) SetTimer_DeleteWeapon(entity);
 	
 	return entity;
@@ -762,16 +733,16 @@ Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, in
 	return Plugin_Handled;
 }
 
-public void Use(int entity, int activator, int caller, UseType type, float value)
+void Use(int entity, int activator, int caller, UseType type, float value)
 {
 	if(entity < 1 || !IsValidEntity(entity))
-	return;
+		return;
 	
 	SDKUnhook(entity, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKUnhook(entity, SDKHook_Use, Use);
 }
 
-public Action UnHookEnt(Handle Timer, any iEntRef)
+Action UnHookEnt(Handle Timer, any iEntRef)
 {
 	if(!IsValidEntRef(iEntRef))
 		return Plugin_Continue;
@@ -842,7 +813,7 @@ bool SetTeleportEndPoint(int client, float vPos[3], float vAng[3])
 	return true;
 }
 
-public bool _TraceFilter(int entity, int contentsMask)
+bool _TraceFilter(int entity, int contentsMask)
 {
 	return entity > MaxClients || !entity;
 }
@@ -914,7 +885,7 @@ int GetColor(char[] sTemp)
 	return color;
 }
 
-public Action Timer_PlayerLeftStart(Handle Timer)
+Action Timer_PlayerLeftStart(Handle Timer)
 {
 	if(!g_bCvarAllow || g_iCurrentMode == 2 )
 	{
@@ -979,7 +950,7 @@ public void OnClientPutInServer(int client)
     SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquipPost);
 }
 
-public void OnWeaponEquipPost(int client, int weapon)
+void OnWeaponEquipPost(int client, int weapon)
 {
 	if (client <= 0 || client > MaxClients || !IsClientInGame(client))
 		return;
@@ -1053,7 +1024,7 @@ stock void GetMeleeClasses()
 	}	
 }
 
-public Action GetMeleeTable(Handle timer)
+Action GetMeleeTable(Handle timer)
 {
 	GetMeleeClasses();
 	return Plugin_Continue;
@@ -1061,7 +1032,127 @@ public Action GetMeleeTable(Handle timer)
 
 void GameStart()
 {
-	g_iBoxCount = 0;
 	int SpawnTime = GetRandomInt(g_iCvarSupplyBoxMinTime, g_iCvarSupplyBoxMaxTime);
 	SupplyBoxDropTimer = CreateTimer(float(SpawnTime), Timer_SupplyBoxDrop);
+}
+
+int CountAllSupplyBox()
+{
+	int iBoxCount = 0, entity = -1;
+	static char sTargetName[64];
+	while ((entity = FindEntityByClassname(entity, "prop_physics")) != -1)
+	{
+		if (!IsValidEntity(entity))
+			continue;	
+
+		GetEntPropString(entity, Prop_Data, "m_iName", sTargetName, sizeof(sTargetName));
+
+		if(strcmp(sTargetName, "l4d2_supply_woodbox", false) == 0) 
+			iBoxCount ++;
+	}
+
+	return iBoxCount;
+}
+
+// Config-------------------------------
+
+void LoadData()
+{
+	char sPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, sPath, sizeof(sPath), DATA_FILE);
+	if( !FileExists(sPath) )
+	{
+		SetFailState("File Not Found: %s", sPath);
+		return;
+	}
+
+	// Load config
+	KeyValues hData = new KeyValues("l4d2_supply_woodbox");
+	if (!hData.ImportFromFile(sPath)) {
+		SetFailState("File Format Not Correct: %s", sPath);
+		delete hData;
+	}
+
+	int num;
+	char sNum[4], sName[64];
+	if(hData.JumpToKey("weapons"))
+	{
+		num = hData.GetNum("num", 0);
+		for(int i = 1; i <= num; i++)
+		{
+			IntToString(i, sNum, sizeof(sNum));
+			if(hData.JumpToKey(sNum))
+			{
+				EWeaponData eWeaponData;
+				hData.GetString("name", eWeaponData.m_sName, sizeof(eWeaponData.m_sName), "");
+				eWeaponData.m_iAmmoMax = hData.GetNum("ammo_max", 0);
+				eWeaponData.m_iAmmoMin = hData.GetNum("ammo_min", 0);
+
+				if(strlen(eWeaponData.m_sName) > 0) g_aeWeaponsList.PushArray(eWeaponData);
+
+				hData.GoBack();	
+			}
+		}
+
+		hData.GoBack();	
+	}
+
+	if(hData.JumpToKey("Medic"))
+	{
+		num = hData.GetNum("num", 0);
+		for(int i = 1; i <= num; i++)
+		{
+			IntToString(i, sNum, sizeof(sNum));
+			if(hData.JumpToKey(sNum))
+			{
+				hData.GetString("name", sName, sizeof(sName), "");
+
+				if(strlen(sName) > 0) g_aMedicList.PushString(sName);
+
+				hData.GoBack();	
+			}
+		}
+
+		hData.GoBack();	
+	}
+
+	if(hData.JumpToKey("Throwable"))
+	{
+		num = hData.GetNum("num", 0);
+		for(int i = 1; i <= num; i++)
+		{
+			IntToString(i, sNum, sizeof(sNum));
+			if(hData.JumpToKey(sNum))
+			{
+				hData.GetString("name", sName, sizeof(sName), "");
+
+				if(strlen(sName) > 0) g_aThrowableList.PushString(sName);
+
+				hData.GoBack();	
+			}
+		}
+
+		hData.GoBack();	
+	}
+
+	if(hData.JumpToKey("Others"))
+	{
+		num = hData.GetNum("num", 0);
+		for(int i = 1; i <= num; i++)
+		{
+			IntToString(i, sNum, sizeof(sNum));
+			if(hData.JumpToKey(sNum))
+			{
+				hData.GetString("name", sName, sizeof(sName), "");
+
+				if(strlen(sName) > 0) g_aOthersList.PushString(sName);
+
+				hData.GoBack();	
+			}
+		}
+
+		hData.GoBack();	
+	}
+
+	delete hData;
 }

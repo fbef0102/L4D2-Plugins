@@ -12,6 +12,13 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
 
+* <details><summary>How does it work?</summary>
+
+	* Drop supply box after survivos has left the safer zone
+	* Drop weapons, melee (support custom melee), medic, throwable, gascan....
+	* Sometime the helicopter pilot might lose his way, drop supply box on unreachable location and outside of the path.
+</details>
+
 * <details><summary>ConVar</summary>
 
 	* cfg\sourcemod\l4d2_supply_woodbox.cfg
@@ -90,6 +97,29 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 		```
 </details>
 
+* <details><summary>Data Config</summary>
+
+	* data/l4d2_supply_woodbox.txt
+		```php
+		"l4d2_supply_woodbox"
+		{
+			"weapons"
+			{
+				// There are 14 random weapons drop from supply box
+				"num"   "14"
+				"1"
+				{
+					"name" "weapon_rifle"
+					"ammo_min" "200" // random ammo (minimum)
+					"ammo_max" "360" // random ammo (maximum)
+				}
+
+				...
+			}
+		}
+		```
+</details>
+
 * Apply to | 適用於
 	```
 	L4D2
@@ -113,11 +143,14 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 	2. [weapon_csgo_reload](https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_weapon_csgo_reload): Weapon Quickswitch Reloading in L4D1+2
 		* 將武器改成現代遊戲的裝子彈機制 (仿CS:GO切槍裝彈設定)
 
-	3. [l4d2_cso_knockback](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Weapons_%E6%AD%A6%E5%99%A8/l4d2_cso_knockback): Weapons and Melees now have knockback power like CSO
+	3. [l4d2_cso_knockback](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Nothing_Impossible_無理改造版/l4d2_cso_knockback): Weapons and Melees now have knockback power like CSO
 		* 槍械與近戰武器現在有擊退力 (仿CSO惡靈降世)
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+	* v1.5 (2024-2-15)
+		* Add data config
 
 	* v1.4 (2023-7-26)
 		* Add hunting Rifle
@@ -152,7 +185,8 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 地圖上隨機出現補給箱，提供人類強力支援 (仿CSO惡靈降世 補給箱)
 
 * 原理
-	* 靈感來自CSO 殭屍模式，在這款遊戲中每隔一段時間地圖上出現補給箱，補給箱內有各式各樣的物資與武器
+	* 靈感來自CSO 殭屍模式，離開安全室之後每隔一段時間地圖上出現補給箱
+		* 補給箱內有物資與武器 (支援三方圖近戰)
 	* 地圖上隨機出現補給箱，只有人類才能看到補給箱位置
 	* 用子彈或近戰武器打破這些補給箱，特感不能打破
 	* 補給箱不會擋住特感與普通感染者，他們可以穿透
@@ -233,5 +267,28 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 		```php
 		sm_supplybox
 		sm_box
+		```
+</details>
+
+* <details><summary>文件設定範例</summary>
+
+	* 設置文件```data/l4d2_supply_woodbox.txt```，修改掉落的物資
+		```php
+		"l4d2_supply_woodbox"
+		{
+			"weapons"
+			{
+				// 有14種武器隨機從補給箱掉落
+				"num"   "14"
+				"1"
+				{
+					"name" "weapon_rifle"
+					"ammo_min" "200" // 武器的備用子彈隨機數值 (最小)
+					"ammo_max" "360" // 武器的備用子彈隨機數值 (最大)
+				}
+
+				...
+			}
+		}
 		```
 </details>

@@ -38,21 +38,21 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #define CLASSNAME_INFECTED            "infected"
 #define CLASSNAME_WITCH               "witch"
 
-#define HUD_LEFT_TOP	0
-#define HUD_LEFT_BOT	1
-#define HUD_MID_TOP		2
-#define HUD_MID_BOT		3
-#define HUD_RIGHT_TOP	4
-#define HUD_RIGHT_BOT	5
-#define HUD_TICKER		6
-#define HUD_FAR_LEFT	7
-#define HUD_FAR_RIGHT	8
-#define HUD_MID_BOX		9
-#define HUD_SCORE_TITLE	10
-#define HUD_SCORE_1		11
-#define HUD_SCORE_2		12
-#define HUD_SCORE_3		13
-#define HUD_SCORE_4		14
+//	#define HUD_LEFT_TOP	0
+//	#define HUD_LEFT_BOT	1
+//	#define HUD_MID_TOP		2
+//	#define HUD_MID_BOT		3
+//	#define HUD_RIGHT_TOP	4
+//	#define HUD_RIGHT_BOT	5
+//	#define HUD_TICKER		6
+//	#define HUD_FAR_LEFT	7
+//	#define HUD_FAR_RIGHT	8 	<-- 此插件占用
+//	#define HUD_MID_BOX		9	<-- 此插件占用
+//	#define HUD_SCORE_TITLE	10	<-- 此插件占用
+//	#define HUD_SCORE_1		11	<-- 此插件占用
+//	#define HUD_SCORE_2		12	<-- 此插件占用
+//	#define HUD_SCORE_3		13	<-- 此插件占用
+//	#define HUD_SCORE_4		14	<-- 此插件占用
 
 #define MAX_SIZE_HUD	15
 
@@ -283,7 +283,8 @@ public void OnConfigsExecuted()
 	for (int slot = KILL_HUD_BASE; slot < MAX_SIZE_HUD; slot++)
 		RemoveHUD(slot);
 
-	g_hud_killinfo.Clear();
+	delete g_hud_killinfo;
+	g_hud_killinfo = new ArrayList(128);
 }
 
 //Event-------------------------------
