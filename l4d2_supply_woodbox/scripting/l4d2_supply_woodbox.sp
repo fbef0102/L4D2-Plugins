@@ -708,21 +708,27 @@ void SetTimer_DeleteWeapon(int entity)
 	if (!IsValidEntityIndex(entity)) return;
 
 	delete g_ItemDeleteTimer[entity];
-	g_ItemDeleteTimer[entity] = CreateTimer(g_fCvarDropItemTime, Timer_KillWeapon, EntIndexToEntRef(entity));
+
+	DataPack hPack;
+	g_ItemDeleteTimer[entity] = CreateDataTimer(g_fCvarDropItemTime, Timer_KillWeapon, hPack);
+	hPack.WriteCell(EntIndexToEntRef(entity));
+	hPack.WriteCell(entity);
 }
 
-Action Timer_KillWeapon(Handle timer, int entRef)
+Action Timer_KillWeapon(Handle timer, DataPack hPack)
 {
+	hPack.Reset();
+	int entity = EntRefToEntIndex(hPack.ReadCell());
+	int index = hPack.ReadCell();
+
+	g_ItemDeleteTimer[index] = null;
 	if(!g_bCvarAllow) return Plugin_Continue;
 
-	int entity;
-	if(entRef && (entity = EntRefToEntIndex(entRef)) != INVALID_ENT_REFERENCE)
+	if(entity == INVALID_ENT_REFERENCE) return Plugin_Continue;
+	
+	if(IsInUse(entity) == false)
 	{
-		g_ItemDeleteTimer[entity] = null;
-		if(IsValidEntityIndex(entity) && IsInUse(entity) == false )
-		{
-			RemoveEntity(entity);
-		}
+		RemoveEntity(entity);
 	}
 
 	return Plugin_Continue;
