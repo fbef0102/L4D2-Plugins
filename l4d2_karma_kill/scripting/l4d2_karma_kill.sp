@@ -1017,7 +1017,7 @@ Action event_VictimFreeFromPinPre(Handle event, const char[] name, bool dontBroa
 {
 	int victim = GetClientOfUserId(GetEventInt(event, "victim"));
 
-	if (victim == 0)
+	if (!victim || !IsClientInGame(victim))
 		return Plugin_Continue;
 
 	SetEntPropFloat(victim, Prop_Send, "m_flLaggedMovementValue", 1.0);

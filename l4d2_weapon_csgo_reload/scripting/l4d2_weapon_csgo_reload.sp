@@ -155,6 +155,7 @@ public void OnPluginStart()
 
 	HookEvent("weapon_reload", OnWeaponReload_Event, EventHookMode_Post);
 	HookEvent("round_start", RoundStart_Event);
+	AddCommandListener(CmdListen_weapon_reparse_server, "weapon_reparse_server");
 
 	SetWeaponNameId();
 
@@ -225,7 +226,7 @@ void GetCvars()
 
 void SetWeaponNameId()
 {
-	g_smWeaponNameID = CreateTrie();
+	g_smWeaponNameID = new StringMap ();
 	g_smWeaponNameID.SetValue("", ID_NONE);
 	g_smWeaponNameID.SetValue("weapon_pistol", ID_PISTOL);
 	g_smWeaponNameID.SetValue("weapon_smg", ID_SMG);
@@ -316,6 +317,18 @@ public void OnEntityCreated(int entity, const char[] classname)
 	}
 }
 
+Action CmdListen_weapon_reparse_server(int client, const char[] command, int argc)
+{
+	RequestFrame(OnNextFrame_weapon_reparse_server);
+
+	return Plugin_Continue;
+}
+
+void OnNextFrame_weapon_reparse_server()
+{
+	SetWeaponMaxClip();
+}
+
 void RoundStart_Event(Event event, const char[] name, bool dontBroadcast) 
 {
 	for(int i = 1; i <= MaxClients; i++)
@@ -349,42 +362,42 @@ void OnWeaponReload_Event(Event event, const char[] name, bool dontBroadcast)
 		} 
 	#endif
 	
-	DataPack pack = new DataPack();
+	DataPack pack = null;
 	switch(weaponid)
 	{
-		case ID_SMG: CreateTimer(g_SmgTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_RIFLE: CreateTimer(g_RifleTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_HUNTING_RIFLE: CreateTimer(g_HuntingRifleTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+		case ID_SMG: CreateDataTimer(g_SmgTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_RIFLE: CreateDataTimer(g_RifleTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_HUNTING_RIFLE: CreateDataTimer(g_HuntingRifleTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 		case ID_PISTOL: 
 		{
 			if(IsIncapacitated(client))
-				CreateTimer(g_PistolTimeCvar * PISTOL_RELOAD_INCAP_MULTIPLY, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+				CreateDataTimer(g_PistolTimeCvar * PISTOL_RELOAD_INCAP_MULTIPLY, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 			else
-				CreateTimer(g_PistolTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+				CreateDataTimer(g_PistolTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		case ID_DUAL_PISTOL:
 		{
 			if(IsIncapacitated(client))
-				CreateTimer(g_DualPistolTimeCvar * PISTOL_RELOAD_INCAP_MULTIPLY, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+				CreateDataTimer(g_DualPistolTimeCvar * PISTOL_RELOAD_INCAP_MULTIPLY, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 			else
-				CreateTimer(g_DualPistolTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+				CreateDataTimer(g_DualPistolTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 		}
-		case ID_SMG_SILENCED: CreateTimer(g_SmgSilencedTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_SMG_MP5: CreateTimer(g_SmgMP5TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_AK47: CreateTimer(g_AK47TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_RIFLE_DESERT: CreateTimer(g_RifleDesertTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_AWP: CreateTimer(g_AWPTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_SCOUT: CreateTimer(g_ScoutTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_GRENADE: CreateTimer(g_GrenadeTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_SG552: CreateTimer(g_SG552TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_SNIPER_MILITARY: CreateTimer(g_SniperMilitaryTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-		case ID_M60: CreateTimer(g_M60TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+		case ID_SMG_SILENCED: CreateDataTimer(g_SmgSilencedTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_SMG_MP5: CreateDataTimer(g_SmgMP5TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_AK47: CreateDataTimer(g_AK47TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_RIFLE_DESERT: CreateDataTimer(g_RifleDesertTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_AWP: CreateDataTimer(g_AWPTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_SCOUT: CreateDataTimer(g_ScoutTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_GRENADE: CreateDataTimer(g_GrenadeTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_SG552: CreateDataTimer(g_SG552TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_SNIPER_MILITARY: CreateDataTimer(g_SniperMilitaryTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
+		case ID_M60: CreateDataTimer(g_M60TimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 		case ID_MAGNUM:
 		{
 			if(IsIncapacitated(client))
-				CreateTimer(g_MangumTimeCvar * PISTOL_RELOAD_INCAP_MULTIPLY, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+				CreateDataTimer(g_MangumTimeCvar * PISTOL_RELOAD_INCAP_MULTIPLY, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 			else
-				CreateTimer(g_MangumTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+				CreateDataTimer(g_MangumTimeCvar, WeaponReloadClip, pack, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		default:
 		{
