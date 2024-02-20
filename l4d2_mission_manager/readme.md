@@ -37,7 +37,7 @@ Mission manager for L4D2, provide information about map orders for other plugins
 
 * <details><summary>API | 串接</summary>
 
-	```c++
+	```c
     /**
     * @return	Return LMM_GAMEMODE_UNKNOWN (-1) if gamemode is unknown
     */

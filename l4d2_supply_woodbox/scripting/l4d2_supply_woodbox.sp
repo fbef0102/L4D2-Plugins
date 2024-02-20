@@ -149,8 +149,6 @@ public void OnMapStart()
 {
 	g_bMapStarted = true;
 	g_bValidMap = true;
-
-	CreateTimer(1.0, GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnMapEnd()
@@ -223,6 +221,7 @@ public void OnConfigsExecuted()
 	delete g_aOthersList;
 	g_aOthersList = new ArrayList(ByteCountToCells(64));
 
+	GetMeleeClasses();
 	LoadData();
 }
 
@@ -1029,13 +1028,6 @@ stock void GetMeleeClasses()
 		//LogAcitivity( "Function::GetMeleeClasses - Getting melee classes: %s", g_sMeleeClass[i]);
 	}	
 }
-
-Action GetMeleeTable(Handle timer)
-{
-	GetMeleeClasses();
-	return Plugin_Continue;
-}
-
 void GameStart()
 {
 	int SpawnTime = GetRandomInt(g_iCvarSupplyBoxMinTime, g_iCvarSupplyBoxMaxTime);

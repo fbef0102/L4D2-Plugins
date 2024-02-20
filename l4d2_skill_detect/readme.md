@@ -81,7 +81,7 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>API | 串接</summary>
 
-	```c++
+	```c
 	forward void OnSkeet( int survivor, int vicitm, bool isHunter )
 
 	forward void OnSkeetMelee( int survivor, int vicitm, bool isHunter )

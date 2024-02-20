@@ -49,12 +49,12 @@ Makes AI SI take (and do) damage like human SI.
 
 - - - -
 # 中文說明
-對AI Hunter與 AI Charger造成的傷害數據跟人類玩家一樣
+對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣
 
 * 原理
-	* (裝插件之前) 真人扮演的Hunter在飛撲過程中容易被殺死, 但是AI Hunter不容易被殺死，因為傷害機制不同
-	* (裝插件之前) 真人扮演的Charger在衝鋒過程中容易被殺死, 但是AI Charger不容易被殺死，因為傷害機制不同
-	* (裝插件之後) 對AI Hunter與 AI Charger造成的傷害數據跟人類玩家一樣 (所以他們更容易被殺死)
+	* (裝插件之前) 真人扮演的Hunter在飛撲過程中容易被殺死, 但是AI Hunter不容易被殺死，因為官方故意設置傷害機制不同
+	* (裝插件之前) 真人扮演的Charger在衝鋒過程中容易被殺死, 但是AI Charger不容易被殺死，因為官方故意設置傷害機制不同
+	* (裝插件之後) 對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣 (所以他們更容易被殺死)
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 

@@ -12,12 +12,12 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 * <details><summary>How does it work?</summary>
 
     * Type !admin to call adm menu and you will see "ALL4DEAD" option
+    * Support custom melee
 </details>
 
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
     2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
-    3. To unlock all melee weapons in all campaigns, you MUST use the [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586) plugin which supersedes the extension.
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -148,6 +148,7 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
 * 原理
     * 管理員輸入!admin就能看到 "ALL4DEAD" 選項
+    * 支援生成三方圖近戰武器
 
 * 用意在哪?
     * 不需要開啟作弊模式就能輕鬆生成各種武器、物品與特感，適合用於服主做測試或惡搞

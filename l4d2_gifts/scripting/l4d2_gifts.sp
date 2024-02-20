@@ -1,24 +1,40 @@
-#define PLUGIN_VERSION		"3.3-2023/12/11"
-
-/*
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	Plugin Info:
-
-*	Name	:	[L4D2] Gifts Drop & Spawn
-*	Author	:	Aceleracion & HarryPotter
-*	Descrp	:	Drop gifts (touch gift to earn reward) when a special infected or a witch/tank killed by survivor.
-*	Link	:	https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_gifts
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-*/
-
 #pragma semicolon 1
 #pragma newdecls required
+
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
 #include <left4dhooks>
 #include <l4d2_weapons>
+#include <multicolors>
+
+#define PLUGIN_VERSION		"3.4-2024/2/20"
+
+public Plugin myinfo = 
+{
+	name = "[L4D2] Gifts Drop & Spawn",
+	author = "Aceleracion & Harry Potter",
+	description = "Drop gifts (touch gift to earn reward) when a special infected or a tank/witch killed by survivor.",
+	version = PLUGIN_VERSION,
+	url = "https://forums.alliedmods.net/showthread.php?t=302731"
+}
+
+int ZC_TANK;
+bool bLate;
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
+{
+	EngineVersion test = GetEngineVersion();
+	
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+	
+	ZC_TANK = 8;
+	bLate = late;
+	return APLRes_Success; 
+}
 
 #define MAXENTITIES                   2048
 
@@ -34,99 +50,8 @@
 #define TEAM_SURVIVOR		2
 #define TEAM_INFECTED		3
 
-#define MODEL_GNOME			"models/props_junk/gnome.mdl"
-
-static char weapons_name_standard[][][] = 
-{
-	//{"grenade_launcher","Grenade Launcher"},
-	//{"rifle_m60", "M60 Machine Gun"},
-	{"defibrillator","Defibrillator"},
-	{"first_aid_kit","First Aid Kit"},
-	{"pain_pills", "Pain Pill"},
-	{"adrenaline", "Adrenaline"},
-	{"weapon_upgradepack_incendiary", "Incendiary Pack"},
-	{"weapon_upgradepack_explosive","Explosive Pack"},
-	{"molotov", "Molotov"},
-	{"pipe_bomb", "Pipe Bomb"},
-	{"vomitjar", "Vomitjar"},
-	{"gascan","Gascan"},
-	{"propanetank", "Propane Tank"},
-	{"oxygentank", "Oxygen Tank"},
-	{"fireworkcrate","Firework Crate"},
-	{"pistol","Pistol"},
-	{"pistol_magnum", "Magnum"},
-	{"pumpshotgun", "Pumpshotgun"},
-	{"shotgun_chrome", "Chrome Shotgun"},
-	{"smg", "Smg"},
-	{"smg_silenced", "Silenced Smg"},
-	{"smg_mp5","MP5"},
-	{"rifle", "Rifle"},
-	{"rifle_sg552", "SG552"},
-	{"rifle_ak47", "AK47"},
-	{"rifle_desert","Desert Rifle"},
-	{"shotgun_spas","Spas Shotgun"},
-	{"autoshotgun", "Autoshotgun"},
-	{"hunting_rifle", "Hunting Rifle"},
-	//{"sniper_military", "Military Sniper"},
-	//{"sniper_scout", "SCOUT"},
-	//{"sniper_awp", "AWP"},
-	{"baseball_bat", "Baseball Bat"},
-	{"chainsaw", "Chainsaw"},
-	{"cricket_bat", "Cricket Bat"},
-	{"crowbar", "Crowbar"},
-	{"electric_guitar", "Electric Guitar"},
-	{"fireaxe", "Fire Axe"},
-	{"frying_pan", "Frying Pan"},
-	{"katana", "Katana"},
-	{"machete", "Machete"},
-	{"tonfa", "Tonfa"},
-	{"knife", "Knife"},
-	{"golfclub", "Golf Club"},
-	{"pitchfork", "Pitchfork"},
-	{"shovel", "Shovel"},
-	{"gnome", "Gnome"},
-	{"laser_sight",	"Laser Sight"},
-	{"incendiary_ammo",	"Incendiary Ammo"},
-	{"explosive_ammo",	"Explosive Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"ammo","Ammo"},
-	{"hp_+100", "Health+100"},
-	{"hp_+10","Health+10"},
-	{"hp_+30","Health+30"},
-	{"hp_+50","Health+50"},
-	{"hp_-1","Health-1"},
-	{"hp_-5","Health-5"},
-	{"hp_-10","Health-10"},
-	{"hp_-20","Health-20"},
-	{"", "Empty"},
-};
-
-static char weapons_name_special[][][] = 
-{
-	{"first_aid_kit","First Aid Kit"},
-	{"first_aid_kit","First Aid Kit"},
-	{"defibrillator","Defibrillator"},
-	{"pain_pills", "Pain Pill"},
-	{"adrenaline", "Adrenaline"},
-	{"vomitjar", "Vomitjar"},
-	{"grenade_launcher","Grenade Launcher"},
-	{"rifle_m60", "M60 Machine Gun"},
-	{"sniper_awp", "AWP"},
-	{"ammo","Ammo"},
-	{"hp_+100", "Health+100"},
-	{"hp_+100", "Health+100"},
-};
-
 //WeaponName/AmmoOffset/AmmoGive
-static char weapon_ammo[][][] =
+static char weapon_ammo[][3][64] =
 {
 	{"weapon_smg",		 				"5", 	"250"},
 	{"weapon_pumpshotgun",				"7", 	"40"},
@@ -147,7 +72,7 @@ static char weapon_ammo[][][] =
 	{"weapon_shotgun_spas",  			"8",	"50"}
 };
 
-#define	MAX_WEAPONS		29
+#define	MAX_WEAPONS		30
 static char g_sWeaponModels[MAX_WEAPONS][] =
 {
 	"models/w_models/weapons/w_pistol_B.mdl",
@@ -179,6 +104,7 @@ static char g_sWeaponModels[MAX_WEAPONS][] =
 	"models/w_models/weapons/w_eq_defibrillator.mdl",
 	"models/w_models/weapons/w_eq_explosive_ammopack.mdl",
 	"models/w_models/weapons/w_eq_incendiary_ammopack.mdl",
+	"models/props_junk/gnome.mdl"
 };
 
 int ColorCyan[3], ColorBlue[3], ColorGreen[3], ColorPink[3], ColorRed[3],
@@ -187,24 +113,22 @@ int ColorCyan[3], ColorBlue[3], ColorGreen[3], ColorPink[3], ColorRed[3],
 
 #define ENTITY_SAFE_LIMIT 2000 //don't spawn boxes when it's index is above this
 
-ConVar pain_pills_decay_rate, survivor_max_incapacitated_count;
-
-ConVar cvar_gift_enable, cvar_gift_life, cvar_gift_chance,
-	cvar_special_gift_chance,
-	cvar_gift_infected_hp, cvar_special_gift_infected_hp,
-	cvar_gift_Announce,
-	cvar_blockSwitch;
+ConVar g_hCvar_gift_enable, g_hCvar_gift_life, g_hCvar_gift_chance,
+	g_hCvar_special_gift_chance,
+	g_hCvar_gift_infected_hp, g_hCvar_special_gift_infected_hp,
+	g_hCvar_gift_Announce, g_hCvar_blockSwitch,
+	g_hCvarStandSoundFile, g_hCvarSpecialSoundFile;
 
 bool g_bGiftEnable, g_bCvarBlockSwitch;
 float g_fGiftLife;
-int g_iGiftChance, g_iSpecialGiftChance, g_iGiftMaxMap, g_iGiftMaxRound,
+int g_iGiftChance, g_iSpecialGiftChance,
 	g_iGiftHP, g_iSpecialGiftHP;
-float pain_pills_decay_rate_float;
 int g_iCvarAnnounce;
+char g_sCvarStandSoundFile[256], g_sCvarSpecialSoundFile[256];
 
 char g_sModel[MAX_GIFTS][MAX_STRING_WIDTH];
-char g_sTypeModel[MAX_GIFTS][10];
-char g_sTypeGift[MAX_GIFTS][10];
+char g_sType[MAX_GIFTS][10];
+char g_sGift[MAX_GIFTS][10];
 float g_fScale[MAX_GIFTS];
 char g_sGiftGlowCols[MAX_GIFTS][12],
 	g_sGiftEntityCols[MAX_GIFTS][12];
@@ -212,10 +136,7 @@ char g_sGiftGlowCols[MAX_GIFTS][12],
 int g_iGiftGlowRange[MAX_GIFTS], 
 	g_iSpecialGiftGlowRange[MAX_GIFTS];
 
-char g_sGifType[MAXENTITIES + 1][10];
-
-int gifts_collected_map;
-int gifts_collected_round;
+int g_iGifType[MAXENTITIES + 1];
 
 char sPath_gifts[PLATFORM_MAX_PATH];
 int g_iCountGifts;
@@ -226,86 +147,57 @@ bool
 	g_bGiftGlowEnable[MAX_GIFTS],
 	g_bGiftEntityEnable[MAX_GIFTS],
 	g_bFinalHasStart, 
-	g_bIsOpenSafeRoom,
-	g_bHooked[MAXPLAYERS+1];
+	g_bIsDoorOpen_LockDown,
+	g_bHooked[MAXPLAYERS+1],
+	g_bMapStart;
 
-#define SOUND_SPECIAL			"level/gnomeftw.wav"
-#define SOUND_STANDARD			"level/loud/climber.wav"
+StringMap 
+	g_smItemsToTranslation;
 
-public Plugin myinfo = 
-{
-	name = "[L4D2] Gifts Drop & Spawn",
-	author = "Aceleracion & Harry Potter",
-	description = "Drop gifts (touch gift to earn reward) when a special infected or a tank/witch killed by survivor.",
-	version = PLUGIN_VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=302731"
-}
+ArrayList 
+	g_aMapMeleeTable,
+	g_aStandItemsList,
+	g_aSpecialItemsList,
+	g_aGiftModelStandard,
+	g_aGiftModelSpecial;
 
-int ZC_TANK;
-bool bLate;
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
-{
-	EngineVersion test = GetEngineVersion();
-	
-	if( test != Engine_Left4Dead2 )
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
-	
-	ZC_TANK = 8;
-	bLate = late;
-	return APLRes_Success; 
-}
+int 
+	g_iMeleeClassCount;
+
+char 
+	g_sMeleeClass[16][32];
 
 public void OnPluginStart()
 {
 	LoadTranslations("l4d2_gifts.phrases");
 	BuildPath(Path_SM, sPath_gifts, PLATFORM_MAX_PATH, "data/l4d2_gifts.cfg");
 
-	if(!FileExists(sPath_gifts))
-	{
-		SetFailState("Cannot find the file 'data/l4d2_gifts.cfg'");
-	}
-
-	if(!LoadConfigGifts(false))
-	{
-		SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
-	}
-
-	if(g_iCountGifts == 0 )
-	{
-		SetFailState("Do not have models in 'data/l4d2_gifts.cfg'");
-	}
-
 	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 	g_iOffset_Incapacitated = FindSendPropInfo("Tank", "m_isIncapacitated");
 
-	survivor_max_incapacitated_count = FindConVar("survivor_max_incapacitated_count");
-	pain_pills_decay_rate = FindConVar("pain_pills_decay_rate");
-
-	cvar_gift_enable = CreateConVar("l4d2_gifts_enabled",									"1", 		"Enable gifts 0: Disable, 1: Enable", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvar_gift_life = CreateConVar("l4d2_gifts_gift_life",									"30",		"How long the gift stay on ground (seconds)", FCVAR_NOTIFY, true, 0.0);
-	cvar_gift_chance = CreateConVar("l4d2_gifts_chance", 									"50",		"Chance (%) of infected drop special standard gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
-	cvar_special_gift_chance = CreateConVar("l4d2_specail_gifts_chance", 					"100",		"Chance (%) of tank and witch drop second special gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
-	cvar_gift_Announce = CreateConVar("l4d2_gifts_announce_type",							"3",		"Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	cvar_gift_infected_hp = CreateConVar("l4d2_gifts_infected_reward_hp",					"200",		"Increase Infected health if they pick up gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
-	cvar_special_gift_infected_hp = CreateConVar("l4d2_gifts_special_infected_reward_hp",	"400",		"Increase Infected health if they pick up special gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
-	cvar_blockSwitch = 				CreateConVar("l4d2_gifts_block_switch",					"1",		"If 1, prevent survivors from switching into new weapons and items when they open gifts", FCVAR_NOTIFY, true, 0.0);
+	g_hCvar_gift_enable	 				= CreateConVar( "l4d2_gifts_enabled",					 	"1", 	"Enable gifts 0: Disable, 1: Enable", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvar_gift_life 					= CreateConVar( "l4d2_gifts_gift_life",					 	"30",	"How long the gift stay on ground (seconds)", FCVAR_NOTIFY, true, 0.0);
+	g_hCvar_gift_chance 				= CreateConVar( "l4d2_gifts_chance_standard", 			 	"50",	"Chance (%) of infected drop special standard gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
+	g_hCvar_special_gift_chance 		= CreateConVar( "l4d2_gifts_chance_special", 			 	"100",	"Chance (%) of tank and witch drop second special gift.", FCVAR_NOTIFY, true, 1.0, true, 100.0);
+	g_hCvar_gift_infected_hp 			= CreateConVar( "l4d2_gifts_infected_reward_hp_standard", 	"200",	"Increase Infected health if they pick up gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
+	g_hCvar_special_gift_infected_hp 	= CreateConVar( "l4d2_gifts_infected_reward_hp_special",	"400",	"Increase Infected health if they pick up special gift. (0=Off)", FCVAR_NOTIFY, true, 0.0);
+	g_hCvar_gift_Announce 				= CreateConVar( "l4d2_gifts_announce_type",				 	"3",	"Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	g_hCvar_blockSwitch 				= CreateConVar( "l4d2_gifts_block_switch",				 	"0",	"If 1, prevent survivors from switching into new weapons and items when they open gifts", FCVAR_NOTIFY, true, 0.0);
+	g_hCvarStandSoundFile 				= CreateConVar( "l4d2_gifts_soundfile_standard", 			"level/loud/climber.wav", 	"Standard gift - pick up sound file (relative to to sound/, empty=disable)", FCVAR_NOTIFY);
+	g_hCvarSpecialSoundFile 			= CreateConVar( "l4d2_gifts_soundfile_special", 			"level/gnomeftw.wav", 		"Special gift - pick up sound file (relative to to sound/, empty=disable)", FCVAR_NOTIFY);
 	AutoExecConfig(true, "l4d2_gifts");
 
 	GetCvars();
-	survivor_max_incapacitated_count.AddChangeHook(Cvar_Changed);
-	pain_pills_decay_rate.AddChangeHook(Cvar_Changed);
-
-	cvar_gift_enable.AddChangeHook(Cvar_Changed);
-	cvar_gift_life.AddChangeHook(Cvar_Changed);
-	cvar_gift_chance.AddChangeHook(Cvar_Changed);
-	cvar_special_gift_chance.AddChangeHook(Cvar_Changed);
-	cvar_gift_Announce.AddChangeHook(Cvar_Changed);
-	cvar_gift_infected_hp.AddChangeHook(Cvar_Changed);
-	cvar_special_gift_infected_hp.AddChangeHook(Cvar_Changed);
-	cvar_blockSwitch.AddChangeHook(Cvar_Changed);
+	g_hCvar_gift_enable.AddChangeHook(Cvar_Changed);
+	g_hCvar_gift_life.AddChangeHook(Cvar_Changed);
+	g_hCvar_gift_chance.AddChangeHook(Cvar_Changed);
+	g_hCvar_special_gift_chance.AddChangeHook(Cvar_Changed);
+	g_hCvar_gift_Announce.AddChangeHook(Cvar_Changed);
+	g_hCvar_gift_infected_hp.AddChangeHook(Cvar_Changed);
+	g_hCvar_special_gift_infected_hp.AddChangeHook(Cvar_Changed);
+	g_hCvar_blockSwitch.AddChangeHook(Cvar_Changed);
+	g_hCvarStandSoundFile.AddChangeHook(Cvar_Changed);
+	g_hCvarSpecialSoundFile.AddChangeHook(Cvar_Changed);
 
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("round_end", Event_RoundEnd);
@@ -317,6 +209,61 @@ public void OnPluginStart()
 	RegAdminCmd("sm_reloadgifts", Command_ReloadGift, ADMFLAG_CONFIG, " Reload the config file of gifts (data/l4d2_gifts.cfg)");
 
 	SetRandomColor();
+
+	g_smItemsToTranslation = new StringMap();
+	g_smItemsToTranslation.SetString("grenade_launcher", "Grenade Launcher");
+	g_smItemsToTranslation.SetString("rifle_m60", "M60 Machine Gun");
+	g_smItemsToTranslation.SetString("defibrillator","Defibrillator");
+	g_smItemsToTranslation.SetString("first_aid_kit","First Aid Kit");
+	g_smItemsToTranslation.SetString("pain_pills", "Pain Pill");
+	g_smItemsToTranslation.SetString("adrenaline", "Adrenaline");
+	g_smItemsToTranslation.SetString("weapon_upgradepack_incendiary", "Incendiary Pack");
+	g_smItemsToTranslation.SetString("weapon_upgradepack_explosive","Explosive Pack");
+	g_smItemsToTranslation.SetString("molotov", "Molotov");
+	g_smItemsToTranslation.SetString("pipe_bomb", "Pipe Bomb");
+	g_smItemsToTranslation.SetString("vomitjar", "Vomitjar");
+	g_smItemsToTranslation.SetString("gascan","Gascan");
+	g_smItemsToTranslation.SetString("propanetank", "Propane Tank");
+	g_smItemsToTranslation.SetString("oxygentank", "Oxygen Tank");
+	g_smItemsToTranslation.SetString("fireworkcrate","Firework Crate");
+	g_smItemsToTranslation.SetString("pistol","Pistol");
+	g_smItemsToTranslation.SetString("pistol_magnum", "Magnum");
+	g_smItemsToTranslation.SetString("pumpshotgun", "Pumpshotgun");
+	g_smItemsToTranslation.SetString("shotgun_chrome", "Chrome Shotgun");
+	g_smItemsToTranslation.SetString("smg", "Smg");
+	g_smItemsToTranslation.SetString("smg_silenced", "Silenced Smg");
+	g_smItemsToTranslation.SetString("smg_mp5","MP5");
+	g_smItemsToTranslation.SetString("rifle", "Rifle");
+	g_smItemsToTranslation.SetString("rifle_sg552", "SG552");
+	g_smItemsToTranslation.SetString("rifle_ak47", "AK47");
+	g_smItemsToTranslation.SetString("rifle_desert","Desert Rifle");
+	g_smItemsToTranslation.SetString("shotgun_spas","Spas Shotgun");
+	g_smItemsToTranslation.SetString("autoshotgun", "Autoshotgun");
+	g_smItemsToTranslation.SetString("hunting_rifle", "Hunting Rifle");
+	g_smItemsToTranslation.SetString("sniper_military", "Military Sniper");
+	g_smItemsToTranslation.SetString("sniper_scout", "SCOUT");
+	g_smItemsToTranslation.SetString("sniper_awp", "AWP");
+	g_smItemsToTranslation.SetString("baseball_bat", "Baseball Bat");
+	g_smItemsToTranslation.SetString("chainsaw", "Chainsaw");
+	g_smItemsToTranslation.SetString("cricket_bat", "Cricket Bat");
+	g_smItemsToTranslation.SetString("crowbar", "Crowbar");
+	g_smItemsToTranslation.SetString("electric_guitar", "Electric Guitar");
+	g_smItemsToTranslation.SetString("fireaxe", "Fire Axe");
+	g_smItemsToTranslation.SetString("frying_pan", "Frying Pan");
+	g_smItemsToTranslation.SetString("katana", "Katana");
+	g_smItemsToTranslation.SetString("machete", "Machete");
+	g_smItemsToTranslation.SetString("tonfa", "Tonfa");
+	g_smItemsToTranslation.SetString("knife", "Knife");
+	g_smItemsToTranslation.SetString("golfclub", "Golf Club");
+	g_smItemsToTranslation.SetString("pitchfork", "Pitchfork");
+	g_smItemsToTranslation.SetString("shovel", "Shovel");
+	g_smItemsToTranslation.SetString("gnome", "Gnome");
+	g_smItemsToTranslation.SetString("laser_sight",	"Laser Sight");
+	g_smItemsToTranslation.SetString("incendiary_ammo",	"Incendiary Ammo");
+	g_smItemsToTranslation.SetString("explosive_ammo",	"Explosive Ammo");
+	g_smItemsToTranslation.SetString("ammo","Ammo");
+	g_smItemsToTranslation.SetString("hp","Health");
+	g_smItemsToTranslation.SetString("empty","Empty");
 
 	if(bLate)
 	{
@@ -343,33 +290,36 @@ void Cvar_Changed(ConVar convar, const char[] oldValue, const char[] newValue)
 void GetCvars()
 {
 	//Values of cvars
-	g_bGiftEnable = cvar_gift_enable.BoolValue;
-	g_fGiftLife = cvar_gift_life.FloatValue;
-	g_iGiftChance = cvar_gift_chance.IntValue;
-	g_iSpecialGiftChance = cvar_special_gift_chance.IntValue;
-	g_iCvarAnnounce = cvar_gift_Announce.IntValue;
-	g_iGiftHP = cvar_gift_infected_hp.IntValue;
-	g_iSpecialGiftHP = cvar_special_gift_infected_hp.IntValue;
-	g_bCvarBlockSwitch = cvar_blockSwitch.BoolValue;
+	g_bGiftEnable = g_hCvar_gift_enable.BoolValue;
+	g_fGiftLife = g_hCvar_gift_life.FloatValue;
+	g_iGiftChance = g_hCvar_gift_chance.IntValue;
+	g_iSpecialGiftChance = g_hCvar_special_gift_chance.IntValue;
+	g_iCvarAnnounce = g_hCvar_gift_Announce.IntValue;
+	g_iGiftHP = g_hCvar_gift_infected_hp.IntValue;
+	g_iSpecialGiftHP = g_hCvar_special_gift_infected_hp.IntValue;
+	g_bCvarBlockSwitch = g_hCvar_blockSwitch.BoolValue;
+	g_hCvarStandSoundFile.GetString(g_sCvarStandSoundFile, sizeof(g_sCvarStandSoundFile));
+	g_hCvarSpecialSoundFile.GetString(g_sCvarSpecialSoundFile, sizeof(g_sCvarSpecialSoundFile));
 
-	pain_pills_decay_rate_float = pain_pills_decay_rate.FloatValue;
+	if(g_bMapStart)
+	{
+		if(strlen(g_sCvarStandSoundFile) > 0) PrecacheSound(g_sCvarStandSoundFile, true);
+		if(strlen(g_sCvarSpecialSoundFile) > 0) PrecacheSound(g_sCvarSpecialSoundFile, true);
+	}
 }
 
 public void OnMapStart()
 {
-	PrecacheSoundGifts();
-
-	if(!LoadConfigGifts(true))
-	{
-		SetFailState("Cannot load the file 'data/l4d2_gifts.cfg'");
-	}
-	
-	int max = MAX_WEAPONS;
-	for( int i = 0; i < max; i++ )
+	g_bMapStart = true;
+	for( int i = 0; i < MAX_WEAPONS; i++ )
 	{
 		PrecacheModel(g_sWeaponModels[i], true);
 	}
-	PrecacheModel(MODEL_GNOME, true);
+}
+
+public void OnMapEnd()
+{
+	g_bMapStart = false;
 }
 
 void PrecacheModelGifts()
@@ -378,12 +328,6 @@ void PrecacheModelGifts()
 	{
 		CheckPrecacheModel(g_sModel[i]);
 	}
-}
-
-void PrecacheSoundGifts()
-{
-	PrecacheSound(SOUND_SPECIAL, true);
-	PrecacheSound(SOUND_STANDARD, true);
 }
 
 void CheckPrecacheModel(char[] Model)
@@ -397,6 +341,9 @@ void CheckPrecacheModel(char[] Model)
 public void OnConfigsExecuted()
 {
 	GetCvars();
+
+	GetMeleeClasses();
+	LoadConfigGifts();
 }
 
 public void OnClientPutInServer(int client)
@@ -417,7 +364,7 @@ Action Command_Gift(int client, int args)
 	
 	if(args < 1)
 	{
-		DropGift(client, STRING_STANDARD);
+		DropGift(client, TYPE_STANDARD);
 	}
 	else
 	{
@@ -426,11 +373,11 @@ Action Command_Gift(int client, int args)
 		
 		if(strcmp(arg1, STRING_STANDARD, false) == 0)
 		{
-			DropGift(client, STRING_STANDARD);
+			DropGift(client, TYPE_STANDARD);
 		}
 		else if(strcmp(arg1, STRING_SPECIAL, false) == 0)
 		{
-			DropGift(client, STRING_SPECIAL);
+			DropGift(client, TYPE_SPECIAL);
 		}
 		else
 		{
@@ -442,88 +389,232 @@ Action Command_Gift(int client, int args)
 
 Action Command_ReloadGift(int client, int args)
 {
-	if(!LoadConfigGifts(true))
-	{
-		LogError("Cannot load the file 'data/l4d2_gifts.cfg'");
-		if(client) ReplyToCommand(client, "Cannot load the file 'data/l4d2_gifts.cfg'");
-	}
-	
-	if(g_iCountGifts == 0 )
-	{
-		LogError("Do not have models!!!");
-		if(client) ReplyToCommand(client, "Do not have models!!!");
-	}
+	LoadConfigGifts();
 	
 	return Plugin_Handled;
 }
 
-bool LoadConfigGifts(bool precache)
+void LoadConfigGifts()
 {
-	KeyValues hFile = CreateKeyValues("Gifts");
+	KeyValues hFile = new KeyValues("Gifts");
 	
-	if(!FileToKeyValues(hFile, sPath_gifts) )
+	if(!hFile.ImportFromFile(sPath_gifts) )
 	{
+		SetFailState("Cannot load the data file 'data/l4d2_gifts.cfg'");
 		delete hFile;
-		return false;
+		return;
 	}
-	
-	KvGotoFirstSubKey(hFile);
-	
-	g_iCountGifts = 0;
-	char sTemp[MAX_STRING_WIDTH];
-	int i = 0;
-	do
+
+	delete g_aStandItemsList;
+	g_aStandItemsList = new ArrayList(ByteCountToCells(64));
+
+	delete g_aSpecialItemsList;
+	g_aSpecialItemsList = new ArrayList(ByteCountToCells(64));
+
+	delete g_aGiftModelStandard;
+	g_aGiftModelStandard = new ArrayList();
+
+	delete g_aGiftModelSpecial;
+	g_aGiftModelSpecial = new ArrayList();
+
+	char sNumber[4];
+	if( hFile.JumpToKey("models") )
 	{
-		char sNum[8];
-		KvGetSectionName(hFile, sNum, sizeof(sNum));
-		int num = StringToInt(sNum);
-		
-		if(num > MAX_GIFTS || i >= MAX_GIFTS)
-			break;
-		
-		hFile.GetString("model", sTemp, MAX_STRING_WIDTH);
-			
-		if(strlen(sTemp) == 0)
-			continue;
-		
-		if(FileExists(sTemp, true))
+		g_iCountGifts = hFile.GetNum("num", 0);
+
+		// Max 
+		if( g_iCountGifts > MAX_GIFTS )
+			g_iCountGifts = MAX_GIFTS;
+
+		char sTemp[MAX_STRING_WIDTH];
+		for(int i = 1; i <= g_iCountGifts; i++)
 		{
-			strcopy(g_sModel[i], MAX_STRING_WIDTH, sTemp);
-			hFile.GetString("type", g_sTypeModel[i], sizeof(g_sTypeModel[]), "static");
-			hFile.GetString("gift", g_sTypeGift[i], sizeof(g_sTypeGift[]));
-			g_fScale[i] = hFile.GetFloat("scale", 1.0);
-			g_bGiftEntityEnable[i] = view_as<bool>(hFile.GetNum("entity_enable", 1));
-			hFile.GetString("entity_color", g_sGiftEntityCols[i], sizeof(g_sGiftEntityCols[]));
-			g_bGiftGlowEnable[i] = view_as<bool>(hFile.GetNum("glow_enable", 1));
-			hFile.GetString("glow_color", g_sGiftGlowCols[i], sizeof(g_sGiftGlowCols[]));
-			g_iGiftGlowRange[i] = hFile.GetNum("glow_range", 0);
-			g_iCountGifts++;
-			i++;
+			IntToString(i, sNumber, sizeof(sNumber));
+			if(hFile.JumpToKey(sNumber))
+			{
+				hFile.GetString("model", sTemp, MAX_STRING_WIDTH);
+					
+				if(strlen(sTemp) == 0)
+					continue;
+				
+				if(FileExists(sTemp, true))
+				{
+					strcopy(g_sModel[i-1], MAX_STRING_WIDTH, sTemp);
+					hFile.GetString("type", g_sType[i-1], sizeof(g_sType[]), "static");
+					hFile.GetString("gift", g_sGift[i-1], sizeof(g_sGift[]));
+					if(strcmp(g_sGift[i-1], STRING_SPECIAL, false) == 0)
+					{
+						g_aGiftModelSpecial.Push(i-1);
+					}
+					else
+					{
+						g_aGiftModelStandard.Push(i-1);
+					}
+
+					g_fScale[i-1] = hFile.GetFloat("scale", 1.0);
+
+					g_bGiftEntityEnable[i-1] = view_as<bool>(hFile.GetNum("entity_enable", 1));
+					hFile.GetString("entity_color", g_sGiftEntityCols[i-1], sizeof(g_sGiftEntityCols[]));
+
+					g_bGiftGlowEnable[i-1] = view_as<bool>(hFile.GetNum("glow_enable", 1));
+					hFile.GetString("glow_color", g_sGiftGlowCols[i-1], sizeof(g_sGiftGlowCols[]));
+					g_iGiftGlowRange[i-1] = hFile.GetNum("glow_range", 0);
+				}
+
+				hFile.GoBack();
+			}
+		} 
+
+		hFile.GoBack();
+	}
+	else
+	{
+		SetFailState("Cannot load gift models, please check data file 'data/l4d2_gifts.cfg'");
+		delete hFile;
+		return;
+	}
+
+	char sName[64], sTemp[64];
+	int number, hp;
+	if( hFile.JumpToKey("standard_items") )
+	{
+		number = hFile.GetNum("num", 0);
+		for(int i = 1; i <= number; i++)
+		{
+			IntToString(i, sNumber, sizeof(sNumber));
+			if(hFile.JumpToKey(sNumber))
+			{
+				hFile.GetString("name", sName, sizeof(sName), "");
+				if(strlen(sName) > 0)
+				{
+					if(strcmp(sName, "weapon_melee", false) == 0)
+					{
+						FormatEx(sName, sizeof(sName), "%s", g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)]);
+						g_aStandItemsList.PushString(sName);
+					}
+					if(strcmp(sName, "hp", false) == 0)
+					{
+						hp = hFile.GetNum("hp", 0);
+						if(hp > 0)
+						{
+							FormatEx(sName, sizeof(sName), "hp_+%d", hp);
+							g_aStandItemsList.PushString(sName);
+						}
+						else if(hp < 0)
+						{
+							FormatEx(sName, sizeof(sName), "hp_-%d", -hp);
+							g_aStandItemsList.PushString(sName);
+						}
+					}
+					else
+					{
+						if(g_smItemsToTranslation.GetString(sName, sTemp, sizeof(sTemp)) == false)
+						{
+							LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg'", sName);
+						}
+						else
+						{
+							g_aStandItemsList.PushString(sName);
+						}
+					}
+				}
+
+				hFile.GoBack();
+			}
 		}
-	} 
-	while (KvGotoNextKey(hFile));
+
+		hFile.GoBack();
+	}
+	else
+	{
+		SetFailState("Cannot load standard items, please check data file 'data/l4d2_gifts.cfg'");
+		delete hFile;
+		return;
+	}
+
+	if( hFile.JumpToKey("special_items") )
+	{
+		number = hFile.GetNum("num", 0);
+		for(int i = 1; i <= number; i++)
+		{
+			IntToString(i, sNumber, sizeof(sNumber));
+			if(hFile.JumpToKey(sNumber))
+			{
+				hFile.GetString("name", sName, sizeof(sName), "");
+				if(strlen(sName) > 0)
+				{
+					if(strcmp(sName, "weapon_melee", false) == 0)
+					{
+						hFile.GetString("melee", sName, sizeof(sName), "");
+						if(strlen(sName) > 0 && g_aMapMeleeTable.FindString(sName) > -1) 
+							g_aSpecialItemsList.PushString(sName);
+					}
+					if(strcmp(sName, "hp", false) == 0)
+					{
+						hp = hFile.GetNum("hp", 0);
+						if(hp > 0)
+						{
+							FormatEx(sName, sizeof(sName), "hp_+%d", hp);
+							g_aSpecialItemsList.PushString(sName);
+						}
+						else if(hp < 0)
+						{
+							FormatEx(sName, sizeof(sName), "hp_-%d", -hp);
+							g_aSpecialItemsList.PushString(sName);
+						}
+					}
+					else
+					{
+						if(g_smItemsToTranslation.GetString(sName, sTemp, sizeof(sTemp)) == false)
+						{
+							LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg'", sName);
+						}
+						else
+						{
+							g_aSpecialItemsList.PushString(sName);
+						}
+					}
+				}
+
+				hFile.GoBack();
+			}
+		}
+
+		hFile.GoBack();
+	}
+	else
+	{
+		SetFailState("Cannot load special items, please check data file 'data/l4d2_gifts.cfg'");
+		delete hFile;
+		return;
+	}
+
+	if( hFile.JumpToKey("weapon_ammo") )
+	{
+		int size = sizeof(weapon_ammo);
+		for( int index = 0 ; index < size ; ++index )
+		{
+			hFile.GetString(weapon_ammo[index][0], weapon_ammo[index][2], sizeof(weapon_ammo[][]), weapon_ammo[index][2]);
+		}
+
+		hFile.GoBack();
+	}
 	
 	delete hFile;
 
-	if(precache)
-	{
-		PrecacheModelGifts();
-	}
-
-	return true;
+	PrecacheModelGifts();
 }
 
 void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
-	g_bIsOpenSafeRoom = false;
+	g_bIsDoorOpen_LockDown = false;
 }
 
 void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bFinalHasStart = false;
-	g_bIsOpenSafeRoom = false;
-	gifts_collected_round = 0;
+	g_bIsDoorOpen_LockDown = false;
 }
 
 void Finale_Vehicle_Ready(Event event, const char[] name, bool dontBroadcast) 
@@ -536,13 +627,7 @@ void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	if (!g_bGiftEnable)
 		return;
 
-	if(g_bIsOpenSafeRoom|| g_bFinalHasStart)
-		return;
-
-	if (g_iGiftMaxRound != 0 && gifts_collected_round > g_iGiftMaxRound)
-		return;
-	
-	if (g_iGiftMaxMap != 0 && gifts_collected_map > g_iGiftMaxMap)
+	if(g_bIsDoorOpen_LockDown || g_bFinalHasStart)
 		return;
 	
 	int victim = GetClientOfUserId(event.GetInt("userid"));
@@ -554,18 +639,16 @@ void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		{
 			if (GetRandomInt(1, 100) <= g_iSpecialGiftChance)
 			{
-				DropGift(victim, STRING_SPECIAL);
+				DropGift(victim, TYPE_SPECIAL);
 			}
 		}
 		else
 		{
 			if (GetRandomInt(1, 100) <= g_iGiftChance)
 			{
-				DropGift(victim);
+				DropGift(victim, TYPE_STANDARD);
 			}
 		}
-		
-		
 	}
 }
 
@@ -574,104 +657,81 @@ void OnWitchKilled(Event event, const char[] name, bool dontBroadcast)
 	if (!g_bGiftEnable)
 		return;
 
-	if(g_bIsOpenSafeRoom|| g_bFinalHasStart)
+	if(g_bIsDoorOpen_LockDown|| g_bFinalHasStart)
 		return;	
 
 	//int attacker = GetClientOfUserId(event.GetInt("userid"));
 	int witch = event.GetInt("witchid");
 	if (GetRandomInt(1, 100) <= g_iSpecialGiftChance)
 	{
-		DropGift(witch, STRING_SPECIAL);
+		DropGift(witch, TYPE_SPECIAL);
 	}
 }
 
-void NotifyGift(int client, int type, int gift = -1)
+void OpenGift(int client, int type)
 {
+	static char 
+			sItem[64], 
+			sItemName_Translate[64], 
+			sNumber[2][6];
+
+	int iSlot0 = GetPlayerWeaponSlot(client, 0), hp = 0, index;
 	if(type == TYPE_STANDARD)
 	{
-		if(gift == -1 || !IsValidEntity(gift))
-		{
-			return;
-		}
+		index = GetURandomIntRange(0, g_aStandItemsList.Length-1);
+		g_aStandItemsList.GetString(index, sItem, sizeof(sItem));
+		sItemName_Translate[0] = '\0';
+		g_smItemsToTranslation.GetString(sItem, sItemName_Translate, sizeof(sItemName_Translate));
 
-		int iSlot0 = GetPlayerWeaponSlot(client, 0);
-		int index = GetURandomIntRange(0,sizeof(weapons_name_standard)-1);
-		int hp = 0;
-		if( strcmp(weapons_name_standard[index][0], "laser_sight") == 0 || 
-			strcmp(weapons_name_standard[index][0], "incendiary_ammo") == 0 || 
-			strcmp(weapons_name_standard[index][0], "explosive_ammo") == 0)
-		{
-			if(iSlot0 > MaxClients) GiveUpgrade(client, weapons_name_standard[index][0]);
-		}
-		else if( strcmp(weapons_name_standard[index][0], "ammo") == 0)
-		{
-			if(iSlot0 > MaxClients) GiveClientAmmo(client, iSlot0);
-		}
-		else if ( strncmp(weapons_name_standard[index][0], "hp_", 3, false) == 0)
-		{
-			char sNumber[2][6];
-			ExplodeString(weapons_name_standard[index][0], "_", sNumber, sizeof(sNumber), sizeof(sNumber[]));
-
-			hp = StringToInt(sNumber[1]);
-			if(hp >= 0)
-			{
-				GiveClientHealth(client, hp);
-			}
-			else
-			{
-				HurtEntity(client, client, float(-hp));
-			}
-		}
-		else
-			GiveWeapon(client, weapons_name_standard[index][0]);
-
-		AnnounceToChat(client, weapons_name_standard[index][1], hp);
-
-		PlaySound(client,SOUND_STANDARD);
+		if(strlen(g_sCvarStandSoundFile) > 0) PlaySoundAroundClient(client, g_sCvarStandSoundFile);
 	}
 	else if(type == TYPE_SPECIAL)
 	{
-		if(gift == -1 || !IsValidEntity(gift))
-		{
-			return;
-		}
+		index = GetURandomIntRange(0, g_aSpecialItemsList.Length-1);
+		g_aSpecialItemsList.GetString(index, sItem, sizeof(sItem));
+		sItemName_Translate[0] = '\0';
+		g_smItemsToTranslation.GetString(sItem, sItemName_Translate, sizeof(sItemName_Translate));
 
-		int iSlot0 = GetPlayerWeaponSlot(client, 0);
-		int index = GetURandomIntRange(0, sizeof(weapons_name_special)-1);
-		int hp = 0;
-		if( strcmp(weapons_name_special[index][0], "laser_sight") == 0 || 
-			strcmp(weapons_name_special[index][0], "incendiary_ammo") == 0 || 
-			strcmp(weapons_name_special[index][0], "explosive_ammo") == 0)
-		{
-			if(iSlot0 > MaxClients) GiveUpgrade(client, weapons_name_special[index][0]);
-		}
-		else if( strcmp(weapons_name_special[index][0], "ammo") == 0 )
-		{
-			if(iSlot0 > MaxClients) GiveClientAmmo(client, iSlot0);
-		}
-		else if ( strncmp(weapons_name_special[index][0], "hp_", 3, false) == 0)
-		{
-			char sNumber[2][6];
-			ExplodeString(weapons_name_special[index][0], "_", sNumber, sizeof(sNumber), sizeof(sNumber[]));
-
-			hp = StringToInt(sNumber[1]);
-			if(hp > 0)
-			{
-				GiveClientHealth(client, hp);
-			}
-			else
-			{
-				HurtEntity(client, client, float(-hp));
-			}
-		}
-		else
-			GiveWeapon(client, weapons_name_special[index][0]);
-
-		AnnounceToChat(client, weapons_name_special[index][1], hp);
-
-		PlaySound(client, SOUND_SPECIAL);
+		if(strlen(g_sCvarSpecialSoundFile) > 0) PlaySoundAroundClient(client, g_sCvarSpecialSoundFile);
+	}
+	else
+	{
+		return;
 	}
 
+	if( strcmp(sItem, "laser_sight") == 0 || 
+		strcmp(sItem, "incendiary_ammo") == 0 || 
+		strcmp(sItem, "explosive_ammo") == 0)
+	{
+		if(iSlot0 > MaxClients) GiveUpgrade(client, sItem);
+	}
+	else if( strcmp(sItem, "ammo") == 0)
+	{
+		if(iSlot0 > MaxClients) GiveClientAmmo(client, iSlot0);
+	}
+	else if ( strncmp(sItem, "hp_", 3, false) == 0)
+	{
+		g_smItemsToTranslation.GetString("hp", sItemName_Translate, sizeof(sItemName_Translate));
+
+		ExplodeString(sItem, "_", sNumber, sizeof(sNumber), sizeof(sNumber[]));
+
+		hp = StringToInt(sNumber[1]);
+		if(hp >= 0)
+		{
+			GiveClientHealth(client, hp);
+		}
+		else
+		{
+			HurtEntity(client, client, float(-hp));
+		}
+	}
+	else
+	{
+		GiveWeapon(client, sItem);
+	}
+
+	//PrintToChatAll("sItem: %s %s", sItem, sItemName_Translate);
+	AnnounceToChat(client, sItemName_Translate, hp);
 }
 
 void GiveWeapon(int client, const char[] weapon)
@@ -682,25 +742,22 @@ void GiveWeapon(int client, const char[] weapon)
 	SetCommandFlags("give", flagsgive);
 }
 
-int GetRandomIndexGift(const char[] sType)
+int GetRandomIndexGift(int iType)
 {
-	int[] GiftsIndex = new int[g_iCountGifts];
-	int count = 0;
-	
-	for(int i=0; i < g_iCountGifts; i++)
+	int index;
+	if(iType == TYPE_STANDARD)
 	{
-		if(strcmp(g_sTypeGift[i], sType) == 0)
-		{
-			GiftsIndex[count] = i;
-			count++;
-		}
+		index = GetRandomInt(0, g_aGiftModelStandard.Length-1);
+		return g_aGiftModelStandard.Get(index);
 	}
-	
-	int random = GetRandomInt(0, count-1);
-	return GiftsIndex[random];
+	else
+	{
+		index = GetRandomInt(0, g_aGiftModelSpecial.Length-1);
+		return g_aGiftModelSpecial.Get(index);
+	}
 }
 
-int DropGift(int client, char[] type = STRING_STANDARD)
+void DropGift(int client, int type = TYPE_STANDARD)
 {	
 	float gifPos[3];
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", gifPos);
@@ -709,23 +766,24 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 	int gift = -1;
 	int random = GetRandomIndexGift(type);
 	
-	if(strcmp(g_sTypeModel[random], "physics") == 0)
+	if(strcmp(g_sType[random], "physics") == 0)
 	{
 		gift = CreateEntityByName("prop_physics_override");
 	}
-	else if(strcmp(g_sTypeModel[random], "static") == 0)
+	else if(strcmp(g_sType[random], "static") == 0)
 	{
 		gift = CreateEntityByName("prop_dynamic_override");
+	}
+	else
+	{
+		return;
 	}
 	
 	if( CheckIfEntitySafe(gift) )
 	{
 		DispatchKeyValue(gift, "model", g_sModel[random]);
-		// char sScale[4];
-		// Format(sScale, sizeof(sScale), "%.1f", g_fScale[random]);
-		// DispatchKeyValue(gift, "modelscale", "0.5");
 		
-		Format(g_sGifType[gift], sizeof(g_sGifType[]), "%s", g_sTypeGift[random]);
+		g_iGifType[gift] = type;
 		DispatchKeyValueVector(gift, "origin", gifPos);
 		DispatchKeyValue(gift, "spawnflags", "8448"); // "Don`t take physics damage" + "Generate output on +USE" + "Force Server Side"
 
@@ -784,7 +842,7 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 			}
 
 			int glowrange = 0;
-			if(strcmp(type, STRING_STANDARD, false) == 0) glowrange = g_iGiftGlowRange[random];
+			if(type == TYPE_STANDARD) glowrange = g_iGiftGlowRange[random];
 			else glowrange = g_iSpecialGiftGlowRange[random];
 
 			L4D2_SetEntityGlow(gift, L4D2Glow_Constant, glowrange, 0, glowcolor, true);
@@ -793,8 +851,6 @@ int DropGift(int client, char[] type = STRING_STANDARD)
 		CreateTimer(g_fGiftLife, Timer_GiftLife, EntIndexToEntRef(gift), TIMER_FLAG_NO_MAPCHANGE);
 		CreateTimer(1.0, ColdDown, EntIndexToEntRef(gift),TIMER_FLAG_NO_MAPCHANGE);
 	}
-
-	return gift;
 }
 
 Action ColdDown( Handle timer, any ref)
@@ -823,17 +879,15 @@ void OnTouchPost(int gift, int other)
 		{
 
 			g_bHooked[other] = true;
-			if (strcmp(g_sGifType[gift], STRING_STANDARD) == 0)
+			if (g_iGifType[gift] == TYPE_STANDARD)
 			{
-				NotifyGift(other, TYPE_STANDARD, gift);
+				OpenGift(other, TYPE_STANDARD);
 			}
-			else if (strcmp(g_sGifType[gift], STRING_SPECIAL) == 0)
+			else if (g_iGifType[gift] == TYPE_SPECIAL)
 			{
-				NotifyGift(other, TYPE_SPECIAL, gift);
+				OpenGift(other, TYPE_SPECIAL);
 			}
 			g_bHooked[other] = false;
-			gifts_collected_map += 1;
-			gifts_collected_round += 1;
 
 			SDKUnhook(gift, SDKHook_TouchPost, OnTouchPost);
 			AcceptEntityInput(gift, "kill");
@@ -843,7 +897,7 @@ void OnTouchPost(int gift, int other)
 			if(GetEntProp(other, Prop_Send, "m_zombieClass") == ZC_TANK && IsTankDying(other)) return;
 
 			int AddHP = 0;
-			if (strcmp(g_sGifType[gift], STRING_STANDARD) == 0) AddHP = g_iGiftHP;
+			if (g_iGifType[gift] == TYPE_STANDARD) AddHP = g_iGiftHP;
 			else AddHP = g_iSpecialGiftHP;
 
 			if(AddHP == 0) return;
@@ -855,19 +909,51 @@ void OnTouchPost(int gift, int other)
 				case 0: { }
 				case 1:
 				{
-					PrintToChatAll("%t", "Infected Got Gift", other, AddHP);
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if(!IsClientInGame(i)) continue;
+						if(IsFakeClient(i)) continue;
+						if(GetClientTeam(i) == TEAM_INFECTED || GetClientTeam(i) == TEAM_SPECTATOR)
+						{
+							CPrintToChat(i, "%T", "Infected Got Gift (C)", i, other, AddHP);
+						}
+					}
 				}
 				case 2:
 				{
-					PrintHintTextToAll("%t", "Infected Got Gift", other, AddHP);
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if(!IsClientInGame(i)) continue;
+						if(IsFakeClient(i)) continue;
+						if(GetClientTeam(i) == TEAM_INFECTED || GetClientTeam(i) == TEAM_SPECTATOR)
+						{
+							PrintHintText(i, "%T", "Infected Got Gift", i, other, AddHP);
+						}
+					}
 				}
 				case 3:
 				{
-					PrintCenterTextAll("%t", "Infected Got Gift", other, AddHP);
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if(!IsClientInGame(i)) continue;
+						if(IsFakeClient(i)) continue;
+						if(GetClientTeam(i) == TEAM_INFECTED || GetClientTeam(i) == TEAM_SPECTATOR)
+						{
+							PrintCenterText(i, "%T", "Infected Got Gift", i, other, AddHP);
+						}
+					}
 				}
 			}
 
-			PlaySound(other, SOUND_STANDARD);
+			if (g_iGifType[gift] == TYPE_STANDARD) 
+			{
+				if(strlen(g_sCvarStandSoundFile) > 0) PlaySoundAroundClient(other, g_sCvarStandSoundFile);
+			}
+			else
+			{
+				if(strlen(g_sCvarSpecialSoundFile) > 0) PlaySoundAroundClient(other, g_sCvarSpecialSoundFile);
+			}
+
 			SDKUnhook(gift, SDKHook_TouchPost, OnTouchPost);
 			AcceptEntityInput(gift, "kill");
 		}
@@ -966,7 +1052,7 @@ stock int GetURandomIntRange(int min, int max)
 	return (GetURandomInt() % (max-min+1)) + min;
 }
 
-void PlaySound(int client,char[] sSoundName)
+void PlaySoundAroundClient(int client,char[] sSoundName)
 {
 	EmitSoundToAll(sSoundName, client, SNDCHAN_AUTO, SNDLEVEL_AIRCRAFT, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
 }
@@ -1014,7 +1100,7 @@ stock void GiveClientAmmo(int client, int iSlot0)
 void GiveClientHealth(int client, int iHealthAdd)
 {
 	int iHealth = GetClientHealth( client );
-	float fHealth = GetTempHealth( client );
+	float fHealth = L4D_GetTempHealth( client );
 
 	if(iHealthAdd>=99) 
 	{
@@ -1051,15 +1137,6 @@ bool IsHandingFromLedge(int client)
 	return view_as<bool>(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge"));
 }
 
-float GetTempHealth(int client)
-{
-	float fGameTime = GetGameTime();
-	float fHealthTime = GetEntPropFloat(client, Prop_Send, "m_healthBufferTime");
-	float fHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
-	fHealth -= (fGameTime - fHealthTime) * pain_pills_decay_rate_float;
-	return fHealth < 0.0 ? 0.0 : fHealth;
-}
-
 bool CheckIfEntitySafe(int entity)
 {
 	if(entity == -1) return false;
@@ -1094,8 +1171,10 @@ void HurtEntity(int victim, int attacker, float damage)
 	SDKHooks_TakeDamage(victim, attacker, attacker, damage, DMG_SLASH);
 }
 
-void AnnounceToChat(int client, char[] buffer, int hp)
+void AnnounceToChat(int client, const char[] buffer, int hp)
 {
+	if(strlen(buffer) == 0) return;
+
 	if(strncmp(buffer, "Health", 6, false) == 0)
 	{
 		if(hp >= 0)
@@ -1111,7 +1190,7 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							PrintToChat(i, "%T", "Got Gift (+hp)", i, client, hp);
+							CPrintToChat(i, "%T", "Got Gift (+hp) (C)", i, client, hp);
 						}
 					}
 				}
@@ -1154,7 +1233,7 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							PrintToChat(i, "%T", "Got Gift (-hp)", i, client, hp);
+							CPrintToChat(i, "%T", "Got Gift (-hp) (C)", i, client, -hp);
 						}
 					}
 				}
@@ -1166,7 +1245,7 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							PrintHintText(i, "%T", "Got Gift (-hp)", i, client, hp);
+							PrintHintText(i, "%T", "Got Gift (-hp)", i, client, -hp);
 						}
 					}
 				}
@@ -1178,7 +1257,7 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							PrintCenterText(i, "%T", "Got Gift (-hp)", i, client, hp);
+							PrintCenterText(i, "%T", "Got Gift (-hp)", i, client, -hp);
 						}
 					}
 				}
@@ -1187,6 +1266,7 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 	}
 	else
 	{
+		bool bTranslationPhraseExists = TranslationPhraseExists(buffer);
 		switch(g_iCvarAnnounce)
 		{
 			case 0: { }
@@ -1198,7 +1278,8 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 					if(IsFakeClient(i)) continue;
 					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 					{
-						PrintToChat(i, "%T", "Got Gift", i, client, buffer);
+						if(bTranslationPhraseExists) CPrintToChat(i, "%T", "Got Gift (C)", i, client, buffer);
+						else CPrintToChat(i, "%T", "Got Gift (CS)", i, client, buffer);
 					}
 				}
 			}
@@ -1210,7 +1291,8 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 					if(IsFakeClient(i)) continue;
 					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 					{
-						PrintHintText(i, "%T", "Got Gift", i, client, buffer);
+						if(bTranslationPhraseExists) PrintHintText(i, "%T", "Got Gift", i, client, buffer);
+						else PrintHintText(i, "%T", "Got Gift (S)", i, client, buffer);
 					}
 				}
 			}
@@ -1222,12 +1304,28 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 					if(IsFakeClient(i)) continue;
 					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 					{
-						PrintCenterText(i, "%T", "Got Gift", i, client, buffer);
+						if(bTranslationPhraseExists) PrintCenterText(i, "%T", "Got Gift", i, client, buffer);
+						else PrintCenterText(i, "%T", "Got Gift (S)", i, client, buffer);
 					}
 				}
 			}
 		}
 	}
+}
+
+//credit spirit12 for auto melee detection
+void GetMeleeClasses()
+{
+	int MeleeStringTable = FindStringTable( "MeleeWeapons" );
+	g_iMeleeClassCount = GetStringTableNumStrings( MeleeStringTable );
+	
+	int len = sizeof(g_sMeleeClass[]);
+	
+	for( int i = 0; i < g_iMeleeClassCount; i++ )
+	{
+		ReadStringTable( MeleeStringTable, i, g_sMeleeClass[i], len );
+		//LogAcitivity( "Function::GetMeleeClasses - Getting melee classes: %s", g_sMeleeClass[i]);
+	}	
 }
 
 // Other API Forward-------------------------------
@@ -1236,5 +1334,5 @@ void AnnounceToChat(int client, char[] buffer, int hp)
 // when door is fully opened
 public void L4D2_OnLockDownOpenDoorFinish(const char[] sKeyMan)
 {
-	g_bIsOpenSafeRoom = true;
+	g_bIsDoorOpen_LockDown = true;
 }

@@ -9,7 +9,7 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
 	2. [[INC] l4d2_weapons](https://github.com/fbef0102/Game-Private_Plugin/blob/main/left4dead2/scripting/include/l4d2_weapons.inc)
-	3. [Mission and Weapons - Info Editor](https://forums.alliedmods.net/showthread.php?t=310586): To unlock all melee weapons in all campaigns
+	3. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
 
 * <details><summary>How does it work?</summary>
 
@@ -29,22 +29,28 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		l4d2_gifts_gift_life "30"
 
 		// Chance (%) of infected drop special standard gift.
-		l4d2_gifts_chance "50"
+		l4d2_gifts_chance_standard "50"
 
 		// Chance (%) of tank and witch drop second special gift.
-		l4d2_specail_gifts_chance "100"
+		l4d2_gifts_chance_special "100"
+
+		// Increase Infected health if they pick up gift. (0=Off)
+		l4d2_gifts_infected_reward_hp_standard "200"
+
+		// Increase Infected health if they pick up special gift. (0=Off)
+		l4d2_gifts_infected_reward_hp_special "400"
 
 		// Notify Server who pickes up gift, and what the gift reward is. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
 		l4d2_gifts_announce_type "3"
 
-		// Increase Infected health if they pick up gift. (0=Off)
-		l4d2_gifts_infected_reward_hp "200"
-
-		// Increase Infected health if they pick up special gift. (0=Off)
-		l4d2_gifts_special_infected_reward_hp "400"
-
 		// If 1, prevent survivors from switching into new weapons and items when they open gifts
-		l4d2_gifts_block_switch "1"
+		l4d2_gifts_block_switch "0"
+
+		// Standard gift - pick up sound file (relative to to sound/, empty=disable)
+		l4d2_gifts_soundfile_standard "level/loud/climber.wav"
+
+		// Special gift - pick up sound file (relative to to sound/, empty=disable)
+		l4d2_gifts_soundfile_special "level/gnomeftw.wav"
 		```
 </details>
 
@@ -62,32 +68,128 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		```
 </details>
 
-* <details><summary>How to modify the gift Model</summary>
+* <details><summary>Data Config</summary>
 
-	* data\l4d2_gifts.cfg
+	* ```data\l4d2_gifts.cfg```
 		```php
-		"1"
+		"models" // modify the gift Model
 		{
-			"model"		"models/items/l4d_gift.mdl"  //model of gift: a small model such as animals, boxes, etc. is preferable.
-			"type"		"physics" 					// type of model: physics or static (Not all models can be physical)
-			"gift"		"special" 					// type of gift: standard or special
-			"scale"		"1.0"	  					// scale of model (default 1.0) [optional] (Not all models accept scale)
-			
-			"entity_enable"		"1"					// Enable Gift Color [0: Disable Color]		
-			"entity_color"		"-1 -1 -1"			// Set Gift Color [-1 -1 -1: Random]
-			
-			"glow_enable"		"1"					// Enable Glow [0: Disable Glow]
-			"glow_color"		"-1 -1 -1"			// Set Glow Color [-1 -1 -1: Random]
-			"glow_range"		"600"				// Set Glow Range [0: No distance]
+			"1"
+			{
+				"model"		"models/items/l4d_gift.mdl"  //model of gift: a small model such as animals, boxes, etc. is preferable.
+				"type"		"physics" 					// type of model: physics or static (Not all models can be physical)
+				"gift"		"special" 					// type of gift: standard or special
+				"scale"		"1.0"	  					// scale of model (default 1.0) [optional] (Not all models accept scale)
+				
+				"entity_enable"		"1"					// Enable Gift Color [0: Disable Color]		
+				"entity_color"		"-1 -1 -1"			// Set Gift Color [-1 -1 -1: Random]
+				
+				"glow_enable"		"1"					// Enable Glow [0: Disable Glow]
+				"glow_color"		"-1 -1 -1"			// Set Glow Color [-1 -1 -1: Random]
+				"glow_range"		"600"				// Set Glow Range [0: No distance]
+			}
+		}
+
+		"standard_items"
+		{
+			// There are 65 random items drop from standard gifts
+			"num"   "65"
+			"1"
+			{
+				"name" "defibrillator"
+			}
+			"2"
+			{
+				// spawn random melee weapon from the melee string table (support custom melee )
+				"name"  "weapon_melee"
+			}
+			"3"
+			{
+				// add player health +100hp
+				"name"  "hp"
+				"hp"	"100"
+			}
+			"4"
+			{
+				// player lose health -1hp
+				"name"  "hp"
+				"hp"	"-1"
+			}
+			"5"
+			{
+				// empty gift, survivor get nothing (Have a good day :D)
+				"name" "empty"
+			}
+
+			...
+		}
+
+		"special_items"
+		{
+			// There are 13 random items drop from special gifts
+			"num"   "13"
+			"1"
+			{
+				"name" "first_aid_kit"
+			}
+
+			...
+		}
+
+		// resupply player with how much ammo when player picks up "ammo" from gifts
+		"weapon_ammo"
+		{
+			"weapon_smg"				"400"
+			...
 		}
 		```
-</details>
 
-* <details><summary>How to modify the gift item</summary>
-
-	* Standard Gift: l4d2_gifts.sp line 41~109
-	* Special Gift: l4d2_gifts.sp line 114~125
-	> __Note__ Recompile after modify
+	* Available gift name
+		```php
+		"grenade_launcher" => Grenade Launcher
+		"rifle_m60" => M60 Machine Gun
+		"defibrillator" => Defibrillator
+		"first_aid_kit" => First Aid Kit
+		"pain_pills" => Pain Pill
+		"adrenaline" => Adrenaline
+		"weapon_upgradepack_incendiary" => Incendiary Pack
+		"weapon_upgradepack_explosive" => Explosive Pack
+		"molotov" => Molotov
+		"pipe_bomb" => Pipe Bomb
+		"vomitjar" => Vomitjar
+		"gascan" => Gascan
+		"propanetank" => Propane Tank
+		"oxygentank" => Oxygen Tank
+		"fireworkcrate" => Firework Crate
+		"pistol" => Pistol
+		"pistol_magnum" => Magnum
+		"pumpshotgun" => Pumpshotgun
+		"shotgun_chrome" => Chrome Shotgun
+		"smg" => Smg
+		"smg_silenced" => Silenced Smg
+		"smg_mp5" => MP5
+		"rifle" => Rifle
+		"rifle_sg552" => SG552
+		"rifle_ak47" => AK47
+		"rifle_desert" => Desert Rifle
+		"shotgun_spas" => Spas Shotgun
+		"autoshotgun" => Autoshotgun
+		"hunting_rifle" => Hunting Rifle
+		"sniper_military" => Military Sniper
+		"sniper_scout" => SCOUT
+		"sniper_awp" => AWP
+		"baseball_bat" => Baseball Bat
+		"chainsaw" => Chainsaw
+		"cricket_bat" => Cricket Bat
+		"weapon_melee" => random melee weapons (support custom melee)
+		"gnome" => Gnome
+		"laser_sight" => Laser Sight
+		"incendiary_ammo" => Incendiary Ammo
+		"explosive_ammo" => Explosive Ammo
+		"ammo" => Ammo
+		"hp" => Health
+		"empty" => Empty
+		```
 </details>
 
 * Apply to | 適用於
@@ -108,9 +210,14 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 	```php
 	//[X]Aceleracion @ 2017
-	//HarryPotter @ 2022-2023
+	//HarryPotter @ 2022-2024
 	```
-    * v3.2 (2023-12-11)
+    * v3.4 (2024-2-20)
+		* Use data file to modify the gift items
+		* Update Cvars
+		* Update Translation
+
+    * v3.3 (2023-12-11)
 		* Remove collect limit
 		* Remove some cvars
 		* Update translation and data file
@@ -146,7 +253,8 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 殺死特感會掉落禮物盒，會獲得驚喜物品，聖誕嘉年華
 
 * 原理
-    * 殺死特感掉落普通禮盒，殺死Tank或Witch掉落特殊禮盒
+    * 殺死特感掉落"普通禮盒"
+    * 殺死Tank或Witch掉落"特殊禮盒"
 	* 人類只要碰觸到盒便會自動拆開，禮物盒會有各式各樣的武器與物品，也有可能為空或失去血量，驚喜一瞬間
 	* 特感也能碰禮盒，會自動增加血量
 
@@ -161,23 +269,29 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		l4d2_gifts_gift_life "30"
 
 		// 特感掉落普通禮盒的機率
-		l4d2_gifts_chance "50"
+		l4d2_gifts_chance_standard "50"
 
 		// Tank/Witch掉落特殊禮盒的機率
-		l4d2_specail_gifts_chance "100"
+		l4d2_gifts_chance_special "100"
+
+		// 特感撿到普通禮盒所增加的血量. (0=關閉這項功能)
+		l4d2_gifts_infected_reward_hp_standard "200"
+
+		// 特感撿到特殊禮盒所增加的血量. (0=關閉這項功能)
+		l4d2_gifts_infected_reward_hp_special "400"
 
 		// 獲得禮物盒的提示該如何顯示. (0: 不提示, 1: 聊天框, 2: 黑底白字框, 3: 螢幕正中間)
 		l4d2_gifts_announce_type "3"
 
-		// 特感撿到普通禮盒所增加的血量. (0=關閉這項功能)
-		l4d2_gifts_infected_reward_hp "200"
-
-		// 特感撿到特殊禮盒所增加的血量. (0=關閉這項功能)
-		l4d2_gifts_special_infected_reward_hp "400"
-
 		// 1=人類撿起禮盒時，物資直接掉在地上
 		// 0=人類撿起禮盒時，物資直接拿在手上
-		l4d2_gifts_block_switch "1"
+		l4d2_gifts_block_switch "0"
+
+		// 撿起普通禮盒的音效檔案，路徑相對於sound資料夾 (留白=無音效)
+		l4d2_gifts_soundfile_standard "level/loud/climber.wav"
+
+		// 撿起特殊禮盒的音效檔案，路徑相對於sound資料夾 (留白=無音效)
+		l4d2_gifts_soundfile_special "level/gnomeftw.wav"
 		```
 </details>
 
@@ -195,30 +309,126 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		```
 </details>
 
-* <details><summary>如何修改禮盒模組</summary>
+* <details><summary>文件設定範例</summary>
 
-	* data\l4d2_gifts.cfg
+	* ```data\l4d2_gifts.cfg```
 		```php
-		"1"
+		"models" // 修改禮物盒模型
 		{
-			"model"		"models/items/l4d_gift.mdl"  //禮盒模型
-			"type"		"physics" 					// 禮盒的物理效果: physics[能移動] 或是 static[固態] (非所有模組能接受physics)
-			"gift"		"special" 					// 禮盒種類: standard[普通禮盒] or special[特殊禮盒]
-			"scale"		"1.0"	  					// 禮盒模型尺寸 (預設是 1.0，非所有模組能改變尺寸)
+			"1"
+			{
+				"model"		"models/items/l4d_gift.mdl" // 禮盒模型
+				"type"		"physics" 					// 禮盒的物理效果: physics[能移動] 或是 static[固態] (非所有模組能接受physics)
+				"gift"		"special" 					// 禮盒種類: standard[普通禮盒] or special[特殊禮盒]
+				"scale"		"1.0"	  					// 禮盒模型尺寸 (預設是 1.0，非所有模組能改變尺寸)
 
-			"entity_enable"		"1"					// 1=設置禮盒顏色, 0=不設置禮盒顏色
-			"entity_color"		"-1 -1 -1"			// 設置禮盒顏色，填入RGB三色 (三個數值介於0~255，需要空格) [-1 -1 -1: 隨機顏色]
-			
-			"glow_enable"		"1"					// 1=開啟禮盒光圈, 0=關閉禮盒光圈
-			"glow_color"		"-1 -1 -1"			// 禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格) [-1 -1 -1: 隨機顏色]
-			"glow_range"		"600"				// 禮盒的顏色發光範圍
+				"entity_enable"		"1"					// 1=設置禮盒顏色, 0=不設置禮盒顏色
+				"entity_color"		"-1 -1 -1"			// 設置禮盒顏色，填入RGB三色 (三個數值介於0~255，需要空格) [-1 -1 -1: 隨機顏色]
+				
+				"glow_enable"		"1"					// 1=開啟禮盒光圈, 0=關閉禮盒光圈
+				"glow_color"		"-1 -1 -1"			// 禮盒的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格) [-1 -1 -1: 隨機顏色]
+				"glow_range"		"600"				// 禮盒的顏色發光範圍
+			}
+		}
+
+		"standard_items"
+		{
+			// 有65種物資隨機從普通禮盒掉落
+			"num"   "65"
+			"1"
+			{
+				"name" "defibrillator"
+			}
+
+			"2"
+			{
+				// 隨機生成可用的近戰武器 (支援三方圖近戰，自動識別)
+				"name"  "weapon_melee"
+			}
+			"3"
+			{
+				// 增加血量+100hp
+				"name"  "hp"
+				"hp"	"100"
+			}
+			"4"
+			{
+				// 失去血量-1hp
+				"name"  "hp"
+				"hp"	"-1"
+			}
+			"5"
+			{
+				// empty = 倖存者得不到任何東西 (謝謝惠顧!)
+				"name" "empty"
+			}
+
+			...
+		}
+		"special_items"
+		{
+			// 有13種物資隨機從特殊禮盒掉落
+			"num"   "13"
+			"1"
+			{
+				"name" "first_aid_kit"
+			}
+
+			...
+		}
+
+		// 玩家撿到"ammo"時，補給的子彈數量，不准寫負數
+		"weapon_ammo"
+		{
+			"weapon_smg"				"400"
+			...
 		}
 		```
-</details>
 
-* <details><summary>如何設定禮盒驚喜物品</summary>
-
-	* 普通禮盒: l4d2_gifts.sp 第41~109行
-	* 特殊禮盒: l4d2_gifts.sp 第114~125行
-	> __Note__ 修改完後必須重新編譯
+	* 可以寫的禮物
+		```php
+		"grenade_launcher" => Grenade Launcher
+		"rifle_m60" => M60 Machine Gun
+		"defibrillator" => Defibrillator
+		"first_aid_kit" => First Aid Kit
+		"pain_pills" => Pain Pill
+		"adrenaline" => Adrenaline
+		"weapon_upgradepack_incendiary" => Incendiary Pack
+		"weapon_upgradepack_explosive" => Explosive Pack
+		"molotov" => Molotov
+		"pipe_bomb" => Pipe Bomb
+		"vomitjar" => Vomitjar
+		"gascan" => Gascan
+		"propanetank" => Propane Tank
+		"oxygentank" => Oxygen Tank
+		"fireworkcrate" => Firework Crate
+		"pistol" => Pistol
+		"pistol_magnum" => Magnum
+		"pumpshotgun" => Pumpshotgun
+		"shotgun_chrome" => Chrome Shotgun
+		"smg" => Smg
+		"smg_silenced" => Silenced Smg
+		"smg_mp5" => MP5
+		"rifle" => Rifle
+		"rifle_sg552" => SG552
+		"rifle_ak47" => AK47
+		"rifle_desert" => Desert Rifle
+		"shotgun_spas" => Spas Shotgun
+		"autoshotgun" => Autoshotgun
+		"hunting_rifle" => Hunting Rifle
+		"sniper_military" => Military Sniper
+		"sniper_scout" => SCOUT
+		"sniper_awp" => AWP
+		"baseball_bat" => Baseball Bat
+		"chainsaw" => Chainsaw
+		"cricket_bat" => Cricket Bat
+		"weapon_melee" => 隨機近戰武器 (支援三方圖近戰)
+		"gnome" => 精靈小矮人
+		"laser_sight" => 雷射激光
+		"incendiary_ammo" => 升級火焰子彈
+		"explosive_ammo" => 升級高爆子彈
+		"ammo" => 補給子彈
+		"hp" => 血量增減
+		"empty" => 空
+		```
 </details>

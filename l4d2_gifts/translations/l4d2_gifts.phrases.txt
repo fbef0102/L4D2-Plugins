@@ -1,36 +1,99 @@
 "Phrases"
 {
+	"Got Gift (C)"
+	{
+		"#format"		"{1:N},{2:t}"
+		"en"			"{blue}{1}{default} got gift + {green}{2}{default}!"
+		"es"			"{blue}{1}{default} obtuvo un regalo + {green}{2}{default}!"
+		"zho"			"{blue}{1}{default} 取得禮物 + {green}{2}{default}!"
+		"chi"			"{blue}{1}{default} 取得礼物 + {green}{2}{default}!"
+		"ru"			"{blue}{1}{default} получил подарок + {green}{2}{default}!"
+	}
+
+	"Got Gift (CS)"
+	{
+		"#format"		"{1:N},{2:s}"
+		"en"			"{blue}{1}{default} got gift + {green}{2}{default}!"
+		"es"			"{blue}{1}{default} obtuvo un regalo + {green}{2}{default}!"
+		"zho"			"{blue}{1}{default} 取得禮物 + {green}{2}{default}!"
+		"chi"			"{blue}{1}{default} 取得礼物 + {green}{2}{default}!"
+		"ru"			"{blue}{1}{default} получил подарок + {green}{2}{default}!"
+	}
 
 	"Got Gift"
 	{
-		"#format"		"{1:t}"
-		"en"			"%N got gift + {1}!"
-		"es"			"%N obtuvo un regalo + {1}!"
-		"zho"			"%N 取得 禮物 + {1}!"
-		"chi"			"%N 取得 礼物 + {1}!"
-		"ru"			"%N получил подарок + {1}!"
+		"#format"		"{1:N},{2:t}"
+		"en"			"{1} got gift + {2}!"
+		"es"			"{1} obtuvo un regalo + {2}!"
+		"zho"			"{1} 取得禮物 + {2}!"
+		"chi"			"{1} 取得礼物 + {2}!"
+		"ru"			"{1} получил подарок + {2}!"
 	}
+
+	"Got Gift (S)"
+	{
+		"#format"		"{1:N},{2:s}"
+		"en"			"{1} got gift + {2}!"
+		"es"			"{1} obtuvo un regalo + {2}!"
+		"zho"			"{1} 取得禮物 + {2}!"
+		"chi"			"{1} 取得礼物 + {2}!"
+		"ru"			"{1} получил подарок + {2}!"
+	}
+
+	"Got Gift (+hp) (C)"
+	{
+		"#format"		"{1:N},{2:d}"
+		"en"			"{blue}{1}{default} got gift + {green}{2} HP{default}!"
+		"zho"			"{blue}{1}{default} 取得禮物 + {green}{2} HP{default}!"
+		"chi"			"{blue}{1}{default} 取得礼物 + {green}{2} HP{default}!"
+		"ru"			"{blue}{1}{default} получил здоровье + {green}{2} HP{default}!"
+	}
+
 	"Got Gift (+hp)"
 	{
-		"en"			"%N got health +%d HP!"
-		"zho"			"%N 取得 血量 +%d HP!"
-		"chi"			"%N 取得 血量 +%d HP!"
-		"ru"			"%N получил здоровье +%d HP!"
+		"#format"		"{1:N},{2:d}"
+		"en"			"{1} got gift + {2} HP!"
+		"zho"			"{1} 取得禮物 + {2} HP!"
+		"chi"			"{1} 取得礼物 + {2} HP!"
+		"ru"			"{1} получил здоровье + {2} HP!"
 	}
+
+	"Got Gift (-hp) (C)"
+	{
+		"#format"		"{1:N},{2:d}"
+		"en"			"{blue}{1}{default} got bad gift - {green}{2} HP{default}!"
+		"zho"			"{blue}{1}{default} 取得壞禮物 - {green}{2} HP{default}!"
+		"chi"			"{blue}{1}{default} 取得坏礼物 - {green}{2} HP{default}!"
+		"ru"			"{blue}{1}{default} потерял здоровье {green}{2} HP{default}!"
+	}
+
 	"Got Gift (-hp)"
 	{
-		"en"			"%N lost health %d HP!"
-		"zho"			"%N 失去 血量 %d HP!"
-		"chi"			"%N 失去 血量 %d HP!"
-		"ru"			"%N потерял здоровье %d HP!"
+		"#format"		"{1:N},{2:d}"
+		"en"			"{1} got bad gift - {2} HP!"
+		"zho"			"{1} 取得壞禮物 - {2} HP!"
+		"chi"			"{1} 取得坏礼物 - {2} HP!"
+		"ru"			"{1} потерял здоровье {2} HP!"
 	}
+	
+	"Infected Got Gift (C)"
+	{
+		"#format"		"{1:N},{2:d}"
+		"en"			"{red}{1}{default}{default} got gift + {green}{2} HP{default}!"
+		"zho"			"{red}{1}{default} 取得禮物 + {green}{2} HP{default}!"
+		"chi"			"{red}{1}{default} 取得礼物 + {green}{2} HP{default}!"
+		"ru"			"{red}{1}{default} Получил Здоровье {green}{2} HP{default}!"
+	}
+
 	"Infected Got Gift"
 	{
-		"en"			"%N got Health + %d HP!"
-		"zho"			"%N 獲得 禮物 + %d HP!"
-		"chi"			"%N 获得 礼物 + %d HP!"
-		"ru"			"%N Получил Здоровье %d HP!"
+		"#format"		"{1:N},{2:d}"
+		"en"			"{1} got gift + {2} HP!"
+		"zho"			"{1} 取得禮物 + {2} HP!"
+		"chi"			"{1} 取得礼物 + {2} HP!"
+		"ru"			"{1} Получил Здоровье {2} HP!"
 	}
+
 
 	"Pistol"
 	{

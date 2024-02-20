@@ -71,7 +71,7 @@ L4D2 coop save weapon when map transition if more than 4 players
 
 * <details><summary>API | 串接</summary>
 
-    ```c++
+    ```c
     /**
     * @brief Called when restore and give weapons, health to a player
     *
