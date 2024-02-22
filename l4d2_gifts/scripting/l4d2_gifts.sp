@@ -1099,6 +1099,7 @@ stock void GiveClientAmmo(int client, int iSlot0)
 
 void GiveClientHealth(int client, int iHealthAdd)
 {
+	
 	int iHealth = GetClientHealth( client );
 	float fHealth = L4D_GetTempHealth( client );
 
@@ -1108,6 +1109,9 @@ void GiveClientHealth(int client, int iHealthAdd)
 		SetCommandFlags("give", flagsgive & ~FCVAR_CHEAT);
 		FakeClientCommand(client, "give health");
 		SetCommandFlags("give", flagsgive);
+
+		SetEntityHealth( client, iHealth + iHealthAdd );
+		SetTempHealth( client, 0.0 );
 	}
 
 	if( GetEntProp( client, Prop_Send, "m_currentReviveCount" ) >= 1 )

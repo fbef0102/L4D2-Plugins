@@ -81,6 +81,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>API | 串接</summary>
 
+    ```php
+    Registers a library name: skill_detect
+    ```
 	```c
 	forward void OnSkeet( int survivor, int vicitm, bool isHunter )
 
