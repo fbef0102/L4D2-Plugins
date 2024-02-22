@@ -64,7 +64,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.7",
+	version     = "2.8-2024/2/23",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -438,12 +438,12 @@ int g_iFieldModelIndex;
 public void OnMapStart()
 {
 	g_bMapStarted = true;
-	if (strlen(g_sItemUseSound) > 0) PrecacheSound(g_sItemUseSound);
-	if (strlen(g_sSpotMarkUseSound) > 0) PrecacheSound(g_sSpotMarkUseSound);
-	if (strlen(g_sInfectedMarkUseSound) > 0) PrecacheSound(g_sInfectedMarkUseSound);
 	g_iFieldModelIndex = PrecacheModel(MODEL_MARK_FIELD, true);
-	if ( strlen(g_sSpotMarkSpriteModel) > 0 ) PrecacheModel(g_sSpotMarkSpriteModel, true);
+}
 
+public void OnConfigsExecuted()
+{
+	GetCvars();
 }
 
 public void OnMapEnd()
@@ -694,7 +694,7 @@ public void OnEntityDestroyed(int entity)
 
 void RemoveAllGlow_Timer()
 {
-	for (int entity = 1; entity < MAXENTITIES; entity++)
+	for (int entity = 1; entity <= MAXENTITIES; entity++)
 	{
 		RemoveEntityModelGlow(entity);
 		delete g_iModelTimer[entity];
@@ -740,7 +740,7 @@ void CreateEntityModelGlow(int iEntity, const char[] sEntModelName)
 
 	// Spawn dynamic prop entity
 	int entity = CreateEntityByName("prop_dynamic_override");
-	if( !CheckIfEntityMax(entity) ) return;
+	if( !CheckIfEntitySafe(entity) ) return;
 
 	// Delete previous glow first
 	RemoveEntityModelGlow(iEntity);
@@ -797,7 +797,7 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	int entity = -1;
 	entity = CreateEntityByName("prop_dynamic_ornament");
 
-	if( !CheckIfEntityMax(entity) ) return false;
+	if( !CheckIfEntitySafe(entity) ) return false;
 
 	// Delete previous glow first
 	RemoveEntityModelGlow(infected);
@@ -976,7 +976,7 @@ void CreateSpotMarker(int client, bool bIsAimInfeced)
 	if ( strlen(g_sSpotMarkSpriteModel) == 0 ) return; //disable spot marker info target
 
 	int infoTarget = CreateEntityByName(CLASSNAME_INFO_TARGET);
-	if( CheckIfEntityMax(infoTarget) )
+	if( CheckIfEntitySafe(infoTarget) )
 	{
 		DispatchKeyValue(infoTarget, "targetname", targetname);
 
@@ -991,7 +991,7 @@ void CreateSpotMarker(int client, bool bIsAimInfeced)
 		AcceptEntityInput(infoTarget, "FireUser1");
 
 		int sprite       = CreateEntityByName(CLASSNAME_ENV_SPRITE);
-		if( CheckIfEntityMax(sprite) )
+		if( CheckIfEntitySafe(sprite) )
 		{
 			DispatchKeyValue(sprite, "targetname", targetname);
 			DispatchKeyValue(sprite, "spawnflags", "1");
@@ -1368,7 +1368,7 @@ public Action Hook_SetTransmit(int entity, int client)
 	return Plugin_Continue;
 }
 
-bool CheckIfEntityMax(int entity)
+bool CheckIfEntitySafe(int entity)
 {
 	if(entity == -1) return false;
 
@@ -1412,7 +1412,7 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 bool Create_info_target(int iEntity, const float vOrigin[3], const char[] sTargetName, float duration)
 {
 	int entity = CreateEntityByName(CLASSNAME_INFO_TARGET);
-	if (!CheckIfEntityMax(entity)) return false;
+	if (!CheckIfEntitySafe(entity)) return false;
 
 	DispatchKeyValue(entity, "targetname", sTargetName);
 	DispatchKeyValue(entity, "spawnflags", "1"); //Only visible to survivors
@@ -1448,7 +1448,7 @@ bool Create_info_target(int iEntity, const float vOrigin[3], const char[] sTarge
 void Create_env_instructor_hint(int iEntity, EHintType eType, const float vOrigin[3], const char[] sTargetName, const char[] icon_name, const char[] caption, const char[] hint_color, float duration, float range)
 {
 	int entity = CreateEntityByName("env_instructor_hint");
-	if (!CheckIfEntityMax(entity)) return;
+	if (!CheckIfEntitySafe(entity)) return;
 
 	char sDuration[4];
 	IntToString(RoundFloat(duration), sDuration, sizeof sDuration);

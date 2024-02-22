@@ -42,232 +42,232 @@ Modify every weapon damage done to Tank, SI, Witch, Common in l4d2
         // Enable gun damage modify plugin. [0-Disable,1-Enable]
         l4d_gun_damage_modify_enable "1"
 
-        // Modfiy ak47 Damage to SI multi.
+        // Modfiy ak47 Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_ak47_damage_SI_multi "1.0"
 
-        // Modfiy ak47 Damage to Common multi.
+        // Modfiy ak47 Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_ak47_damage_common_multi "1.0"
 
-        // Modfiy ak47 Damage to tank multi.
+        // Modfiy ak47 Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_ak47_damage_tank_multi "1.0"
 
-        // Modfiy ak47 Damage to witch multi.
+        // Modfiy ak47 Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_ak47_damage_witch_multi "1.0"
 
-        // Modfiy auto shotgun Damage to SI multi.
+        // Modfiy auto shotgun Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_autoshotgun_damage_SI_multi "1.0"
 
-        // Modfiy auto shotgun Damage to Common multi.
+        // Modfiy auto shotgun Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_autoshotgun_damage_common_multi "1.0"
 
-        // Modfiy auto shotgun Damage to tank multi.
+        // Modfiy auto shotgun Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_autoshotgun_damage_tank_multi "1.0"
 
-        // Modfiy auto shotgun Damage to witch multi.
+        // Modfiy auto shotgun Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_autoshotgun_damage_witch_multi "1.0"
 
-        // Modfiy awp Damage to SI multi.
+        // Modfiy awp Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_awp_damage_SI_multi "1.0"
 
-        // Modfiy awp Damage to Common multi.
+        // Modfiy awp Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_awp_damage_common_multi "1.0"
 
-        // Modfiy awp Damage to tank multi.
+        // Modfiy awp Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_awp_damage_tank_multi "1.0"
 
-        // Modfiy awp Damage to witch multi.
+        // Modfiy awp Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_awp_damage_witch_multi "1.0"
 
-        // Modfiy chrome shotgun Damage to SI multi.
+        // Modfiy chrome shotgun Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_chromeshotgun_damage_SI_multi "1.0"
 
-        // Modfiy chrome shotgun Damage to Common multi.
+        // Modfiy chrome shotgun Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_chromeshotgun_damage_common_multi "1.0"
 
-        // Modfiy chrome shotgun Damage to tank multi.
+        // Modfiy chrome shotgun Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_chromeshotgun_damage_tank_multi "1.0"
 
-        // Modfiy chrome shotgun Damage to witch multi.
+        // Modfiy chrome shotgun Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_chromeshotgun_damage_witch_multi "1.0"
 
-        // Modfiy grenade launcher Damage to SI multi.
+        // Modfiy grenade launcher Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_grenadelauncher_damage_SI_multi "1.0"
 
-        // Modfiy grenade launcher Damage to Common multi.
+        // Modfiy grenade launcher Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_grenadelauncher_damage_common_multi "1.0"
 
-        // Modfiy grenade launcher Damage to tank multi.
+        // Modfiy grenade launcher Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_grenadelauncher_damage_tank_multi "1.0"
 
-        // Modfiy grenade launcher Damage to witch multi.
+        // Modfiy grenade launcher Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_grenadelauncher_damage_witch_multi "1.0"
 
-        // Modfiy hunting rifle Damage to SI multi.
+        // Modfiy hunting rifle Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_huntingrifle_damage_SI_multi "1.0"
 
-        // Modfiy hunting rifle Damage to Common multi.
+        // Modfiy hunting rifle Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_huntingrifle_damage_common_multi "1.0"
 
-        // Modfiy hunting rifle Damage to tank multi.
+        // Modfiy hunting rifle Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_huntingrifle_damage_tank_multi "1.0"
 
-        // Modfiy hunting rifle Damage to witch multi.
+        // Modfiy hunting rifle Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_huntingrifle_damage_witch_multi "1.0"
 
-        // Modfiy m60 Damage to SI multi.
+        // Modfiy m60 Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_m60_damage_SI_multi "1.0"
 
-        // Modfiy m60 Damage to Common multi.
+        // Modfiy m60 Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_m60_damage_common_multi "1.0"
 
-        // Modfiy m60 Damage to tank multi.
+        // Modfiy m60 Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_m60_damage_tank_multi "1.0"
 
-        // Modfiy m60 Damage to witch multi.
+        // Modfiy m60 Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_m60_damage_witch_multi "1.0"
 
-        // Modfiy magnum Damage to SI multi.
+        // Modfiy magnum Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_magnum_damage_SI_multi "1.0"
 
-        // Modfiy magnum Damage to Common multi.
+        // Modfiy magnum Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_magnum_damage_common_multi "1.0"
 
-        // Modfiy magnum Damage to tank multi.
+        // Modfiy magnum Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_magnum_damage_tank_multi "1.0"
 
-        // Modfiy magnum Damage to witch multi.
+        // Modfiy magnum Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_magnum_damage_witch_multi "1.0"
 
-        // Modfiy military sniper Damage to SI multi.
+        // Modfiy military sniper Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_militarysniper_damage_SI_multi "1.0"
 
-        // Modfiy military sniper Damage to Common multi.
+        // Modfiy military sniper Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_militarysniper_damage_common_multi "1.0"
 
-        // Modfiy military sniper Damage to tank multi.
+        // Modfiy military sniper Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_militarysniper_damage_tank_multi "1.0"
 
-        // Modfiy military sniper Damage to witch multi.
+        // Modfiy military sniper Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_militarysniper_damage_witch_multi "1.0"
 
-        // Modfiy mp5 Damage to SI multi.
+        // Modfiy mp5 Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_mp5_damage_SI_multi "1.0"
 
-        // Modfiy mp5 Damage to Common multi.
+        // Modfiy mp5 Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_mp5_damage_common_multi "1.0"
 
-        // Modfiy mp5 Damage to tank multi.
+        // Modfiy mp5 Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_mp5_damage_tank_multi "1.0"
 
-        // Modfiy mp5 Damage to witch multi.
+        // Modfiy mp5 Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_mp5_damage_witch_multi "1.0"
 
-        // Modfiy pistol Damage to SI multi.
+        // Modfiy pistol Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_pistol_damage_SI_multi "1.0"
 
-        // Modfiy pistol Damage to Common multi.
+        // Modfiy pistol Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_pistol_damage_common_multi "1.0"
 
-        // Modfiy pistol Damage to tank multi.
+        // Modfiy pistol Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_pistol_damage_tank_multi "1.0"
 
-        // Modfiy pistol Damage to witch multi.
+        // Modfiy pistol Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_pistol_damage_witch_multi "1.0"
 
-        // Modfiy pumpshotgun Damage to SI multi.
+        // Modfiy pumpshotgun Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_pumpshotgun_damage_SI_multi "1.0"
 
-        // Modfiy pumpshotgun Damage to Common multi.
+        // Modfiy pumpshotgun Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_pumpshotgun_damage_common_multi "1.0"
 
-        // Modfiy pumpshotgun Damage to tank multi.
+        // Modfiy pumpshotgun Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_pumpshotgun_damage_tank_multi "1.0"
 
-        // Modfiy pumpshotgun Damage to witch multi.
+        // Modfiy pumpshotgun Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_pumpshotgun_damage_witch_multi "1.0"
 
-        // Modfiy rifle Damage to SI multi.
+        // Modfiy rifle Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_rifle_damage_SI_multi "1.0"
 
-        // Modfiy rifle Damage to Common multi.
+        // Modfiy rifle Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_rifle_damage_common_multi "1.0"
 
-        // Modfiy rifle Damage to tank multi.
+        // Modfiy rifle Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_rifle_damage_tank_multi "1.0"
 
-        // Modfiy rifle Damage to witch multi.
+        // Modfiy rifle Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_rifle_damage_witch_multi "1.0"
 
-        // Modfiy rifle desert Damage to SI multi.
+        // Modfiy rifle desert Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_rifledesert_damage_SI_multi "1.0"
 
-        // Modfiy rifle desert Damage to Common multi.
+        // Modfiy rifle desert Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_rifledesert_damage_common_multi "1.0"
 
-        // Modfiy rifle desert Damage to tank multi.
+        // Modfiy rifle desert Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_rifledesert_damage_tank_multi "1.0"
 
-        // Modfiy rifle desert Damage to witch multi.
+        // Modfiy rifle desert Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_rifledesert_damage_witch_multi "1.0"
 
-        // Modfiy scout Damage to SI multi.
+        // Modfiy scout Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_scout_damage_SI_multi "1.0"
 
-        // Modfiy scout Damage to Common multi.
+        // Modfiy scout Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_scout_damage_common_multi "1.0"
 
-        // Modfiy scout Damage to tank multi.
+        // Modfiy scout Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_scout_damage_tank_multi "1.0"
 
-        // Modfiy scout Damage to witch multi.
+        // Modfiy scout Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_scout_damage_witch_multi "1.0"
 
-        // Modfiy sg552 Damage to SI multi.
+        // Modfiy sg552 Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_sg552_damage_SI_multi "1.0"
 
-        // Modfiy sg552 Damage to Common multi.
+        // Modfiy sg552 Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_sg552_damage_common_multi "1.0"
 
-        // Modfiy sg552 Damage to tank multi.
+        // Modfiy sg552 Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_sg552_damage_tank_multi "1.0"
 
-        // Modfiy sg552 Damage to witch multi.
+        // Modfiy sg552 Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_sg552_damage_witch_multi "1.0"
 
-        // Modfiy smg Damage to SI multi.
+        // Modfiy smg Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_smg_damage_SI_multi "1.0"
 
-        // Modfiy smg Damage to Common multi.
+        // Modfiy smg Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_smg_damage_common_multi "1.0"
 
-        // Modfiy smg Damage to tank multi.
+        // Modfiy smg Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_smg_damage_tank_multi "1.0"
 
-        // Modfiy smg Damage to witch multi.
+        // Modfiy smg Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_smg_damage_witch_multi "1.0"
 
-        // Modfiy silenced smg Damage to SI multi.
+        // Modfiy silenced smg Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_smgsilenced_damage_SI_multi "1.0"
 
-        // Modfiy silenced smg Damage to Common multi.
+        // Modfiy silenced smg Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_smgsilenced_damage_common_multi "1.0"
 
-        // Modfiy silenced smg Damage to tank multi.
+        // Modfiy silenced smg Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_smgsilenced_damage_tank_multi "1.0"
 
-        // Modfiy silenced smg Damage to witch multi.
+        // Modfiy silenced smg Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_smgsilenced_damage_witch_multi "1.0"
 
-        // Modfiy spass shotgun Damage to SI multi.
+        // Modfiy spass shotgun Damage to SI multi. (0=No Damage, -1: Don't modify)
         l4d_spassshotgun_damage_SI_multi "1.0"
 
-        // Modfiy spass shotgun Damage to Common multi.
+        // Modfiy spass shotgun Damage to Common multi. (0=No Damage, -1: Don't modify)
         l4d_spassshotgun_damage_common_multi "1.0"
 
-        // Modfiy spass shotgun Damage to tank multi.
+        // Modfiy spass shotgun Damage to tank multi. (0=No Damage, -1: Don't modify)
         l4d_spassshotgun_damage_tank_multi "1.0"
 
-        // Modfiy spass shotgun Damage to witch multi.
+        // Modfiy spass shotgun Damage to witch multi. (0=No Damage, -1: Don't modify)
         l4d_spassshotgun_damage_witch_multi "1.0"
 		```
 </details>
@@ -289,6 +289,9 @@ Modify every weapon damage done to Tank, SI, Witch, Common in l4d2
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.3 (2024-2-23)
+        * Update cvars
 
     * v1.2 (2024-1-25)
         * Delete Melee
@@ -335,16 +338,16 @@ Modify every weapon damage done to Tank, SI, Witch, Common in l4d2
         // 0=關閉插件, 1=啟動插件
         l4d_gun_damage_modify_enable "1"
 
-        // 修改 ak47 對特感造成的傷害倍率 (0=無傷)
+        // 修改 ak47 對特感造成的傷害倍率 (0=無傷, -1=不修改)
         l4d_ak47_damage_SI_multi "1.0"
 
-        // 修改 ak47 對普通殭屍造成的傷害倍率 (0=無傷)
+        // 修改 ak47 對普通殭屍造成的傷害倍率 (0=無傷, -1=不修改)
         l4d_ak47_damage_common_multi "1.0"
 
-        // 修改 ak47 對Tank造成的傷害倍率 (0=無傷)
+        // 修改 ak47 對Tank造成的傷害倍率 (0=無傷, -1=不修改)
         l4d_ak47_damage_tank_multi "1.0"
 
-        // 修改 ak47 對Witch造成的傷害倍率 (0=無傷)
+        // 修改 ak47 對Witch造成的傷害倍率 (0=無傷, -1=不修改)
         l4d_ak47_damage_witch_multi "1.0"
 
         // 以下類推...

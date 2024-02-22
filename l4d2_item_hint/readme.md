@@ -154,6 +154,9 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v2.8 (2024-2-23)
+        * Fixed spot maker error
+
     * v2.7 (2023-3-18)
         * Add spot maker announce
 
