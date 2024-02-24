@@ -515,7 +515,7 @@
 		"#format"		"{1:s},{2:s}"
 		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}{2}{default}'s tongue by shoving."
 		"zho"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}{2}{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}{2}{default} 的舌头."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 推开自解了 {green}{2}{default} 的舌头."
 	}
 	"HandleSmokerSelfClear_1_O"
 	{
@@ -529,7 +529,7 @@
 		"#format"		"{1:s}"
 		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue by shoving."
 		"zho"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}Smoker{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}Smoker{default} 的舌头."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 推开自解了 {green}Smoker{default} 的舌头."
 	}
 	"HandleSmokerSelfClear_2_O"
 	{
