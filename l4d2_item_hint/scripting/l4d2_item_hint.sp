@@ -64,7 +64,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.8-2024/2/23",
+	version     = "2.8a-2024/2/24",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -299,78 +299,78 @@ void CreateStringMap()
 	g_smModelToName = new StringMap();
 
 	// Case-sensitive
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_medkit.mdl", "First aid kit!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_defibrillator.mdl", "Defibrillator!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_painpills.mdl", "Pain pills!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_adrenaline.mdl", "Adrenaline!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_bile_flask.mdl", "Bile Bomb!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_molotov.mdl", "Molotov!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_pipebomb.mdl", "Pipe bomb!");
-	g_smModelToName.SetString("models/w_models/weapons/w_laser_sights.mdl", "Laser Sight!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_incendiary_ammopack.mdl", "Incendiary UpgradePack!");
-	g_smModelToName.SetString("models/w_models/weapons/w_eq_explosive_ammopack.mdl", "Explosive UpgradePack!");
-	g_smModelToName.SetString("models/props/terror/ammo_stack.mdl", "Ammo!");
-	g_smModelToName.SetString("models/props_unique/spawn_apartment/coffeeammo.mdl", "Ammo!");
-	g_smModelToName.SetString("models/props/de_prodigy/ammo_can_02.mdl", "Ammo!");
-	g_smModelToName.SetString("models/weapons/melee/w_chainsaw.mdl", "Chainsaw!");
-	g_smModelToName.SetString("models/w_models/weapons/w_pistol_b.mdl", "Pistol!");
-	g_smModelToName.SetString("models/w_models/weapons/w_pistol_a.mdl", "Pistol!");
-	g_smModelToName.SetString("models/w_models/weapons/w_desert_eagle.mdl", "Magnum!");
-	g_smModelToName.SetString("models/w_models/weapons/w_shotgun.mdl", "Pump Shotgun!");
-	g_smModelToName.SetString("models/w_models/weapons/w_pumpshotgun_a.mdl", "Shotgun Chrome!");
-	g_smModelToName.SetString("models/w_models/weapons/w_smg_uzi.mdl", "Uzi!");
-	g_smModelToName.SetString("models/w_models/weapons/w_smg_a.mdl", "Silenced Smg!");
-	g_smModelToName.SetString("models/w_models/weapons/w_smg_mp5.mdl", "MP5!");
-	g_smModelToName.SetString("models/w_models/weapons/w_rifle_m16a2.mdl", "Rifle!");
-	g_smModelToName.SetString("models/w_models/weapons/w_rifle_sg552.mdl", "SG552!");
-	g_smModelToName.SetString("models/w_models/weapons/w_rifle_ak47.mdl", "AK47!");
-	g_smModelToName.SetString("models/w_models/weapons/w_desert_rifle.mdl", "Desert Rifle!");
-	g_smModelToName.SetString("models/w_models/weapons/w_shotgun_spas.mdl", "Shotgun Spas!");
-	g_smModelToName.SetString("models/w_models/weapons/w_autoshot_m4super.mdl", "Auto Shotgun!");
-	g_smModelToName.SetString("models/w_models/weapons/w_sniper_mini14.mdl", "Hunting Rifle!");
-	g_smModelToName.SetString("models/w_models/weapons/w_sniper_military.mdl", "Military Sniper!");
-	g_smModelToName.SetString("models/w_models/weapons/w_sniper_scout.mdl", "Scout!");
-	g_smModelToName.SetString("models/w_models/weapons/w_sniper_awp.mdl", "AWP!");
-	g_smModelToName.SetString("models/w_models/weapons/w_grenade_launcher.mdl", "Grenade Launcher!");
-	g_smModelToName.SetString("models/w_models/weapons/w_m60.mdl", "M60!");
-	g_smModelToName.SetString("models/props_junk/gascan001a.mdl", "Gas Can!");
-	g_smModelToName.SetString("models/props_junk/explosive_box001.mdl", "Firework!");
-	g_smModelToName.SetString("models/props_junk/propanecanister001a.mdl", "Propane Tank!");
-	g_smModelToName.SetString("models/props_equipment/oxygentank01.mdl", "Oxygen Tank!");
-	g_smModelToName.SetString("models/props_junk/gnome.mdl", "Gnome!");
-	g_smModelToName.SetString("models/w_models/weapons/w_cola.mdl", "Cola!");
-	g_smModelToName.SetString("models/w_models/weapons/50cal.mdl", ".50 Cal Machine Gun here!");
-	g_smModelToName.SetString("models/w_models/weapons/w_minigun.mdl", "Minigun here!");
-	g_smModelToName.SetString("models/props/terror/exploding_ammo.mdl", "Explosive Ammo!");
-	g_smModelToName.SetString("models/props/terror/incendiary_ammo.mdl", "Incendiary Ammo!");
-	g_smModelToName.SetString("models/w_models/weapons/w_knife_t.mdl", "Knife!");
-	g_smModelToName.SetString("models/weapons/melee/w_bat.mdl", "Baseball Bat!");
-	g_smModelToName.SetString("models/weapons/melee/w_cricket_bat.mdl", "Cricket Bat!");
-	g_smModelToName.SetString("models/weapons/melee/w_crowbar.mdl", "Crowbar!");
-	g_smModelToName.SetString("models/weapons/melee/w_electric_guitar.mdl", "Electric Guitar!");
-	g_smModelToName.SetString("models/weapons/melee/w_fireaxe.mdl", "Fireaxe!");
-	g_smModelToName.SetString("models/weapons/melee/w_frying_pan.mdl", "Frying Pan!");
-	g_smModelToName.SetString("models/weapons/melee/w_katana.mdl", "Katana!");
-	g_smModelToName.SetString("models/weapons/melee/w_machete.mdl", "Machete!");
-	g_smModelToName.SetString("models/weapons/melee/w_tonfa.mdl", "Nightstick!");
-	g_smModelToName.SetString("models/weapons/melee/w_golfclub.mdl", "Golf Club!");
-	g_smModelToName.SetString("models/weapons/melee/w_pitchfork.mdl", "Pitckfork!");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_medkit.mdl", "First_Aid_Kit");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_defibrillator.mdl", "Defibrillator");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_painpills.mdl", "Pain_Pills");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_adrenaline.mdl", "Adrenaline");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_bile_flask.mdl", "Bile_Bomb");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_molotov.mdl", "Molotov");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_pipebomb.mdl", "Pipe_Bomb");
+	g_smModelToName.SetString("models/w_models/weapons/w_laser_sights.mdl", "Laser_Sight");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_incendiary_ammopack.mdl", "Incendiary_UpgradePack");
+	g_smModelToName.SetString("models/w_models/weapons/w_eq_explosive_ammopack.mdl", "Explosive_UpgradePack");
+	g_smModelToName.SetString("models/props/terror/ammo_stack.mdl", "Ammo");
+	g_smModelToName.SetString("models/props_unique/spawn_apartment/coffeeammo.mdl", "Ammo");
+	g_smModelToName.SetString("models/props/de_prodigy/ammo_can_02.mdl", "Ammo");
+	g_smModelToName.SetString("models/weapons/melee/w_chainsaw.mdl", "Chainsaw");
+	g_smModelToName.SetString("models/w_models/weapons/w_pistol_b.mdl", "Pistol");
+	g_smModelToName.SetString("models/w_models/weapons/w_pistol_a.mdl", "Pistol");
+	g_smModelToName.SetString("models/w_models/weapons/w_desert_eagle.mdl", "Magnum");
+	g_smModelToName.SetString("models/w_models/weapons/w_shotgun.mdl", "Pump_Shotgun");
+	g_smModelToName.SetString("models/w_models/weapons/w_pumpshotgun_a.mdl", "Shotgun_Chrome");
+	g_smModelToName.SetString("models/w_models/weapons/w_smg_uzi.mdl", "Uzi");
+	g_smModelToName.SetString("models/w_models/weapons/w_smg_a.mdl", "Silenced_Smg");
+	g_smModelToName.SetString("models/w_models/weapons/w_smg_mp5.mdl", "MP5");
+	g_smModelToName.SetString("models/w_models/weapons/w_rifle_m16a2.mdl", "Rifle");
+	g_smModelToName.SetString("models/w_models/weapons/w_rifle_sg552.mdl", "SG552");
+	g_smModelToName.SetString("models/w_models/weapons/w_rifle_ak47.mdl", "AK47");
+	g_smModelToName.SetString("models/w_models/weapons/w_desert_rifle.mdl", "Desert_Rifle");
+	g_smModelToName.SetString("models/w_models/weapons/w_shotgun_spas.mdl", "Shotgun_Spas");
+	g_smModelToName.SetString("models/w_models/weapons/w_autoshot_m4super.mdl", "Auto_Shotgun");
+	g_smModelToName.SetString("models/w_models/weapons/w_sniper_mini14.mdl", "Hunting_Rifle");
+	g_smModelToName.SetString("models/w_models/weapons/w_sniper_military.mdl", "Military_Sniper");
+	g_smModelToName.SetString("models/w_models/weapons/w_sniper_scout.mdl", "Scout");
+	g_smModelToName.SetString("models/w_models/weapons/w_sniper_awp.mdl", "AWP");
+	g_smModelToName.SetString("models/w_models/weapons/w_grenade_launcher.mdl", "Grenade_Launcher");
+	g_smModelToName.SetString("models/w_models/weapons/w_m60.mdl", "M60");
+	g_smModelToName.SetString("models/props_junk/gascan001a.mdl", "Gas_Can");
+	g_smModelToName.SetString("models/props_junk/explosive_box001.mdl", "Firework");
+	g_smModelToName.SetString("models/props_junk/propanecanister001a.mdl", "Propane_Tank");
+	g_smModelToName.SetString("models/props_equipment/oxygentank01.mdl", "Oxygen_Tank");
+	g_smModelToName.SetString("models/props_junk/gnome.mdl", "Gnome");
+	g_smModelToName.SetString("models/w_models/weapons/w_cola.mdl", "Cola");
+	g_smModelToName.SetString("models/w_models/weapons/50cal.mdl", "50_Cal_Machine_Gun");
+	g_smModelToName.SetString("models/w_models/weapons/w_minigun.mdl", "Minigun");
+	g_smModelToName.SetString("models/props/terror/exploding_ammo.mdl", "Explosive_Ammo");
+	g_smModelToName.SetString("models/props/terror/incendiary_ammo.mdl", "Incendiary_Ammo");
+	g_smModelToName.SetString("models/w_models/weapons/w_knife_t.mdl", "Knife");
+	g_smModelToName.SetString("models/weapons/melee/w_bat.mdl", "Baseball_Bat");
+	g_smModelToName.SetString("models/weapons/melee/w_cricket_bat.mdl", "Cricket_Bat");
+	g_smModelToName.SetString("models/weapons/melee/w_crowbar.mdl", "Crowbar");
+	g_smModelToName.SetString("models/weapons/melee/w_electric_guitar.mdl", "Electric_Guitar");
+	g_smModelToName.SetString("models/weapons/melee/w_fireaxe.mdl", "Fireaxe");
+	g_smModelToName.SetString("models/weapons/melee/w_frying_pan.mdl", "Frying_Pan");
+	g_smModelToName.SetString("models/weapons/melee/w_katana.mdl", "Katana");
+	g_smModelToName.SetString("models/weapons/melee/w_machete.mdl", "Machete");
+	g_smModelToName.SetString("models/weapons/melee/w_tonfa.mdl", "Nightstick");
+	g_smModelToName.SetString("models/weapons/melee/w_golfclub.mdl", "Golf_Club");
+	g_smModelToName.SetString("models/weapons/melee/w_pitchfork.mdl", "Pitckfork");
 	g_smModelToName.SetString("models/weapons/melee/w_shovel.mdl", "Shovel");
-	g_smModelToName.SetString("models/infected/boomette.mdl", "Boomer!");
-	g_smModelToName.SetString("models/infected/boomer.mdl", "Boomer!");
-	g_smModelToName.SetString("models/infected/boomer_l4d1.mdl", "Boomer!");
-	g_smModelToName.SetString("models/infected/hulk.mdl", "Tank!");
-	g_smModelToName.SetString("models/infected/hulk_l4d1.mdl", "Tank!");
-	g_smModelToName.SetString("models/infected/hulk_dlc3.mdl", "Tank!");
-	g_smModelToName.SetString("models/infected/smoker.mdl", "Smoker!");
-	g_smModelToName.SetString("models/infected/smoker_l4d1.mdl", "Smoker!");
-	g_smModelToName.SetString("models/infected/hunter.mdl", "Hunter!");
-	g_smModelToName.SetString("models/infected/hunter_l4d1.mdl", "Hunter!");
-	g_smModelToName.SetString("models/infected/witch.mdl", "Witch!");
-	g_smModelToName.SetString("models/infected/witch_bride.mdl", "Witch Bride!");
-	g_smModelToName.SetString("models/infected/spitter.mdl", "Spitter!");
-	g_smModelToName.SetString("models/infected/jockey.mdl", "Jockey!");
-	g_smModelToName.SetString("models/infected/charger.mdl", "Charger!");
+	g_smModelToName.SetString("models/infected/boomette.mdl", "Boomer");
+	g_smModelToName.SetString("models/infected/boomer.mdl", "Boomer");
+	g_smModelToName.SetString("models/infected/boomer_l4d1.mdl", "Boomer");
+	g_smModelToName.SetString("models/infected/hulk.mdl", "Tank");
+	g_smModelToName.SetString("models/infected/hulk_l4d1.mdl", "Tank");
+	g_smModelToName.SetString("models/infected/hulk_dlc3.mdl", "Tank");
+	g_smModelToName.SetString("models/infected/smoker.mdl", "Smoker");
+	g_smModelToName.SetString("models/infected/smoker_l4d1.mdl", "Smoker");
+	g_smModelToName.SetString("models/infected/hunter.mdl", "Hunter");
+	g_smModelToName.SetString("models/infected/hunter_l4d1.mdl", "Hunter");
+	g_smModelToName.SetString("models/infected/witch.mdl", "Witch");
+	g_smModelToName.SetString("models/infected/witch_bride.mdl", "Witch_Bride");
+	g_smModelToName.SetString("models/infected/spitter.mdl", "Spitter");
+	g_smModelToName.SetString("models/infected/jockey.mdl", "Jockey");
+	g_smModelToName.SetString("models/infected/charger.mdl", "Charger");
 
 	g_smModelHeight = CreateTrie();
 
@@ -855,10 +855,10 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 		}
 	}
 
-	static char sItemName[64];
+	static char sItemPhrase[64];
 	StringToLowerCase(sModelName);
-	g_smModelToName.GetString(sModelName, sItemName, sizeof(sItemName));
-	NotifyMessage(client, sItemName, eInfectedMaker);
+	g_smModelToName.GetString(sModelName, sItemPhrase, sizeof(sItemPhrase));
+	NotifyMessage(client, sItemPhrase, eInfectedMaker);
 
 	return true;
 }
@@ -1193,7 +1193,7 @@ void StringToLowerCase(char[] input)
     }
 }
 
-void NotifyMessage(int client, const char[] sItemName, EHintType eType)
+void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 {
 	if (eType == eItemHint)
 	{
@@ -1205,7 +1205,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "%T", "Announce_Vocalize_ITEM (C)", i, client, sItemName);
+						CPrintToChat(i, "%t", "Announce_Vocalize_ITEM (C)", client, sItemPhrase);
 					}
 				}
 			}
@@ -1214,7 +1214,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "%T", "Announce_Vocalize_ITEM", i, client, sItemName);
+						PrintHintText(i, "%t", "Announce_Vocalize_ITEM", client, sItemPhrase);
 					}
 				}
 			}
@@ -1223,7 +1223,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "%T", "Announce_Vocalize_ITEM", i, client, sItemName);
+						PrintCenterText(i, "%t", "Announce_Vocalize_ITEM", client, sItemPhrase);
 					}
 				}
 			}
@@ -1239,7 +1239,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "%T", "Announce_Vocalize_INFECTED (C)", i, client, sItemName);
+						CPrintToChat(i, "%t", "Announce_Vocalize_INFECTED (C)", client, sItemPhrase);
 					}
 				}
 			}
@@ -1248,7 +1248,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "%T", "Announce_Vocalize_INFECTED", i, client, sItemName);
+						PrintHintText(i, "%t", "Announce_Vocalize_INFECTED", client, sItemPhrase);
 					}
 				}
 			}
@@ -1257,7 +1257,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "%T", "Announce_Vocalize_INFECTED", i, client, sItemName);
+						PrintCenterText(i, "%t", "Announce_Vocalize_INFECTED", client, sItemPhrase);
 					}
 				}
 			}
@@ -1273,7 +1273,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "%T", "Announce_Spot_Marker (C)", i, client);
+						CPrintToChat(i, "%t", "Announce_Spot_Marker (C)", client);
 					}
 				}
 			}
@@ -1282,7 +1282,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "%T", "Announce_Spot_Marker", i, client);
+						PrintHintText(i, "%t", "Announce_Spot_Marker", client);
 					}
 				}
 			}
@@ -1291,7 +1291,7 @@ void NotifyMessage(int client, const char[] sItemName, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "%T", "Announce_Spot_Marker", i, client);
+						PrintCenterText(i, "%t", "Announce_Spot_Marker", client);
 					}
 				}
 			}
@@ -1381,10 +1381,10 @@ bool CheckIfEntitySafe(int entity)
 }
 
 // by BHaType: https://forums.alliedmods.net/showthread.php?p=2709810#post2709810
-void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItemName, int iEntity, EHintType type)
+void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItemPhrase, int iEntity, EHintType type)
 {
 	static char sTargetName[64], sCaption[128];
-	Format(sTargetName, sizeof sTargetName, "%i_%.0f", client, GetEngineTime());
+	Format(sTargetName, sizeof(sTargetName), "%i_%.0f", client, GetEngineTime());
 
 	switch(type)
 	{
@@ -1392,7 +1392,8 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fItemGlowTimer) )
 			{
-				FormatEx(sCaption, sizeof sCaption, "%s", sItemName);
+				// FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, LANG_SERVER);
+				FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, client);
 				Create_env_instructor_hint(iEntity, eItemHint, vOrigin, sTargetName, g_sItemInstructorIcon, sCaption, g_sItemInstructorColor, g_fItemGlowTimer, float(g_iItemGlowRange));
 			}
 		}
@@ -1400,7 +1401,8 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
 			{
-				FormatEx(sCaption, sizeof sCaption, "%T", "Spot_Maker", LANG_SERVER, client);
+				// FormatEx(sCaption, sizeof(sCaption), "%T", "Spot_Maker", LANG_SERVER, client);
+				FormatEx(sCaption, sizeof(sCaption), "%T", "Spot_Maker", client, client);
 				Create_env_instructor_hint(iEntity, eSpotMarker, vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
 			
 				NotifyMessage(client, "", eSpotMarker);
@@ -1435,7 +1437,7 @@ bool Create_info_target(int iEntity, const float vOrigin[3], const char[] sTarge
 	else
 	{
 		static char szBuffer[36];
-		FormatEx(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+		FormatEx(szBuffer, sizeof(szBuffer), "OnUser1 !self:Kill::%f:-1", duration);
 
 		SetVariantString(szBuffer);
 		AcceptEntityInput(entity, "AddOutput");
@@ -1451,9 +1453,9 @@ void Create_env_instructor_hint(int iEntity, EHintType eType, const float vOrigi
 	if (!CheckIfEntitySafe(entity)) return;
 
 	char sDuration[4];
-	IntToString(RoundFloat(duration), sDuration, sizeof sDuration);
+	IntToString(RoundFloat(duration), sDuration, sizeof(sDuration));
 	char sRange[8];
-	IntToString(RoundFloat(range), sRange, sizeof sRange);
+	IntToString(RoundFloat(range), sRange, sizeof(sRange));
 
 	DispatchKeyValue(entity, "hint_timeout", sDuration);
 	DispatchKeyValue(entity, "hint_allow_nodraw_target", "1");
@@ -1486,7 +1488,7 @@ void Create_env_instructor_hint(int iEntity, EHintType eType, const float vOrigi
 	else
 	{
 		static char szBuffer[36];
-		FormatEx(szBuffer, sizeof szBuffer, "OnUser1 !self:Kill::%f:-1", duration);
+		FormatEx(szBuffer, sizeof(szBuffer), "OnUser1 !self:Kill::%f:-1", duration);
 
 		SetVariantString(szBuffer);
 		AcceptEntityInput(entity, "AddOutput");
@@ -1571,7 +1573,7 @@ bool TRDontHitSelf(int entity, int mask, any data) {
 void PlayerMarkHint(int client)
 {
 	bool bIsAimInfeced = false, bIsAimWitch = false, bIsVaildItem = false;
-	static char sItemName[64], sEntModelName[PLATFORM_MAX_PATH];
+	static char sItemPhrase[64], sEntModelName[PLATFORM_MAX_PATH];
 
 	// marker priority (infected maker > item hint > spot marker)
 
@@ -1615,21 +1617,21 @@ void PlayerMarkHint(int client)
 				//PrintToChatAll("Model - %s", sEntModelName);
 				StringToLowerCase(sEntModelName);
 				float fHeight = 10.0;
-				if (g_smModelToName.GetString(sEntModelName, sItemName, sizeof(sItemName)))
+				if (g_smModelToName.GetString(sEntModelName, sItemPhrase, sizeof(sItemPhrase)))
 				{
 					g_smModelHeight.GetValue(sEntModelName, fHeight);
 					bIsVaildItem = true;
 				}
 				else if (StrContains(sEntModelName, "/melee/") != -1) // entity is not in the listb(custom melee weapon model)
 				{
-					FormatEx(sItemName, sizeof sItemName, "%s", "Melee!");
+					FormatEx(sItemPhrase, sizeof(sItemPhrase), "Melee");
 					fHeight = 5.0;
 
 					bIsVaildItem = true;
 				}
 				else if (StrContains(sEntModelName, "/weapons/") != -1) // entity is not in the list (custom weapom model)
 				{
-					FormatEx(sItemName, sizeof sItemName, "%s", "Weapons!");
+					FormatEx(sItemPhrase, sizeof(sItemPhrase), "Weapons");
 					fHeight = 10.0;
 
 					bIsVaildItem = true;
@@ -1643,7 +1645,7 @@ void PlayerMarkHint(int client)
 				{
 					if(GetEngineTime() > g_fItemHintCoolDownTime[client])
 					{
-						NotifyMessage(client, sItemName, eItemHint);
+						NotifyMessage(client, sItemPhrase, eItemHint);
 
 						if (strlen(g_sItemUseSound) > 0)
 						{
@@ -1670,7 +1672,7 @@ void PlayerMarkHint(int client)
 							float vEndPos[3];
 							GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", vEndPos);
 							vEndPos[2] = vEndPos[2] + fHeight;
-							CreateInstructorHint(client, vEndPos, sItemName, iEntity, view_as<EHintType>(eItemHint));
+							CreateInstructorHint(client, vEndPos, sItemPhrase, iEntity, view_as<EHintType>(eItemHint));
 						}
 					}
 

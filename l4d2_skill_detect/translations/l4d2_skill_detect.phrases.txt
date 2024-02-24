@@ -286,13 +286,13 @@
 	{
 		"en"		"{lightgreen}★★★ {olive}%N{default} magnum-skeeted {green}%N{default}."
 		"zho"		"{lightgreen}★★★ {olive}%N{default} 麥格農空爆了 {green}%N{default}."
-		"chi"		"{lightgreen}★★★ {olive}%N{default} 麦格农空爆了 {green}%N{default}."
+		"chi"		"{lightgreen}★★★ {olive}%N{default} 马格南空爆了 {green}%N{default}."
 	}
 	"HandleSkeet_M_J"
 	{
 		"en"		"{lightgreen}★★★ {olive}%N{default} magnum-skeeted {green}%N{default}."
 		"zho"		"{lightgreen}★★★ {olive}%N{default} 麥格農空爆了 {green}%N{default}."
-		"chi"		"{lightgreen}★★★ {olive}%N{default} 麦格农空爆了 {green}%N{default}."
+		"chi"		"{lightgreen}★★★ {olive}%N{default} 马格南空爆了 {green}%N{default}."
 	}
 	"HandleSkeet_S_H"
 	{
@@ -310,13 +310,13 @@
 	{
 		"en"		"{lightgreen}★★★ {olive}%N{default} magnum-skeeted {green}%t{default}."
 		"zho"		"{lightgreen}★★★ {olive}%N{default} 麥格農空爆了 {green}%t{default}."
-		"chi"		"{lightgreen}★★★ {olive}%N{default} 麦格农空爆了 {green}%t{default}."
+		"chi"		"{lightgreen}★★★ {olive}%N{default} 马格南空爆了 {green}%t{default}."
 	}
 	"HandleSkeet_M_S_J"
 	{
 		"en"		"{lightgreen}★★★ {olive}%N{default} magnum-skeeted {green}%t{default}."
 		"zho"		"{lightgreen}★★★ {olive}%N{default} 麥格農空爆了 {green}%t{default}."
-		"chi"		"{lightgreen}★★★ {olive}%N{default} 麦格农空爆了 {green}%t{default}."
+		"chi"		"{lightgreen}★★★ {olive}%N{default} 马格南空爆了 {green}%t{default}."
 	}
 	"HandleSkeet_S_S_H"
 	{
@@ -418,13 +418,13 @@
 	{
 		"en"		"{lightgreen}★★ {olive}%N{default} magnum-skeeted {green}%N{default} ({lightgreen}%d{default} dmg)."
 		"zho"		"{lightgreen}★★ {olive}%N{default} 麥格農空爆了 {green}%N{default} ({lightgreen}%d{default} 傷害)."
-		"chi"		"{lightgreen}★★ {olive}%N{default} 麦格农空爆了 {green}%N{default} ({lightgreen}%d{default} 伤害)."
+		"chi"		"{lightgreen}★★ {olive}%N{default} 马格南空爆了 {green}%N{default} ({lightgreen}%d{default} 伤害)."
 	}
 	"HandleNonSkeet_M_J"
 	{
 		"en"		"{lightgreen}★★ {olive}%N{default} magnum-skeeted {green}%N{default} ({lightgreen}%d{default} dmg)."
 		"zho"		"{lightgreen}★★ {olive}%N{default} 麥格農空爆了 {green}%N{default} ({lightgreen}%d{default} 傷害)."
-		"chi"		"{lightgreen}★★ {olive}%N{default} 麦格农空爆了 {green}%N{default} ({lightgreen}%d{default} 伤害)."
+		"chi"		"{lightgreen}★★ {olive}%N{default} 马格南空爆了 {green}%N{default} ({lightgreen}%d{default} 伤害)."
 	}
 	"HandleNonSkeet_S_H"
 	{
@@ -454,13 +454,13 @@
 	{
 		"en"		"{lightgreen}★★ {olive}%N{default} magnum-skeeted {green}%t{default} ({lightgreen}%d{default} dmg)."
 		"zho"		"{lightgreen}★★ {olive}%N{default} 麥格農空爆了 {green}%t{default} ({lightgreen}%d{default} 傷害)."
-		"chi"		"{lightgreen}★★ {olive}%N{default} 麦格农空爆了 {green}%t{default} ({lightgreen}%d{default} 伤害)."
+		"chi"		"{lightgreen}★★ {olive}%N{default} 马格南空爆了 {green}%t{default} ({lightgreen}%d{default} 伤害)."
 	}
 	"HandleNonSkeet_M_S_J"
 	{
 		"en"		"{lightgreen}★★ {olive}%N{default} magnum-skeeted {green}%t{default} ({lightgreen}%d{default} dmg)."
 		"zho"		"{lightgreen}★★ {olive}%N{default} 麥格農空爆了 {green}%t{default} ({lightgreen}%d{default} 傷害)."
-		"chi"		"{lightgreen}★★ {olive}%N{default} 麦格农空爆了 {green}%t{default} ({lightgreen}%d{default} 伤害)."
+		"chi"		"{lightgreen}★★ {olive}%N{default} 马格南空爆了 {green}%t{default} ({lightgreen}%d{default} 伤害)."
 	}
 	"HandleNonSkeet_S_S_H"
 	{
@@ -515,7 +515,7 @@
 		"#format"		"{1:s},{2:s}"
 		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}{2}{default}'s tongue by shoving."
 		"zho"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}{2}{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}{2}{default} 的舌头."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 推开自解了 {green}{2}{default} 的舌头."
 	}
 	"HandleSmokerSelfClear_1_O"
 	{
@@ -529,7 +529,7 @@
 		"#format"		"{1:s}"
 		"en"		"{lightgreen}★★ {olive}{1}{default} self-cleared from {green}a smoker{default} tongue by shoving."
 		"zho"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}Smoker{default} 的舌頭."
-		"chi"		"{lightgreen}★★ {olive}{1}{default} 推開自解了 {green}Smoker{default} 的舌头."
+		"chi"		"{lightgreen}★★ {olive}{1}{default} 推开自解了 {green}Smoker{default} 的舌头."
 	}
 	"HandleSmokerSelfClear_2_O"
 	{
