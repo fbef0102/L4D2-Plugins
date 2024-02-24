@@ -55,7 +55,7 @@
 		//因此只能根據伺服器語言全局顯示(LANG_SERVER)，或者根據創建標記的玩家游戲語言全局顯示(client)
 		"#format"	"{1:N}"
 		"en"		"{1} Marked Here"
-		"zho"		"{1} 標記了這裏"
+		"zho"		"{1} 標記了這裡"
 		"chi"		"{1} 标记了这里"
 	}
 
@@ -83,7 +83,7 @@
 	"Defibrillator"
 	{
 		"en"			"Defibrillator!"
-		"zho"			"除顫器!"
+		"zho"			"電擊器!"
 		"chi"			"除颤器!"
 	}
 
@@ -111,28 +111,28 @@
 	"Molotov"
 	{
 		"en"			"Molotov!"
-		"zho"			"燃燒瓶!"
+		"zho"			"火瓶!"
 		"chi"			"燃烧瓶!"
 	}
 
 	"Pipe_Bomb"
 	{
 		"en"			"Pipe Bomb!"
-		"zho"			"管狀手雷!"
+		"zho"			"土製炸彈!"
 		"chi"			"管状手雷!"
 	}
 
 	"Laser_Sight"
 	{
 		"en"			"Laser Sight!"
-		"zho"			"鐳射瞄準器!"
+		"zho"			"雷射裝置!"
 		"chi"			"激光瞄准器!"
 	}
 
 	"Incendiary_UpgradePack"
 	{
 		"en"			"Incendiary UpgradePack!"
-		"zho"			"燃燒彈藥包!"
+		"zho"			"火焰彈藥包!"
 		"chi"			"燃烧弹药包!"
 	}
 
@@ -174,14 +174,14 @@
 	"Pump_Shotgun"
 	{
 		"en"			"Pump Shotgun!"
-		"zho"			"泵動霰彈槍!"
+		"zho"			"木製霰彈槍!"
 		"chi"			"泵动霰弹枪!"
 	}
 
 	"Shotgun_Chrome"
 	{
 		"en"			"Shotgun Chrome!"
-		"zho"			"鉻管霰彈槍!"
+		"zho"			"鐵製霰彈槍!"
 		"chi"			"铬管霰弹枪!"
 	}
 
@@ -202,7 +202,7 @@
 	"MP5"
 	{
 		"en"			"MP5!"
-		"zho"			"MP5衝鋒槍!"
+		"zho"			"MP5!"
 		"chi"			"MP5冲锋枪!"
 	}
 
@@ -223,7 +223,7 @@
 	"AK47"
 	{
 		"en"			"AK47!"
-		"zho"			"AK47步槍!"
+		"zho"			"AK47!"
 		"chi"			"AK47步枪!"
 	}
 
@@ -237,42 +237,42 @@
 	"Shotgun_Spas"
 	{
 		"en"			"Shotgun Spas!"
-		"zho"			"SPAS霰彈槍!"
+		"zho"			"SPAS連發霰彈槍!"
 		"chi"			"SPAS霰弹枪!"
 	}
 
 	"Auto_Shotgun"
 	{
 		"en"			"Auto Shotgun!"
-		"zho"			"M1014霰彈槍!"
+		"zho"			"自動連發霰彈槍!"
 		"chi"			"M1014霰弹枪!"
 	}
 
 	"Hunting_Rifle"
 	{
 		"en"			"Hunting Rifle!"
-		"zho"			"狩獵狙擊步槍!"
+		"zho"			"獵槍!"
 		"chi"			"狩猎狙击步枪!"
 	}
 
 	"Military_Sniper"
 	{
 		"en"			"Military Sniper!"
-		"zho"			"軍用狙擊步槍!"
+		"zho"			"軍用狙擊槍!"
 		"chi"			"军用狙击步枪!"
 	}
 
 	"Scout"
 	{
 		"en"			"Scout!"
-		"zho"			"偵察狙擊步槍!"
+		"zho"			"Scout!"
 		"chi"			"侦察狙击步枪!"
 	}
 
 	"AWP"
 	{
 		"en"			"AWP!"
-		"zho"			"AWP狙擊步槍!"
+		"zho"			"AWP!"
 		"chi"			"AWP狙击步枪!"
 	}
 
@@ -286,7 +286,7 @@
 	"M60"
 	{
 		"en"			"M60!"
-		"zho"			"M60機槍!"
+		"zho"			"M60機關槍!"
 		"chi"			"M60机枪!"
 	}
 
@@ -300,14 +300,14 @@
 	"Firework"
 	{
 		"en"			"Firework!"
-		"zho"			"烟花盒!"
+		"zho"			"煙火盒!"
 		"chi"			"烟花盒!"
 	}
 
 	"Propane_Tank"
 	{
 		"en"			"Propane Tank!"
-		"zho"			"丙烷罐!"
+		"zho"			"瓦斯罐!"
 		"chi"			"丙烷罐!"
 	}
 
@@ -321,7 +321,7 @@
 	"Gnome"
 	{
 		"en"			"Gnome!"
-		"zho"			"侏儒!"
+		"zho"			"精靈小矮人!"
 		"chi"			"侏儒!"
 	}
 
@@ -342,21 +342,21 @@
 	"Minigun"
 	{
 		"en"			"Minigun!"
-		"zho"			"加特林固定機槍!"
+		"zho"			"迷你砲固定機槍!"
 		"chi"			"加特林固定机枪!"
 	}
 
 	"Explosive_Ammo"
 	{
 		"en"			"Explosive Ammo!"
-		"zho"			"高爆彈藥!"
+		"zho"			"高爆子彈!"
 		"chi"			"高爆弹药!"
 	}
 
 	"Incendiary_Ammo"
 	{
 		"en"			"Incendiary Ammo!"
-		"zho"			"燃燒彈藥!"
+		"zho"			"燃燒子彈!"
 		"chi"			"燃烧弹药!"
 	}
 
@@ -370,21 +370,21 @@
 	"Baseball_Bat"
 	{
 		"en"			"Baseball Bat!"
-		"zho"			"棒球棍!"
+		"zho"			"球棒!"
 		"chi"			"棒球棍!"
 	}
 
 	"Cricket_Bat"
 	{
 		"en"			"Cricket Bat!"
-		"zho"			"板球棍!"
+		"zho"			"板球拍!"
 		"chi"			"板球棍!"
 	}
 
 	"Crowbar"
 	{
 		"en"			"Crowbar!"
-		"zho"			"撬棍!"
+		"zho"			"鐵撬!"
 		"chi"			"撬棍!"
 	}
 
@@ -419,7 +419,7 @@
 	"Machete"
 	{
 		"en"			"Machete!"
-		"zho"			"砍刀!"
+		"zho"			"開山刀!"
 		"chi"			"砍刀!"
 	}
 
@@ -440,7 +440,7 @@
 	"Pitckfork"
 	{
 		"en"			"Pitckfork!"
-		"zho"			"乾草叉!"
+		"zho"			"草叉!"
 		"chi"			"干草叉!"
 	}
 
@@ -510,7 +510,7 @@
 	"Witch_Bride"
 	{
 		"en"			"Witch Bride!"
-		"zho"			"Witch Bride!"
+		"zho"			"新娘 Witch!"
 		"chi"			"Witch Bride!"
 	}
 }
