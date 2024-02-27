@@ -492,7 +492,7 @@ void LoadConfigGifts()
 						FormatEx(sName, sizeof(sName), "%s", g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)]);
 						g_aStandItemsList.PushString(sName);
 					}
-					if(strcmp(sName, "hp", false) == 0)
+					else if(strcmp(sName, "hp", false) == 0)
 					{
 						hp = hFile.GetNum("hp", 0);
 						if(hp > 0)
@@ -510,7 +510,7 @@ void LoadConfigGifts()
 					{
 						if(g_smItemsToTranslation.GetString(sName, sTemp, sizeof(sTemp)) == false)
 						{
-							LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg'", sName);
+							LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg' \"standard_items\" #%d", sName, i);
 						}
 						else
 						{
@@ -549,7 +549,7 @@ void LoadConfigGifts()
 						if(strlen(sName) > 0 && g_aMapMeleeTable.FindString(sName) > -1) 
 							g_aSpecialItemsList.PushString(sName);
 					}
-					if(strcmp(sName, "hp", false) == 0)
+					else if(strcmp(sName, "hp", false) == 0)
 					{
 						hp = hFile.GetNum("hp", 0);
 						if(hp > 0)
@@ -567,7 +567,7 @@ void LoadConfigGifts()
 					{
 						if(g_smItemsToTranslation.GetString(sName, sTemp, sizeof(sTemp)) == false)
 						{
-							LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg'", sName);
+							LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg' \"special_items\" #%d", sName, i);
 						}
 						else
 						{
