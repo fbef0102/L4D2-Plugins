@@ -10,7 +10,7 @@ public Plugin myinfo =
 	name = "[L4D2] CSO Random Supply Boxes drop", 
 	author = "Lux & HarryPotter", 
 	description = "CSO Random Supply Boxes in l4d2", 
-	version = "1.5-2024/2/15", 
+	version = "1.6-2024/3/1", 
 	url = "https://steamcommunity.com/profiles/76561198026784913"
 };
 
@@ -32,6 +32,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 #define TEAM_SPECTATOR		1
 #define TEAM_SURVIVORS 		2
+#define TEAM_INFECTEDS 		3
 
 #define	OXYGENTANK_MODEL		"models/props_equipment/oxygentank01.mdl"
 #define	FIREWORKCRATE_MODEL		"models/props_junk/explosive_box001.mdl"
@@ -63,8 +64,12 @@ Handle PlayerLeftStartTimer = null, SupplyBoxDropTimer = null;
 bool g_bSupplyBoxSpawnFinal, g_bFinaleStarted;
 Handle g_ItemDeleteTimer[MAXENTITIES+1];
 
-int g_iMeleeClassCount;
-char g_sMeleeClass[16][32];
+int 
+	g_iMeleeClassCount,
+	g_iGlowEnt[MAXENTITIES+1] = {0};
+
+char 
+	g_sMeleeClass[16][32];
 
 #define SOUND_DROP1 "npc/chopper_pilot/hospital_intro_heli_12.wav"
 #define SOUND_DROP2 "npc/chopper_pilot/hospital_intro_heli_13.wav"
@@ -83,7 +88,14 @@ ArrayList
 	g_aeWeaponsList,
 	g_aMedicList,
 	g_aThrowableList,
-	g_aOthersList;
+	g_aOthersList,
+	g_alPluginBoxes;
+
+Handle 
+	DelayWatchGlow_Timer[MAXPLAYERS+1] ; //prepare to disable player box glow
+
+StringMap 
+	g_smVaildItems;
 
 public void OnPluginStart()
 {
@@ -109,7 +121,8 @@ public void OnPluginStart()
 	g_hSupplyBoxSpawnFinal = 	CreateConVar(	"l4d2_supply_woodbox_drop_final",		"0", 			"If 1, still dorp supply box in final stage rescue", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hBoxType = 				CreateConVar(	"l4d2_supply_woodbox_type",				"1", 			"Supply box model type, 1: wood_crate001a, 2: wood_crate001a_damagedMAX, 3: wood_crate002a (0=random)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	g_hItemAnnounceType = 		CreateConVar(	"l4d2_supply_woodbox_announce_type", 	"3", 			"Changes how Supply box hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	
+	AutoExecConfig(true, "l4d2_supply_woodbox");
+
 	g_hCvarMPGameMode = FindConVar("mp_gamemode");
 	g_hCvarMPGameMode.AddChangeHook(ConVarChanged_Allow);
 	g_hCvarAllow.AddChangeHook(ConVarChanged_Allow);
@@ -136,12 +149,48 @@ public void OnPluginStart()
 	RegAdminCmd("sm_box", CmdSpawnBox, ADMFLAG_ROOT);
 	RegAdminCmd("sm_supplybox", CmdSpawnBox, ADMFLAG_ROOT);
 
-	AutoExecConfig(true, "l4d2_supply_woodbox");
+	g_smVaildItems = new StringMap();
+	g_smVaildItems.SetValue("weapon_grenade_launcher", true);
+	g_smVaildItems.SetValue("weapon_rifle_m60", true);
+	g_smVaildItems.SetValue("weapon_defibrillator", true);
+	g_smVaildItems.SetValue("weapon_first_aid_kit", true);
+	g_smVaildItems.SetValue("weapon_pain_pills", true);
+	g_smVaildItems.SetValue("weapon_adrenaline", true);
+	g_smVaildItems.SetValue("weapon_upgradepack_incendiary", true);
+	g_smVaildItems.SetValue("weapon_upgradepack_explosive", true);
+	g_smVaildItems.SetValue("weapon_molotov", true);
+	g_smVaildItems.SetValue("weapon_pipe_bomb", true);
+	g_smVaildItems.SetValue("weapon_vomitjar", true);
+	g_smVaildItems.SetValue("weapon_gascan", true);
+	g_smVaildItems.SetValue("weapon_propanetank", true);
+	g_smVaildItems.SetValue("weapon_oxygentank", true);
+	g_smVaildItems.SetValue("weapon_fireworkcrate", true);
+	g_smVaildItems.SetValue("weapon_pistol", true);
+	g_smVaildItems.SetValue("weapon_pistol_magnum", true);
+	g_smVaildItems.SetValue("weapon_pumpshotgun", true);
+	g_smVaildItems.SetValue("weapon_shotgun_chrome", true);
+	g_smVaildItems.SetValue("weapon_smg", true);
+	g_smVaildItems.SetValue("weapon_smg_silenced", true);
+	g_smVaildItems.SetValue("weapon_smg_mp5", true);
+	g_smVaildItems.SetValue("weapon_rifle", true);
+	g_smVaildItems.SetValue("weapon_rifle_sg552", true);
+	g_smVaildItems.SetValue("weapon_rifle_ak47", true);
+	g_smVaildItems.SetValue("weapon_rifle_desert", true);
+	g_smVaildItems.SetValue("weapon_shotgun_spas", true);
+	g_smVaildItems.SetValue("weapon_autoshotgun", true);
+	g_smVaildItems.SetValue("weapon_hunting_rifle", true);
+	g_smVaildItems.SetValue("weapon_sniper_military", true);
+	g_smVaildItems.SetValue("weapon_sniper_scout", true);
+	g_smVaildItems.SetValue("weapon_sniper_awp", true);
+	g_smVaildItems.SetValue("weapon_chainsaw", true);
+	g_smVaildItems.SetValue("weapon_gnome", true);
+	g_smVaildItems.SetValue("weapon_cola_bottles", true);
 }
 
 public void OnPluginEnd()
 {
 	ResetTimer();
+	RemoveAllBox();
 }
 
 bool g_bMapStarted, g_bValidMap;
@@ -156,6 +205,11 @@ public void OnMapEnd()
 	g_bMapStarted = false;
 	ResetTimer();
 }
+
+public void OnClientDisconnect(int client)
+{
+	delete DelayWatchGlow_Timer[client];
+} 
 
 // ====================================================================================================
 //					CVARS
@@ -220,6 +274,9 @@ public void OnConfigsExecuted()
 
 	delete g_aOthersList;
 	g_aOthersList = new ArrayList(ByteCountToCells(64));
+
+	delete g_alPluginBoxes;
+	g_alPluginBoxes = new ArrayList();
 
 	GetMeleeClasses();
 	LoadData();
@@ -296,6 +353,7 @@ void IsAllowed()
 	{
 		g_bCvarAllow = false;
 		UnhookEvents();
+		RemoveAllBox();
 	}
 }
 
@@ -369,6 +427,26 @@ void OnGamemode(const char[] output, int caller, int activator, float delay)
 		g_iCurrentMode = 8;
 }
 
+Action CmdSpawnBox(int iClient, int iArgs)
+{
+	if(g_bCvarAllow == false)
+	return Plugin_Continue;
+	
+	if(iClient < 1)
+	return Plugin_Continue;
+	
+	float vPos[3], vAng[3];
+	if( !SetTeleportEndPoint(iClient, vPos, vAng) )
+	{
+		PrintToChat(iClient, "[TS] Cannot place weapon, please try again.");
+		return Plugin_Continue;
+	}
+
+	SpawnBox(vPos, vAng);
+
+	return Plugin_Handled;
+}
+
 // ====================================================================================================
 //					EVENTS
 // ====================================================================================================
@@ -383,6 +461,7 @@ void HookEvents()
 	HookEvent("finale_start", 			evtFinaleStart, EventHookMode_PostNoCopy); //final starts, some of final maps won't trigger
 	HookEvent("finale_radio_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, all final maps trigger
 	HookEvent("gauntlet_finale_start", 	evtFinaleStart, EventHookMode_PostNoCopy); //final starts, only rushing maps trigger (C5M5, C13M4)	
+	HookEvent("player_team",            Event_PlayerTeam);
 }
 
 void UnhookEvents()
@@ -420,17 +499,28 @@ void evtFinaleStart(Event event, const char[] name, bool dontBroadcast)
 	g_bFinaleStarted = true;
 }
 
+void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if(!client || !IsClientInGame(client) || IsFakeClient(client)) return;
+	int team = event.GetInt("team");
+	if(team != TEAM_INFECTEDS) return;
+
+	StopAllModelGlow(); // 所有Box停止發光
+	delete DelayWatchGlow_Timer[client];
+	DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client, TIMER_FLAG_NO_MAPCHANGE);
+
+	delete DelayWatchGlow_Timer[0];
+	DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
+}
+
 //function
 void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay)
 {
 	float fPos[3];		
 	GetEntPropVector(Caller, Prop_Send, "m_vecOrigin", fPos);
 	fPos[2] += 17.5;
-	
-	SetEntProp(Caller, Prop_Send, "m_glowColorOverride", 0);
-	SetEntProp(Caller, Prop_Send, "m_nGlowRange", 1);
-	SetEntProp(Caller, Prop_Send, "m_iGlowType", 0);
-	
+
 	int iDrops = GetRandomInt(g_iItemMin, g_iItemMax);
 	int iItemChance, iWeapon, random;
 	int iChanceMax = g_iDropItemChance_Other;
@@ -453,7 +543,7 @@ void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay
 		}
 		else if(g_iDropItemChance_Weapon < iItemChance && iItemChance <= g_iDropItemChance_Melee) 
 		{
-			SpawnItem("weapon_melee", fPos, true);
+			SpawnItem("weapon_melee", fPos);
 		}
 		else if(g_iDropItemChance_Melee < iItemChance && iItemChance <= g_iDropItemChance_Medic) 
 		{
@@ -479,12 +569,21 @@ void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay
 
 			g_aOthersList.GetString(random, sWeaponName, sizeof(sWeaponName));
 
-			if(strcmp(sWeaponName, FIREWORKCRATE_MODEL, false) == 0 ||
-				strcmp(sWeaponName, PROPANETANK_MODEL, false) == 0 ||
-				strcmp(sWeaponName, OXYGENTANK_MODEL, false) == 0 ||
-				strcmp(sWeaponName, GASCAN_MODEL, false) == 0)
+			if(strcmp(sWeaponName, "weapon_oxygentank", false) == 0)
 			{
-				iWeapon = SpawnItem(sWeaponName, fPos, true);
+				iWeapon = SpawnItem("prop_physics", fPos, FIREWORKCRATE_MODEL);
+			}
+			else if(strcmp(sWeaponName, "weapon_fireworkcrate", false) == 0)
+			{
+				iWeapon = SpawnItem("prop_physics", fPos, FIREWORKCRATE_MODEL);
+			}
+			else if(strcmp(sWeaponName, "weapon_propanetank", false) == 0)
+			{
+				iWeapon = SpawnItem("prop_physics", fPos, OXYGENTANK_MODEL);
+			}
+			else if(strcmp(sWeaponName, "weapon_gascan", false) == 0)
+			{
+				iWeapon = SpawnItem("prop_physics", fPos, GASCAN_MODEL);
 			}
 			else
 			{
@@ -494,6 +593,27 @@ void eBreakBreakable(const char[] Output, int Caller, int Activator, float Delay
 	}
 
 	AcceptEntityInput(Caller, "Kill");
+	RemoveBoxModelGlow(Caller);
+
+	int find = g_alPluginBoxes.FindValue(EntIndexToEntRef(Caller));
+	if (find != -1)
+		g_alPluginBoxes.Erase(find);
+}
+
+Action Timer_StopGlowTransmit(Handle timer, int client)
+{
+	DelayWatchGlow_Timer[client] = null;
+
+	return Plugin_Continue;
+}
+
+Action Timer_StartAllGlow(Handle timer)
+{
+	// 不讓玩家看到物件發光之後，物件開始發光");
+	StartAllModelGlow();
+
+	DelayWatchGlow_Timer[0] = null;
+	return Plugin_Continue;
 }
 
 Action Timer_SupplyBoxDrop(Handle hTimer)
@@ -515,6 +635,7 @@ Action Timer_SupplyBoxDrop(Handle hTimer)
 		bool bDrop = false;
 		float vecPos[3];
 		int iBoxCount = CountAllSupplyBox();
+		//PrintToChatAll("there are %d boxed", iBoxCount);
 		for(int i = 1 ; i <= DropNum ; ++i )
 		{
 			if(iBoxCount > g_iCvarSupplyBoxLimit) break;
@@ -593,33 +714,13 @@ Action Timer_SupplyBoxDrop(Handle hTimer)
 	return Plugin_Continue;
 }
 
-Action CmdSpawnBox(int iClient, int iArgs)
-{
-	if(g_bCvarAllow == false)
-	return Plugin_Continue;
-	
-	if(iClient < 1)
-	return Plugin_Continue;
-	
-	float vPos[3], vAng[3];
-	if( !SetTeleportEndPoint(iClient, vPos, vAng) )
-	{
-		PrintToChat(iClient, "[TS] Cannot place weapon, please try again.");
-		return Plugin_Continue;
-	}
-
-	SpawnBox(vPos, vAng);
-
-	return Plugin_Handled;
-}
-
-bool SpawnBox(float fPos[3], float fAng[3] = NULL_VECTOR)
+bool SpawnBox(float vPos[3], float vAng[3] = NULL_VECTOR)
 {
 	int iBox = CreateEntityByName("prop_physics");
 	if (CheckIfEntitySafe( iBox ) == false)
 		return false;
 	
-	TeleportEntity(iBox, fPos, fAng, NULL_VECTOR);
+	TeleportEntity(iBox, vPos, vAng, NULL_VECTOR);
 	
 	int box_model = g_iBoxType;
 	if (box_model == 0 ) box_model = GetRandomInt(1, 3);
@@ -637,13 +738,12 @@ bool SpawnBox(float fPos[3], float fAng[3] = NULL_VECTOR)
 
 	if(g_iCvarColor > 0) //enable glow
 	{
-		SetEntProp(iBox, Prop_Send, "m_iGlowType", 3);
-		SetEntProp(iBox, Prop_Send, "m_nGlowRange", g_iCvarGlowRange);
-		SetEntProp(iBox, Prop_Send, "m_glowColorOverride", g_iCvarColor);
-		AcceptEntityInput(iBox, "StartGlowing");
+		CreateBoxModelGlow(iBox, box_model, vPos, vAng);
 	}
 
 	HookSingleEntityOutput(iBox, "OnBreak", eBreakBreakable);
+	g_alPluginBoxes.Push(EntIndexToEntRef(iBox));
+
 
 	CreateTimer(g_fSupplyBoxLife, KillBox_Timer, EntIndexToEntRef(iBox), TIMER_FLAG_NO_MAPCHANGE);
 
@@ -662,17 +762,17 @@ Action KillBox_Timer(Handle timer, int ref)
 	return Plugin_Continue;
 }
 
-int SpawnItem(const char[] sClassname, float fPos[3], bool bUsePropPhysics=false)
+int SpawnItem(const char[] sClassname, float fPos[3], const char[] sModel = "")
 {
 	int entity;
-	if(bUsePropPhysics)
+	if(strcmp(sClassname, "prop_physics") == 0)
 	{
 		entity = CreateEntityByName("prop_physics");
 		if (CheckIfEntitySafe( entity ) == false)
 			return -1;
 
 		DispatchKeyValue(entity, "solid", "6");
-		DispatchKeyValue(entity, "model", sClassname);
+		DispatchKeyValue(entity, "model", sModel);
 		SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage);
 		SDKHook(entity, SDKHook_Use, Use);
 		CreateTimer(5.0, UnHookEnt, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
@@ -1015,7 +1115,7 @@ bool IsValidClient(int client)
 }
 
 //credit spirit12 for auto melee detection
-stock void GetMeleeClasses()
+void GetMeleeClasses()
 {
 	int MeleeStringTable = FindStringTable( "MeleeWeapons" );
 	g_iMeleeClassCount = GetStringTableNumStrings( MeleeStringTable );
@@ -1036,20 +1136,168 @@ void GameStart()
 
 int CountAllSupplyBox()
 {
-	int iBoxCount = 0, entity = -1;
-	static char sTargetName[64];
-	while ((entity = FindEntityByClassname(entity, "prop_physics")) != -1)
+	int iBoxCount = 0, box = -1;
+	/*static char sTargetName[64];
+	while ((box = FindEntityByClassname(box, "prop_physics")) != -1)
 	{
-		if (!IsValidEntity(entity))
+		if (!IsValidEntity(box))
 			continue;	
 
-		GetEntPropString(entity, Prop_Data, "m_iName", sTargetName, sizeof(sTargetName));
+		GetEntPropString(box, Prop_Data, "m_iName", sTargetName, sizeof(sTargetName));
 
 		if(strcmp(sTargetName, "l4d2_supply_woodbox", false) == 0) 
 			iBoxCount ++;
+	}*/
+
+	for (int i = 0; i < g_alPluginBoxes.Length; i++)
+	{
+		box = EntRefToEntIndex(g_alPluginBoxes.Get(i));
+
+		if (box == INVALID_ENT_REFERENCE)
+		{
+			g_alPluginBoxes.Erase(i);
+			i--;
+			continue;
+		}
+
+		iBoxCount++;
 	}
 
 	return iBoxCount;
+}
+
+void CreateBoxModelGlow(int iBox, int box_model, float vPos[3], float vAng[3])
+{
+	// Spawn dynamic prop entity
+	int glow = CreateEntityByName("prop_dynamic_override");
+	if( !CheckIfEntitySafe(glow) ) return;
+
+	// Delete previous glow first
+	RemoveBoxModelGlow(iBox);
+
+	// Set model
+	switch (box_model) {
+		case 1: DispatchKeyValue(glow, "model", BOX_1);
+		case 2: DispatchKeyValue(glow, "model", BOX_2);
+		case 3: DispatchKeyValue(glow, "model", BOX_3);
+	}
+	DispatchSpawn(glow);
+
+	TeleportEntity(glow, vPos, vAng, NULL_VECTOR);
+
+	// no collision
+	SetEntProp(glow, Prop_Send, "m_CollisionGroup", 0);
+	SetEntProp(glow, Prop_Send, "m_nSolidType", 0);
+
+	// Set outline glow color
+	SetEntProp(glow, Prop_Send, "m_iGlowType", 3);
+	SetEntProp(glow, Prop_Send, "m_nGlowRange", g_iCvarGlowRange);
+	SetEntProp(glow, Prop_Send, "m_glowColorOverride", g_iCvarColor);
+
+	if(DelayWatchGlow_Timer[0] != null)
+	{
+		AcceptEntityInput(glow, "StopGlowing");
+	}
+	else
+	{
+		AcceptEntityInput(glow, "StartGlowing");
+	}
+
+	// Set model invisible
+	SetEntityRenderMode(glow, RENDER_TRANSCOLOR);
+	SetEntityRenderColor(glow, 0, 0, 0, 0);
+
+	// Set model attach to item, and always synchronize
+	SetVariantString("!activator");
+	AcceptEntityInput(glow, "SetParent", iBox);
+	///////發光物件完成//////////
+
+	//model 只能給誰看?
+	SDKHook(glow, SDKHook_SetTransmit, Hook_SetTransmit);
+
+	g_iGlowEnt[iBox] = EntIndexToEntRef(glow);
+}
+
+void RemoveBoxModelGlow(int iBox)
+{
+	int glowentity = g_iGlowEnt[iBox];
+	g_iGlowEnt[iBox] = 0;
+
+	if (IsValidEntRef(glowentity))
+		RemoveEntity(glowentity);
+}
+
+void RemoveAllBox()
+{
+	int box;
+
+	for (int i = 0; i < g_alPluginBoxes.Length; i++)
+	{
+		box = EntRefToEntIndex(g_alPluginBoxes.Get(i));
+
+		if (box == INVALID_ENT_REFERENCE)
+			continue;
+
+		RemoveEntity(box);
+	}
+
+	delete g_alPluginBoxes;
+	g_alPluginBoxes = new ArrayList();
+}
+
+void StopAllModelGlow()
+{
+	int box, glow;
+
+	for (int i = 0; i < g_alPluginBoxes.Length; i++)
+	{
+		box = EntRefToEntIndex(g_alPluginBoxes.Get(i));
+
+		if (box == INVALID_ENT_REFERENCE)
+		{
+			g_alPluginBoxes.Erase(i);
+			i--;
+			continue;
+		}
+
+		glow = g_iGlowEnt[box];
+		if( IsValidEntRef(glow) )
+		{
+			AcceptEntityInput(glow, "StopGlowing");
+		}
+	}
+}
+
+void StartAllModelGlow()
+{
+	int box, glow;
+
+	for (int i = 0; i < g_alPluginBoxes.Length; i++)
+	{
+		box = EntRefToEntIndex(g_alPluginBoxes.Get(i));
+
+		if (box == INVALID_ENT_REFERENCE)
+		{
+			g_alPluginBoxes.Erase(i);
+			i--;
+			continue;
+		}
+
+		glow = g_iGlowEnt[box];
+		if( IsValidEntRef(glow) )
+		{
+			AcceptEntityInput(glow, "StartGlowing");
+		}
+	}
+}
+
+Action Hook_SetTransmit(int entity, int client)
+{
+	if(DelayWatchGlow_Timer[client] != null) return Plugin_Continue;
+
+	if( GetClientTeam(client) == TEAM_INFECTEDS) return Plugin_Handled;
+
+	return Plugin_Continue;
 }
 
 // Config-------------------------------
@@ -1073,7 +1321,7 @@ void LoadData()
 
 	int num;
 	char sNum[4], sName[64];
-	if(hData.JumpToKey("weapons"))
+	if(hData.JumpToKey("Weapons"))
 	{
 		num = hData.GetNum("num", 0);
 		for(int i = 1; i <= num; i++)
@@ -1086,7 +1334,14 @@ void LoadData()
 				eWeaponData.m_iAmmoMax = hData.GetNum("ammo_max", 0);
 				eWeaponData.m_iAmmoMin = hData.GetNum("ammo_min", 0);
 
-				if(strlen(eWeaponData.m_sName) > 0) g_aeWeaponsList.PushArray(eWeaponData);
+				if(g_smVaildItems.ContainsKey(eWeaponData.m_sName) == false)
+				{
+					LogError("%s is not a valid weapon, please check data file 'data/l4d2_gifts.cfg' \"weapons\" #%d", eWeaponData.m_sName, i);
+				}
+				else
+				{
+					g_aeWeaponsList.PushArray(eWeaponData);
+				}
 
 				hData.GoBack();	
 			}
@@ -1105,7 +1360,14 @@ void LoadData()
 			{
 				hData.GetString("name", sName, sizeof(sName), "");
 
-				if(strlen(sName) > 0) g_aMedicList.PushString(sName);
+				if(g_smVaildItems.ContainsKey(sName) == false)
+				{
+					LogError("%s is not a valid item, please check data file 'data/l4d2_gifts.cfg' \"Medic\" #%d", sName, i);
+				}
+				else
+				{
+					g_aMedicList.PushString(sName);
+				}
 
 				hData.GoBack();	
 			}
@@ -1124,7 +1386,14 @@ void LoadData()
 			{
 				hData.GetString("name", sName, sizeof(sName), "");
 
-				if(strlen(sName) > 0) g_aThrowableList.PushString(sName);
+				if(g_smVaildItems.ContainsKey(sName) == false)
+				{
+					LogError("%s is not a valid item, please check data file 'data/l4d2_gifts.cfg' \"Throwable\" #%d", sName, i);
+				}
+				else
+				{
+					g_aThrowableList.PushString(sName);
+				}
 
 				hData.GoBack();	
 			}
@@ -1143,7 +1412,14 @@ void LoadData()
 			{
 				hData.GetString("name", sName, sizeof(sName), "");
 
-				if(strlen(sName) > 0) g_aOthersList.PushString(sName);
+				if(g_smVaildItems.ContainsKey(sName) == false)
+				{
+					LogError("%s is not a valid item, please check data file 'data/l4d2_gifts.cfg' \"Others\" #%d", sName, i);
+				}
+				else
+				{
+					g_aOthersList.PushString(sName);
+				}
 
 				hData.GoBack();	
 			}

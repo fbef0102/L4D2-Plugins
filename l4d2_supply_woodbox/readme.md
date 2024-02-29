@@ -99,11 +99,11 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>Data Config</summary>
 
-	* data/l4d2_supply_woodbox.txt
+	* Check ```data/l4d2_supply_woodbox.txt``` for more details
 		```php
 		"l4d2_supply_woodbox"
 		{
-			"weapons"
+			"Weapons"
 			{
 				// There are 14 random weapons drop from supply box
 				"num"   "14"
@@ -117,6 +117,57 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 				...
 			}
 		}
+		```
+
+	* Available Weapons
+		```php
+		"weapon_weapon_grenade_launcher" => Grenade Launcher
+		"weapon_rifle_m60" => M60 Machine Gun
+		"weapon_pistol" => Pistol
+		"weapon_pistol_magnum" => Magnum
+		"weapon_pumpshotgun" => Pumpshotgun
+		"shotgun_chrome" => Chrome Shotgun
+		"weapon_smg" => Smg
+		"weapon_smg_silenced" => Silenced Smg
+		"weapon_smg_mp5" => MP5
+		"weapon_rifle" => Rifle
+		"weapon_rifle_sg552" => SG552
+		"weapon_rifle_ak47" => AK47
+		"weapon_rifle_desert" => Desert Rifle
+		"weapon_shotgun_spas" => Spas Shotgun
+		"weapon_autoshotgun" => Autoshotgun
+		"weapon_hunting_rifle" => Hunting Rifle
+		"weapon_sniper_military" => Military Sniper
+		"weapon_sniper_scout" => SCOUT
+		"weapon_sniper_awp" => AWP
+		"weapon_chainsaw" => Chainsaw
+		```
+
+	* Available Medic
+		```php
+		"weapon_defibrillator" => Defibrillator
+		"weapon_first_aid_kit" => First Aid Kit
+		"weapon_pain_pills" => Pain Pill
+		"weapon_adrenaline" => Adrenaline
+		```
+
+	* Available Throwable
+		```php
+		"weapon_molotov" => Molotov
+		"weapon_weapon_pipe_bomb" => Pipe Bomb
+		"weapon_vomitjar" => Vomitjar
+		```
+
+	* Avaible Others
+		```php
+		"weapon_gascan" => Gascan
+		"weapon_propanetank" => Propane Tank
+		"weapon_oxygentank" => Oxygen Tank
+		"weapon_fireworkcrate" => Firework Crate
+		"weapon_gnome" => Gnome
+		"weapon_cola_bottles" => Cola Bottles
+		"weapon_upgradepack_incendiary" => Incendiary Pack
+		"weapon_upgradepack_explosive" => Explosive Pack
 		```
 </details>
 
@@ -149,6 +200,10 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* v1.6 (2024-3-1)
+		* Update data
+		* Infected team now unable to see the box glow
+		
 	* v1.5 (2024-2-15)
 		* Add data config
 
@@ -272,11 +327,12 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>文件設定範例</summary>
 
-	* 設置文件```data/l4d2_supply_woodbox.txt```，修改掉落的物資
+	* 查看```data/l4d2_supply_woodbox.txt```有更多說明
+	* 修改掉落的物資
 		```php
 		"l4d2_supply_woodbox"
 		{
-			"weapons"
+			"Weapons"
 			{
 				// 有14種武器隨機從補給箱掉落
 				"num"   "14"
@@ -290,5 +346,56 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 				...
 			}
 		}
+		```
+
+	* 可寫入的武器名稱
+		```php
+		"weapon_weapon_grenade_launcher" => 榴彈發射器
+		"weapon_rifle_m60" => M60 機關槍
+		"weapon_pistol" => Pistol
+		"weapon_pistol_magnum" => Magnum
+		"weapon_pumpshotgun" => Pumpshotgun
+		"shotgun_chrome" => Chrome Shotgun
+		"weapon_smg" => Smg
+		"weapon_smg_silenced" => Silenced Smg
+		"weapon_smg_mp5" => MP5
+		"weapon_rifle" => Rifle
+		"weapon_rifle_sg552" => SG552
+		"weapon_rifle_ak47" => AK47
+		"weapon_rifle_desert" => Desert Rifle
+		"weapon_shotgun_spas" => Spas Shotgun
+		"weapon_autoshotgun" => Autoshotgun
+		"weapon_hunting_rifle" => Hunting Rifle
+		"weapon_sniper_military" => Military Sniper
+		"weapon_sniper_scout" => SCOUT
+		"weapon_sniper_awp" => AWP
+		"weapon_chainsaw" => Chainsaw
+		```
+
+	* 可寫入的醫療物品名稱
+		```php
+		"weapon_defibrillator" => 電擊器
+		"weapon_first_aid_kit" => 治療包
+		"weapon_pain_pills" => 藥丸
+		"weapon_adrenaline" => 腎上腺素
+		```
+
+	* 可寫入的投擲物品名稱
+		```php
+		"weapon_molotov" => 火瓶
+		"weapon_weapon_pipe_bomb" => 土製炸彈
+		"weapon_vomitjar" => 膽汁瓶
+		```
+
+	* 可寫入的其物品名稱
+		```php
+		"weapon_gascan" => 汽油桶
+		"weapon_propanetank" => 瓦斯桶
+		"weapon_oxygentank" => 氧氣灌
+		"weapon_fireworkcrate" => 煙火盒
+		"weapon_gnome" => 精靈小矮人
+		"weapon_cola_bottles" => 可樂瓶
+		"weapon_upgradepack_incendiary" => 火焰彈藥包
+		"weapon_upgradepack_explosive" => 高爆彈藥包
 		```
 </details>

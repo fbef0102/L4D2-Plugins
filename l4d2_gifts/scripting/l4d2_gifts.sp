@@ -258,6 +258,7 @@ public void OnPluginStart()
 	g_smItemsToTranslation.SetString("pitchfork", "Pitchfork");
 	g_smItemsToTranslation.SetString("shovel", "Shovel");
 	g_smItemsToTranslation.SetString("gnome", "Gnome");
+	g_smItemsToTranslation.SetString("cola_bottles", "Cola Bottles");
 	g_smItemsToTranslation.SetString("laser_sight",	"Laser Sight");
 	g_smItemsToTranslation.SetString("incendiary_ammo",	"Incendiary Ammo");
 	g_smItemsToTranslation.SetString("explosive_ammo",	"Explosive Ammo");

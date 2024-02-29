@@ -178,11 +178,10 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		"sniper_military" => Military Sniper
 		"sniper_scout" => SCOUT
 		"sniper_awp" => AWP
-		"baseball_bat" => Baseball Bat
 		"chainsaw" => Chainsaw
-		"cricket_bat" => Cricket Bat
 		"weapon_melee" => random melee weapons (support custom melee)
 		"gnome" => Gnome
+		"cola_bottles" => Cola Bottles
 		"laser_sight" => Laser Sight
 		"incendiary_ammo" => Incendiary Ammo
 		"explosive_ammo" => Explosive Ammo
@@ -387,21 +386,21 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 	* 可以寫的禮物
 		```php
-		"grenade_launcher" => Grenade Launcher
-		"rifle_m60" => M60 Machine Gun
-		"defibrillator" => Defibrillator
-		"first_aid_kit" => First Aid Kit
-		"pain_pills" => Pain Pill
-		"adrenaline" => Adrenaline
-		"weapon_upgradepack_incendiary" => Incendiary Pack
-		"weapon_upgradepack_explosive" => Explosive Pack
-		"molotov" => Molotov
-		"pipe_bomb" => Pipe Bomb
-		"vomitjar" => Vomitjar
-		"gascan" => Gascan
-		"propanetank" => Propane Tank
-		"oxygentank" => Oxygen Tank
-		"fireworkcrate" => Firework Crate
+		"grenade_launcher" => 榴彈發射器
+		"rifle_m60" => M60 機關槍
+		"defibrillator" => 電擊器
+		"first_aid_kit" => 治療包
+		"pain_pills" => 藥丸
+		"adrenaline" => 腎上腺素
+		"weapon_upgradepack_incendiary" => 火焰彈藥包
+		"weapon_upgradepack_explosive" => 高爆彈藥包
+		"molotov" => 火瓶
+		"pipe_bomb" => 土製炸彈
+		"vomitjar" => 膽汁瓶
+		"gascan" => 汽油桶
+		"propanetank" => 瓦斯桶
+		"oxygentank" => 氧氣灌
+		"fireworkcrate" => 煙火盒
 		"pistol" => Pistol
 		"pistol_magnum" => Magnum
 		"pumpshotgun" => Pumpshotgun
@@ -419,11 +418,10 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		"sniper_military" => Military Sniper
 		"sniper_scout" => SCOUT
 		"sniper_awp" => AWP
-		"baseball_bat" => Baseball Bat
-		"chainsaw" => Chainsaw
-		"cricket_bat" => Cricket Bat
+		"chainsaw" => 電鋸
 		"weapon_melee" => 隨機近戰武器 (支援三方圖近戰)
 		"gnome" => 精靈小矮人
+		"cola_bottles" => 可樂瓶
 		"laser_sight" => 雷射激光
 		"incendiary_ammo" => 升級火焰子彈
 		"explosive_ammo" => 升級高爆子彈
