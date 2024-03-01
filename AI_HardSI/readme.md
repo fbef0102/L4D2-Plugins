@@ -299,7 +299,7 @@ Improves the AI behaviour of special infected
         // 0=不強化AI Tank, 1=強化AI Tank
         AI_HardSI_Tank_enable "1"
 
-        // 以下指令說明請查看下方"功能" 各特感介紹
+        // 以下指令說明請查看下方"各特感強化內容"
         ai_aim_offset_sensitivity_charger "20"
         ai_aim_offset_sensitivity_hunter "30"
         ai_charge_proximity "300"
@@ -317,7 +317,7 @@ Improves the AI behaviour of special infected
         ```
 </details> 
 
-* 功能
+* 各特感強化內容
     * <details><summary><b>AI Tank</b></summary>
 
         * 靠近倖存者一定範圍內不會主動丟石頭
