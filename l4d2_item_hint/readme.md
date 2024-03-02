@@ -154,6 +154,11 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v2.9 (2024-3-3)
+        * Custom melee model
+        * Custom ammo model
+        * Update translation
+
     * v2.8 (2024-2-23)
         * Fixed spot maker error
 

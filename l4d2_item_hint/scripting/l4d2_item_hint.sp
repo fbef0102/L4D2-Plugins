@@ -64,7 +64,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.8a-2024/2/24",
+	version     = "2.9-2024/3/3",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -1205,7 +1205,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "%t", "Announce_Vocalize_ITEM (C)", client, sItemPhrase);
+						CPrintToChat(i, "%T", "Announce_Vocalize_ITEM (C)", i, client, sItemPhrase, i);
 					}
 				}
 			}
@@ -1214,7 +1214,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "%t", "Announce_Vocalize_ITEM", client, sItemPhrase);
+						PrintHintText(i, "%T", "Announce_Vocalize_ITEM", i, client, sItemPhrase, i);
 					}
 				}
 			}
@@ -1223,7 +1223,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "%t", "Announce_Vocalize_ITEM", client, sItemPhrase);
+						PrintCenterText(i, "%T", "Announce_Vocalize_ITEM", i, client, sItemPhrase, i);
 					}
 				}
 			}
@@ -1239,7 +1239,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "%t", "Announce_Vocalize_INFECTED (C)", client, sItemPhrase);
+						CPrintToChat(i, "%T", "Announce_Vocalize_INFECTED (C)", i, client, sItemPhrase, i);
 					}
 				}
 			}
@@ -1248,7 +1248,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "%t", "Announce_Vocalize_INFECTED", client, sItemPhrase);
+						PrintHintText(i, "%T", "Announce_Vocalize_INFECTED", i, client, sItemPhrase, i);
 					}
 				}
 			}
@@ -1257,7 +1257,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "%t", "Announce_Vocalize_INFECTED", client, sItemPhrase);
+						PrintCenterText(i, "%T", "Announce_Vocalize_INFECTED", i, client, sItemPhrase, i);
 					}
 				}
 			}
@@ -1273,7 +1273,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						CPrintToChat(i, "%t", "Announce_Spot_Marker (C)", client);
+						CPrintToChat(i, "%T", "Announce_Spot_Marker (C)", i, client);
 					}
 				}
 			}
@@ -1282,7 +1282,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintHintText(i, "%t", "Announce_Spot_Marker", client);
+						PrintHintText(i, "%T", "Announce_Spot_Marker", i, client);
 					}
 				}
 			}
@@ -1291,7 +1291,7 @@ void NotifyMessage(int client, const char[] sItemPhrase, EHintType eType)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) != TEAM_INFECTED)
 					{
-						PrintCenterText(i, "%t", "Announce_Spot_Marker", client);
+						PrintCenterText(i, "%T", "Announce_Spot_Marker", i, client);
 					}
 				}
 			}
@@ -1600,7 +1600,6 @@ void PlayerMarkHint(int client)
 
 	static int iEntity;
 	iEntity = GetUseEntity(client, g_fItemUseHintRange);
-	//PrintToChatAll("%N is looking at %d", client, iEntity);
 	if ( !bIsAimInfeced && !bIsAimWitch && IsValidEntityIndex(iEntity) && IsValidEntity(iEntity) && HasParentClient(iEntity) == false )
 	{
 		static char targetname[128];
@@ -1610,11 +1609,12 @@ void PlayerMarkHint(int client)
 			iEntity = GetEntPropEnt(iEntity, Prop_Data, "m_pParent");
 		}
 
-		if (HasEntProp(iEntity, Prop_Data, "m_ModelName"))
+		static char classname[32];
+		if (GetEntityClassname(iEntity, classname, sizeof(classname)) && HasEntProp(iEntity, Prop_Data, "m_ModelName"))
 		{
 			if (GetEntPropString(iEntity, Prop_Data, "m_ModelName", sEntModelName, sizeof(sEntModelName)) > 1)
 			{
-				//PrintToChatAll("Model - %s", sEntModelName);
+				//PrintToChatAll("%N is looking at %d (%s-%s)", client, iEntity, classname, sEntModelName);
 				StringToLowerCase(sEntModelName);
 				float fHeight = 10.0;
 				if (g_smModelToName.GetString(sEntModelName, sItemPhrase, sizeof(sItemPhrase)))
@@ -1622,10 +1622,17 @@ void PlayerMarkHint(int client)
 					g_smModelHeight.GetValue(sEntModelName, fHeight);
 					bIsVaildItem = true;
 				}
-				else if (StrContains(sEntModelName, "/melee/") != -1) // entity is not in the listb(custom melee weapon model)
+				else if (strncmp(classname, "weapon_melee", 12, false) == 0) // (custom melee model)
 				{
 					FormatEx(sItemPhrase, sizeof(sItemPhrase), "Melee");
 					fHeight = 5.0;
+
+					bIsVaildItem = true;
+				}
+				else if (strncmp(classname, "weapon_ammo_spawn", 17, false) == 0) // (custom ammo model)
+				{
+					FormatEx(sItemPhrase, sizeof(sItemPhrase), "Ammo");
+					fHeight = 10.0;
 
 					bIsVaildItem = true;
 				}
