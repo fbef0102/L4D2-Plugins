@@ -71,7 +71,7 @@ public void OnPluginStart()
 	BuildPath(Path_SM, g_sLog, sizeof(g_sLog), "logs/stage.log");
 	
 	CreateConVar("l4d_finale_stage_fix_version", PLUGIN_VERSION, "Plugin Version", FCVAR_DONTRECORD | CVAR_FLAGS);
-	g_hCvarPanicTimeout = CreateConVar("l4d_finale_stage_fix_panicstage_timeout",		"9999",		"Timeout (in sec.) for finale panic stage waiting for tank/painc horde to appear, otherwise stage forcibly changed", CVAR_FLAGS );
+	g_hCvarPanicTimeout = CreateConVar("l4d_finale_stage_fix_panicstage_timeout",		"60",		"Timeout (in sec.) for finale panic stage waiting for tank/painc horde to appear, otherwise stage forcibly changed", CVAR_FLAGS );
 	AutoExecConfig(true, "l4d_finale_stage_fix");
 	
 	HookEvent("round_start",            Event_RoundStart);
