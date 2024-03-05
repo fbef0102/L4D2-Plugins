@@ -79,7 +79,7 @@ public void OnPluginStart()
 	HookEvent("player_team",	Event_PlayerTeam);
 
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
-	HookEvent("tank_frustrated", OnTankFrustrated, EventHookMode_Post);
+	HookEvent("tank_frustrated", OnTankFrustrated);
 	
 	RegConsoleCmd("sm_speccheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_watchcheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
@@ -91,11 +91,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_areyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_fuckyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_zzz", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
-
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		g_bSpecCheatActive[i] = g_bDefaultValue;
-	}
 	
 	if(g_bLateLoad)
 	{
@@ -121,6 +116,11 @@ public void OnMapEnd()
 	g_bMapStarted = false;
 	ResetTimer();
 	ClearDefault();
+}
+
+public void OnClientPutInServer(int client)
+{
+	g_bSpecCheatActive[client] = g_bDefaultValue;
 }
 
 public void OnClientDisconnect(int client)

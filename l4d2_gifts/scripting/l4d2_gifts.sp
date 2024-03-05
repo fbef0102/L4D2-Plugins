@@ -748,11 +748,15 @@ int GetRandomIndexGift(int iType)
 	int index;
 	if(iType == TYPE_STANDARD)
 	{
+		if(g_aGiftModelStandard.Length == 0) return -1;
+
 		index = GetRandomInt(0, g_aGiftModelStandard.Length-1);
 		return g_aGiftModelStandard.Get(index);
 	}
 	else
 	{
+		if(g_aGiftModelSpecial.Length == 0) return -1;
+
 		index = GetRandomInt(0, g_aGiftModelSpecial.Length-1);
 		return g_aGiftModelSpecial.Get(index);
 	}
@@ -766,6 +770,7 @@ void DropGift(int client, int type = TYPE_STANDARD)
 	
 	int gift = -1;
 	int random = GetRandomIndexGift(type);
+	if(random == -1) return;
 	
 	if(strcmp(g_sType[random], "physics") == 0)
 	{
