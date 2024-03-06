@@ -1,5 +1,5 @@
 //fdxx, BHaType	@ 2021
-//Harry @ 2022
+//Harry @ 2022-2024
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -8,6 +8,30 @@
 #include <sdktools>
 #include <sourcemod>
 #include <multicolors>
+
+public Plugin myinfo =
+{
+	name        = "L4D2 Item hint",
+	author      = "BHaType, fdxx, HarryPotter",
+	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
+	version     = "3.0-2024/3/6",
+	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
+};
+
+bool bLate;
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	EngineVersion test = GetEngineVersion();
+
+	if (test != Engine_Left4Dead2)
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+
+	bLate = late;
+	return APLRes_Success;
+}
 
 #define MAXENTITIES 2048
 #define MODEL_MARK_FIELD 	"materials/sprites/laserbeam.vmt"
@@ -21,6 +45,14 @@
 #define L4D2_BEAM_LIFE_MIN 0.1
 #define DIRECTION_OUT 0
 #define DIRECTION_IN 1
+
+#define ZC_SMOKER		1
+#define ZC_BOOMER		2
+#define ZC_HUNTER		3
+#define ZC_SPITTER		4
+#define ZC_JOCKEY		5
+#define ZC_CHARGER		6
+#define ZC_TANK			8
 
 ConVar g_hItemHintCoolDown, g_hSpotMarkCoolDown, g_hInfectedMarkCoolDown,
 	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemGlowRange, g_hItemCvarColor,
@@ -57,30 +89,6 @@ enum EHintType {
 	eItemHint,
 	eSpotMarker,
 	eInfectedMaker,
-}
-
-public Plugin myinfo =
-{
-	name        = "L4D2 Item hint",
-	author      = "BHaType, fdxx, HarryPotter",
-	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "2.9-2024/3/3",
-	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
-};
-
-bool bLate;
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	EngineVersion test = GetEngineVersion();
-
-	if (test != Engine_Left4Dead2)
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
-
-	bLate = late;
-	return APLRes_Success;
 }
 
 public void OnAllPluginsLoaded()
@@ -857,7 +865,53 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 
 	static char sItemPhrase[64];
 	StringToLowerCase(sModelName);
-	g_smModelToName.GetString(sModelName, sItemPhrase, sizeof(sItemPhrase));
+	if(g_smModelToName.GetString(sModelName, sItemPhrase, sizeof(sItemPhrase)) == false)
+	{
+		if(bIsWitch)
+		{
+			sItemPhrase = "Witch";
+		}
+		else
+		{
+			int zClass = GetZombieClass(infected);
+			switch(zClass)
+			{
+				case ZC_SMOKER:
+				{
+					sItemPhrase = "Witch";
+				}
+				case ZC_BOOMER:
+				{
+					sItemPhrase = "Boomer";
+				}
+				case ZC_HUNTER:
+				{
+					sItemPhrase = "Hunter";
+				}
+				case ZC_SPITTER:
+				{
+					sItemPhrase = "Spitter";
+				}
+				case ZC_JOCKEY:
+				{
+					sItemPhrase = "Jockey";
+				}
+				case ZC_CHARGER:
+				{
+					sItemPhrase = "Charger";
+				}
+				case ZC_TANK:
+				{
+					sItemPhrase = "Tank";
+				}
+				default:
+				{
+					sItemPhrase = "Unknown Infected";
+				}
+			}
+		}
+	}
+	
 	NotifyMessage(client, sItemPhrase, eInfectedMaker);
 
 	return true;
@@ -1692,3 +1746,8 @@ void PlayerMarkHint(int client)
 	// client / world / witch
 	CreateSpotMarker(client, bIsAimInfeced);
 } 
+
+int GetZombieClass(int client) 
+{
+	return GetEntProp(client, Prop_Send, "m_zombieClass");
+}

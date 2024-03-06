@@ -154,6 +154,11 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v3.0 (2024-3-6)
+        * Custom infected model
+        * Custom witch model
+        * Update translation
+
     * v2.9 (2024-3-3)
         * Custom melee model
         * Custom ammo model

@@ -185,6 +185,9 @@ public void OnPluginStart()
 	g_smVaildItems.SetValue("weapon_chainsaw", true);
 	g_smVaildItems.SetValue("weapon_gnome", true);
 	g_smVaildItems.SetValue("weapon_cola_bottles", true);
+
+	delete g_alPluginBoxes;
+	g_alPluginBoxes = new ArrayList();
 }
 
 public void OnPluginEnd()
