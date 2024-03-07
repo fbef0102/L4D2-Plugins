@@ -79,7 +79,6 @@ Notifies selected team(s) when someone is on final strike and add glow
         * Fixed glow disappear when B&W player switches team
 
     * v1.0h (2022-11-26)
-        * Request by Yabi
         * Remake Code
         * Converted plugin source to the latest syntax
         * Changes to fix warnings when compiling on SourceMod 1.11.

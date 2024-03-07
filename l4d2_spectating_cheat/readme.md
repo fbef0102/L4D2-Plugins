@@ -40,7 +40,6 @@ A spectator can now see the special infected model glows though the wall
 
     * v1.0
         * Initial Release
-        * Request by Target_7
 </details>
 
 * Require | 必要安裝

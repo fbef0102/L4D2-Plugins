@@ -226,7 +226,6 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 		* Create Fake weapon_drop event
 
     * v3.0 (2022-12-26)
-		* Request by Anzu
 		* Add health gift, survivor could increase or lose health
 
     * v2.9 (2022-12-2)

@@ -18,7 +18,6 @@ In coop/realism, if you died with primary weapon, you will respawn with T1 weapo
 	    * Fixed player respawns with only pistol
 
     * v1.0 (2022-12-12)
-	    * Original request by Yabi
         * Initial Release
 </details>
 

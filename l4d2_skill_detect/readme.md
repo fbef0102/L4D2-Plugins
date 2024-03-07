@@ -187,7 +187,6 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
         * New Skill Reqport, "boomer vomits all survivors"
 
     * v1.1h (2022-12-16)
-        * Request by Yabi
         * Translation Support
 
     * v0.9.20 fork
