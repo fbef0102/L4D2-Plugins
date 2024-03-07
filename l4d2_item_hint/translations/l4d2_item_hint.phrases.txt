@@ -437,9 +437,9 @@
 		"chi"			"高尔夫球棍!"
 	}
 
-	"Pitckfork"
+	"Pitchfork"
 	{
-		"en"			"Pitckfork!"
+		"en"			"Pitchfork!"
 		"zho"			"草叉!"
 		"chi"			"干草叉!"
 	}

@@ -362,7 +362,7 @@ void CreateStringMap()
 	g_smModelToName.SetString("models/weapons/melee/w_machete.mdl", "Machete");
 	g_smModelToName.SetString("models/weapons/melee/w_tonfa.mdl", "Nightstick");
 	g_smModelToName.SetString("models/weapons/melee/w_golfclub.mdl", "Golf_Club");
-	g_smModelToName.SetString("models/weapons/melee/w_pitchfork.mdl", "Pitckfork");
+	g_smModelToName.SetString("models/weapons/melee/w_pitchfork.mdl", "Pitchfork");
 	g_smModelToName.SetString("models/weapons/melee/w_shovel.mdl", "Shovel");
 	g_smModelToName.SetString("models/infected/boomette.mdl", "Boomer");
 	g_smModelToName.SetString("models/infected/boomer.mdl", "Boomer");
@@ -878,7 +878,7 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 			{
 				case ZC_SMOKER:
 				{
-					sItemPhrase = "Witch";
+					sItemPhrase = "Smoker";
 				}
 				case ZC_BOOMER:
 				{
