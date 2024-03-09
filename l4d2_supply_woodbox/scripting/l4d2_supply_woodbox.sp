@@ -734,10 +734,12 @@ bool SpawnBox(float vPos[3], float vAng[3] = NULL_VECTOR)
 	}
 	
 	DispatchSpawn(iBox);
-	DispatchKeyValue(iBox, "solid", "1"); //1: 穿透 (只有倖存者能碰，特感與小殭屍會穿透), 6: 固體
+	DispatchKeyValue(iBox, "spawnflags", "256");		// 256="Generate output on +USE", 8196:"Force Server Side"
+	DispatchKeyValue(iBox, "solid", "1"); //1: 穿透 (只有倖存者能用子彈打中，特感與小殭屍會穿透), 6: 固體
 	DispatchKeyValue(iBox, "targetname", "l4d2_supply_woodbox");
 	ActivateEntity(iBox);
 	SetEntProp(iBox, Prop_Data, "m_iHealth", 20);
+	SDKHook(iBox, SDKHook_UsePost, Box_UsePost);
 
 	if(g_iCvarColor > 0) //enable glow
 	{
@@ -746,7 +748,6 @@ bool SpawnBox(float vPos[3], float vAng[3] = NULL_VECTOR)
 
 	HookSingleEntityOutput(iBox, "OnBreak", eBreakBreakable);
 	g_alPluginBoxes.Push(EntIndexToEntRef(iBox));
-
 
 	CreateTimer(g_fSupplyBoxLife, KillBox_Timer, EntIndexToEntRef(iBox), TIMER_FLAG_NO_MAPCHANGE);
 
@@ -834,6 +835,17 @@ Action Timer_KillWeapon(Handle timer, DataPack hPack)
 	}
 
 	return Plugin_Continue;
+}
+
+void Box_UsePost(int box, int client, int caller, UseType type, float value)
+{
+	if(client > 0 && client <= MaxClients 
+		&& IsClientInGame(client) 
+		&& GetClientTeam(client) == TEAM_SURVIVORS
+		&& IsPlayerAlive(client))
+	{
+		AcceptEntityInput(box, "Break"); //break box
+	}
 }
 
 Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)

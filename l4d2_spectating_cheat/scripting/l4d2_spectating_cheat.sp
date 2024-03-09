@@ -91,6 +91,11 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_areyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_fuckyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_zzz", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
+
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		g_bSpecCheatActive[i] = g_bDefaultValue;
+	}
 	
 	if(g_bLateLoad)
 	{
@@ -116,11 +121,6 @@ public void OnMapEnd()
 	g_bMapStarted = false;
 	ResetTimer();
 	ClearDefault();
-}
-
-public void OnClientPutInServer(int client)
-{
-	g_bSpecCheatActive[client] = g_bDefaultValue;
 }
 
 public void OnClientDisconnect(int client)
