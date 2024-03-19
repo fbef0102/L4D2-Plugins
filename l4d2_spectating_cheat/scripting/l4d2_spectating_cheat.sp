@@ -4,6 +4,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <left4dhooks>
+#include <attachments_api>
 
 #define ENTITY_SAFE_LIMIT 2000 //don't create model glow when entity index is above this
 #define ZC_SMOKER		1
@@ -48,7 +49,7 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator can now see the special infected model glows though the wall",
-    version = "2.8-2023/6/19",
+    version = "2.9-2024/3/19",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -570,7 +571,14 @@ void ClearDefault()
 
 // https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs
 // from l4d_zcs.smx by Harry, player can change Zombie Class during ghost state
-public void L4D2_OnClientChangeZombieClass(int client, int new_zombieclass)
+//public void L4D2_OnClientChangeZombieClass(int client, int new_zombieclass)
+//{
+//	RequestFrame(OnNextFrame, GetClientUserId(client));
+//}
+
+//-------------------------------Attachments API-------------------------------
+
+public void Attachments_OnModelChanged(int client)
 {
 	RequestFrame(OnNextFrame, GetClientUserId(client));
 }

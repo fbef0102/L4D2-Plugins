@@ -16,6 +16,9 @@ A spectator can now see the special infected model glows though the wall
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v2.9 (2024-3-19)
+        * Require Attachments API
+
     * v2.8 (2023-6-19)
         * Optimize code and improve performance
 
@@ -43,11 +46,8 @@ A spectator can now see the special infected model glows though the wall
 </details>
 
 * Require | 必要安裝
-<br/>None
-
-* Similar Plugin | 相似插件
-    1. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
-        > 管理員輸入指令能透視看到特感
+    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
+    2. [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
@@ -62,6 +62,9 @@ A spectator can now see the special infected model glows though the wall
 
     4. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
         > 根據玩家生命值狀態給予輪廓光圈適當的顏色 + 對抗模式中，特感永遠能看到人類光圈 (即使人類靜走或不動)
+
+    5. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
+        > 管理員輸入指令能透視看到特感
 </details>
 
 * <details><summary>ConVar | 指令</summary>
@@ -108,7 +111,8 @@ A spectator can now see the special infected model glows though the wall
     * 即使旁觀者觀看人類視角第一人稱，也能看到特感光圈
 
 * 用意在哪?
-    * 此插件本意只是拿來抓鬼(偷看倖存者誰開了透視外掛)，誰知道意外地提供了旁觀者非常好的觀賞性 (被各個對抗伺服器拿去用)
+    * 此插件本意只是拿來抓鬼(偷看倖存者誰開了透視外掛)
+    * 提供旁觀者非常好的觀賞性 (常被對抗比賽伺服器拿去用)
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 

@@ -250,7 +250,8 @@ public void OnPluginStart()
 	g_hCvarHUDBlink.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarHUDBackground.AddChangeHook(ConVarChanged_Cvars);
 
-	HookEvent("player_death",Event_PlayerDeathInfo,EventHookMode_Pre);
+	HookEvent("player_death",Event_PlayerDeathInfo_Pre, EventHookMode_Pre);
+	HookEvent("player_death",Event_PlayerDeathInfo_Post);
 }
 
 //Cvars-------------------------------
@@ -329,7 +330,15 @@ public void OnConfigsExecuted()
 
 //Event-------------------------------
 
-void Event_PlayerDeathInfo(Event event, const char[] name, bool dontBroadcast)
+void Event_PlayerDeathInfo_Pre(Event event, const char[] name, bool dontBroadcast)
+{
+	if( !g_bCvarEnable )
+		return;
+
+	if(g_bCvarBlockMessage) event.BroadcastDisabled = true; // by prehook, set this to prevent the red font of kill info.
+}
+
+void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadcast)
 {
 	if( !g_bCvarEnable )
 		return;
