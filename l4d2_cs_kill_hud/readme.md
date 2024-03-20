@@ -66,7 +66,7 @@ HUD with cs kill info list.
 * <details><summary>FAQ</summary>
 
     * How to customize weapon icon?
-        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L140-L176) line 140 ~ 176
+        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L140-L180) line 140 ~ 180
         * Recompile, done.
 
     * How to switch HUD position?
@@ -90,11 +90,16 @@ HUD with cs kill info list.
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
-    1. [l4d2_scripted_hud](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Server_%E4%BC%BA%E6%9C%8D%E5%99%A8/l4d2_scripted_hud): Display text for up to 5 scripted HUD slots on the screen.
-        > 在玩家畫面上方五個Hud位置顯示不同的特殊文字
+    1. [l4d2_scripted_hud](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Server_伺服器/l4d2_scripted_hud): Display text for up to 5 scripted HUD slots on the screen.
+        * 在玩家畫面上方五個Hud位置顯示不同的特殊文字
+    2. [l4d2_kills_manager](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Special_Infected_特感/l4d2_kills_manager): Sets the real killer of a special infected, based on who inflicted the most damage, instead of last shot.
+        * 強制將特感擊殺者改成造成傷害最多的玩家
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.7h (2024-3-20)
+        * Add falling from roof
 
     * v1.6h (2024-3-8)
         * Update cvars
@@ -187,7 +192,7 @@ L4D2擊殺提示改成CS遊戲的擊殺列表
 * <details><summary>問題區</summary>
 
     * 如何自製武器圖案?
-        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L140-L176) 140 ~ 176 行
+        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L140-L180) 140 ~ 180 行
         * 重新編譯，完成
 
     * 如何改變 HUD 位置?

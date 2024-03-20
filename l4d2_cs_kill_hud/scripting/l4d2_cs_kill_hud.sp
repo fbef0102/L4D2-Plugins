@@ -2,8 +2,9 @@
 #pragma newdecls required
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 
-#define PLUGIN_VERSION			"1.6h-2024/3/8"
+#define PLUGIN_VERSION			"1.7h-2024/3/20"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -157,7 +158,7 @@ static const char g_kill_type[][] =
 
 	"︻■■■■ ●",	    //9 grenade_launcher_projectile
 
-	"(●｀・ω・)=Ｏ",	     //10 killed by push
+	"(●｀・ω・)=Ｏ",	     //10 killed by push/shove melee
 
 	"↼■╦══",	     //11 killed by mini gun
 
@@ -174,6 +175,8 @@ static const char g_kill_type[][] =
 	"☠",         //17 killed by common infected
 
 	"<ʖ͡=::::::⊃",         //18 killed by chainsaw
+
+	"⁽⁽ଘ(˙꒳˙)ଓ⁾⁾",         //19 Die due to falling from roof
 };
 
 #define KILL_HUD_BASE 9
@@ -355,6 +358,7 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 
 	int entityid = event.GetInt("entityid");
 	bool headshot = event.GetBool("headshot");
+	int damagetype = event.GetInt("type");
 
 	if(g_bCvarBlockMessage) event.BroadcastDisabled = true; // by prehook, set this to prevent the red font of kill info.
 
@@ -372,7 +376,15 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 			{
 				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[17],victim);
 			}
-			else
+			else if(damagetype & DMG_BURN)
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[7],victim);
+			}
+			else if(damagetype & DMG_FALL)
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[19],victim);
+			}
+			else 
 			{
 				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[12],victim);
 			}
