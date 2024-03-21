@@ -150,7 +150,7 @@ static const char g_kill_type[][] =
 
 	"︻╦̵̵͇̿̿̿̿╤───",    //5 sniper
 
-	"☆BOMB☆",          //6 pipe bomb
+	"☆BOMB☆",          //6 pipe bomb, explosive
 
 	"__∫∫∫∫__",      //7 inferno, entityflame
 
@@ -218,6 +218,10 @@ enum struct HUD
 	}
 }
 
+StringMap 
+	g_smSpecialWeapons,
+	g_smIgnoreWallWeapons;
+
 public void OnPluginStart()
 {
 	g_weapon_name = new StringMap();
@@ -255,6 +259,18 @@ public void OnPluginStart()
 
 	HookEvent("player_death",Event_PlayerDeathInfo_Pre, EventHookMode_Pre);
 	HookEvent("player_death",Event_PlayerDeathInfo_Post);
+
+	g_smSpecialWeapons = new StringMap();
+	g_smSpecialWeapons.SetValue("pipe_bomb", true);
+	g_smSpecialWeapons.SetValue("inferno", true);
+	g_smSpecialWeapons.SetValue("entityflame", true);
+	g_smSpecialWeapons.SetValue("boomer", true);
+	g_smSpecialWeapons.SetValue("player", true);
+
+	g_smIgnoreWallWeapons = new StringMap();
+	g_smIgnoreWallWeapons.SetValue("grenade_launcher_projectile", true);
+	g_smIgnoreWallWeapons.SetValue("melee", true);
+	g_smIgnoreWallWeapons.SetValue("chainsaw", true);
 }
 
 //Cvars-------------------------------
@@ -384,6 +400,10 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 			{
 				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[19],victim);
 			}
+			else if(damagetype & DMG_BLAST)
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[6],victim);
+			}
 			else 
 			{
 				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[12],victim);
@@ -460,11 +480,7 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 	static char sWeaponType[64];
 	g_weapon_name.GetString(weapon_type, sWeaponType, sizeof(sWeaponType));
 
-	if(strcmp(weapon_type, "pipe_bomb", false) == 0 ||
-		strcmp(weapon_type, "inferno", false) == 0 ||
-		strcmp(weapon_type, "entityflame", false) == 0 ||
-		strcmp(weapon_type, "boomer", false) == 0 ||
-		strcmp(weapon_type, "player", false) == 0 )
+	if(g_smSpecialWeapons.ContainsKey(weapon_type) )
 	{
 		FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker, sWeaponType, victim_name);
 	}
@@ -472,17 +488,16 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 	{
 		if(bIsVictimPlayer)
 		{
-
 			if( headshot )
 			{
-				if( IsPlayerKilledBehindWall(attacker, victim) )
+				if( !g_smIgnoreWallWeapons.ContainsKey(weapon_type) && IsPlayerKilledBehindWall(attacker, victim) )
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],sWeaponType,victim_name);
 				else
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],sWeaponType,victim_name);
 			}
 			else
 			{
-				if( IsPlayerKilledBehindWall(attacker, victim) )
+				if( !g_smIgnoreWallWeapons.ContainsKey(weapon_type) && IsPlayerKilledBehindWall(attacker, victim) )
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],sWeaponType,victim_name);
 				else
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,sWeaponType,victim_name);
@@ -492,14 +507,14 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 		{
 			if( headshot )
 			{
-				if( IsEntityKilledBehindWall(attacker, entityid) )
+				if( !g_smIgnoreWallWeapons.ContainsKey(weapon_type) && IsEntityKilledBehindWall(attacker, entityid) )
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s %s  %s",attacker,g_kill_type[14],g_kill_type[15],sWeaponType,victim_name);
 				else
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[15],sWeaponType,victim_name);
 			}
 			else
 			{
-				if( IsEntityKilledBehindWall(attacker, entityid) )
+				if( !g_smIgnoreWallWeapons.ContainsKey(weapon_type) && IsEntityKilledBehindWall(attacker, entityid) )
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s %s  %s",attacker,g_kill_type[14],sWeaponType,victim_name);
 				else
 					FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker,sWeaponType,victim_name);
