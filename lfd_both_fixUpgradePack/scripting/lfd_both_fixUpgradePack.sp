@@ -61,10 +61,10 @@ public void OnPluginStart() {
 
 	ResetAllUsedUpgrades();
 
-	cvarDeniedSound = CreateConVar("upgrade_denied_sound", "1", "Play sound when ammo already used", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarIncendiaryMulti = CreateConVar("upgrade_incendiary_multi", "1.0", "Incendiary ammo multiplier on pickup", FCVAR_NOTIFY, true, 1.0);
-	cvarExplosiveMulti = CreateConVar("upgrade_explosive_multi", "1.0", "Explosive ammo multiplier on pickup", FCVAR_NOTIFY, true, 1.0);
-	cvarClearUpgradeTime = CreateConVar("upgrade_clear_time", "100", "Time in seconds to remove upgradepack after first use. (0=off)", FCVAR_NOTIFY, true, 0.0);
+	cvarDeniedSound 		= CreateConVar("upgrade_denied_sound", 		"1", 	"Play sound when ammo already used", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarIncendiaryMulti 	= CreateConVar("upgrade_incendiary_multi", 	"1.0", 	"Incendiary ammo multiplier on pickup (Max clip in L4D: 254)", FCVAR_NOTIFY, true, 1.0);
+	cvarExplosiveMulti 		= CreateConVar("upgrade_explosive_multi", 	"1.0", 	"Explosive ammo multiplier on pickup (Max clip in L4D: 254)", FCVAR_NOTIFY, true, 1.0);
+	cvarClearUpgradeTime 	= CreateConVar("upgrade_clear_time", 		"100", 	"Time in seconds to remove upgradepack after first use. (0=off)", FCVAR_NOTIFY, true, 0.0);
 
 	GetCvars();
 	cvarDeniedSound.AddChangeHook(OnConVarChange);
@@ -84,7 +84,7 @@ public void OnMapStart()
 	PrecacheSound(sDENY_SOUND, true);
 }
 
-public void OnConVarChange(ConVar convar, char[] oldValue, char[] newValue) {
+void OnConVarChange(ConVar convar, char[] oldValue, char[] newValue) {
 	GetCvars();
 }
 
@@ -100,11 +100,11 @@ public void OnClientPostAdminCheck(int client) {
 	ResetUsedUpgrades(client);
 }
 
-public void EventRoundStart(Event event, const char[] name, bool dontBroadcast) {
+void EventRoundStart(Event event, const char[] name, bool dontBroadcast) {
 	ResetAllUsedUpgrades();
 }
 
-public void OnBotSwap(Event event, const char[] name, bool dontBroadcast)
+void OnBotSwap(Event event, const char[] name, bool dontBroadcast)
 {
 	int bot = GetClientOfUserId(GetEventInt(event, "bot"));
 	int player = GetClientOfUserId(GetEventInt(event, "player"));
@@ -183,7 +183,7 @@ void nextFrame(int entity)
     }
 } 
 
-public Action OnUpgradeUse(int entity, int activator, int caller, UseType type, float value) {
+Action OnUpgradeUse(int entity, int activator, int caller, UseType type, float value) {
 	
 	static char classname[32];
 	GetEntityClassname(entity, classname, sizeof(classname));
@@ -219,12 +219,13 @@ public Action OnUpgradeUse(int entity, int activator, int caller, UseType type, 
 	return Plugin_Continue;
 }
 
-public void PostThinkMultiply(int client) {
+void PostThinkMultiply(int client) {
 	if (isPlayerAliveSurvivor(client)) {
 		int primaryItem = GetPlayerWeaponSlot(client, 0);
 		if (primaryItem != -1) {
 			int currentUpgradedAmmo = GetEntProp(primaryItem, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded");
 			int targetUpgradedAmmo = RoundToFloor(currentUpgradedAmmo * (bUsingExplosive[client] ? cvarExplosiveMultiValue : cvarIncendiaryMultiValue));
+			targetUpgradedAmmo = (targetUpgradedAmmo >= 255) ? 254 : targetUpgradedAmmo;
 			if (targetUpgradedAmmo > currentUpgradedAmmo) {
 				SetEntProp(primaryItem, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", targetUpgradedAmmo);
 			}
@@ -247,7 +248,7 @@ void PlayDenySound(int client) {
 	if (cvarDeniedSoundValue) {
 		float currentTime = GetEngineTime();
 		if (currentTime > lastSoundTime[client] + 2.0) {
-			if(!IsFakeClient(client)) EmitSoundToClient(client, sDENY_SOUND, client, 3);
+			if(!IsFakeClient(client)) EmitSoundToClient(client, sDENY_SOUND, client, SNDCHAN_ITEM);
 			lastSoundTime[client] = currentTime;
 		}
 	}
@@ -283,7 +284,7 @@ void CheckKillPackage(int entity)
 	}
 }
 
-public Action Timer_RemoveEntity(Handle timer, int ref)
+Action Timer_RemoveEntity(Handle timer, int ref)
 {
 	int entity;
 	if(ref && (entity = EntRefToEntIndex(ref)) != INVALID_ENT_REFERENCE )
