@@ -106,6 +106,8 @@ static char g_sWeaponModels2[MAX_WEAPONS2][] =
 #define MODEL_COLA			"models/w_models/weapons/w_cola.mdl"
 #define MODEL_GNOME			"models/props_junk/gnome.mdl"
 
+#define MODEL_AMMO_L4D2			"models/props/terror/ammo_stack.mdl"
+
 ArrayList
 	g_aMeleeScripts;
 
@@ -183,6 +185,8 @@ public void OnMapStart() {
 	PrecacheModel("models/infected/common_male_roadcrew.mdl", true);
 	PrecacheModel("models/infected/common_male_jimmy.mdl", true);
 	PrecacheModel("models/infected/common_male_fallen_survivor.mdl", true);
+
+	PrecacheModel(MODEL_AMMO_L4D2, true);
 
 	int max = MAX_WEAPONS2;
 	for( int i = 0; i < max; i++ )
@@ -798,7 +802,7 @@ int Menu_SpawnItemsHandler(Menu menu, MenuAction action, int cindex, int itempos
 				if (!Misc_TraceClientViewToLocation(cindex, location)) {
 					GetClientAbsOrigin(cindex, location);
 				}
-				Do_CreateEntity(cindex, "weapon_ammo_spawn", "models/props/terror/ammo_stack.mdl", location, false);
+				Do_CreateEntity(cindex, "weapon_ammo_spawn", MODEL_AMMO_L4D2, location, false);
 			} case 12: {
 				float location[3];
 				if (!Misc_TraceClientViewToLocation(cindex, location)) {
