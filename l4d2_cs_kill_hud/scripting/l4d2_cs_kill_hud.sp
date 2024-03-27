@@ -4,7 +4,7 @@
 #include <sdktools>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION			"1.7h-2024/3/20"
+#define PLUGIN_VERSION			"1.8h-2024/3/28"
 #define PLUGIN_NAME			    "l4d2_cs_kill_hud"
 #define DEBUG 0
 
@@ -17,17 +17,19 @@ public Plugin myinfo =
 	url = "https://steamcommunity.com/profiles/76561198026784913/"
 }
 
+int ZC_TANK;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    EngineVersion test = GetEngineVersion();
+	EngineVersion test = GetEngineVersion();
 
-    if( test != Engine_Left4Dead2 )
-    {
-        strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-        return APLRes_SilentFailure;
-    }
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
 
-    return APLRes_Success;
+	ZC_TANK = 8;
+	return APLRes_Success;
 }
 
 #define CVAR_FLAGS                    FCVAR_NOTIFY
@@ -158,11 +160,11 @@ static const char g_kill_type[][] =
 
 	"︻■■■■ ●",	    //9 grenade_launcher_projectile
 
-	"(●｀・ω・)=Ｏ",	     //10 killed by push/shove melee
+	"(●｀・ω・)=Ｏ",	     //10 killed by push, shove melee
 
 	"↼■╦══",	     //11 killed by mini gun
 
-	"X_X",           //12 killed by world
+	"X_X",           //12 killed by world, worldspawn, trigger_hurt
 
 	"*皿*彡",         //13 killed by special infected,
 
@@ -176,7 +178,9 @@ static const char g_kill_type[][] =
 
 	"<ʖ͡=::::::⊃",         //18 killed by chainsaw
 
-	"⁽⁽ଘ(˙꒳˙)ଓ⁾⁾",         //19 Die due to falling from roof
+	"⬇ X_X",         //19 Die due to falling from roof
+
+	"SYSTEM X_X",         //20 ForcePlayerSuicide / SI committed suicide / Tank committed suicide
 };
 
 #define KILL_HUD_BASE 9
@@ -376,69 +380,8 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 	bool headshot = event.GetBool("headshot");
 	int damagetype = event.GetInt("type");
 
-	if(g_bCvarBlockMessage) event.BroadcastDisabled = true; // by prehook, set this to prevent the red font of kill info.
-
-	static char killinfo[128];
-	if( bIsAttackerPlayer == false)
-	{
-		if(bIsVictimPlayer == true) // something killed player
-		{
-			int attackid = event.GetInt("attackerentid");
-			if(IsWitch(attackid))
-			{
-				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[16],victim);
-			}
-			else if(IsCommonInfected(attackid))
-			{
-				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[17],victim);
-			}
-			else if(damagetype & DMG_BURN)
-			{
-				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[7],victim);
-			}
-			else if(damagetype & DMG_FALL)
-			{
-				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[19],victim);
-			}
-			else if(damagetype & DMG_BLAST)
-			{
-				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[6],victim);
-			}
-			else 
-			{
-				FormatEx(killinfo,sizeof(killinfo),"    %s  %N",g_kill_type[12],victim);
-			}
-			
-			DisplayKillList(killinfo);
-		}
-
-		return;
-	}
-
-	if( GetClientTeam(attacker) == TEAM_INFECTED 
-		&& bIsVictimPlayer && GetClientTeam(victim) == TEAM_SURVIVOR ) // infected kill survivor
-	{
-		static char attacker_name[64];
-		if( IsFakeClient(attacker) )
-		{
-			FormatEx(attacker_name, sizeof(attacker_name), "%N", attacker);
-			int index = StrContains(attacker_name,")");
-			if( index != -1 )
-				FormatEx(attacker_name,sizeof(attacker_name),"%s", attacker_name[index + 1]);
-		}
-		else
-		{
-			FormatEx(attacker_name, sizeof(attacker_name), "%N", attacker);
-		}
-
-		FormatEx(killinfo,sizeof(killinfo),"%s  %s  %N",attacker_name,g_kill_type[13],victim);
-		DisplayKillList(killinfo);
-		return;
-	}
-
-	static char weapon_type[64], victim_name[64];
-	event.GetString("weapon",weapon_type,sizeof(weapon_type));
-	//PrintToChatAll("weapon: %s", weapon_type);
+	//調整受害者人名
+	static char victim_name[64];
 	if(bIsVictimPlayer)
 	{
 		if( IsFakeClient(victim) )
@@ -465,9 +408,115 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 		}
 	}
 
-	// add kill type
-	if( strncmp(weapon_type, "world", 5, false) == 0 || // "wordl", "worldspawn"
-		strncmp(weapon_type, "trigger_hurt", 12, false) == 0 ) // "trigger_hurt"
+	//某個東西殺死了玩家
+	static char killinfo[128];
+	if( bIsAttackerPlayer == false)
+	{
+		if(bIsVictimPlayer == true) // something killed player
+		{
+			int attackid = event.GetInt("attackerentid");
+			if(IsWitch(attackid))
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[16],victim_name);
+			}
+			else if(IsCommonInfected(attackid))
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[17],victim_name);
+			}
+			else if(damagetype & DMG_BURN)
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[7],victim_name);
+			}
+			else if(damagetype & DMG_FALL)
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[19],victim_name);
+			}
+			else if(damagetype & DMG_BLAST)
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[6],victim_name);
+			}
+			else 
+			{
+				FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[12],victim_name);
+			}
+			
+			DisplayKillList(killinfo);
+		}
+
+		return;
+	}
+
+	int victimTeam = GetClientTeam(victim);
+	int attackerTeam = GetClientTeam(attacker);
+
+	static char weapon_type[64];
+	event.GetString("weapon", weapon_type,sizeof(weapon_type));
+	//PrintToChatAll("weapon: %s", weapon_type);
+
+	// 受害者玩家被系統處死判斷
+	if(bIsAttackerPlayer && bIsVictimPlayer && attacker == victim)
+	{
+		switch(victimTeam)
+		{
+			case TEAM_SURVIVOR:
+			{
+				if(damagetype == (DMG_PREVENT_PHYSICS_FORCE + DMG_NEVERGIB) && strcmp(weapon_type, "world", false) == 0) // 傷害類型: 6144, 武器: world, 原因: ForcePlayerSuicide
+				{
+					FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[20],victim_name);
+					DisplayKillList(killinfo);
+					return;
+				}
+			}
+			case TEAM_INFECTED:
+			{
+				int zombie = GetEntProp(victim, Prop_Send, "m_zombieClass");
+				if(damagetype & DMG_FALL) // 特感墬樓傷害自己死掉
+				{
+					FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[19],victim_name);
+					DisplayKillList(killinfo);
+					return;
+				}
+				else if(zombie != ZC_TANK && damagetype == (DMG_PREVENT_PHYSICS_FORCE + DMG_NEVERGIB) && strcmp(weapon_type, "world", false) == 0) // 傷害類型: 6144, 武器: world, 原因: ForcePlayerSuicide 或 特感自動被導演處死
+				{
+					FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[20],victim_name);
+					DisplayKillList(killinfo);
+					return;
+				}
+				else if(zombie == ZC_TANK && damagetype == DMG_BULLET && strcmp(weapon_type, "tank_claw", false) == 0) // 傷害類型: 2, 武器: tank_claw, 原因: Tank卡住自動被處死
+				{
+					FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[20],victim_name);
+					DisplayKillList(killinfo);
+					return;
+				}
+			}
+		}
+	}
+
+	// 特感殺死人類
+	if( attackerTeam == TEAM_INFECTED 
+		&& bIsVictimPlayer && victimTeam == TEAM_SURVIVOR )
+	{
+		static char attacker_name[64];
+		if( IsFakeClient(attacker) )
+		{
+			FormatEx(attacker_name, sizeof(attacker_name), "%N", attacker);
+			int index = StrContains(attacker_name,")");
+			if( index != -1 )
+				FormatEx(attacker_name,sizeof(attacker_name),"%s", attacker_name[index + 1]);
+		}
+		else
+		{
+			FormatEx(attacker_name, sizeof(attacker_name), "%N", attacker);
+		}
+
+		FormatEx(killinfo,sizeof(killinfo),"%s  %s  %s",attacker_name,g_kill_type[13],victim_name);
+		DisplayKillList(killinfo);
+		return;
+	}
+
+	// 取得武器圖案
+	if( strncmp(weapon_type, "world", 5, false) == 0 || // "world", "worldspawn" (倒地流血死亡或其他自然死亡)
+		strncmp(weapon_type, "trigger_hurt", 12, false) == 0 ) // "trigger_hurt", "trigger_hurt_ghost" (地圖上的即死傷害)
 	{
 		FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[12],victim_name);
 		DisplayKillList(killinfo);
@@ -480,7 +529,7 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 	static char sWeaponType[64];
 	g_weapon_name.GetString(weapon_type, sWeaponType, sizeof(sWeaponType));
 
-	if(g_smSpecialWeapons.ContainsKey(weapon_type) )
+	if(g_smSpecialWeapons.ContainsKey(weapon_type) ) //不需要穿牆跟爆頭提示
 	{
 		FormatEx(killinfo,sizeof(killinfo),"%N  %s  %s",attacker, sWeaponType, victim_name);
 	}

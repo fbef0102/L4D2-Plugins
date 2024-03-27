@@ -1,4 +1,3 @@
-
 # Description | 內容
 Improves the AI behaviour of special infected
 (Execute ```nb_assault``` every 2.0 seconds)

@@ -1,4 +1,3 @@
-
 # Description | 內容
 Fixing witch can't break the door on Realism Normal、Advanced、Expert
 (Another bug, why? valve)

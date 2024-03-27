@@ -1,4 +1,3 @@
-
 # Description | 內容
 In coop/realism, if you died with primary weapon, you will respawn with T1 weapon. Delete datas if hold M60 or mission lost
 

@@ -1,4 +1,3 @@
-
 # Description | 內容
 Survivor players will drop their secondary weapon (including melee) when they die
 

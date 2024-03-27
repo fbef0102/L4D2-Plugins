@@ -1,4 +1,3 @@
-
 # Description | 內容
 Makes AI SI take (and do) damage like human SI.
 

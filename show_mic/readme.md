@@ -1,4 +1,3 @@
-
 # Description | 內容
 Voice Announce in centr text + create hat to Show Who is speaking.
 (```sv_alltalk 1``` support)
