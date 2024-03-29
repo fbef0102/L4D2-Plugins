@@ -446,8 +446,9 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 		return;
 	}
 
-	int victimTeam = GetClientTeam(victim);
-	int attackerTeam = GetClientTeam(attacker);
+	int victimTeam, attackerTeam;
+	if(bIsVictimPlayer) victimTeam = GetClientTeam(victim);
+	if(bIsAttackerPlayer) attackerTeam = GetClientTeam(attacker);
 
 	static char weapon_type[64];
 	event.GetString("weapon", weapon_type,sizeof(weapon_type));
@@ -493,7 +494,7 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 	}
 
 	// 特感殺死人類
-	if( attackerTeam == TEAM_INFECTED 
+	if( bIsAttackerPlayer && attackerTeam == TEAM_INFECTED 
 		&& bIsVictimPlayer && victimTeam == TEAM_SURVIVOR )
 	{
 		static char attacker_name[64];

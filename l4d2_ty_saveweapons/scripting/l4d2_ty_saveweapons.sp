@@ -704,7 +704,7 @@ void HxSaveC(int client)
 		HxGetSlot1(client, iSlot1);
 		ig_slots1_skin[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin");
 	}
-	if (iSlot2 > MaxClients)
+	if (iSlot2 > MaxClients && GetOrSetPlayerAmmo(client, iSlot2) > 0)
 	{
 		GetEntityClassname(iSlot2, sg_slot2[client], sizeof(sg_slot2[]));
 	}

@@ -144,14 +144,14 @@
 	{
 		"en"			"Spawn a riot zombie"
 		"chi"			"防暴警察"
-		"zho"			"防暴警察"
+		"zho"			"鎮暴警察"
 		"es"            "Invocar un Zombie Anti-Disturbios"
 	}
 	"Spawn a ceda zombie"
 	{
 		"en"			"Spawn a ceda zombie"
 		"chi"			"防疫人员"
-		"zho"			"防疫人员"
+		"zho"			"CEDA防疫人员"
 		"es"            "Invocar un Zombie de Ceda"
 	}
 	"Spawn a clown zombie"
@@ -178,15 +178,15 @@
 	"Spawn a jimmie gibbs zombie"
 	{
 		"en"			"Spawn a jimmie gibbs zombie"
-		"chi"			"吉米吉布斯(很强)"
-		"zho"			"吉米賽車手(很强)"
+		"chi"			"吉米吉布斯 (血很厚)"
+		"zho"			"吉米賽車手 (血很厚)"
 		"es"            "Invocar un Zombie Jimmie Gibbs"
 	}
 	"Spawn a fallen survivor zombie"
 	{
 		"en"			"Spawn a fallen survivor zombie"
-		"chi"			"堕落幸存者(掉落物资)"
-		"zho"			"墮落生還者(掉落物資)"
+		"chi"			"堕落幸存者 (掉落物资)"
+		"zho"			"墮落倖存者 (掉落物資)"
 		"es"            "Invocar un Zombie de un Superviviente Caído"
 	}
 	"Spawn a defibrillator"
@@ -200,7 +200,7 @@
 	{
 		"en"			"Spawn a medkit"
 		"chi"			"急救包"
-		"zho"			"急救包"
+		"zho"			"治療包"
 		"es"            "Invocar un Kit Médico"
 	}
 	"Spawn some pills"
@@ -221,7 +221,7 @@
 	{
 		"en"			"Spawn a molotov"
 		"chi"			"燃烧瓶"
-		"zho"			"燃燒瓶"
+		"zho"			"火瓶"
 		"es"            "Invocar un Molotov"
 	}
 	"Spawn a pipe bomb"
@@ -242,7 +242,7 @@
 	{
 		"en"			"Spawn a gas tank"
 		"chi"			"油桶"
-		"zho"			"油桶"
+		"zho"			"汽油桶"
 		"es"            "Invocar un Tanque de Gas"
 	}
 	"Spawn a firework"
@@ -256,14 +256,14 @@
 	{
 		"en"			"Spawn a propane tank"
 		"chi"			"煤气罐"
-		"zho"			"煤氣罐"
+		"zho"			"瓦斯桶"
 		"es"            "Invocar un Tanque de Propano"
 	}
 	"Spawn an oxygen tank"
 	{
 		"en"			"Spawn an oxygen tank"
 		"chi"			"氧气瓶"
-		"zho"			"氧氣瓶"
+		"zho"			"氧氣罐"
 		"es"            "Invocar un Tanque de Oxígeno"
 	}
 	"Spawn an ammo pile"
@@ -326,35 +326,35 @@
 	{
 		"en"			"pawn a pumpshotgun"
 		"chi"			"pump霰弹枪"
-		"zho"			"pump霰彈槍"
+		"zho"			"Pump 單發霰彈槍"
 		"es"            "Invocar una Escopeta"
 	}
 	"Spawn a shotgun chrome"
 	{
 		"en"			"Spawn a shotgun chrome"
 		"chi"			"chrome霰弹枪"
-		"zho"			"chrome霰彈槍"
+		"zho"			"Chrome 單發霰彈槍"
 		"es"            "Invocar un Escopeta Cromada"
 	}
 	"Spawn a sub machine gun"
 	{
 		"en"			"Spawn a sub machine gun"
 		"chi"			"冲锋枪"
-		"zho"			"沖鋒槍"
+		"zho"			"機槍"
 		"es"            "Invocar un Pistola Ametralladora"
 	}
 	"Spawn a silenced smg"
 	{
 		"en"			"Spawn a silenced smg"
 		"chi"			"静音冲锋枪"
-		"zho"			"靜音沖鋒槍"
+		"zho"			"消音機槍"
 		"es"            "Invocar un SMG con silenciador"
 	}
 	"Spawn a mp5"
 	{
 		"en"			"Spawn a mp5"
 		"chi"			"MP5冲锋枪"
-		"zho"			"MP5沖鋒槍"
+		"zho"			"MP5衝鋒槍"
 		"es"            "Invocar un MP5"
 	}
 	"Spawn an assault rifle"
@@ -375,7 +375,7 @@
 	{
 		"en"			"Spawn an AK74"
 		"chi"			"AK74步枪"
-		"zho"			"AK74步槍"
+		"zho"			"AK74"
 		"es"            "Invocar un AK74"
 	}
 	"Spawn a desert rifle"
@@ -403,7 +403,7 @@
 	{
 		"en"			"Spawn a hunting rifle"
 		"chi"			"狩猎狙击枪"
-		"zho"			"狩獵狙擊槍"
+		"zho"			"獵槍"
 		"es"            "Invocar un Rifle de Caza"
 	}
 	"Spawn a military sniper"
@@ -424,7 +424,7 @@
 	{
 		"en"			"Spawn an awp"
 		"chi"			"AWP狙击枪"
-		"zho"			"AWP狙擊槍"
+		"zho"			"AWP"
 		"es"            "Invocar un AWP"
 	}
 	"Spawn a grenade launcher"
@@ -445,7 +445,7 @@
 	{
 		"en"			"Spawn a baseball bat"
 		"chi"			"棒球棍"
-		"zho"			"棒球棍"
+		"zho"			"球棒"
 		"es"            "Invocar un Bat de Beisbol"
 	}
 	"Spawn a chainsaw"
@@ -459,7 +459,7 @@
 	{
 		"en"			"Spawn a cricket bat"
 		"chi"			"板球球棍"
-		"zho"			"板球球棍"
+		"zho"			"板球拍"
 		"es"            "Invocar un Bate de Cricket"
 	}
 	"Spawn a crowbar"
@@ -522,7 +522,7 @@
 	{
 		"en"			"Spawn a golf club"
 		"chi"			"高尔夫球棍"
-		"zho"			"高爾夫球棍"
+		"zho"			"高爾夫球桿"
 		"es"            "Invocar un Palo de Golf"
 	}
 	"Spawn a pitchfork"
@@ -559,55 +559,6 @@
 		"zho"			"開始無限屍潮"
 		"es"            "Forzar un evento de pánico continuo"
 	}
-	"Director controls if a tank spawns this round"
-	{
-		"en"			"Director controls if a tank spawns this round"
-		"chi"			"导演系统控制生成Tank"
-		"zho"			"導演系統控制生成Tank"
-		"es"            "El Director controla si invoca un Tank en esta Ronda"
-	}
-	"Force a tank to spawn this round"
-	{
-		"en"			"Force a tank to spawn this round"
-		"chi"			"当前回合强制生成Tank"
-		"zho"			"當前回合強制生成Tank"
-		"es"            "Forzar la invocación de un Tank en esta ronda"
-	}
-	"Director controls if a witch spawns this round"
-	{
-		"en"			"Director controls if a witch spawns this round"
-		"chi"			"导演系统控制生成Tank"
-		"zho"			"導演系統控制生成Tank"
-		"es"            "Director controla si invoca una Witch en esta ronda"
-	}
-	"Force a witch to spawn this round"
-	{
-		"en"			"Force a witch to spawn this round"
-		"chi"			"当前回合强制生成Witch"
-		"zho"			"當前回合強制生成Witch"
-		"es"            "Forzar la invocación de una Witch en esta ronda"
-	}
-	"Stop bosses spawning continuously"
-	{
-		"en"			"Stop bosses spawning continuously"
-		"chi"			"停止持续生成Tank和Witch"
-		"zho"			"停止持續生成Tank和Witch"
-		"es"            "Parar la invocación de Jefes continuamente"
-	}
-	"Force bosses to spawn continuously"
-	{
-		"en"			"Force bosses spawning continuously"
-		"chi"			"开始持续生成Tank和Witch"
-		"zho"			"開始持續生成Tank和Witch"
-		"es"            "Forzar la invocación de Jefes continuamente"
-	}
-	"Add more zombies to the horde"
-	{
-		"en"			"Add more zombies to the horde"
-		"chi"			"增加尸潮数量"
-		"zho"			"增加屍潮數量"
-		"es"            "Añadir más Zombies a la Horda"
-	}
 	"Disable player notifications"
 	{
 		"en"			"Disable player notifications"
@@ -621,13 +572,6 @@
 		"chi"			"开启通知玩家"
 		"zho"			"開啟通知玩家"
 		"es"            "Habilitar notificación de jugador"
-	}
-	"Restore all settings to game defaults now"
-	{
-		"en"			"Restore all settings to game defaults now"
-		"chi"			"恢复默认设置"
-		"zho"			"恢復默認設置"
-		"es"            "Restaurar todas configuraciones del juego por defecto"
 	}
 	"Force a panic event to start"
 	{
@@ -654,7 +598,7 @@
 	{
 		"en"			"{lightgreen} Automatic placement of spawned infected has been disabled"
 		"chi"			"{lightgreen} 关闭自动放置生成感染者功能"
-		"zho"			"{lightgreen} 关闭自动放置生成感染者功能"
+		"zho"			"{lightgreen} 關閉自動放置生成感染者功能"
 		"es"            "{lightgreen} Se ha desactivado el posicionamiento automático de infectados"
 	}
 	"Bosses will now spawn continuously"
@@ -684,41 +628,6 @@
 		"chi"			"{lightgreen} 停止无尽尸潮"
 		"zho"			"{lightgreen} 停止無限屍潮"
 		"es"            "{lightgreen} Ha finalizado el evento de pánico continuo"
-	}
-	"A tank is guaranteed to spawn this round"
-	{
-		"en"			"{lightgreen} A tank is guaranteed to spawn this round"
-		"chi"			"{lightgreen} 当前回合Tank固定生成"
-		"zho"			"{lightgreen} 當前回合Tank固定生成"
-		"es"            "{lightgreen} Esta garantizado la invocación de un Tank en esta ronda"
-	}
-	"A tank is no longer guaranteed to spawn this round"
-	{
-		"en"			"{lightgreen} A tank is no longer guaranteed to spawn this round"
-		"chi"			"{lightgreen} 当前回合Tank生成恢复原样"
-		"zho"			"{lightgreen} 當前回合Tank生成恢復原樣"
-		"es"            "{lightgreen} Ya no esta garantizado la invocación de un Tank en esta ronda"
-	}
-	"A witch is guaranteed to spawn this round"
-	{
-		"en"			"{lightgreen} A witch is guaranteed to spawn this round"
-		"chi"			"{lightgreen} 当前回合witch固定生成"
-		"zho"			"{lightgreen} 當前回合witch固定生成"
-		"es"            "{lightgreen} Esta garantizado la invocación de una Witch en esta ronda"
-	}
-	"A witch is no longer guaranteed to spawn this round"
-	{
-		"en"			"{lightgreen} A witch is no longer guaranteed to spawn this round"
-		"chi"			"{lightgreen} 当前回合witch生成恢复原样"
-		"zho"			"{lightgreen} 當前回合witch生成恢復原樣"
-		"es"            "{lightgreen} Ya no esta garantizado una witch en esta ronda"
-	}
-	"The horde grows larger"
-	{
-		"en"			"{lightgreen} The horde grows larger"
-		"chi"			"{lightgreen} 尸潮数量已增加"
-		"zho"			"{lightgreen} 屍潮數量已增加"
-		"es"            "{lightgreen} La hora ahora será mas grande"
 	}
 	"Player notifications have now been enabled"
 	{
@@ -775,5 +684,11 @@
 		"chi"			"尝试%d次后无法为此witch找到有效的生成位置"
 		"zho"			"嘗試%d次後無法爲此witch找到有效的生成位置"
 		"es"            "No puedes invocar una Witch en %d intentos por el momento."
+	}	
+	"Too many enities on server"
+	{
+		"en"			"Too many enities on server"
+		"chi"			"此服务器太多物件了，生成失败!"
+		"zho"			"此伺服器太多物件了，生成失敗!"
 	}
 }

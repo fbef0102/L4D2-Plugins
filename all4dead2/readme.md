@@ -23,77 +23,43 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
 
 	* cfg\sourcemod\all4dead2.cfg
 		```php
-        // Whether or not bosses will be forced to spawn all the time.
-        a4d_always_force_bosses "0"
-
         // Whether or not we announce changes in game.
         a4d_notify_players "1"
-
-        // The amount of time in seconds between location refreshes. Used only for placing uncommon infected automatically.
-        a4d_refresh_zombie_location "20.0"
-
-        // The amount of zombies to add when an admin requests more zombies.
-        a4d_zombies_to_add "10"
 		```
 </details>
 
 * <details><summary>Command | 命令</summary>
 
-	* **Usage: a4d_spawn_infected <infected_type> (does not work for uncommon infected, use a4d_spawn_uinfected instead)**
+	* **Usage: a4d_spawn_infected <infected_type> (does not work for uncommon infected, use a4d_spawn_uinfected instead) (Adm required: ADMFLAG_ROOT)**
         ```php
         a4d_spawn_infected <zombie|mob|witch|tank|boomer|hunter|smoker|spitter|jockey|charger>
         ```
 
-	* **Usage: a4d_spawn_uinfected <uncommon_infected_type>**
+	* **Usage: a4d_spawn_uinfected <uncommon_infected_type> (Adm required: ADMFLAG_ROOT)**
         ```php
         a4d_spawn_uinfected <riot|ceda|clown|mud|roadcrew|jimmy>
         ``` 
 
-	* **Usage: a4d_spawn_item <item_type>, read more item [here](https://commands.gg/l4d2/give)**
+	* **Usage: a4d_spawn_item <item_type>, read more item [here](https://commands.gg/l4d2/give) (Adm required: ADMFLAG_ROOT)**
         ```php
         a4d_spawn_item <rifle|first_aid_kit|ammo....>
         a4d_spawn_weapon <rifle|first_aid_kit|ammo....>
         ``` 
 
-	* **This command forces the AI director to start a panic event**
+	* **This command forces the AI director to start a panic event (Adm required: ADMFLAG_ROOT)**
         ```php
         a4d_force_panic
         ``` 
 
-	* **This command forces the AI director to start a panic event endlessly**
+	* **This command forces the AI director to start a panic event endlessly (Adm required: ADMFLAG_ROOT)**
         ```php
         a4d_panic_forever
         ``` 
 
-	* **Usage: a4d_force_tank <0|1>**
-        ```php
-        a4d_force_tank <0|1>
-        ``` 
-
-	* **Usage: a4d_force_witch <0|1>**
-        ```php
-        a4d_force_witch <0|1>
-        ``` 
-
-	* **Usage: a4d_always_force_bosses <0|1>**
-        ```php
-        a4d_continuous_bosses <0|1>
-        ``` 
-
-	* **Usage: a4d_add_zombies <0..99>**
-        ```php
-        a4d_add_zombies <0~99>
-        ``` 
-
-	* **Usage: a4d_enable_notifications <0|1>**
+	* **Usage: a4d_enable_notifications <0|1> (Adm required: ADMFLAG_ROOT)**
         ```php
         a4d_enable_notifications <0|1>
         ``` 
-
-	* **Usage: Resets all ConVars to their default settings.**
-        ```php
-        a4d_reset_to_defaults
-        ```
 </details>
 
 * Apply to | 適用於
@@ -114,6 +80,11 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
     //grandwazir @ 2009-2010
     //Harry @ 2020-2024
     ```
+    * v3.9 (2024-3-30)
+        * Update cvars
+        * Update cmds
+        * Update Translation
+
     * v3.8 (2024-3-15)
         * Require spawn_infected_nolimit
         * Delete gamedata
@@ -151,15 +122,20 @@ Enables admins to have control over the AI Director and spawn all weapons, melee
     <br/>![all4dead2_1_zho](image/zho/all4dead2_1_zho.jpg)
 
 * 原理
-    * 管理員輸入!admin就能看到 "ALL4DEAD" 選項
+    * 管理員輸入```!admin```就能看到 "ALL4DEAD指令" 選項
     * 支援生成三方圖近戰武器
 
 * 用意在哪?
     * 不需要開啟作弊模式就能輕鬆生成各種武器、物品與特感，適合用於服主做測試或惡搞
 
-* 功能
-    * 可設置是否通知玩家訊息
-    * 可設置每次增加普通感染者的數量
+* <details><summary>指令中文介紹 (點我展開)</summary>
+
+	* cfg\sourcemod\all4dead2.cfg
+		```php
+        // 1=通知玩家訊息, 0=不通知
+        a4d_notify_players "1"
+		```
+</details>
 
 
 

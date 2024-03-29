@@ -285,7 +285,7 @@ void OnCheckKarmaZoneTouch(int victim, int entity, const char[] zone_name, int p
 			int type;
 			int lastKarma = GetAnyLastKarma(victim, type);
 
-			if (lastKarma != 0 && IsClientInGame(lastKarma))
+			if (lastKarma > 0 && IsClientInGame(lastKarma))
 				AnnounceKarma(lastKarma, victim, type, false, true);
 		}
 	}
@@ -657,7 +657,7 @@ Action Timer_CheckVictim(Handle timer, DataPack DP)
 	int type;
 	int lastKarma = GetAnyLastKarma(client, type);
 
-	if (lastKarma == 0 || !IsClientInGame(lastKarma))
+	if (lastKarma <= 0 || !IsClientInGame(lastKarma))
 	{
 		victimTimer[client].timer = INVALID_HANDLE;
 		victimTimer[client].dp    = null;
@@ -893,7 +893,7 @@ void Event_PlayerLedgeGrab(Event event, const char[] name, bool dontBroadcast)
 	int type;
 	int lastKarma = GetAnyLastKarma(victim, type);
 
-	if (lastKarma == 0)
+	if (lastKarma <= 0)
 		return;
 
 	if(!g_bEnabled) return;
@@ -919,7 +919,7 @@ Action Timer_CheckLedgeChange(Handle hTimer, int userId)
 		int type;
 		int lastKarma = GetAnyLastKarma(victim, type);
 
-		if (lastKarma == 0 || !IsClientInGame(lastKarma) || g_bkarmaOnlyConfirmed || type == KT_Jump)
+		if (lastKarma <= 0 || !IsClientInGame(lastKarma) || g_bkarmaOnlyConfirmed || type == KT_Jump)
 			return Plugin_Stop;
 
 		AnnounceKarma(lastKarma, victim, type, false, false, INVALID_HANDLE);
@@ -1122,7 +1122,7 @@ public void OnGameFrame()
 			if (AllKarmaRegisterTimer[i] != INVALID_HANDLE)
 				continue;
 
-			else if (!GetAnyLastKarma(i))
+			else if (GetAnyLastKarma(i) <= 0)
 				continue;
 
 			else if (!IsClientInGame(i))
@@ -1642,7 +1642,7 @@ Action Timer_CheckJockeyRideLedge(Handle timer, any client)
 		return Plugin_Continue;
 
 	// Something else is calculating karma so who cares?
-	else if (GetAnyLastKarma(client) != 0)
+	else if (GetAnyLastKarma(client) > 0)
 		return Plugin_Continue;
 
 	float fOrigin[3], fEndOrigin[3], fMins[3], fMaxs[3];
@@ -2652,12 +2652,12 @@ void StripKarmaArtistFromVictim(int victim, int type)
 	{
 		for (int i = 0; i < KarmaType_MAX; i++)
 		{
-			LastKarma[victim][i].artist = -1;
+			LastKarma[victim][i].artist = 0;
 		}
 	}
 	else
 	{
-		LastKarma[victim][type].artist = -1;
+		LastKarma[victim][type].artist = 0;
 	}
 }
 
