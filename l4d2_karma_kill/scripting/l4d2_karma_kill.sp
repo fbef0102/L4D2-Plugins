@@ -285,7 +285,7 @@ void OnCheckKarmaZoneTouch(int victim, int entity, const char[] zone_name, int p
 			int type;
 			int lastKarma = GetAnyLastKarma(victim, type);
 
-			if (lastKarma != 0)
+			if (lastKarma != 0 && IsClientInGame(lastKarma))
 				AnnounceKarma(lastKarma, victim, type, false, true);
 		}
 	}
@@ -657,7 +657,7 @@ Action Timer_CheckVictim(Handle timer, DataPack DP)
 	int type;
 	int lastKarma = GetAnyLastKarma(client, type);
 
-	if (lastKarma == 0)
+	if (lastKarma == 0 || !IsClientInGame(lastKarma))
 	{
 		victimTimer[client].timer = INVALID_HANDLE;
 		victimTimer[client].dp    = null;
@@ -919,7 +919,7 @@ Action Timer_CheckLedgeChange(Handle hTimer, int userId)
 		int type;
 		int lastKarma = GetAnyLastKarma(victim, type);
 
-		if (lastKarma == 0 || g_bkarmaOnlyConfirmed || type == KT_Jump)
+		if (lastKarma == 0 || !IsClientInGame(lastKarma) || g_bkarmaOnlyConfirmed || type == KT_Jump)
 			return Plugin_Stop;
 
 		AnnounceKarma(lastKarma, victim, type, false, false, INVALID_HANDLE);
@@ -951,7 +951,7 @@ Action event_playerDeathPre(Event event, const char[] name, bool dontBroadcast)
 
 	for (int i = 0; i < KarmaType_MAX; i++)
 	{
-		if (LastKarma[victim][i].artist != 0)
+		if (LastKarma[victim][i].artist != 0 && IsClientInGame(LastKarma[victim][i].artist))
 		{
 			if (i == KT_Charge && LastKarma[victim][i].artist > 0 && IsPlayerAlive(LastKarma[victim][i].artist))
 			{

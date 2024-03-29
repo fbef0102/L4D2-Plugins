@@ -39,9 +39,14 @@ L4D2 coop save weapon when map transition if more than 4 players
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
 
-* Related Plugin | 相關插件
+* <details><summary>Related | 相關插件</summary>
+
     1. [l4dmultislots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dmultislots): Allows additional survivor players in server when 5+ player joins the server
-        > 創造5位以上倖存者遊玩伺服器
+        * 創造5位以上倖存者遊玩伺服器
+
+    2. [l4d2_afk_saveweapons](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Survivor_人類/l4d2_afk_saveweapons): Save Weapons/Items when going AFK
+        * 當倖存者玩家閒置或旁觀時，保存攜帶的武器、物資
+</details>
 
 * <details><summary>ConVar | 指令</summary>
 

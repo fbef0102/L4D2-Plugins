@@ -89,7 +89,7 @@ static char survivor_models[8][] =
 	"models/survivors/survivor_manager.mdl"
 };
 
-ConVar g_hGameMode, g_hFullHealth, g_hGameTimeBlock, 
+ConVar g_hFullHealth, g_hGameTimeBlock, 
 	g_hSaveBot, g_hSaveHealth, g_hSaveCharacter, g_hCvarReviveHealth, g_hSurvivorMaxInc;
 
 char sg_slot0[MAXPLAYERS+1][64];			/* slot0 weapon */
@@ -104,7 +104,6 @@ int ig_slots0_upgraded_ammo[MAXPLAYERS+1]; 	/* slot0 m_nUpgradedPrimaryAmmoLoade
 int ig_slots0_skin[MAXPLAYERS+1]; 			/* slot0 m_nSkin */
 int ig_slots1_skin[MAXPLAYERS+1]; 			/* slot1 m_nSkin */
 int ig_slots0_ammo[MAXPLAYERS+1]; 			/* slot0 ammo */
-int ig_slots0_ammo_offest[MAXPLAYERS+1]; 	/* slot0 ammo offset */
 bool g_bGiven[MAXPLAYERS+1];				/* client is already stored */
 bool g_bRecorded[MAXPLAYERS+1];				/* client is recorded to save */
 bool g_bSlot1_IsMelee[MAXPLAYERS+1];		/* slot1 is melee */
@@ -125,7 +124,7 @@ int 	g_iProp[MAXPLAYERS+1]; 									//client character index
 char 	g_sModelInfo[MAXPLAYERS+1][64]; 						//client character model
 
 bool g_bGiveWeaponBlock, g_bMapTransition;
-int ammoOffset, g_iCountDownTime;	
+int g_iOffsetAmmo, g_iPrimaryAmmoType, g_iCountDownTime;	
 Handle PlayerLeftStartTimer = null, CountDownTimer = null;
 int g_iReviveTempHealth = 30, g_iSurvivorMaxInc;
 
@@ -147,7 +146,11 @@ public void OnPluginStart()
 	
 	delete hGameData;
 
-	ammoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
+	g_iOffsetAmmo = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
+	g_iPrimaryAmmoType = FindSendPropInfo("CBaseCombatWeapon", "m_iPrimaryAmmoType");
+
+	g_hCvarReviveHealth = FindConVar("survivor_revive_health");
+	g_hSurvivorMaxInc = FindConVar("survivor_max_incapacitated_count");
 
 	g_hFullHealth = 	CreateConVar("l4d2_ty_saveweapons_health", "0", "If 1, restore 100 full health when end of chapter.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hGameTimeBlock = 	CreateConVar("l4d2_ty_saveweapons_game_seconds_block", "60", "Do not restore weapons and health after survivors have left start safe area for at least x seconds. (0=Always restore)", FCVAR_NOTIFY, true, 0.0);
@@ -157,18 +160,16 @@ public void OnPluginStart()
 	
 	AutoExecConfig(true,	"l4d2_ty_saveweapons");
 	
-	g_hGameMode = FindConVar("mp_gamemode");
-	g_hGameMode.AddChangeHook(ConVarChanged_Allow);
+	GetCvars();
+	g_hCvarReviveHealth.AddChangeHook(ConVarChanged_Cvars);
+	g_hSurvivorMaxInc.AddChangeHook(ConVarChanged_Cvars);
+	
 	g_hFullHealth.AddChangeHook(ConVarChanged_Cvars);
 	g_hGameTimeBlock.AddChangeHook(ConVarChanged_Cvars);
 	g_hSaveBot.AddChangeHook(ConVarChanged_Cvars);
 	g_hSaveHealth.AddChangeHook(ConVarChanged_Cvars);
 	g_hSaveCharacter.AddChangeHook(ConVarChanged_Cvars);
 	
-	g_hCvarReviveHealth = FindConVar("survivor_revive_health");
-	g_hSurvivorMaxInc = FindConVar("survivor_max_incapacitated_count");
-	g_hCvarReviveHealth.AddChangeHook(ConVarChanged_Cvars);
-	g_hSurvivorMaxInc.AddChangeHook(ConVarChanged_Cvars);
 	
 	HookEvent("round_start",  			Event_RoundStart,	 	EventHookMode_PostNoCopy);
 	HookEvent("player_spawn", 			Event_PlayerSpawn, 		EventHookMode_PostNoCopy);
@@ -188,11 +189,8 @@ public void OnPluginEnd()
 	ResetTimer();
 }
 
-bool g_bMapStarted;
 public void OnMapStart()
 {
-	g_bMapStarted = true;
-	
 	if (L4D_IsFirstMapInScenario())
 	{
 		HxCleaningAll();
@@ -207,54 +205,12 @@ public void OnMapStart()
 	{
 		PrecacheModel(survivor_models[i], true);
 	}
-	
-	PrecacheModel("models/weapons/melee/v_bat.mdl", true);
-	PrecacheModel("models/weapons/melee/v_cricket_bat.mdl", true);
-	PrecacheModel("models/weapons/melee/v_crowbar.mdl", true);
-	PrecacheModel("models/weapons/melee/v_electric_guitar.mdl", true);
-	PrecacheModel("models/weapons/melee/v_fireaxe.mdl", true);
-	PrecacheModel("models/weapons/melee/v_frying_pan.mdl", true);
-	PrecacheModel("models/weapons/melee/v_golfclub.mdl", true);
-	PrecacheModel("models/weapons/melee/v_katana.mdl", true);
-	PrecacheModel("models/weapons/melee/v_machete.mdl", true);
-	PrecacheModel("models/weapons/melee/v_tonfa.mdl", true);
-	PrecacheModel("models/weapons/melee/v_pitchfork.mdl", true);
-	PrecacheModel("models/weapons/melee/v_shovel.mdl", true);
-	PrecacheModel("models/v_models/v_knife_t.mdl", true);
-	
-	PrecacheModel("models/weapons/melee/w_bat.mdl", true);
-	PrecacheModel("models/weapons/melee/w_cricket_bat.mdl", true);
-	PrecacheModel("models/weapons/melee/w_crowbar.mdl", true);
-	PrecacheModel("models/weapons/melee/w_electric_guitar.mdl", true);
-	PrecacheModel("models/weapons/melee/w_fireaxe.mdl", true);
-	PrecacheModel("models/weapons/melee/w_frying_pan.mdl", true);
-	PrecacheModel("models/weapons/melee/w_golfclub.mdl", true);
-	PrecacheModel("models/weapons/melee/w_katana.mdl", true);
-	PrecacheModel("models/weapons/melee/w_machete.mdl", true);
-	PrecacheModel("models/weapons/melee/w_tonfa.mdl", true);
-	PrecacheModel("models/weapons/melee/w_pitchfork.mdl", true);
-	PrecacheModel("models/weapons/melee/w_shovel.mdl", true);
-	PrecacheModel("models/w_models/weapons/w_knife_t.mdl", true);
-
-	PrecacheGeneric("scripts/melee/baseball_bat.txt", true);
-	PrecacheGeneric("scripts/melee/cricket_bat.txt", true);
-	PrecacheGeneric("scripts/melee/crowbar.txt", true);
-	PrecacheGeneric("scripts/melee/electric_guitar.txt", true);
-	PrecacheGeneric("scripts/melee/fireaxe.txt", true);
-	PrecacheGeneric("scripts/melee/frying_pan.txt", true);
-	PrecacheGeneric("scripts/melee/golfclub.txt", true);
-	PrecacheGeneric("scripts/melee/katana.txt", true);
-	PrecacheGeneric("scripts/melee/machete.txt", true);
-	PrecacheGeneric("scripts/melee/tonfa.txt", true);
-	PrecacheGeneric("scripts/melee/pitchfork.txt", true);
-	PrecacheGeneric("scripts/melee/shovel.txt", true);
 
 	CreateTimer(1.0, Timer_GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnMapEnd()
 {
-	g_bMapStarted = false;
 	ResetPlugin();
 	ResetTimer();
 
@@ -262,16 +218,6 @@ public void OnMapEnd()
 	{
 		HxCleaningAll();
 	}
-}
-
-public void OnConfigsExecuted()
-{
-	IsAllowed();
-}
-
-void ConVarChanged_Allow(Handle convar, const char[] oldValue, const char[] newValue)
-{
-	IsAllowed();
 }
 
 void ConVarChanged_Cvars(Handle convar, const char[] oldValue, const char[] newValue)
@@ -292,53 +238,9 @@ void GetCvars()
 	g_iSurvivorMaxInc = g_hSurvivorMaxInc.IntValue;
 }
 
-void IsAllowed()
-{
-	GetCvars();
-	CheckGameMode();
-}
-
-int g_iCurrentMode;
-void CheckGameMode()
-{
-	if( g_hGameMode == null )
-		return;
-
-	if( g_bMapStarted == false )
-		return;
-
-	g_iCurrentMode = 0;
-
-	int entity = CreateEntityByName("info_gamemode");
-	if( IsValidEntity(entity) )
-	{
-		DispatchSpawn(entity);
-		HookSingleEntityOutput(entity, "OnCoop", OnGamemode, true);
-		HookSingleEntityOutput(entity, "OnSurvival", OnGamemode, true);
-		HookSingleEntityOutput(entity, "OnVersus", OnGamemode, true);
-		HookSingleEntityOutput(entity, "OnScavenge", OnGamemode, true);
-		ActivateEntity(entity);
-		AcceptEntityInput(entity, "PostSpawnActivate");
-		if( IsValidEntity(entity) ) // Because sometimes "PostSpawnActivate" seems to kill the ent.
-			RemoveEdict(entity); // Because multiple plugins creating at once, avoid too many duplicate ents in the same frame
-	}
-}
-
-void OnGamemode(const char[] output, int caller, int activator, float delay)
-{
-	if( strcmp(output, "OnCoop") == 0 )
-		g_iCurrentMode = 1;
-	else if( strcmp(output, "OnSurvival") == 0 )
-		g_iCurrentMode = 2;
-	else if( strcmp(output, "OnVersus") == 0 )
-		g_iCurrentMode = 4;
-	else if( strcmp(output, "OnScavenge") == 0 )
-		g_iCurrentMode = 8;
-}
-
 public void OnClientPutInServer(int client)
 {
-	if (g_iCurrentMode == 1 && IsClientInGame(client) && g_bGiveWeaponBlock == false)
+	if (L4D2_IsGenericCooperativeMode() && IsClientInGame(client) && g_bGiveWeaponBlock == false)
 	{
 		CreateTimer(0.4, HxTimerRestore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
@@ -407,7 +309,7 @@ Action tmrStart(Handle timer)
 	ResetPlugin();
 
 	g_bMapTransition = false;
-	if (g_iCurrentMode == 1)
+	if (L4D2_IsGenericCooperativeMode())
 	{
 		for (int i = 1; i <= MaxClients; i++)
 		{
@@ -462,7 +364,7 @@ void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bMapTransition = true;
-	if (g_iCurrentMode == 1)
+	if (L4D2_IsGenericCooperativeMode())
 	{
 		if (g_bFullhealth)
 		{
@@ -604,37 +506,86 @@ void HxGiveC(int client)
 	}
 
 	int weapon;
+	bool IsIncap = L4D_IsPlayerIncapacitated(client) && !L4D_IsPlayerHangingFromLedge(client);
 	if (sg_slot1[client][0] != '\0')
 	{
 		if(g_bSlot1_IsMelee[client] == true)
 		{
 			weapon = HxCreateWeapon("weapon_melee", sg_slot1[client]);
-			if (weapon != -1) EquipPlayerWeapon(client, weapon);
+			if (weapon != -1)
+			{
+				SetEntProp(weapon, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
+				if(IsIncap)
+				{
+					int pistol = CreateEntityByName("weapon_pistol");
+					DispatchSpawn(pistol);
+					SetEntProp(pistol, Prop_Send, "m_iClip1", 0);
+					AcceptEntityInput(pistol, "Use", client);
+
+					SetEntDataEnt2(client, g_iOff_m_hHiddenWeapon, weapon);
+				}
+				else
+				{
+					EquipPlayerWeapon(client, weapon);
+				}
+			}
 		}
 		else
 		{
-			if (!strcmp(sg_slot1[client], "dual_pistol", true))
+			if (strcmp(sg_slot1[client], "dual_pistol", false) == 0)
 			{
 				weapon = HxCreateWeapon("weapon_pistol");
-				if (weapon != -1) AcceptEntityInput(weapon, "Use", client, weapon);
-
-				weapon = HxCreateWeapon("weapon_pistol");
-				if (weapon != -1) AcceptEntityInput(weapon, "Use", client, weapon);
+				if (weapon != -1)
+				{
+					AcceptEntityInput(weapon, "Use", client);
+					int weapon2 = HxCreateWeapon("weapon_pistol");
+					if (weapon2 != -1)
+					{
+						AcceptEntityInput(weapon2, "Use", client);
+						SetEntProp(weapon, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
+					}
+				}
 			}
-			else
+			else if (strcmp(sg_slot1[client], "weapon_pistol", false) == 0)
+			{
+				weapon = HxCreateWeapon("weapon_pistol");
+				if (weapon != -1)
+				{
+					SetEntProp(weapon, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
+					EquipPlayerWeapon(client, weapon);
+				}
+			}
+			else if (strcmp(sg_slot1[client], "weapon_chainsaw", false) == 0)
 			{
 				weapon = HxCreateWeapon(sg_slot1[client]);
-				if (weapon != -1) EquipPlayerWeapon(client, weapon);
+				if (weapon != -1)
+				{
+					SetEntProp(weapon, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
+					SetEntProp(weapon, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
+					if(IsIncap)
+					{
+						int pistol = CreateEntityByName("weapon_pistol");
+						DispatchSpawn(pistol);
+						SetEntProp(pistol, Prop_Send, "m_iClip1", 0);
+						AcceptEntityInput(pistol, "Use", client);
+
+						SetEntDataEnt2(client, g_iOff_m_hHiddenWeapon, weapon);
+					}
+					else
+					{
+						EquipPlayerWeapon(client, weapon);
+					}
+				}
 			}
-		}
-		
-		iSlot1 = GetPlayerWeaponSlot(client, 1);
-		if(iSlot1 > MaxClients)
-		{
-			SetEntProp(iSlot1, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
-			if (StrContains(sg_slot1[client], "chainsaw", false) >= 0 || StrContains(sg_slot1[client], "pistol", false) >= 0)
+			else if (strcmp(sg_slot1[client], "weapon_pistol_magnum", false) == 0)
 			{
-				SetEntProp(iSlot1, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
+				weapon = HxCreateWeapon(sg_slot1[client]);
+				if (weapon != -1)
+				{
+					SetEntProp(weapon, Prop_Send, "m_nSkin", ig_slots1_skin[client]);
+					SetEntProp(weapon, Prop_Send, "m_iClip1", ig_slots1_clip[client]);
+					EquipPlayerWeapon(client, weapon);
+				}
 			}
 		}
 	}
@@ -642,16 +593,14 @@ void HxGiveC(int client)
 	if (sg_slot0[client][0] != '\0')
 	{
 		weapon = HxCreateWeapon(sg_slot0[client]);
-		if (weapon != -1) EquipPlayerWeapon(client, weapon);
-		
-		iSlot0 = GetPlayerWeaponSlot(client, 0);
-		if(iSlot0 > MaxClients)
+		if (weapon != -1)
 		{
-			SetEntProp(iSlot0, Prop_Send, "m_iClip1", ig_slots0_clip[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", ig_slots0_upgrade_bit[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_slots0_upgraded_ammo[client], 4);
-			SetEntProp(iSlot0, Prop_Send, "m_nSkin", ig_slots0_skin[client], 4);
-			SetEntData(client, ammoOffset+(ig_slots0_ammo_offest[client]*4), ig_slots0_ammo[client]);
+			EquipPlayerWeapon(client, weapon);
+			SetEntProp(weapon, Prop_Send, "m_iClip1", ig_slots0_clip[client]);
+			SetEntProp(weapon, Prop_Send, "m_upgradeBitVec", ig_slots0_upgrade_bit[client]);
+			SetEntProp(weapon, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", ig_slots0_upgraded_ammo[client]);
+			SetEntProp(weapon, Prop_Send, "m_nSkin", ig_slots0_skin[client]);
+			GetOrSetPlayerAmmo(client, weapon, ig_slots0_ammo[client]);
 		}
 	}
 
@@ -697,7 +646,7 @@ void HxSaveC(int client)
 	if(g_bSaveCharacter)
 	{
 		// Store model
-		GetClientModel(client, g_sModelInfo[client], 64);
+		GetClientModel(client, g_sModelInfo[client], sizeof(g_sModelInfo[]));
 		
 		// Store prop
 		g_iProp[client] = GetEntProp(client, Prop_Send, "m_survivorCharacter");
@@ -728,7 +677,7 @@ void HxSaveC(int client)
 	
 	iSlot0 = GetPlayerWeaponSlot(client, 0);
 
-	if(L4D_IsPlayerIncapacitated(client))
+	if(L4D_IsPlayerIncapacitated(client) && !L4D_IsPlayerHangingFromLedge(client))
 	{
 		iSlot1 = GetEntDataEnt2(client, g_iOff_m_hHiddenWeapon);
 	}
@@ -743,29 +692,29 @@ void HxSaveC(int client)
 
 	if (iSlot0 > MaxClients)
 	{
-		GetEntityClassname(iSlot0, sg_slot0[client], 64);
-		ig_slots0_clip[client] = GetEntProp(iSlot0, Prop_Send, "m_iClip1", 4);
-		ig_slots0_upgrade_bit[client] = GetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec", 4);
-		ig_slots0_upgraded_ammo[client] = GetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", 4);
-		ig_slots0_skin[client] = GetEntProp(iSlot0, Prop_Send, "m_nSkin", 4);
-		HxGetSlot0Ammo(client, sg_slot0[client]);
+		GetEntityClassname(iSlot0, sg_slot0[client], sizeof(sg_slot0[]));
+		ig_slots0_clip[client] = GetEntProp(iSlot0, Prop_Send, "m_iClip1");
+		ig_slots0_upgrade_bit[client] = GetEntProp(iSlot0, Prop_Send, "m_upgradeBitVec");
+		ig_slots0_upgraded_ammo[client] = GetEntProp(iSlot0, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded");
+		ig_slots0_skin[client] = GetEntProp(iSlot0, Prop_Send, "m_nSkin");
+		ig_slots0_ammo[client] = GetOrSetPlayerAmmo(client, iSlot0);
 	}
 	if (iSlot1 > MaxClients)
 	{
 		HxGetSlot1(client, iSlot1);
-		ig_slots1_skin[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin", 4);
+		ig_slots1_skin[client] = GetEntProp(iSlot1, Prop_Send, "m_nSkin");
 	}
 	if (iSlot2 > MaxClients)
 	{
-		GetEntityClassname(iSlot2, sg_slot2[client], 64);
+		GetEntityClassname(iSlot2, sg_slot2[client], sizeof(sg_slot2[]));
 	}
 	if (iSlot3 > MaxClients)
 	{
-		GetEntityClassname(iSlot3, sg_slot3[client], 64);
+		GetEntityClassname(iSlot3, sg_slot3[client], sizeof(sg_slot3[]));
 	}
 	if (iSlot4 > MaxClients)
 	{
-		GetEntityClassname(iSlot4, sg_slot4[client], 64);
+		GetEntityClassname(iSlot4, sg_slot4[client], sizeof(sg_slot4[]));
 	}
 }
 
@@ -778,7 +727,6 @@ void HxCleaning(int client)
 	ig_slots0_skin[client] = 0;
 	ig_slots1_skin[client] = 0;
 	ig_slots0_ammo[client] = 0;
-	ig_slots0_ammo_offest[client] = 0;
 
 	sg_slot0[client][0] = '\0';
 	sg_slot1[client][0] = '\0';
@@ -800,79 +748,21 @@ void HxCleaning(int client)
 	g_bSlot1_IsMelee[client] = false;
 }
 
-void HxGetSlot0Ammo (int client, const char[] sWeaponName)
+int GetOrSetPlayerAmmo(int client, int iWeapon, int iAmmo = -1)
 {
-	if (strcmp(sWeaponName, "weapon_smg", true) == 0)
+	int offset = GetEntData(iWeapon, g_iPrimaryAmmoType) * 4; // Thanks to "Root" or whoever for this method of not hard-coding offsets: https://github.com/zadroot/AmmoManager/blob/master/scripting/ammo_manager.sp
+
+	if( offset )
 	{
-		ig_slots0_ammo_offest[client] = 5;
-	}
-	else if (strcmp(sWeaponName, "weapon_pumpshotgun", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 7;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_autoshotgun", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 8;
-	}
-	else if (strcmp(sWeaponName, "weapon_hunting_rifle", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 9;
-	}
-	else if (strcmp(sWeaponName, "weapon_smg_silenced", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 5;
-	}
-	else if (strcmp(sWeaponName, "weapon_smg_mp5", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 5;
-	}
-	else if (strcmp(sWeaponName, "weapon_shotgun_chrome", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 7;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_ak47", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_desert", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_sniper_military", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 10;
-	}
-	else if (strcmp(sWeaponName, "weapon_grenade_launcher", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 17;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_sg552", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 3;
-	}
-	else if (strcmp(sWeaponName, "weapon_rifle_m60", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 6;
-	}
-	else if (strcmp(sWeaponName, "weapon_sniper_awp", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 10;
-	}
-	else if (strcmp(sWeaponName, "weapon_sniper_scout", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 10;
-	}
-	else if (strcmp(sWeaponName, "weapon_shotgun_spas", true) == 0)
-	{
-		ig_slots0_ammo_offest[client] = 8;
+		if( iAmmo != -1 ) SetEntData(client, g_iOffsetAmmo + offset, iAmmo);
+		else
+		{
+			int ammo = GetEntData(client, g_iOffsetAmmo + offset);
+			return ammo >= 999 ? 999 : ammo;
+		}
 	}
 
-	ig_slots0_ammo[client] = GetEntData(client, ammoOffset+(ig_slots0_ammo_offest[client]*4));
-	//PrintToChatAll("%N - ammo: %d - offset: %d", client,ig_slots0_ammo[client],ig_slots0_ammo_offest[client]);
+	return 0;
 }
 
 void HxGetSlot1(int client, int iSlot1)
@@ -894,9 +784,12 @@ void HxGetSlot1(int client, int iSlot1)
 		GetEntProp(iSlot1, Prop_Send, "m_isDualWielding") > 0) //dual pistol
 		{
 			strcopy(wep_name, sizeof(wep_name), "dual_pistol");
+			ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
 		}
 		
-		if (StrContains(wep_name, "chainsaw", false) >= 0 || StrContains(wep_name, "pistol", false) >= 0) //chainsaw, pistol, dual_pistol, pistol_magnum
+		if (strcmp(wep_name, "weapon_chainsaw", false) == 0 
+			|| strcmp(wep_name, "weapon_pistol", false) == 0
+			|| strcmp(wep_name, "weapon_pistol_magnum", false) == 0)
 		{
 			ig_slots1_clip[client] = GetEntProp(iSlot1, Prop_Send, "m_iClip1");
 		}
@@ -904,7 +797,7 @@ void HxGetSlot1(int client, int iSlot1)
 	
 	if (wep_name[0] != '\0')
 	{
-		strcopy(sg_slot1[client], 64, wep_name);
+		strcopy(sg_slot1[client], sizeof(sg_slot1[]), wep_name);
 	}
 }
 
@@ -936,7 +829,7 @@ int HxCreateWeapon(const char[] class_name, const char[] melee_name = "")
 	{
 		char wep_str[128];
 		strcopy(wep_str, sizeof(wep_str), class_name);
-		if (StrContains(wep_str, "weapon_", false) < 0)
+		if (strncmp(wep_str, "weapon_", 7, false) != 0)
 		{
 			Format(wep_str, sizeof(wep_str), "weapon_%s", wep_str);
 		}
