@@ -228,10 +228,6 @@ StringMap
 
 public void OnPluginStart()
 {
-	g_weapon_name = new StringMap();
-	g_hud_killinfo = new ArrayList(128);
-	LoadEventWeaponName();
-
 	g_hCvarEnable 			= CreateConVar( PLUGIN_NAME ... "_enable",        				"1",   	"0=Plugin off, 1=Plugin on.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarKillInfoNumber 	= CreateConVar( PLUGIN_NAME ... "_number",        				"5",   	"Numbers of kill list on hud (Default: 5, MAX: 6)", CVAR_FLAGS, true, 1.0, true, 6.0);
 	g_hCvarHudDecrease 		= CreateConVar( PLUGIN_NAME ... "_notice_time",   				"7.0", 	"Time in seconds to erase kill list on hud.", CVAR_FLAGS, true, 1.0);
@@ -263,6 +259,12 @@ public void OnPluginStart()
 
 	HookEvent("player_death",Event_PlayerDeathInfo_Pre, EventHookMode_Pre);
 	HookEvent("player_death",Event_PlayerDeathInfo_Post);
+
+	HookEvent("round_start",            Event_RoundStart, 	EventHookMode_PostNoCopy);
+
+	g_weapon_name = new StringMap();
+	g_hud_killinfo = new ArrayList(ByteCountToCells(128));
+	LoadEventWeaponName();
 
 	g_smSpecialWeapons = new StringMap();
 	g_smSpecialWeapons.SetValue("pipe_bomb", true);
@@ -340,15 +342,12 @@ public void OnMapStart()
 	GameRules_SetProp("m_bChallengeModeActive", true, _, _, true);
 }
 
-public void OnConfigsExecuted()
+public void OnMapEnd()
 {
-	GetCvars();
-
-	for (int slot = KILL_HUD_BASE; slot < MAX_SIZE_HUD; slot++)
-		RemoveHUD(slot);
-
 	delete g_hud_killinfo;
-	g_hud_killinfo = new ArrayList(128);
+	g_hud_killinfo = new ArrayList(ByteCountToCells(128));
+
+	delete g_hKillHUDDecreaseTimer;
 }
 
 //Event-------------------------------
@@ -573,6 +572,17 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 	}
 
 	DisplayKillList(killinfo);
+}
+
+void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
+{
+	for (int slot = KILL_HUD_BASE; slot < MAX_SIZE_HUD; slot++)
+		RemoveHUD(slot);
+
+	delete g_hud_killinfo;
+	g_hud_killinfo = new ArrayList(ByteCountToCells(128));
+
+	delete g_hKillHUDDecreaseTimer;
 }
 
 //Timer-------------------------------
