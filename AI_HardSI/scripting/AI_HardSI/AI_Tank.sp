@@ -2,35 +2,32 @@
 #pragma newdecls required //強制1.7以後的新語法
 #define BoostForward 60.0 // Bhop
 
-// Velocity
 #define VelocityOvr_None 0
 #define VelocityOvr_Velocity 1
 #define VelocityOvr_OnlyWhenNegative 2
 #define VelocityOvr_InvertReuseVelocity 3
 
-ConVar hCvarTankBhop, hCvarTankRock;
+static ConVar g_hCvarEnable, g_hCvarTankBhop, g_hCvarTankRock; 
+static bool g_bCvarEnable, g_bCvarTankBhop, g_bCvarTankRock;
 
-// Bibliography: 
-// TGMaster, Chanz - Infinite Jumping
-
-static ConVar g_hCvarEnable; 
-static bool g_bCvarEnable;
-
-public void Tank_OnModuleStart() 
+void Tank_OnModuleStart() 
 {
-	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Tank_enable",   "1",   "0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Tank_enable",   	"1",   	"0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+	g_hCvarTankBhop 	= CreateConVar("ai_tank_bhop", 				"1", 	"Flag to enable bhop facsimile on AI tanks", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarTankRock 	= CreateConVar("ai_tank_rock", 				"1", 	"Flag to enable rocks on AI tanks", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
+	g_hCvarTankBhop.AddChangeHook(CvarChanged);
+	g_hCvarTankRock.AddChangeHook(CvarChanged);
 
-	hCvarTankBhop = CreateConVar("ai_tank_bhop", "1", "Flag to enable bhop facsimile on AI tanks");
-	hCvarTankRock = CreateConVar("ai_tank_rock", "1", "Flag to enable rocks on AI tanks");
 }
 static void _OnModuleStart()
 {
 }
 
-public void Tank_OnModuleEnd() 
+void Tank_OnModuleEnd() 
 {
 }
 
@@ -47,21 +44,30 @@ static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const 
     }
 }
 
+static void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) 
+{
+	GetCvars();
+}
+
 static void GetCvars()
 {
-    g_bCvarEnable = g_hCvarEnable.BoolValue;
+	g_bCvarEnable = g_hCvarEnable.BoolValue;
+	g_bCvarTankBhop = g_hCvarTankBhop.BoolValue;
+	g_bCvarTankRock = g_hCvarTankRock.BoolValue;
 }
 
 // Tank bhop and blocking rock throw
-public Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
 	if(!g_bCvarEnable) return Plugin_Continue;
 
 	// block rock throws
-	if( hCvarTankRock.BoolValue == false ) {
+	if( g_bCvarTankRock == false ) 
+	{
 		buttons &= ~IN_ATTACK2;
 	}
 	
-	if( hCvarTankBhop.BoolValue ) {
+	if( g_bCvarTankBhop ) 
+	{
 		int flags = GetEntityFlags(tank);
 		
 		// Get the player velocity:
@@ -83,41 +89,56 @@ public Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float v
 		bool bHasSight = view_as<bool>(GetEntProp(tank, Prop_Send, "m_hasVisibleThreats")); //Line of sight to survivors
 		
 		// Near survivors
-		if( bHasSight && (400 > iSurvivorsProximity > 100) && currentspeed > 190.0 ) { // Random number to make bhop?
-			if( hCvarTankBhop.BoolValue == false && hCvarTankRock.BoolValue == false) {
-				buttons &= ~IN_ATTACK2;	
-			} // Block throwing rock
-			if (flags & FL_ONGROUND) {
+		if( bHasSight && (400 > iSurvivorsProximity > 100) && currentspeed > 190.0 ) 
+		{ // Random number to make bhop?
+			if (flags & FL_ONGROUND) 
+			{
 				buttons |= IN_DUCK;
 				buttons |= IN_JUMP;
 				
-				if(buttons & IN_FORWARD) {
+				if(buttons & IN_FORWARD) 
+				{
 					Client_Push( tank, clientEyeAngles, BoostForward, {VelocityOvr_None,VelocityOvr_None,VelocityOvr_None} );
 				}	
 				
-				if(buttons & IN_BACK) {
+				if(buttons & IN_BACK) 
+				{
 					clientEyeAngles[1] += 180.0;
 					Client_Push( tank, clientEyeAngles, BoostForward, {VelocityOvr_None,VelocityOvr_None,VelocityOvr_None} );
 				}
 						
-				if(buttons & IN_MOVELEFT) {
+				if(buttons & IN_MOVELEFT) 
+				{
 					clientEyeAngles[1] += 90.0;
 					Client_Push( tank, clientEyeAngles, BoostForward, {VelocityOvr_None,VelocityOvr_None,VelocityOvr_None} );
 				}
 						
-				if(buttons & IN_MOVERIGHT) {
+				if(buttons & IN_MOVERIGHT) 
+				{
 					clientEyeAngles[1] += -90.0;
 					Client_Push( tank, clientEyeAngles, BoostForward, {VelocityOvr_None,VelocityOvr_None,VelocityOvr_None} );
 				}
 			}
 			//Block Jumping and Crouching when on ladder
-			if (GetEntityMoveType(tank) & MOVETYPE_LADDER) {
+			if (GetEntityMoveType(tank) & MOVETYPE_LADDER) 
+			{
 				buttons &= ~IN_JUMP;
 				buttons &= ~IN_DUCK;
 			}
 		}
 	}
 	return Plugin_Continue;	
+}
+
+Action Tank_OnSelectTankAttack(int client, int &sequence) {
+	if(!g_bCvarEnable) return Plugin_Continue;
+
+	if (IsFakeClient(client) && sequence == 50) {
+		sequence = GetRandomInt(0, 1) ? 49 : 51;
+		return Plugin_Handled;
+	}
+	
+	return Plugin_Continue;
 }
 
 stock void Client_Push(int client, float clientEyeAngle[3], float power, int override[3]) {
@@ -151,15 +172,4 @@ stock void Client_Push(int client, float clientEyeAngle[3], float power, int ove
 	}
 	
 	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, newVel);
-}
-
-public Action L4D2_OnSelectTankAttack(int client, int &sequence) {
-	if(!g_bCvarEnable) return Plugin_Continue;
-
-	if (IsFakeClient(client) && sequence == 50) {
-		sequence = GetRandomInt(0, 1) ? 49 : 51;
-		return Plugin_Handled;
-	}
-	
-	return Plugin_Continue;
 }

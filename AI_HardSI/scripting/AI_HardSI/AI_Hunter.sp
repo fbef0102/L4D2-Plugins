@@ -12,39 +12,46 @@
 #define Z 2
 
 // Vanilla Cvars
-ConVar hCvarHunterCommittedAttackRange;
-ConVar hCvarHunterPounceReadyRange;
-ConVar hCvarHunterLeapAwayGiveUpRange; 
-ConVar hCvarHunterPounceMaxLoftAngle; 
-ConVar hCvarLungeInterval; 
-ConVar z_pounce_damage_interrupt;
-// Gaussian random number generator for pounce angles
-ConVar hCvarPounceAngleMean;
-ConVar hCvarPounceAngleStd; // standard deviation
-// Pounce vertical angle
-ConVar hCvarPounceVerticalAngle;
-// Distance at which hunter begins pouncing fast
-ConVar hCvarFastPounceProximity; 
-// Distance at which hunter considers pouncing straight
-ConVar hCvarStraightPounceProximity;
-// Aim offset(degrees) sensitivity
-ConVar hCvarAimOffsetSensitivityHunter;
-// Wall detection
-ConVar hCvarWallDetectionDistance;
+static ConVar g_hCvarHunterHealth, hCvarHunterCommittedAttackRange, hCvarHunterPounceReadyRange, hCvarHunterLeapAwayGiveUpRange, hCvarHunterPounceMaxLoftAngle, hCvarLungeInterval, z_pounce_damage_interrupt;
+static ConVar g_hCvarEnable, g_hCvarPounceAngleMean, g_hCvarPounceAngleStd, g_hCvarPounceVerticalAngle, g_hCvarFastPounceProximity, g_hCvarStraightPounceProximity, 
+	g_hCvarAimOffsetSensitivity, g_hCvarWallDetectionDistance, g_hCvarPounceDancing;
+static bool g_bCvarEnable, g_bCvarPounceDancing;
+static int g_iCvarFastPounceProximity, g_iCvarStraightPounceProximity, g_iCvarWallDetectionDistance;
+static float g_fCvarPounceAngleMean, g_fCvarPounceAngleStd, g_fCvarPounceVerticalAngle, g_fCvarAimOffsetSensitivity;
 
-static ConVar g_hCvarEnable; 
-static bool g_bCvarEnable;
+static bool 
+	g_bHasQueuedLunge[MAXPLAYERS+1], 
+	g_bCanLunge[MAXPLAYERS+1];
 
-bool bHasQueuedLunge[MAXPLAYERS];
-bool bCanLunge[MAXPLAYERS];
+static float 
+	g_fAttack2[MAXPLAYERS+1];
 
-public void Hunter_OnModuleStart() {
-	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Hunter_enable",   "1",   "0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+void Hunter_OnModuleStart() {
+	g_hCvarEnable 					= CreateConVar( "AI_HardSI_Hunter_enable",  		"1",   	"0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	
+	g_hCvarFastPounceProximity 		= CreateConVar( "ai_fast_pounce_proximity", 		"1000", "At what distance to start pouncing fast", FCVAR_NOTIFY, true, 0.0);
+	g_hCvarPounceVerticalAngle 		= CreateConVar( "ai_pounce_vertical_angle", 		"7", 	"Vertical angle to which AI hunter pounces will be restricted", FCVAR_NOTIFY, true, 0.0);
+	g_hCvarPounceAngleMean 			= CreateConVar( "ai_pounce_angle_mean", 			"10", 	"Mean angle produced by Gaussian RNG", FCVAR_NOTIFY, true, 0.0 );
+	g_hCvarPounceAngleStd 			= CreateConVar( "ai_pounce_angle_std", 				"20", 	"One standard deviation from mean as produced by Gaussian RNG", FCVAR_NOTIFY, true, 0.0 );
+	g_hCvarStraightPounceProximity 	= CreateConVar( "ai_straight_pounce_proximity", 	"200", 	"Distance to nearest survivor at which hunter will consider pouncing straight", FCVAR_NOTIFY, true, 0.0);
+	g_hCvarAimOffsetSensitivity 	= CreateConVar( "ai_aim_offset_sensitivity_hunter", "30",  	"If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius", FCVAR_NOTIFY, true, 0.0, true, 179.0 );
+	g_hCvarWallDetectionDistance 	= CreateConVar( "ai_wall_detection_distance", 		"-1", 	"How far in front of hunter infected bot will check for a wall. Use '-1' to disable feature", FCVAR_NOTIFY, true, -1.0);
+	g_hCvarPounceDancing 			= CreateConVar( "ai_pounce_dancing_enable", 		"1", 	"If 1, Hunter do scratch animation when pouncing", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
+	g_hCvarFastPounceProximity.AddChangeHook(CvarChanged);
+	g_hCvarPounceVerticalAngle.AddChangeHook(CvarChanged);
+	g_hCvarPounceAngleMean.AddChangeHook(CvarChanged);
+	g_hCvarPounceAngleStd.AddChangeHook(CvarChanged);
+	g_hCvarStraightPounceProximity.AddChangeHook(CvarChanged);
+	g_hCvarAimOffsetSensitivity.AddChangeHook(CvarChanged);
+	g_hCvarWallDetectionDistance.AddChangeHook(CvarChanged);
+	g_hCvarPounceDancing.AddChangeHook(CvarChanged);
 
-	// Set aggressive hunter cvars		
+
+	// Set aggressive hunter cvars	
+	g_hCvarHunterHealth = FindConVar("z_hunter_health");
 	hCvarHunterCommittedAttackRange = FindConVar("hunter_committed_attack_range"); // range at which hunter is committed to attack	
 	hCvarHunterPounceReadyRange = FindConVar("hunter_pounce_ready_range"); // range at which hunter prepares pounce	
 	hCvarHunterLeapAwayGiveUpRange = FindConVar("hunter_leap_away_give_up_range"); // range at which shooting a non-committed hunter will cause it to leap away	
@@ -57,26 +64,8 @@ public void Hunter_OnModuleStart() {
 	hCvarHunterPounceReadyRange.AddChangeHook(OnHunterCvarChange);
 	hCvarHunterLeapAwayGiveUpRange.AddChangeHook(OnHunterCvarChange);
 	hCvarHunterPounceMaxLoftAngle.AddChangeHook(OnHunterCvarChange);
-
-	// proximity to nearest survivor when plugin starts to force hunters to lunge ASAP
-	hCvarFastPounceProximity = CreateConVar("ai_fast_pounce_proximity", "1000", "At what distance to start pouncing fast");
-
-	// Verticality
-	hCvarPounceVerticalAngle = CreateConVar("ai_pounce_vertical_angle", "7", "Vertical angle to which AI hunter pounces will be restricted");
-
-	// Pounce angle
-	hCvarPounceAngleMean = CreateConVar( "ai_pounce_angle_mean", "10", "Mean angle produced by Gaussian RNG" );
-	hCvarPounceAngleStd = CreateConVar( "ai_pounce_angle_std", "20", "One standard deviation from mean as produced by Gaussian RNG" );
-	hCvarStraightPounceProximity = CreateConVar( "ai_straight_pounce_proximity", "200", "Distance to nearest survivor at which hunter will consider pouncing straight");
-
-	// Aim offset sensitivity
-	hCvarAimOffsetSensitivityHunter = CreateConVar("ai_aim_offset_sensitivity_hunter",
-									"30",
-									"If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius",
-									FCVAR_NONE,
-									true, 0.0, true, 179.0 );
-	// How far in front of hunter to check for a wall
-	hCvarWallDetectionDistance = CreateConVar("ai_wall_detection_distance", "-1", "How far in front of himself infected bot will check for a wall. Use '-1' to disable feature");
+	g_hCvarHunterHealth.AddChangeHook(OnHunterCvarChange);
+	z_pounce_damage_interrupt.AddChangeHook(OnHunterCvarChange);
 }
 
 static void _OnModuleStart()
@@ -85,10 +74,10 @@ static void _OnModuleStart()
 	hCvarHunterPounceReadyRange.SetInt(1000);
 	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
 	hCvarHunterPounceMaxLoftAngle.SetInt(0);
-	z_pounce_damage_interrupt.SetInt(150);
+	z_pounce_damage_interrupt.SetInt(g_hCvarHunterHealth.IntValue-100);
 }
 
-public void Hunter_OnModuleEnd() {
+void Hunter_OnModuleEnd() {
 	// Reset aggressive hunter cvars
 	ResetConVar(hCvarHunterCommittedAttackRange);
 	ResetConVar(hCvarHunterPounceReadyRange);
@@ -110,22 +99,34 @@ static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const 
     }
 }
 
+static void CvarChanged(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+	GetCvars();
+}
+
 static void GetCvars()
 {
-    g_bCvarEnable = g_hCvarEnable.BoolValue;
+	g_bCvarEnable = g_hCvarEnable.BoolValue;
+	g_iCvarFastPounceProximity = g_hCvarFastPounceProximity.IntValue;
+	g_fCvarPounceVerticalAngle = g_hCvarPounceVerticalAngle.FloatValue;
+	g_fCvarPounceAngleMean = g_hCvarPounceAngleMean.FloatValue;
+	g_fCvarPounceAngleStd = g_hCvarPounceAngleStd.FloatValue;
+	g_iCvarStraightPounceProximity = g_hCvarStraightPounceProximity.IntValue;
+	g_fCvarAimOffsetSensitivity = g_hCvarAimOffsetSensitivity.FloatValue;
+	g_iCvarWallDetectionDistance = g_hCvarWallDetectionDistance.IntValue;
+	g_bCvarPounceDancing = g_hCvarPounceDancing.BoolValue;
 }
 
 // Game tries to reset these cvars
-public void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
+static void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
 	if(g_bCvarEnable) _OnModuleStart();
 }
 
-public Action Hunter_OnSpawn(int botHunter) {
-	if(!g_bCvarEnable) return Plugin_Continue;
+void Hunter_OnSpawn(int botHunter) {
+	if(!g_bCvarEnable) return;
 
-	bHasQueuedLunge[botHunter] = false;
-	bCanLunge[botHunter] = true;
-	return Plugin_Handled;
+	g_bHasQueuedLunge[botHunter] = false;
+	g_bCanLunge[botHunter] = true;
 }
 
 /***********************************************************************************************************************************************************************************
@@ -134,46 +135,52 @@ public Action Hunter_OnSpawn(int botHunter) {
 
 ***********************************************************************************************************************************************************************************/
 
-public Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {	
+stock Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {	
 	if(!g_bCvarEnable) return Plugin_Continue;
 
-	buttons &= ~IN_ATTACK2; // block scratches
+	if (!GetEntProp(hunter, Prop_Send, "m_hasVisibleThreats"))
+		return Plugin_Continue;
+
 	int flags = GetEntityFlags(hunter);
 	//Proceed if the hunter is in a position to pounce
-	if( (flags & FL_DUCKING) && (flags & FL_ONGROUND) ) {		
-		float hunterPos[3];
-		GetClientAbsOrigin(hunter, hunterPos);		
-		int iSurvivorsProximity = GetSurvivorProximity(hunterPos);
-		if (iSurvivorsProximity == -1) return Plugin_Continue;
-		
-		bool bHasLOS = view_as<bool>(GetEntProp(hunter, Prop_Send, "m_hasVisibleThreats")); // Line of sight to survivors		
-		// Start fast pouncing if close enough to survivors
-		if( bHasLOS ) {
-			if( iSurvivorsProximity < hCvarFastPounceProximity.IntValue ) {
+	if( flags & FL_ONGROUND ) 
+	{	
+		if ( view_as<bool>(GetEntProp(hunter, Prop_Send, "m_bDucked")) )
+		{
+			float hunterPos[3];
+			GetClientAbsOrigin(hunter, hunterPos);		
+			int iSurvivorsProximity = GetSurvivorProximity(hunterPos);
+			if (iSurvivorsProximity == -1) return Plugin_Continue;
+			
+			if( iSurvivorsProximity < g_iCvarFastPounceProximity ) {
 				buttons &= ~IN_ATTACK; // release attack button; precautionary					
 				// Queue a pounce/lunge
-				if (!bHasQueuedLunge[hunter]) { // check lunge interval timer has not already been initiated
-					bCanLunge[hunter] = false;
-					bHasQueuedLunge[hunter] = true; // block duplicate lunge interval timers
+				if (!g_bHasQueuedLunge[hunter]) { // check lunge interval timer has not already been initiated
+					g_bCanLunge[hunter] = false;
+					g_bHasQueuedLunge[hunter] = true; // block duplicate lunge interval timers
 					CreateTimer(hCvarLungeInterval.FloatValue, Timer_LungeInterval, hunter, TIMER_FLAG_NO_MAPCHANGE);
-				} else if (bCanLunge[hunter]) { // end of lunge interval; lunge!
+				} else if (g_bCanLunge[hunter]) { // end of lunge interval; lunge!
+					float now = GetEngineTime();
+					if (g_bCvarPounceDancing == true && g_fAttack2[hunter] < now) 
+					{
+						buttons |= IN_ATTACK2;
+						g_fAttack2[hunter] = GetEngineTime() + 0.2;
+					}	
+
 					buttons |= IN_ATTACK;
-					bHasQueuedLunge[hunter] = false; // unblock lunge interval timer
-				} // else lunge queue is being processed
+					g_bHasQueuedLunge[hunter] = false; // unblock lunge interval timer
+
+					return Plugin_Changed;
+				} 
 			}
-		} 	
-	} 	
+		}
+	} 
+
 	return Plugin_Changed;
 }
 
-/***********************************************************************************************************************************************************************************
-
-																	POUNCING AT AN ANGLE TO SURVIVORS
-
-***********************************************************************************************************************************************************************************/
-
-public Action Hunter_OnPounce(int botHunter) {	
-	if(!g_bCvarEnable) return Plugin_Continue;
+void ability_use_OnPounce(int botHunter) {	
+	if(!g_bCvarEnable) return;
 	
 	int entLunge = GetEntPropEnt(botHunter, Prop_Send, "m_customAbility"); // get the hunter's lunge entity				
 	float lungeVector[3]; 
@@ -189,7 +196,7 @@ public Action Hunter_OnPounce(int botHunter) {
 	float impactPos[3];
 	TR_GetEndPosition( impactPos );
 	// Check first object hit
-	if( GetVectorDistance(hunterPos, impactPos) < hCvarWallDetectionDistance.IntValue ) { // wall detected in front
+	if( GetVectorDistance(hunterPos, impactPos) < g_iCvarWallDetectionDistance ) { // wall detected in front
 		if( GetRandomInt(0, 1) ) { // 50% chance left or right
 			AngleLunge( entLunge, 45.0 );
 		} else {
@@ -203,8 +210,8 @@ public Action Hunter_OnPounce(int botHunter) {
 	} else {
 		// Angle pounce if survivor is watching the hunter approach
 		GetClientAbsOrigin(botHunter, hunterPos);		
-		if( IsTargetWatchingAttacker(botHunter, hCvarAimOffsetSensitivityHunter.IntValue) && GetSurvivorProximity(hunterPos) > hCvarStraightPounceProximity.IntValue ) {			
-			float pounceAngle = GaussianRNG( hCvarPounceAngleMean.FloatValue, hCvarPounceAngleStd.FloatValue );
+		if( IsTargetWatchingAttacker(botHunter, g_fCvarAimOffsetSensitivity) && GetSurvivorProximity(hunterPos) > g_iCvarStraightPounceProximity ) {			
+			float pounceAngle = GaussianRNG( g_fCvarPounceAngleMean, g_fCvarPounceAngleStd );
 			AngleLunge( entLunge, pounceAngle );
 			LimitLungeVerticality( entLunge );
 			
@@ -219,17 +226,16 @@ public Action Hunter_OnPounce(int botHunter) {
 					
 				#endif
 	
-			return Plugin_Changed;					
+			return;					
 		}	
 	}
-	return Plugin_Continue;
 }
 
-public bool TracerayFilter( int impactEntity, int contentMask, any rayOriginEntity ) {
+static bool TracerayFilter( int impactEntity, int contentMask, any rayOriginEntity ) {
 	return impactEntity != rayOriginEntity;
 }
 // Credits to High Cookie and Standalone for working out the math behind hunter lunges
-void AngleLunge( int lungeEntity, float turnAngle ) {	
+static void AngleLunge( int lungeEntity, float turnAngle ) {	
 	// Get the original lunge's vector
 	float lungeVector[3];
 	GetEntPropVector(lungeEntity, Prop_Send, "m_queuedLunge", lungeVector);
@@ -248,9 +254,9 @@ void AngleLunge( int lungeEntity, float turnAngle ) {
 }
 
 // Stop pounces being too high
-void LimitLungeVerticality( int lungeEntity ) {
+static void LimitLungeVerticality( int lungeEntity ) {
 	// Get vertical angle restriction
-	float vertAngle = hCvarPounceVerticalAngle.FloatValue;
+	float vertAngle = g_fCvarPounceVerticalAngle;
 	// Get the original lunge's vector
 	float lungeVector[3];
 	GetEntPropVector(lungeEntity, Prop_Send, "m_queuedLunge", lungeVector);
@@ -275,7 +281,7 @@ void LimitLungeVerticality( int lungeEntity ) {
  * Random number generator fit to a bellcurve. Function to generate Gaussian Random Number fit to a bellcurve with a specified mean and std
  * Uses Polar Form of the Box-Muller transformation
 */
-float GaussianRNG( float mean, float std ) {	 	
+static float GaussianRNG( float mean, float std ) {	 	
 	// Randomising positive/negative
 	float chanceToken = GetRandomFloat( 0.0, 1.0 );
 	int signBit;	
@@ -321,8 +327,8 @@ float GaussianRNG( float mean, float std ) {
 }
 
 // After the given interval, hunter is allowed to pounce/lunge
-public Action Timer_LungeInterval(Handle timer, any client) {
-	bCanLunge[client] = true;
+static Action Timer_LungeInterval(Handle timer, any client) {
+	g_bCanLunge[client] = true;
 
 	return Plugin_Continue;
 }

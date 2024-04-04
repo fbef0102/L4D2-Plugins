@@ -43,10 +43,13 @@ Improves the AI behaviour of special infected
         AI_HardSI_Tank_enable "1"
 
         // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
-        ai_aim_offset_sensitivity_charger "20"
+        ai_aim_offset_sensitivity_charger "22.5"
 
         // If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
         ai_aim_offset_sensitivity_hunter "30"
+
+        // Flag to enable bhop facsimile on AI chargers
+        ai_charger_bhop "1"
 
         // How close a charger will approach before charging
         ai_charge_proximity "300"
@@ -81,8 +84,14 @@ Improves the AI behaviour of special infected
         // Flag to enable rocks on AI tanks
         ai_tank_rock "1"
 
-        // How far in front of himself infected bot will check for a wall. Use '-1' to disable feature
+        // How far in front of hunter infected bot will check for a wall. Use '-1' to disable feature
         ai_wall_detection_distance "-1"
+
+        // If 1, Hunter do scratch animation when pouncing
+        ai_pounce_dancing_enable "1"
+
+        // Flag to enable bhop facsimile on AI boomers
+        ai_boomer_bhop "1"
         ```
 </details>
 
@@ -132,6 +141,12 @@ Improves the AI behaviour of special infected
             // How long the Boomer waits before he vomits on his target on Normal difficulty (Default: 1.0)
             boomer_vomit_delay 0.1
             ```
+
+        * Plugin ConVar
+            ```php
+            // Flag to enable bhop facsimile on AI boomers
+            ai_boomer_bhop "1"
+            ```
     </details>
 
     * <details><summary><b>AI Hunter</b></summary>
@@ -177,6 +192,9 @@ Improves the AI behaviour of special infected
 
             // How far in front of himself infected bot will check for a wall. Use '-1' to disable feature
             ai_wall_detection_distance -1
+
+            // If 1, Hunter do scratch animation when pouncing
+            ai_pounce_dancing_enable "1"
             ```
     </details>
 
@@ -208,14 +226,17 @@ Improves the AI behaviour of special infected
 
         * Plugin ConVar
             ```php
+            // Flag to enable bhop facsimile on AI chargers
+            ai_charger_bhop "1"
+
             // How close a charger will approach before charging
             ai_charge_proximity 300
 
             // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
-            ai_aim_offset_sensitivity_charger 20
+            ai_aim_offset_sensitivity_charger 22.5
 
             // Charger will charge if its health drops to this level
-            ai_health_threshold_charger "300"
+            ai_health_threshold_charger 300
             ```
     </details>
 
@@ -238,6 +259,9 @@ Improves the AI behaviour of special infected
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.8 (2024-4-4)
+        * Improve hunter, boomer and charger behavior
+
     * v1.7 (2024-1-28)
         * Update Cvars
 
@@ -250,7 +274,7 @@ Improves the AI behaviour of special infected
     * v1.4
         * Remake code
         * Replace left4downtown with left4dhooks
-        *Compatibility support for SourceMod 1.11. Fixed various warnings.
+        * Compatibility support for SourceMod 1.11. Fixed various warnings.
     </details>
 
 - - - -
@@ -299,8 +323,9 @@ Improves the AI behaviour of special infected
         AI_HardSI_Tank_enable "1"
 
         // 以下指令說明請查看下方"各特感強化內容"
-        ai_aim_offset_sensitivity_charger "20"
+        ai_aim_offset_sensitivity_charger "22.5"
         ai_aim_offset_sensitivity_hunter "30"
+        ai_charger_bhop "1"
         ai_charge_proximity "300"
         ai_fast_pounce_proximity "1000"
         ai_health_threshold_charger "300"
@@ -313,6 +338,8 @@ Improves the AI behaviour of special infected
         ai_tank_bhop "1"
         ai_tank_rock "1"
         ai_wall_detection_distance "-1"
+        ai_pounce_dancing_enable "1"
+        ai_boomer_bhop "1"
         ```
 </details> 
 
@@ -358,6 +385,12 @@ Improves the AI behaviour of special infected
             // 當倖存者靠近範圍內的0.1秒後立刻嘔吐 (預設: 1.0)
             boomer_vomit_delay 0.1
             ```
+
+        * 插件自帶的指令
+            ```php
+            // 為1時，AI Boomer會連跳
+            ai_boomer_bhop "1"
+            ```
     </details>
 
     * <details><summary><b>AI Hunter</b></summary>
@@ -401,6 +434,9 @@ Improves the AI behaviour of special infected
 
             // 前面有牆壁的範圍內則飛撲的角度會變高，嘗試越過障礙物 (-1: 無限範圍)
             ai_wall_detection_distance -1
+
+            // 為1時，Hunter邊飛撲邊嘗試做出抓傷動作
+            ai_pounce_dancing_enable "1"
             ```
     </details>
 
@@ -432,14 +468,17 @@ Improves the AI behaviour of special infected
 
         * 插件自帶的指令
             ```php
+            // 為1時，AI Charger會連跳
+            ai_charger_bhop "1"
+
             // 強迫AI Charger在300公尺範圍內開始衝刺
             ai_charge_proximity 300
 
             // 目標倖存者的準心如果在瞄自身AI Charger的身體低於20度視野範圍內則強制衝刺
-            ai_aim_offset_sensitivity_charger 20
+            ai_aim_offset_sensitivity_charger 22.5
 
             // 當Charger低於300血量時，強迫AI Charger開始衝刺
-            ai_health_threshold_charger "300"
+            ai_health_threshold_charger 300
             ```
     </details>
 

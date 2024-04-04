@@ -11,12 +11,12 @@ static bool
 	g_bCvarEnable,	
 	g_bSpitterBhop;
 
-public void Spitter_OnModuleStart() {
+void Spitter_OnModuleStart() {
 	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Spitter_enable",   "1",   "0=Improves the Spitter behaviour off, 1=Improves the Spitter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hSpitterBhop = CreateConVar("ai_spitter_bhop", "1", "Flag to enable bhop facsimile on AI spitters");
+	g_hSpitterBhop 		= CreateConVar("ai_spitter_bhop", 			  "1", "Flag to enable bhop facsimile on AI spitters", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
-	g_hCvarEnable.AddChangeHook(CvarChanged);
+	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
 	g_hSpitterBhop.AddChangeHook(CvarChanged);
 }
 
@@ -24,12 +24,12 @@ static void _OnModuleStart()
 {
 }
 
-public void Spitter_OnModuleEnd() 
+void Spitter_OnModuleEnd() 
 {
 }
 
-
-static void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+static void ConVarChanged_EnableCvars(ConVar convar, const char[] oldValue, const char[] newValue) 
+{
 	GetCvars();
 	if(g_bCvarEnable)
 	{
@@ -41,21 +41,20 @@ static void CvarChanged(ConVar convar, const char[] oldValue, const char[] newVa
 	}
 }
 
+static void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) 
+{
+	GetCvars();
+}
+
 static void GetCvars() {
 	g_bCvarEnable = g_hCvarEnable.BoolValue;
 	g_bSpitterBhop = g_hSpitterBhop.BoolValue;
 }
 
-public Action Spitter_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+stock Action Spitter_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
 	if (!g_bCvarEnable) return Plugin_Continue;
 
 	if (!g_bSpitterBhop)
-		return Plugin_Continue;
-
-	if (GetEntProp(client, Prop_Send, "m_isGhost") == 1)
-		return Plugin_Continue;
-
-	if (L4D_IsPlayerStaggering(client))
 		return Plugin_Continue;
 
 	if (IsGrounded(client) && GetEntityMoveType(client) != MOVETYPE_LADDER && GetEntProp(client, Prop_Data, "m_nWaterLevel") < 2 && GetEntProp(client, Prop_Send, "m_hasVisibleThreats")) {
@@ -75,15 +74,7 @@ public Action Spitter_OnPlayerRunCmd(int client, int &buttons, int &impulse, flo
 	return Plugin_Continue;
 }
 
-bool IsGrounded(int client) {
-	return GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") != -1;
-}
-
-bool CheckPlayerMove(int client, float vel) {
-	return vel > 0.9 * GetEntPropFloat(client, Prop_Send, "m_flMaxspeed") > 0.0;
-}
-
-Action BunnyHop(int client, int &buttons, const float vAng[3]) {
+static Action BunnyHop(int client, int &buttons, const float vAng[3]) {
 	float vVec[3];
 	if (buttons & IN_FORWARD && !(buttons & IN_BACK)) {
 		GetAngleVectors(vAng, vVec, NULL_VECTOR, NULL_VECTOR);
@@ -144,134 +135,4 @@ Action BunnyHop(int client, int &buttons, const float vAng[3]) {
 	}
 
 	return Plugin_Continue;
-}
-
-bool CheckHopVel(int client, const float vAng[3], const float vVel[3]) {
-	static float vMins[3];
-	static float vMaxs[3];
-	GetClientMins(client, vMins);
-	GetClientMaxs(client, vMaxs);
-
-	static float vPos[3];
-	static float vEnd[3];
-	GetClientAbsOrigin(client, vPos);
-	float vel = GetVectorLength(vVel);
-	NormalizeVector(vVel, vEnd);
-	ScaleVector(vEnd, vel + FloatAbs(vMaxs[0] - vMins[0]) + 3.0);
-	AddVectors(vPos, vEnd, vEnd);
-
-	static bool hit;
-	static Handle hndl;
-	static float vVec[3];
-	static float vNor[3];
-	static float vPlane[3];
-
-	hit = false;
-	vPos[2] += 10.0;
-	vEnd[2] += 10.0;
-	hndl = TR_TraceHullFilterEx(vPos, vEnd, vMins, vMaxs, MASK_PLAYERSOLID, TraceEntityFilter);
-	if (TR_DidHit(hndl)) {
-		hit = true;
-		TR_GetEndPosition(vVec, hndl);
-
-		NormalizeVector(vVel, vNor);
-		TR_GetPlaneNormal(hndl, vPlane);
-		if (RadToDeg(ArcCosine(GetVectorDotProduct(vNor, vPlane))) > 165.0) {
-			delete hndl;
-			return false;
-		}
-
-		vNor[1] = vAng[1];
-		vNor[0] = vNor[2] = 0.0;
-		GetAngleVectors(vNor, vNor, NULL_VECTOR, NULL_VECTOR);
-		NormalizeVector(vNor, vNor);
-		if (RadToDeg(ArcCosine(GetVectorDotProduct(vNor, vPlane))) > 165.0) {
-			delete hndl;
-			return false;
-		}
-	}
-	else {
-		vNor[1] = vAng[1];
-		vNor[0] = vNor[2] = 0.0;
-		GetAngleVectors(vNor, vNor, NULL_VECTOR, NULL_VECTOR);
-		NormalizeVector(vNor, vNor);
-		vPlane = vNor;
-		ScaleVector(vPlane, 128.0);
-		AddVectors(vPos, vPlane, vPlane);
-		delete hndl;
-		hndl = TR_TraceHullFilterEx(vPos, vPlane, view_as<float>({-16.0, -16.0, 0.0}), view_as<float>({16.0, 16.0, 33.0}), MASK_PLAYERSOLID, TraceWallFilter, client);
-		if (TR_DidHit(hndl)) {
-			TR_GetPlaneNormal(hndl, vPlane);
-			if (RadToDeg(ArcCosine(GetVectorDotProduct(vNor, vPlane))) > 165.0) {
-				delete hndl;
-				return false;
-			}
-		}
-
-		delete hndl;
-	}
-
-	delete hndl;
-	if (!hit)
-		vVec = vEnd;
-
-	static float vDown[3];
-	vDown[0] = vVec[0];
-	vDown[1] = vVec[1];
-	vDown[2] = vVec[2] - 100000.0;
-
-	hndl = TR_TraceHullFilterEx(vVec, vDown, vMins, vMaxs, MASK_PLAYERSOLID, TraceSelfFilter, client);
-	if (!TR_DidHit(hndl)) {
-		delete hndl;
-		return false;
-	}
-
-	TR_GetEndPosition(vEnd, hndl);
-	delete hndl;
-	return vVec[2] - vEnd[2] < 104.0;
-}
-
-bool TraceSelfFilter(int entity, int contentsMask, any data) {
-	return entity != data;
-}
-
-bool TraceWallFilter(int entity, int contentsMask, any data) {
-	if (entity != data) {
-		static char cls[5];
-		GetEdictClassname(entity, cls, sizeof cls);
-		return cls[3] != 'e' && cls[3] != 'c';
-	}
-
-	return false;
-}
-
-bool TraceEntityFilter(int entity, int contentsMask) {
-	if (!entity || entity > MaxClients) {
-		static char cls[5];
-		GetEdictClassname(entity, cls, sizeof cls);
-		return cls[3] != 'e' && cls[3] != 'c';
-	}
-
-	return false;
-}
-
-float NearestSurDistance(int client) {
-	static int i;
-	static float vPos[3];
-	static float vTar[3];
-	static float dist;
-	static float minDist;
-
-	minDist = -1.0;
-	GetClientAbsOrigin(client, vPos);
-	for (i = 1; i <= MaxClients; i++) {
-		if (i != client && IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i)) {
-			GetClientAbsOrigin(i, vTar);
-			dist = GetVectorDistance(vPos, vTar);
-			if (minDist == -1.0 || dist < minDist)
-				minDist = dist;
-		}
-	}
-
-	return minDist;
 }

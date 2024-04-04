@@ -9,7 +9,7 @@ ConVar hCvarChokeDamageInterrupt;
 static ConVar g_hCvarEnable; 
 static bool g_bCvarEnable;
 
-public void Smoker_OnModuleStart() {
+void Smoker_OnModuleStart() {
 
     g_hCvarEnable 		= CreateConVar( "AI_HardSI_Smoker_enable",   "1",   "0=Improves the Smoker behaviour off, 1=Improves the Smoker behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
     
@@ -37,7 +37,7 @@ static void _OnModuleStart()
     hCvarTongueDelay.SetFloat(SMOKER_TONGUE_DELAY); // default 1.5
 }
 
-public void Smoker_OnModuleEnd() {
+void Smoker_OnModuleEnd() {
 	hCvarChokeDamageInterrupt.RestoreDefault();
 	hCvarTongueDelay.RestoreDefault();
 }
@@ -61,12 +61,12 @@ static void GetCvars()
 }
 
 // Game tries to reset these cvars
-public void OnTongueCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
+static void OnTongueCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
 
     if(g_bCvarEnable) _OnModuleStart();
 }
 
 // Update choke damage interrupt to match smoker max health
-public void OnSmokerHealthChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+static void OnSmokerHealthChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
     if(g_bCvarEnable) _OnModuleStart();
 }
