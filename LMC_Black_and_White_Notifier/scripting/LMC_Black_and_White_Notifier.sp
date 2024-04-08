@@ -132,7 +132,7 @@ public void OnMapStart()
 	CvarsChanged();
 }
 
-public void eConvarChanged(Handle hCvar, const char[] sOldVal, const char[] sNewVal)
+void eConvarChanged(Handle hCvar, const char[] sOldVal, const char[] sNewVal)
 {
 	CvarsChanged();
 }
@@ -153,7 +153,7 @@ void CvarsChanged()
 	GetConVarString(hCvar_HintColour, sHintColour, sizeof(sHintColour));
 }
 
-public void eReviveSuccess(Event event, const char[] name, bool dontBroadcast) 
+void eReviveSuccess(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 	return;
@@ -318,7 +318,7 @@ public void eReviveSuccess(Event event, const char[] name, bool dontBroadcast)
 	}
 }
 
-public void eHealSuccess(Event event, const char[] name, bool dontBroadcast) 
+void eHealSuccess(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 	return;
@@ -541,7 +541,7 @@ public void eHealSuccess(Event event, const char[] name, bool dontBroadcast)
 
 }
 
-public void ePlayerDeath(Event event, const char[] name, bool dontBroadcast) 
+void ePlayerDeath(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 	return;
@@ -581,16 +581,7 @@ public void ePlayerDeath(Event event, const char[] name, bool dontBroadcast)
 
 void ePlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
 {
-	if(!bEnabled)
-		return;
-	
-	int iClient;
-	iClient = GetClientOfUserId(event.GetInt("userid"));
-	
-	if(iClient < 1 || iClient > MaxClients)
-		return;
-	
-	if(!IsClientInGame(iClient) || GetClientTeam(iClient) != 2)
+	if(!bEnabled || !bGlowEnabled)
 		return;
 	
 	CreateTimer(0.1, Timer_ePlayerSpawn, event.GetInt("userid"), TIMER_FLAG_NO_MAPCHANGE);
@@ -930,7 +921,7 @@ public void OnClientPutInServer(int iClient)
 	SDKHook(iClient, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 }
 
-public void OnTakeDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype)
+void OnTakeDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype)
 {
 	if(!bEnabled)
 		return;
@@ -995,7 +986,7 @@ int L4D_GetMaxReviveCount()
 	return GetConVarInt(hMaxReviveCount);
 }
 
-public void eItemUsedPill(Event event, const char[] name, bool dontBroadcast) 
+void eItemUsedPill(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 		return;
@@ -1052,7 +1043,7 @@ public void eItemUsedPill(Event event, const char[] name, bool dontBroadcast)
 	}
 }
 
-public void eItemUsed(Event event, const char[] name, bool dontBroadcast) 
+void eItemUsed(Event event, const char[] name, bool dontBroadcast) 
 {
 	if(!bEnabled)
 		return;
@@ -1109,7 +1100,7 @@ public void eItemUsed(Event event, const char[] name, bool dontBroadcast)
 	}
 }
 
-public Action CheckBlackAndWhiteGlows_Timer(Handle timer)
+Action CheckBlackAndWhiteGlows_Timer(Handle timer)
 {
 	if(!bGlowEnabled) return Plugin_Continue;
 
