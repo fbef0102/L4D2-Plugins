@@ -4,7 +4,7 @@
 #define BOOST			90.0
 #define PLAYER_HEIGHT	72.0
 
-ConVar hCvarBoomerExposedTimeTolerance,
+static ConVar hCvarBoomerExposedTimeTolerance,
 	hCvarBoomerVomitDelay;
 
 static ConVar 
@@ -16,7 +16,7 @@ static bool
 	g_bCvarEnable,
 	g_bBoomerBhop;
 
-float
+static float
 	g_fVomitRange;
 
 void Boomer_OnModuleStart() {
@@ -78,7 +78,7 @@ static void OnBoomerCvarChange(ConVar convar, const char[] oldValue, const char[
 }
 
 stock Action Boomer_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
-	if (!g_bBoomerBhop)
+	if (!g_bCvarEnable || !g_bBoomerBhop)
 		return Plugin_Continue;
 
 	if (!IsGrounded(client) || GetEntityMoveType(client) == MOVETYPE_LADDER || GetEntProp(client, Prop_Data, "m_nWaterLevel") > 1 && (!GetEntProp(client, Prop_Send, "m_hasVisibleThreats") && !TargetSur(client)))
