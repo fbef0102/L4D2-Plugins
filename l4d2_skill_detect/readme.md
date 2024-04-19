@@ -103,6 +103,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.6h (2024-4-19)
+        * Add inc file, use GetEngineTime() instead of GetGameTime()
+
     * v1.5h (2023-9-20)
         * Add Shotugn, magnum skeet cvars and api
 

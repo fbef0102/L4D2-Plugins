@@ -93,7 +93,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.5h-2023/9/20"
+#define PLUGIN_VERSION "1.6h-2024/4/19"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -738,7 +738,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 				/*	
 					handle old shotgun blast: too long ago? not the same blast
 				*/
-				if ( g_iHunterShotDmg[victim][attacker] > 0 && (GetGameTime() - g_fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME )
+				if ( g_iHunterShotDmg[victim][attacker] > 0 && (GetEngineTime() - g_fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME )
 				{
 					g_fHunterShotStart[victim][attacker] = 0.0;
 				}
@@ -751,7 +751,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 				
 				new bool: isPouncing = bool:(
 						GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce")		||
-						g_fHunterTracePouncing[victim] != 0.0 && ( GetGameTime() - g_fHunterTracePouncing[victim] ) < 0.001
+						g_fHunterTracePouncing[victim] != 0.0 && ( GetEngineTime() - g_fHunterTracePouncing[victim] ) < 0.001
 					);
 				
 				if ( isPouncing || IsJockeyLeaping(victim) )
@@ -762,7 +762,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 						if ( g_fHunterShotStart[victim][attacker] == 0.0 )
 						{
 							// new shotgun blast
-							g_fHunterShotStart[victim][attacker] = GetGameTime();
+							g_fHunterShotStart[victim][attacker] = GetEngineTime();
 							g_fHunterLastShot[victim] = g_fHunterShotStart[victim][attacker];
 							g_iHunterShotCount[victim][attacker] += 1;
 						}
@@ -1026,7 +1026,7 @@ public Action: Event_PlayerSpawn( Handle:event, const String:name[], bool:dontBr
 	
 	new zClass = GetEntProp(client, Prop_Send, "m_zombieClass");
 	
-	g_fSpawnTime[client] = GetGameTime();
+	g_fSpawnTime[client] = GetEngineTime();
 	g_fPinTime[client][0] = 0.0;
 	g_fPinTime[client][1] = 0.0;
 	
@@ -1123,7 +1123,7 @@ public Action: TraceAttack_Hunter (victim, &attacker, &inflictor, &Float:damage,
 	// track flight
 	if ( GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") )
 	{
-		g_fHunterTracePouncing[victim] = GetGameTime();
+		g_fHunterTracePouncing[victim] = GetEngineTime();
 	}
 	else
 	{
@@ -1151,7 +1151,7 @@ public Action: TraceAttack_Jockey (victim, &attacker, &inflictor, &Float:damage,
 	// track flight
 	if ( IsJockeyLeaping(victim) )
 	{
-		g_fHunterTracePouncing[victim] = GetGameTime();
+		g_fHunterTracePouncing[victim] = GetEngineTime();
 	}
 	else
 	{
@@ -1217,7 +1217,7 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 					{
 						HandleClear( attacker, victim, g_iSpecialVictim[victim],
 								zClass,
-								( GetGameTime() - g_fPinTime[victim][0]),
+								( GetEngineTime() - g_fPinTime[victim][0]),
 								-1.0
 							);
 					}
@@ -1248,8 +1248,8 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 						victim = g_iSmokerVictim[smoker];
 						HandleClear( attacker, smoker, victim,
 								ZC_SMOKER,
-								(g_fPinTime[smoker][1] > 0.0) ? ( GetGameTime() - g_fPinTime[smoker][1]) : -1.0,
-								( GetGameTime() - g_fPinTime[smoker][0]),
+								(g_fPinTime[smoker][1] > 0.0) ? ( GetEngineTime() - g_fPinTime[smoker][1]) : -1.0,
+								( GetEngineTime() - g_fPinTime[smoker][0]),
 								false
 							);
 					}
@@ -1284,7 +1284,7 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 				{
 					HandleClear( attacker, victim, g_iSpecialVictim[victim],
 							ZC_JOCKEY,
-							( GetGameTime() - g_fPinTime[victim][0]),
+							( GetEngineTime() - g_fPinTime[victim][0]),
 							-1.0
 						);
 				}
@@ -1296,7 +1296,7 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 				// is it someone carrying a survivor (that might be DC'd)?
 				// switch charge victim to 'impact' check (reset checktime)
 				if ( IS_VALID_INGAME(g_iChargeVictim[victim]) ) {
-					g_fChargeTime[ g_iChargeVictim[victim] ] = GetGameTime();
+					g_fChargeTime[ g_iChargeVictim[victim] ] = GetEngineTime();
 				}
 				
 				// check whether it was a clear
@@ -1304,8 +1304,8 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 				{
 					HandleClear( attacker, victim, g_iSpecialVictim[victim],
 							ZC_CHARGER,
-							(g_fPinTime[victim][1] > 0.0) ? ( GetGameTime() - g_fPinTime[victim][1]) : -1.0,
-							( GetGameTime() - g_fPinTime[victim][0])
+							(g_fPinTime[victim][1] > 0.0) ? ( GetEngineTime() - g_fPinTime[victim][1]) : -1.0,
+							( GetEngineTime() - g_fPinTime[victim][0])
 						);
 				}
 			}
@@ -1344,7 +1344,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 	
 	new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
 	
-	//DebugPrint(" --> Shove from %N on %N (class: %i) -- (last shove time: %.2f / %.2f)", attacker, victim, zClass, g_fVictimLastShove[victim][attacker], ( GetGameTime() - g_fVictimLastShove[victim][attacker] ) );
+	//DebugPrint(" --> Shove from %N on %N (class: %i) -- (last shove time: %.2f / %.2f)", attacker, victim, zClass, g_fVictimLastShove[victim][attacker], ( GetEngineTime() - g_fVictimLastShove[victim][attacker] ) );
 	
 	// track on boomers
 	if ( zClass == ZC_BOOMER )
@@ -1352,7 +1352,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 		g_iBoomerGotShoved[victim]++;
 		if(g_bBoomerLanded[victim])
 		{
-			HandlePopStop(attacker, victim, g_iBoomerVomitHits[victim], (GetGameTime() - g_fBoomerVomitStart[victim]));
+			HandlePopStop(attacker, victim, g_iBoomerVomitHits[victim], (GetEngineTime() - g_fBoomerVomitStart[victim]));
 			
 			if(g_hBoomerVomitTimer[victim] != null)
 				TriggerTimer(g_hBoomerVomitTimer[victim]);
@@ -1367,7 +1367,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 				{
 					HandleClear( attacker, victim, GetEntPropEnt(victim, Prop_Send, "m_pounceVictim"),
 							ZC_HUNTER,
-							( GetGameTime() - g_fPinTime[victim][0]),
+							( GetEngineTime() - g_fPinTime[victim][0]),
 							-1.0,
 							true
 						);
@@ -1378,7 +1378,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 				{
 					HandleClear( attacker, victim, GetEntPropEnt(victim, Prop_Send, "m_jockeyVictim"),
 							ZC_JOCKEY,
-							( GetGameTime() - g_fPinTime[victim][0]),
+							( GetEngineTime() - g_fPinTime[victim][0]),
 							-1.0,
 							true
 						);
@@ -1387,7 +1387,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 		}
 	}
 	
-	if ( g_fVictimLastShove[victim][attacker] == 0.0 || ( GetGameTime() - g_fVictimLastShove[victim][attacker] ) >= SHOVE_TIME )
+	if ( g_fVictimLastShove[victim][attacker] == 0.0 || ( GetEngineTime() - g_fVictimLastShove[victim][attacker] ) >= SHOVE_TIME )
 	{
 		if ( GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") )
 		{
@@ -1400,7 +1400,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 		
 		HandleShove( attacker, victim, zClass );
 		
-		g_fVictimLastShove[victim][attacker] = GetGameTime();
+		g_fVictimLastShove[victim][attacker] = GetEngineTime();
 	}
 	
 	// check for shove on smoker by pull victim
@@ -1443,7 +1443,7 @@ bool: IsJockeyLeaping( jockey )
 		return true;
 	
 	/*
-	new Float:time = GetGameTime();
+	new Float:time = GetEngineTime();
 	if ( IsValidEntity(abilityEnt) && HasEntProp(abilityEnt, Prop_Send, "m_timestamp") &&
 		GetEntPropFloat(abilityEnt, Prop_Send, "m_timestamp") <= time &&
 		GetEntPropEnt(jockey, Prop_Send, "m_hGroundEntity") == -1 )
@@ -1465,7 +1465,7 @@ public Action: Event_LungePounce( Handle:event, const String:name[], bool:dontBr
 	new client = GetClientOfUserId( GetEventInt(event, "userid") );
 	new victim = GetClientOfUserId( GetEventInt(event, "victim") );
 	
-	g_fPinTime[client][0] = GetGameTime();
+	g_fPinTime[client][0] = GetEngineTime();
 	
 	// clear hunter-hit stats (not skeeted)
 	ResetHunter(client);
@@ -1682,7 +1682,7 @@ public Action: Event_JockeyRide( Handle:event, const String:name[], bool:dontBro
 	
 	if ( !IS_VALID_INFECTED(client) || !IS_VALID_SURVIVOR(victim) ) { return Plugin_Continue; }
 	
-	g_fPinTime[client][0] = GetGameTime();
+	g_fPinTime[client][0] = GetEngineTime();
 	
 	// minimum distance travelled?
 	// ignore if no real pounce start pos
@@ -1737,7 +1737,7 @@ public Action: Event_AbilityUse( Handle:event, const String:name[], bool:dontBro
 		{
 			g_bBoomerLanded[client] = true;
 			g_iBoomerVomitHits[client] = 0;
-			g_fBoomerVomitStart[client] = GetGameTime();
+			g_fBoomerVomitStart[client] = GetEngineTime();
 			delete g_hBoomerVomitTimer[client];
 			g_hBoomerVomitTimer[client] = CreateTimer( VOMIT_DURATION_TIME, Timer_BoomVomitCheck,
 				client, TIMER_FLAG_NO_MAPCHANGE );
@@ -1754,9 +1754,9 @@ public Action: Event_ChargeCarryStart( Handle:event, const String:name[], bool:d
 	new victim = GetClientOfUserId( GetEventInt(event, "victim") );
 	if ( !IS_VALID_INFECTED(client) ) { return; }
 
-	DebugPrint("Charge carry start: %i - %i -- time: %.2f", client, victim, GetGameTime() );
+	DebugPrint("Charge carry start: %i - %i -- time: %.2f", client, victim, GetEngineTime() );
 	
-	g_fChargeTime[client] = GetGameTime();
+	g_fChargeTime[client] = GetEngineTime();
 	g_fPinTime[client][0] = g_fChargeTime[client];
 	g_fPinTime[client][1] = 0.0;
 	
@@ -1785,7 +1785,7 @@ public Action: Event_ChargeImpact( Handle:event, const String:name[], bool:dontB
 	
 	g_iVictimCharger[victim] = client;		// store who we've bumped up
 	g_iVictimFlags[victim] = 0;				// reset flags for checking later
-	g_fChargeTime[victim] = GetGameTime();	// store time per victim, for impacts
+	g_fChargeTime[victim] = GetEngineTime();	// store time per victim, for impacts
 	g_iVictimMapDmg[victim] = 0;
 	
 	CreateTimer( CHARGE_CHECK_TIME, Timer_ChargeCheck, GetClientUserId(victim), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
@@ -1797,7 +1797,7 @@ public Action: Event_ChargePummelStart( Handle:event, const String:name[], bool:
 	
 	if ( !IS_VALID_INFECTED(client) ) { return; }
 	
-	g_fPinTime[client][1] = GetGameTime();
+	g_fPinTime[client][1] = GetEngineTime();
 }
 
 
@@ -1806,7 +1806,7 @@ public Action: Event_ChargeCarryEnd( Handle:event, const String:name[], bool:don
 	new client = GetClientOfUserId( GetEventInt(event, "userid") );
 	if ( client < 1 || client > MaxClients ) { return; }
 	
-	g_fPinTime[client][1] = GetGameTime();
+	g_fPinTime[client][1] = GetEngineTime();
 	
 	// delay so we can check whether charger died 'mid carry'
 	CreateTimer( 0.1, Timer_ChargeCarryEnd, client, TIMER_FLAG_NO_MAPCHANGE );
@@ -1823,7 +1823,7 @@ Action Timer_ChargeCheck( Handle timer, int userid )
 	// if something went wrong with the survivor or it was too long ago, forget about it
 	int client = GetClientOfUserId(userid);
 	if ( !IS_VALID_SURVIVOR(client) || !IS_VALID_INFECTED(g_iVictimCharger[client]) ||
-		g_fChargeTime[client] == 0.0 || ( GetGameTime() - g_fChargeTime[client]) > MAX_CHARGE_TIME ||
+		g_fChargeTime[client] == 0.0 || ( GetEngineTime() - g_fChargeTime[client]) > MAX_CHARGE_TIME ||
 		GetEntProp(g_iVictimCharger[client], Prop_Send, "m_zombieClass") != ZC_CHARGER )
 	{
 		return Plugin_Stop;
@@ -2144,8 +2144,8 @@ public Action: Event_BoomerExploded (Handle:event, const String:name[], bool:don
 		if ( IS_VALID_SURVIVOR(attacker) )
 		{
 			HandlePop( attacker, client, g_iBoomerGotShoved[client],
-				(GetGameTime() - g_fSpawnTime[client]),
-				(GetGameTime() - g_fBoomerNearTime[client]) );
+				(GetEngineTime() - g_fSpawnTime[client]),
+				(GetEngineTime() - g_fBoomerNearTime[client]) );
 		}
 	}
 }
@@ -2154,7 +2154,7 @@ public Action: Event_BoomerNearSurvivor (Handle:event, const String:name[], bool
 {
 	new client = GetClientOfUserId( GetEventInt(event, "userid") );
 	g_bBoomerNearSomebody[client] = true;
-	g_fBoomerNearTime[client] = GetGameTime();
+	g_fBoomerNearTime[client] = GetEngineTime();
 }
 
 // crown tracking
@@ -2272,10 +2272,10 @@ public OnTakeDamagePost_Witch ( victim, attacker, inflictor, Float:damage, damag
 		witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_HEALTH)] -= RoundToFloor(damage);
 		
 		// remember last shot
-		if ( g_fWitchShotStart[attacker] == 0.0 || (GetGameTime() - g_fWitchShotStart[attacker]) > SHOTGUN_BLAST_TIME )
+		if ( g_fWitchShotStart[attacker] == 0.0 || (GetEngineTime() - g_fWitchShotStart[attacker]) > SHOTGUN_BLAST_TIME )
 		{
 			// reset last shot damage count and attacker
-			g_fWitchShotStart[attacker] = GetGameTime();
+			g_fWitchShotStart[attacker] = GetEngineTime();
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNER)] = attacker;
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNSHOT)] = 0;
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNTYPE)] = ( damagetype & DMG_BUCKSHOT ) ? 1 : 0; // only allow shotguns
@@ -2488,8 +2488,8 @@ public Action: Event_TonguePullStopped (Handle:event, const String:name[], bool:
 	// clear check -  if the smoker itself was not shoved, handle the clear
 	HandleClear( attacker, smoker, victim,
 			ZC_SMOKER,
-			(g_fPinTime[smoker][1] > 0.0) ? ( GetGameTime() - g_fPinTime[smoker][1]) : -1.0,
-			( GetGameTime() - g_fPinTime[smoker][0]),
+			(g_fPinTime[smoker][1] > 0.0) ? ( GetEngineTime() - g_fPinTime[smoker][1]) : -1.0,
+			( GetEngineTime() - g_fPinTime[smoker][0]),
 			bool:( reason != CUT_SLASH && reason != CUT_KILL )
 		);
 	
@@ -2549,7 +2549,7 @@ public Action: Event_TongueGrab (Handle:event, const String:name[], bool:dontBro
 		g_bSmokerShoved[attacker] = false;
 		g_iSmokerVictim[attacker] = victim;
 		g_iSmokerVictimDamage[attacker] = 0;
-		g_fPinTime[attacker][0] = GetGameTime();
+		g_fPinTime[attacker][0] = GetEngineTime();
 		g_fPinTime[attacker][1] = 0.0;
 	}
 	
@@ -2560,8 +2560,8 @@ public Action: Event_ChokeStart (Handle:event, const String:name[], bool:dontBro
 {
 	new attacker = GetClientOfUserId( GetEventInt(event, "userid") );
 	
-	if ( g_fPinTime[attacker][0] == 0.0 ) { g_fPinTime[attacker][0] = GetGameTime(); }
-	g_fPinTime[attacker][1] = GetGameTime();
+	if ( g_fPinTime[attacker][0] == 0.0 ) { g_fPinTime[attacker][0] = GetEngineTime(); }
+	g_fPinTime[attacker][1] = GetEngineTime();
 }
 
 public Action: Event_ChokeStop (Handle:event, const String:name[], bool:dontBroadcast)
@@ -2578,8 +2578,8 @@ public Action: Event_ChokeStop (Handle:event, const String:name[], bool:dontBroa
 
 	HandleClear( attacker, smoker, victim,
 			ZC_SMOKER,
-			(g_fPinTime[smoker][1] > 0.0) ? ( GetGameTime() - g_fPinTime[smoker][1]) : -1.0,
-			( GetGameTime() - g_fPinTime[smoker][0]),
+			(g_fPinTime[smoker][1] > 0.0) ? ( GetEngineTime() - g_fPinTime[smoker][1]) : -1.0,
+			( GetEngineTime() - g_fPinTime[smoker][0]),
 			bool:( reason != CUT_SLASH && reason != CUT_KILL )
 		);
 
@@ -2595,9 +2595,10 @@ public Hook_CarAlarmStart ( const String:output[], caller, activator, Float:dela
 	
 	DebugPrint( "calarm trigger: caller %i / activator %i / delay: %.2f", caller, activator, delay );
 }
-public Action: Event_CarAlarmGoesOff( Handle:event, const String:name[], bool:dontBroadcast )
+
+void Event_CarAlarmGoesOff( Handle:event, const String:name[], bool:dontBroadcast )
 {
-	g_fLastCarAlarm = GetGameTime();
+	g_fLastCarAlarm = GetEngineTime();
 }
 
 public Action: OnTakeDamage_Car ( victim, &attacker, &inflictor, &Float:damage, &damagetype )
@@ -2717,9 +2718,9 @@ public OnTouch_CarGlass ( entity, client )
 
 public Action: Timer_CheckAlarm (Handle:timer, any:entity)
 {
-	//CPrintToChatAll( "checking alarm: time: %.3f", GetGameTime() - g_fLastCarAlarm );
+	//CPrintToChatAll( "checking alarm: time: %.3f", GetEngineTime() - g_fLastCarAlarm );
 	
-	if ( (GetGameTime() - g_fLastCarAlarm) < CARALARM_MIN_TIME )
+	if ( (GetEngineTime() - g_fLastCarAlarm) < CARALARM_MIN_TIME )
 	{
 		// got a match, drop stuff from trie and handle triggering
 		decl String:car_key[10];

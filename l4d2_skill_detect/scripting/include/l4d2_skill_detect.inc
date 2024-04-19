@@ -74,8 +74,8 @@
 
 public SharedPlugin __pl_l4d2_skill_detect =
 {
-	name = "l4d2_skill_detect",
-	file = "l4d2_skill_detect.smx",
+	name = "skill_detect",
+	file = "skill_detect.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
 #else
