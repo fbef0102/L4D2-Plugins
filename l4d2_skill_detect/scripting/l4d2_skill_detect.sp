@@ -673,6 +673,19 @@ public OnMapStart()
 	g_iModel_Trunk = PrecacheModel(MODEL_TREE_TRUNK, true);
 }
 
+public OnMapEnd()
+{
+	delete g_hWitchTrie;
+	g_hWitchTrie = CreateTrie();
+
+	delete g_hRockTrie;
+	g_hRockTrie = CreateTrie();
+
+	delete g_hCarTrie;
+	g_hCarTrie = CreateTrie();
+}
+
+
 /*
 	Tracking
 	--------
@@ -696,7 +709,8 @@ public Action: Event_RoundStart( Handle:event, const String:name[], bool:dontBro
 public Action: Event_RoundEnd( Handle:event, const String:name[], bool:dontBroadcast )
 {
 	// clean trie, new cars will be created
-	ClearTrie(g_hCarTrie);
+	delete g_hCarTrie;
+	g_hCarTrie = CreateTrie();
 }
 
 public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBroadcast )
