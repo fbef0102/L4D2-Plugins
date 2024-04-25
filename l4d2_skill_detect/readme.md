@@ -103,6 +103,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.7h (2024-4-25)
+        * Update API
+
     * v1.6h (2024-4-19)
         * Add inc file, use GetEngineTime() instead of GetGameTime()
 

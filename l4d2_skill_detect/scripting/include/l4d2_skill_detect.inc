@@ -3,27 +3,27 @@
 #endif
 #define _l4d2_skill_detect_included_
 
- forward void OnSkeet( int survivor, int vicitm, bool isHunter )
+ forward void OnSkeet( int survivor, int vicitm, bool isHunter, bool headshot )
 
- forward void OnSkeetMelee( int survivor, int vicitm, bool isHunter )
+ forward void OnSkeetMelee( int survivor, int vicitm, bool isHunter, bool headshot )
  
- forward void OnSkeetSniper( int survivor, int vicitm, bool isHunter )
+ forward void OnSkeetSniper( int survivor, int vicitm, bool isHunter, bool headshot )
 
- forward void OnSkeetMagnum( int survivor, int vicitm, bool isHunter )
+ forward void OnSkeetMagnum( int survivor, int vicitm, bool isHunter, bool headshot )
 
- forward void OnSkeetShotgun( int survivor, int vicitm, bool isHunter )
+ forward void OnSkeetShotgun( int survivor, int vicitm, bool isHunter, bool headshot )
 
- forward void OnSkeetGL( int survivor, int vicitm, bool isHunter )
+ forward void OnSkeetGL( int survivor, int vicitm, bool isHunter, bool headshot )
 
- forward void OnSkeetHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ forward void OnSkeetHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter, bool headshot )
  
- forward void OnSkeetMeleeHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ forward void OnSkeetMeleeHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter, bool headshot )
 
- forward void OnSkeetSniperHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ forward void OnSkeetSniperHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter, bool headshot )
 
- forward void OnSkeetMagnumHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ forward void OnSkeetMagnumHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter, bool headshot )
 
- forward void OnSkeetShotgunHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
+ forward void OnSkeetShotgunHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter, bool headshot )
 
  forward void OnHunterDeadstop( int survivor, int hunter )
 
@@ -31,9 +31,9 @@
 
  forward void OnBoomerPop( int survivor, int boomer, int shoveCount, float timeAlive )
 
- forward void OnChargerLevel( int survivor, int charger )
+ forward void OnChargerLevel( int survivor, int charger, bool headshot )
 
- forward void OnChargerLevelHurt( int survivor, int charger, int damage )
+ forward void OnChargerLevelHurt( int survivor, int charger, int damage, bool headshot )
 
  forward void OnWitchCrown( int survivor, int damage )
 
@@ -41,7 +41,7 @@
 
  forward void OnTongueCut( int survivor, int smoker )
 
- forward void OnSmokerSelfClear( int survivor, int smoker, bool withShove )
+ forward void OnSmokerSelfClear( int survivor, int smoker, bool withShove, bool headshot )
 
  forward void OnTankRockSkeeted( int survivor, int tank )
 
@@ -55,7 +55,7 @@
 
  forward void OnSpecialShoved( int survivor, int infected, int zombieClass )
 
- forward void OnSpecialClear( int clearer, int pinner, int pinvictim, int zombieClass, float timeA, float timeB, bool withShove )
+ forward void OnSpecialClear( int clearer, int pinner, int pinvictim, int zombieClass, float timeA, float timeB, bool withShove, bool headshot )
 
  forward void OnBoomerVomitLanded( int boomer, int amount )
 
