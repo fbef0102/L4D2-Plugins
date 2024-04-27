@@ -1,36 +1,20 @@
-// 2010 @ DJ_WEST
-// 2020 @ Lossy & Shao
-// 2022 @ Harry
+#pragma semicolon 1
+#pragma newdecls required //強制1.7以後的新語法
 
 #include <sourcemod>
 #include <sdktools>
+#include <left4dhooks>
+#include <multicolors>
 
-#pragma semicolon 1; // Force strict semicolon mode.
-#pragma newdecls required; // Force new-style declarations.
-
-#define PLUGIN_NAME "Chainsaw Refuelling"
-#define PLUGIN_VERSION "1.6.3"
-#define PLUGIN_AUTHOR "DJ_WEST, Lossy (Round Start Fix), Shao (downstate support), Harry (Improve)"
-
-#define CHAINSAW_DISTANCE 50.0
-#define CHAINSAW "chainsaw"
-#define CHAINSAW_CLASS "weapon_chainsaw"
-#define CHAINSAW_SPAWN_CLASS "weapon_chainsaw_spawn"
-#define GASCAN_CLASS "weapon_gascan"
-#define GASCAN_SKIN 0
-#define TEAM_SURVIVOR 2
-
-int g_ActiveWeaponOffset, g_ShotsFiredOffset, g_ClientPour[MAXPLAYERS+1], g_PlayerPistol[MAXPLAYERS+1];
-Handle g_Timer[MAXPLAYERS+1], h_CvarEnabled, h_CvarRemove, h_CvarMode, h_CvarDrop;
-bool g_ClientInfo[MAXPLAYERS+1], g_b_IsSurvivor[MAXPLAYERS+1], g_b_AllowChecking[MAXPLAYERS+1], g_b_InAction[MAXPLAYERS+1];
+#define PLUGIN_VERSION "1.0h-2024/4/27"
 
 public Plugin myinfo = 
 {
-	name = PLUGIN_NAME,
-	author = PLUGIN_AUTHOR,
+	name = "Chainsaw Refuelling",
+	author = "DJ_WEST, Lossy (Round Start Fix), Shao (downstate support), HarryPotter (Improve)",
 	description = "Allow refuelling of a chainsaw",
 	version = PLUGIN_VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=121983"
+	url = "https://github.com/fbef0102/L4D2-Plugins/tree/master/l4d2_chainsaw_refuelling"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -46,26 +30,49 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+#define CHAINSAW_DISTANCE 50.0
+#define CHAINSAW "chainsaw"
+#define CHAINSAW_CLASS "weapon_chainsaw"
+#define CHAINSAW_SPAWN_CLASS "weapon_chainsaw_spawn"
+#define GASCAN_CLASS "weapon_gascan"
+#define GASCAN_SKIN 0
+#define TEAM_SURVIVOR 2
+
+ConVar g_hCvarEnable, g_hCvarRemove, g_hCvarMode, g_hCvarDrop, g_hCvarHint;
+bool g_bCvarEnable, g_bCvarRemove, g_bCvarDrop, g_bCvarHint;
+int g_iCvarMode;
+
+bool 
+	g_ClientInfo[MAXPLAYERS+1], g_b_IsSurvivor[MAXPLAYERS+1], g_b_AllowChecking[MAXPLAYERS+1], g_b_InAction[MAXPLAYERS+1];
+
+Handle 
+	g_Timer[MAXPLAYERS+1];
+
+int 
+	g_iChainsawMaxClip,
+	g_ActiveWeaponOffset, 
+	g_ShotsFiredOffset, 
+	g_ClientPour[MAXPLAYERS+1];
+
 public void OnPluginStart()
 {
 	LoadTranslations("chainsaw_refuelling.phrases");
+
+	g_hCvarEnable 	= CreateConVar( "l4d2_chainsaw_refuelling_enable", 		"1", "Chainsaw Refuelling plugin status (0 - Disable, 1 - Enable)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarRemove 	= CreateConVar( "l4d2_chainsaw_refuelling_remove", 		"0", "If 1, Remove a chainsaw if it empty", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarMode 	= CreateConVar( "l4d2_chainsaw_refuelling_mode", 		"2", "Allow refuelling of a chainsaw (0 - On the ground, 1 - On players, 2 - Both)", FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	g_hCvarDrop 	= CreateConVar( "l4d2_chainsaw_refuelling_drop", 		"1", "If 1, Enable dropping a chainsaw with Reload button", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarHint		= CreateConVar( "l4d2_chainsaw_refuelling_hint", 		"1", "If 1, Enable hint message", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	CreateConVar(					"l4d2_chainsaw_refuelling_version", 	PLUGIN_VERSION, "Chainsaw Refuelling version", FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
+	AutoExecConfig(true, 			"l4d2_chainsaw_refuelling");
 	
-	//汉化者:心动
-	// CreateConVar("refuelchainsaw_version", PLUGIN_VERSION, "插件版本", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	// h_CvarEnabled = CreateConVar("l4d2_refuelchainsaw_enabled", "1", "开启/关闭 电锯加油", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	// h_CvarRemove = CreateConVar("l4d2_refuelchainsaw_remove", "0", "如果电锯没油了,是否会消失(0.不消失 1.消失)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	// h_CvarMode = CreateConVar("l4d2_refuelchainsaw_mode", "2", "允许电锯如何加油 (0 - 在地上, 1 - 在幸存者身上, 2 - 两者皆可)", FCVAR_NOTIFY, true, 0.0, true, 2.0);
-	// h_CvarDrop = CreateConVar("l4d2_refuelchainsaw_drop", "1", "电锯是否可以扔下，按下Ｒ键 (0 - 关闭, 1 - 可以)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	
-	CreateConVar("refuelchainsaw_version", PLUGIN_VERSION, "Chainsaw Refuelling version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	h_CvarEnabled = CreateConVar("l4d2_refuelchainsaw_enabled", "1", "Chainsaw Refuelling plugin status (0 - disable, 1 - enable)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	h_CvarRemove = CreateConVar("l4d2_refuelchainsaw_remove", "0", "Remove a chainsaw if it empty (0 - don't remove, 1 - remove)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	h_CvarMode = CreateConVar("l4d2_refuelchainsaw_mode", "2", "Allow refuelling of a chainsaw (0 - on the ground, 1 - on players, 2 - both)", FCVAR_NOTIFY, true, 0.0, true, 2.0);
-	h_CvarDrop = CreateConVar("l4d2_refuelchainsaw_drop", "1", "Enable dropping a chainsaw with Reload button (0 - disable, 1 - enable)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	
-	AutoExecConfig(true, "l4d2_chainsaw_refuelling");
-	
-	
+	GetCvars();
+	g_hCvarEnable.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarRemove.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarMode.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarDrop.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarHint.AddChangeHook(ConVarChanged_Cvars);
+
 	HookEvent("gascan_pour_completed", EventPourCompleted);
 	HookEvent("item_pickup", EventItemPickup);
 	HookEvent("player_team", EventPlayerTeam);
@@ -92,6 +99,24 @@ public void OnPluginStart()
 	
 	g_ActiveWeaponOffset = FindSendPropInfo("CBasePlayer", "m_hActiveWeapon");
 	g_ShotsFiredOffset = FindSendPropInfo("CCSPlayer", "m_iShotsFired");
+
+	AddCommandListener(CmdListen_weapon_reparse_server, "weapon_reparse_server");
+}
+
+// Cvars-------------------------------
+
+void ConVarChanged_Cvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
+{
+	GetCvars();
+}
+
+void GetCvars()
+{
+	g_bCvarEnable = g_hCvarEnable.BoolValue;
+	g_bCvarRemove = g_hCvarRemove.BoolValue;
+	g_iCvarMode = g_hCvarMode.IntValue;
+	g_bCvarDrop = g_hCvarDrop.BoolValue;
+	g_bCvarHint = g_hCvarHint.BoolValue;
 }
 
 public void OnMapStart()
@@ -111,24 +136,46 @@ public void OnMapEnd()
 	ResetTimer();
 }
 
-public void EventRoundStart(Handle event, const char[] name, bool dontBroadcast)
+public void OnConfigsExecuted()
+{
+	GetChainsawMaxClip();
+}
+
+Action CmdListen_weapon_reparse_server(int client, const char[] command, int argc)
+{
+	RequestFrame(OnNextFrame_weapon_reparse_server);
+
+	return Plugin_Continue;
+}
+
+void OnNextFrame_weapon_reparse_server()
+{
+	GetChainsawMaxClip();
+}
+
+void GetChainsawMaxClip()
+{
+	g_iChainsawMaxClip = L4D2_GetIntWeaponAttribute(CHAINSAW_CLASS, L4D2IWA_ClipSize);
+}
+
+void EventRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
 	OnMapStart();
 }
 
-public void evtRoundEnd (Event event, const char[] name, bool dontBroadcast)
+void evtRoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	ResetTimer();
 }
 
-public void EventNotAllowChecking(Handle h_Event, const char[] s_Name, bool b_DontBroadcast)
+void EventNotAllowChecking(Event event, const char[] name, bool dontBroadcast) 
 {
 	int i_UserID, i_Client;
 	
-	if (GetEventInt(h_Event, "victim"))
-		i_UserID = GetEventInt(h_Event, "victim");
+	if (event.GetInt("victim"))
+		i_UserID = event.GetInt("victim");
 	else
-		i_UserID = GetEventInt(h_Event, "userid");
+		i_UserID = event.GetInt("userid");
 	
 	i_Client = GetClientOfUserId(i_UserID);
 	
@@ -136,16 +183,16 @@ public void EventNotAllowChecking(Handle h_Event, const char[] s_Name, bool b_Do
 		g_b_AllowChecking[i_Client] = false;
 }
 
-public void EventAllowChecking(Handle h_Event, const char[] s_Name, bool b_DontBroadcast)
+void EventAllowChecking(Event event, const char[] name, bool dontBroadcast) 
 {
 	int i_UserID, i_Client;
 	
-	if (GetEventInt(h_Event, "victim"))
-		i_UserID = GetEventInt(h_Event, "victim");
-	else if (GetEventInt(h_Event, "subject"))
-		i_UserID = GetEventInt(h_Event, "subject");
+	if (event.GetInt("victim"))
+		i_UserID = event.GetInt("victim");
+	else if (event.GetInt("subject"))
+		i_UserID = event.GetInt("subject");
 	else
-		i_UserID = GetEventInt(h_Event, "userid");
+		i_UserID = event.GetInt("userid");
 	
 	i_Client = GetClientOfUserId(i_UserID);
 	
@@ -154,16 +201,16 @@ public void EventAllowChecking(Handle h_Event, const char[] s_Name, bool b_DontB
 	
 }
 
-public void EventPlayerTeam(Handle h_Event, const char[] s_Name, bool b_DontBroadcast)
+void EventPlayerTeam(Event event, const char[] name, bool dontBroadcast) 
 {
-	if (!GetEventBool(h_Event, "isbot"))
+	if (!event.GetBool("isbot"))
 	{
 		int i_UserID, i_Client;
 	
-		i_UserID = GetEventInt(h_Event, "userid");
+		i_UserID = event.GetInt("userid");
 		i_Client = GetClientOfUserId(i_UserID);
 		
-		if (GetEventInt(h_Event, "team") == TEAM_SURVIVOR)
+		if (event.GetInt("team") == TEAM_SURVIVOR)
 		{
 			g_b_IsSurvivor[i_Client] = true;
 			g_b_AllowChecking[i_Client] = true;
@@ -176,48 +223,45 @@ public void EventPlayerTeam(Handle h_Event, const char[] s_Name, bool b_DontBroa
 	}
 }
 
-public void EventItemPickup(Handle h_Event, const char[] s_Name, bool b_DontBroadcast)
+void EventItemPickup(Event event, const char[] name, bool dontBroadcast) 
 {
+	if(!g_bCvarEnable) return;
+
 	int i_UserID, i_Client;
 	char s_Weapon[16];
 	
-	i_UserID = GetEventInt(h_Event, "userid");
+	i_UserID = event.GetInt("userid");
 	i_Client = GetClientOfUserId(i_UserID);
 
-	GetEventString(h_Event, "item", s_Weapon, sizeof(s_Weapon));
+	event.GetString("item", s_Weapon, sizeof(s_Weapon));
 
 	if (StrEqual(s_Weapon, CHAINSAW))
 	{
-		if(IsValidEntRef(g_PlayerPistol[i_Client]))
+		if (!g_ClientInfo[i_Client])
 		{
-			int i_Pistol = EntRefToEntIndex(g_PlayerPistol[i_Client]);
-			if (i_Pistol != INVALID_ENT_REFERENCE)
+			if(g_bCvarHint)
 			{
-				RemoveEdict(i_Pistol);
-				g_PlayerPistol[i_Client] = 0;
+				CPrintToChat(i_Client, "{green}%t{default} %t.", "Information", "Refuelling");
+				CPrintToChat(i_Client, "{green}%t{default} %t.", "Information", "Drop");
 			}
-		}
-		
-		if (!g_ClientInfo[i_Client] && GetConVarBool(h_CvarEnabled))
-		{
-			PrintToChat(i_Client, "\x03[%t]\x01 %t.", "Information", "Refuelling");
-			PrintToChat(i_Client, "\x03[%t]\x01 %t.", "Information", "Drop");
 			g_ClientInfo[i_Client] = true;
 		}
 	}
 }
 
-public void EventPourCompleted(Handle h_Event, const char[] s_Name, bool b_DontBroadcast)
+void EventPourCompleted(Event event, const char[] name, bool dontBroadcast) 
 {
+	if(!g_bCvarEnable) return;
+
 	int i_UserID, i_Client, i_Ent;
 	
-	i_UserID = GetEventInt(h_Event, "userid");
+	i_UserID = event.GetInt("userid");
 	i_Client = GetClientOfUserId(i_UserID);
 	
 	if(IsValidEntRef(g_ClientPour[i_Client]))
 	{	
 		i_Ent = EntRefToEntIndex(g_ClientPour[i_Client]);
-		SetEntProp(i_Ent, Prop_Data, "m_iClip1", 30);
+		SetEntProp(i_Ent, Prop_Data, "m_iClip1", g_iChainsawMaxClip);
 	}
 }
 
@@ -227,7 +271,6 @@ public void OnClientPutInServer(int i_Client)
 		return;
 		
 	g_ClientPour[i_Client] = 0;
-	g_PlayerPistol[i_Client] = 0;
 	g_ClientInfo[i_Client] = false;
 	g_b_IsSurvivor[i_Client] = false;
 	g_b_AllowChecking[i_Client] = true;
@@ -242,36 +285,35 @@ public void OnClientDisconnect(int client)
 	delete g_Timer[client];
 }
 
-public void CheckTarget(int i_Client)
+void CheckTarget(int i_Client)
 {
-	int i_Ent, i_Mode;
+	int i_Ent;
 	char s_Class[64];
 
 	i_Ent = GetClientAimTarget(i_Client, false);
-	i_Mode = GetConVarInt(h_CvarMode);
 	
 	if (i_Ent > 0 && IsValidEntity(i_Ent))
 	{
-		GetEdictClassname(i_Ent, s_Class, sizeof(s_Class));
+		GetEntityClassname(i_Ent, s_Class, sizeof(s_Class));
 		//PrintToChatAll("CheckTarget %s", s_Class);
 		
-		if (StrEqual(s_Class, CHAINSAW_SPAWN_CLASS) && i_Mode != 1)
+		if (StrEqual(s_Class, CHAINSAW_SPAWN_CLASS) && g_iCvarMode != 1)
 		{
-			PrintToChat(i_Client, "\x03[%t]\x01 %t.", "Information", "Full");
+			if(g_bCvarHint) CPrintToChat(i_Client, "{lightgreen}%t{default} %t.", "Information", "Full");
 		}
-		else if (StrEqual(s_Class, CHAINSAW_CLASS) && i_Mode != 1)
+		else if (StrEqual(s_Class, CHAINSAW_CLASS) && g_iCvarMode != 1)
 		{
 			CheckChainsaw(i_Client, i_Ent, -1);
 		}
-		else if (StrEqual(s_Class, "player") && i_Mode != 0)
+		else if (StrEqual(s_Class, "player") && g_iCvarMode != 0)
 		{
 			int i_Weapon;
-			char s_Weapon[64];
+			static char s_Weapon[64];
 			
 			i_Weapon = GetEntDataEnt2(i_Ent, g_ActiveWeaponOffset);
 			if(IsValidEnt(i_Weapon))
 			{
-				GetEdictClassname(i_Weapon, s_Weapon, sizeof(s_Weapon));
+				GetEntityClassname(i_Weapon, s_Weapon, sizeof(s_Weapon));
 				if (StrEqual(s_Weapon, CHAINSAW_CLASS))
 					CheckChainsaw(i_Client, i_Weapon, i_Ent);
 			}
@@ -279,7 +321,7 @@ public void CheckTarget(int i_Client)
 	}
 }
 
-public void CheckChainsaw(int i_Client, int i_Weapon, int i_Ent)
+void CheckChainsaw(int i_Client, int i_Weapon, int i_Ent)
 {
 	float f_EntPos[3], f_ClientPos[3];
 	
@@ -292,21 +334,21 @@ public void CheckChainsaw(int i_Client, int i_Weapon, int i_Ent)
 				
 		i_Clip = GetEntProp(i_Weapon, Prop_Data, "m_iClip1");
 				
-		if (i_Clip == 30)
+		if (i_Clip == g_iChainsawMaxClip)
 		{
-			PrintToChat(i_Client, "\x03[%t]\x01 %t.", "Information", "Full");
+			if(g_bCvarHint) CPrintToChat(i_Client, "{lightgreen}%t{default} %t.", "Information", "Full");
 			return;
 		}
 				
-		i_ChainsawPointEnt = GetEntProp(i_Weapon, Prop_Data, "m_iClip2");
+		i_ChainsawPointEnt = EntRefToEntIndex(GetEntProp(i_Weapon, Prop_Data, "m_iClip2"));
 				
-		if (i_ChainsawPointEnt == -1)
+		if (i_ChainsawPointEnt == INVALID_ENT_REFERENCE || i_ChainsawPointEnt <= MaxClients)
 		{
 			i_PointEnt = (i_Ent == -1) ? CreatePointEntity(i_Weapon, 10.0) : CreatePointEntity(i_Ent, 50.0);
 				
 			if (IsValidEnt(i_PointEnt))
 			{
-				SetEntProp(i_Weapon, Prop_Data, "m_iClip2", i_PointEnt);
+				SetEntProp(i_Weapon, Prop_Data, "m_iClip2", EntIndexToEntRef(i_PointEnt));
 				g_ClientPour[i_Client] = EntIndexToEntRef(i_Weapon);
 					
 				DataPack data;
@@ -318,7 +360,7 @@ public void CheckChainsaw(int i_Client, int i_Weapon, int i_Ent)
 	}
 }
 
-public Action Timer_CheckPourGascan(Handle h_Timer, DataPack data)
+Action Timer_CheckPourGascan(Handle h_Timer, DataPack data)
 {
 	int i_Client, i_Ent, i_PointEnt, i_ShotsFired;
 
@@ -355,7 +397,7 @@ public Action Timer_CheckPourGascan(Handle h_Timer, DataPack data)
 	return Plugin_Continue;
 }
 
-public int CreatePointEntity(int i_Ent, float f_Add)
+int CreatePointEntity(int i_Ent, float f_Add)
 {
 	float f_Position[3];
 	int i_PointEnt;
@@ -373,7 +415,7 @@ public int CreatePointEntity(int i_Ent, float f_Add)
 
 public Action OnPlayerRunCmd(int i_Client, int &i_Buttons, int &i_Impulse, float f_Velocity[3], float f_Angles[3], int &i_Wpn)
 {
-	if (!GetConVarBool(h_CvarEnabled))
+	if (!g_bCvarEnable)
 		return Plugin_Continue;
 		
 	if (!g_b_AllowChecking[i_Client])
@@ -398,14 +440,14 @@ public Action OnPlayerRunCmd(int i_Client, int &i_Buttons, int &i_Impulse, float
 		
 		if (!IsValidEnt(i_Weapon)) return Plugin_Continue;
 		
-		GetEdictClassname(i_Weapon, s_Weapon, sizeof(s_Weapon));
+		GetEntityClassname(i_Weapon, s_Weapon, sizeof(s_Weapon));
 		i_Skin = GetEntProp(i_Weapon, Prop_Send, "m_nSkin");
 		
 		if (StrEqual(s_Weapon, GASCAN_CLASS) && i_Skin == GASCAN_SKIN)
 		{
 			CheckTarget(i_Client);
 		}
-		else if (StrEqual(s_Weapon, CHAINSAW_CLASS) && !GetConVarBool(h_CvarRemove))
+		else if (StrEqual(s_Weapon, CHAINSAW_CLASS) && !g_bCvarRemove)
 		{
 			if (GetEntProp(i_Weapon, Prop_Data, "m_iClip1") <= 1)
 			{
@@ -442,23 +484,13 @@ public Action OnPlayerRunCmd(int i_Client, int &i_Buttons, int &i_Impulse, float
 	{
 		i_Weapon = GetEntDataEnt2(i_Client, g_ActiveWeaponOffset);
 		
-		if (IsValidEntRef(g_PlayerPistol[i_Client]) && !IsValidEnt(i_Weapon))
-			return Plugin_Continue;
-		
 		if (IsValidEnt(i_Weapon))
 		{
 			char s_Weapon[32];
-			GetEdictClassname(i_Weapon, s_Weapon, sizeof(s_Weapon));
-			if (StrEqual(s_Weapon, CHAINSAW_CLASS) && GetConVarBool(h_CvarDrop))
+			GetEntityClassname(i_Weapon, s_Weapon, sizeof(s_Weapon));
+			if (StrEqual(s_Weapon, CHAINSAW_CLASS) && g_bCvarDrop)
 			{
-				int i_Ent = CreateEntityByName("weapon_pistol");
-				if(IsValidEnt(i_Ent))
-				{
-					DispatchSpawn(i_Ent);
-					EquipPlayerWeapon(i_Client, i_Ent);
-					g_PlayerPistol[i_Client] = EntIndexToEntRef(i_Ent);
-					return Plugin_Continue;
-				}
+				SDKHooks_DropWeapon(i_Client, i_Weapon);
 			}
 		}
 		
@@ -470,7 +502,7 @@ public Action OnPlayerRunCmd(int i_Client, int &i_Buttons, int &i_Impulse, float
 
 bool IsValidEnt(int i_Ent)
 {
-	return (i_Ent > MaxClients && IsValidEdict(i_Ent) && IsValidEntity(i_Ent));
+	return (i_Ent > MaxClients && IsValidEntity(i_Ent));
 }
 
 bool IsValidEntRef(int entity)

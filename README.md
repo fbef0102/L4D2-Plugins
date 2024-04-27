@@ -13,7 +13,6 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
 > **[>>點擊我查看更多私人插件<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**
 * <b>[l4d2_Death_Survivor](/l4d2_Death_Survivor)</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>[clear_dead_body](/clear_dead_body)</b>: Remove Dead Body Entity
-* <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model
 * <b>[l4d_witch_realism_door_fix](/l4d_witch_realism_door_fix)</b>: Fixing witch can't break the door on Realism Normal、Advanced、Expert
     * 修正Witch在寫實模式下的一般難度、進階難度、專家難度，無法抓破門
@@ -77,6 +76,8 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣
 * <b>[lfd_both_fixUpgradePack](/lfd_both_fixUpgradePack)</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
     * 修正高爆彈與燃燒彈無法被重複角色模組的倖存者撿起來
+* <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
+    * 可以使用汽油桶重新填充電鋸油量
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
     * 使用 sourcemod v1.11 的編譯環境
