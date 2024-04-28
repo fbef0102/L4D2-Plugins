@@ -11,7 +11,7 @@ Allow refuelling of a chainsaw
 * <details><summary>How does it work?</summary>
 
     * The plugin allow refuelling of a chainsaw with gascans (not scavenge gascans).
-    * You can refuel a chainsaws, aim for it and press MOUSE1 while carrying a gascan"
+    * You can refuel a chainsaws, aim for it and press MOUSE1 while carrying a gascan
 </details>
 
 * Require | 必要安裝
