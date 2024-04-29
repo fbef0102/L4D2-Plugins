@@ -89,7 +89,7 @@ stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float ve
 		bool bHasSight = view_as<bool>(GetEntProp(tank, Prop_Send, "m_hasVisibleThreats")); //Line of sight to survivors
 		
 		// Near survivors
-		if( bHasSight && (400 > iSurvivorsProximity > 100) && currentspeed > 190.0 ) 
+		if( bHasSight && (1500 > iSurvivorsProximity > 100) && currentspeed > 190.0 ) 
 		{ // Random number to make bhop?
 			if (flags & FL_ONGROUND) 
 			{

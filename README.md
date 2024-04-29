@@ -78,6 +78,8 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 修正高爆彈與燃燒彈無法被重複角色模組的倖存者撿起來
 * <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
     * 可以使用汽油桶重新填充電鋸油量
+* <b>[l4d2_bash_kills](/l4d2_bash_kills)</b>: Stop special infected getting bashed to death
+    * 特感不會被人類右鍵推到死去
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
     * 使用 sourcemod v1.11 的編譯環境

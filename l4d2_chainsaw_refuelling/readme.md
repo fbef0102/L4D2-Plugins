@@ -46,7 +46,6 @@ Allow refuelling of a chainsaw
 
 * Apply to | 適用於
     ```
-    L4D1
     L4D2
     ```
 
