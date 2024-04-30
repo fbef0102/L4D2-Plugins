@@ -670,8 +670,8 @@
 	"HandleCarAlarmTriggered_1"
 	{
 		"en"		"{olive}%N{default} triggered an alarm with a hit."
-		"zho"		"{olive}%N{default} 開槍射到了警報車."
-		"chi"		"{olive}%N{default} 开枪射到了警报车."
+		"zho"		"{olive}%N{default} 打到了警報車."
+		"chi"		"{olive}%N{default} 打到了警报车."
 	}
 	"HandleCarAlarmTriggered_2"
 	{

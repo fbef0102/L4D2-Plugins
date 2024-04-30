@@ -1,24 +1,24 @@
-#define REP_SKEET				(1 << 0)
-#define REP_HURTSKEET			(1 << 1)
-#define REP_LEVEL				(1 << 2)
-#define REP_HURTLEVEL			(1 << 3)
-#define REP_CROWN				(1 << 4)
-#define REP_DRAWCROWN			(1 << 5)
-#define REP_TONGUECUT			(1 << 6)
-#define REP_SELFCLEAR			(1 << 7)
-#define REP_SELFCLEARSHOVE		(1 << 8)
-#define REP_ROCKSKEET			(1 << 9)
-#define REP_DEADSTOP			(1 << 10)
-#define REP_POP					(1 << 11)
-#define REP_SHOVE				(1 << 12)
-#define REP_HUNTERDP			(1 << 13)
-#define REP_JOCKEYDP			(1 << 14)
-#define REP_DEATHCHARGE			(1 << 15)
-#define REP_INSTACLEAR			(1 << 16)		// 65536
-#define REP_BHOPSTREAK			(1 << 17)		// 131072
-#define REP_CARALARM			(1 << 18)		// 262144
-#define REP_POPSTOP				(1 << 19)		// 524288
-#define REP_VOMIT				(1 << 20)		// 1048576
+#define REP_SKEET				(1 << 0) 		// Skeet hunter/jokcey
+#define REP_HURTSKEET			(1 << 1) 		// Hurt Skeet hunter/jokcey (Less damage)
+#define REP_LEVEL				(1 << 2) 		// Level Charger
+#define REP_HURTLEVEL			(1 << 3) 		// HurtLevel Charger (Less damage)
+#define REP_CROWN				(1 << 4) 		// Crown Witch and no one get hurt
+#define REP_DRAWCROWN			(1 << 5) 		// DrawCrown Witch and no one get hurt
+#define REP_TONGUECUT			(1 << 6) 		// Cut Smoker Tongue
+#define REP_SELFCLEAR			(1 << 7) 		// Self Clear Smoker Tongue
+#define REP_SELFCLEARSHOVE		(1 << 8) 		// Self Clear Shove Smoker Tongue
+#define REP_ROCKSKEET			(1 << 9) 		// Skeet Tank Rock
+#define REP_DEADSTOP			(1 << 10) 		// DeadStop hunter/jokcey
+#define REP_POP					(1 << 11) 		// POP a Boomer
+#define REP_SHOVE				(1 << 12) 		// Shove a Special Infecteed
+#define REP_HUNTERDP			(1 << 13) 		// Hunter DP (High Damage Pounce)
+#define REP_JOCKEYDP			(1 << 14) 		// Jockey DP (High Ride)
+#define REP_DEATHCHARGE			(1 << 15) 		// 32768, Charger Death Charge
+#define REP_INSTACLEAR			(1 << 16)		// 65536, Insta Clear (Save teammate quickly)
+#define REP_BHOPSTREAK			(1 << 17)		// 131072, Bunny hop
+#define REP_CARALARM			(1 << 18)		// 262144, Trigger Car Alarm
+#define REP_POPSTOP				(1 << 19)		// 524288, Shove Boomer before vomit
+#define REP_VOMIT				(1 << 20)		// 1048576, Boomer Perfect Vomit (Vomit 4+ survivors)
 
 //Report Flag
 //1:SKEET; 2: HURTSKEET, 4:LEVEL, 8:HURTLEVEL; 16:CROWN, 32:DRAWCROWN; 64:TONGUECUT, 128:SELFCLEAR
@@ -93,7 +93,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.7h-2024/4/25"
+#define PLUGIN_VERSION "1.8h-2024/4/30"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -2662,12 +2662,14 @@ public Action: OnTakeDamage_Car ( victim, &attacker, &inflictor, &Float:damage, 
 			g_iLastCarAlarmReason[attacker] = CALARM_EXPLOSION;
 		}
 	}
-	else if ( damage == 0.0 && ( damagetype & DMG_CLUB || damagetype & DMG_SLASH ) && !( damagetype & DMG_SLOWBURN) )
+	//else if ( damage == 0.0 && ( damagetype & DMG_CLUB || damagetype & DMG_SLASH ) && !( damagetype & DMG_SLOWBURN) )
+	else if ( (damage == 0.0 || damagetype & DMG_CLUB || damagetype & DMG_SLASH ) && !( damagetype & DMG_SLOWBURN) )
 	{
 		g_iLastCarAlarmReason[attacker] = CALARM_TOUCHED;
 	}
 	else
 	{
+		//PrintToChatAll("%d", damagetype);
 		g_iLastCarAlarmReason[attacker] = CALARM_HIT;
 	}
 	
@@ -2714,12 +2716,14 @@ public Action: OnTakeDamage_CarGlass ( victim, &attacker, &inflictor, &Float:dam
 				g_iLastCarAlarmReason[attacker] = CALARM_EXPLOSION;
 			}
 		}
-		else if ( damage == 0.0 && ( damagetype & DMG_CLUB || damagetype & DMG_SLASH ) && !( damagetype & DMG_SLOWBURN) )
+		//else if ( damage == 0.0 && ( damagetype & DMG_CLUB || damagetype & DMG_SLASH ) && !( damagetype & DMG_SLOWBURN) )
+		else if ( (damage == 0.0 || damagetype & DMG_CLUB || damagetype & DMG_SLASH) && !( damagetype & DMG_SLOWBURN) )
 		{
 			g_iLastCarAlarmReason[attacker] = CALARM_TOUCHED;
 		}
 		else
 		{
+			//PrintToChatAll("%d", damagetype);
 			g_iLastCarAlarmReason[attacker] = CALARM_HIT;
 		}
 	}
@@ -2795,6 +2799,10 @@ public Action: Timer_CheckAlarm (Handle:timer, any:entity)
 			else if ( IS_VALID_INFECTED(GetEntPropEnt(survivor, Prop_Send, "m_carryAttacker")) )
 			{
 				infected = GetEntPropEnt(survivor, Prop_Send, "m_carryAttacker");
+			}
+			else if ( IS_VALID_INFECTED(GetEntPropEnt(survivor, Prop_Send, "m_pummelAttacker")) )
+			{
+				infected = GetEntPropEnt(survivor, Prop_Send, "m_pummelAttacker");
 			}
 			else if ( IS_VALID_INFECTED(GetEntPropEnt(survivor, Prop_Send, "m_jockeyAttacker")) )
 			{
@@ -3838,7 +3846,8 @@ stock HandleCarAlarmTriggered( survivor, infected, reason )
 	if (	g_bCvarReportEnable && (g_iCvarReportFlags & REP_CARALARM) &&
 			IS_VALID_INGAME(survivor) && !IsFakeClient(survivor)
 	) {
-		if ( reason == view_as<int>(CALARM_HIT) ) {
+		if ( reason == view_as<int>(CALARM_HIT) ) 
+		{
 			CPrintToChatAll( "%t", "HandleCarAlarmTriggered_1", survivor );
 		}
 		else if ( reason == view_as<int>(CALARM_TOUCHED) )

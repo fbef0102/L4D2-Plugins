@@ -125,6 +125,18 @@ stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float ve
 				buttons &= ~IN_JUMP;
 				buttons &= ~IN_DUCK;
 			}
+
+			if(buttons & IN_JUMP)
+			{
+				int Activity = PlayerAnimState.FromPlayer(tank).GetMainActivity();
+				if(Activity == L4D2_ACT_HULK_THROW || Activity == L4D2_ACT_TANK_OVERHEAD_THROW || Activity == L4D2_ACT_HULK_ATTACK_LOW)
+				{
+					GetEntPropVector(tank, Prop_Data, "m_vecVelocity", vel);
+					vel[2] = 280.0;
+					TeleportEntity(tank, NULL_VECTOR, NULL_VECTOR, vel);  
+					//buttons &= ~IN_JUMP;
+				}
+			}
 		}
 	}
 	return Plugin_Continue;	
