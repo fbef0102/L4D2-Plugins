@@ -66,7 +66,7 @@ HUD with cs kill info list.
 * <details><summary>FAQ</summary>
 
     * How to customize weapon icon?
-        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L141-L184) line 141 ~ 184
+        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L92-L137) line 92 ~ 137
         * Recompile, done.
 
     * How to switch HUD position?
@@ -97,6 +97,10 @@ HUD with cs kill info list.
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.9h (2024-5-1)
+        * Add "unknown weapons"
+        * Add "Infected kill Infected"
 
     * v1.8h (2024-3-28)
         * Add system attacker
@@ -195,7 +199,7 @@ L4D2擊殺提示改成CS遊戲的擊殺列表
 * <details><summary>問題區</summary>
 
     * 如何自製武器圖案?
-        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L141-L184) 141 ~ 184 行
+        * [l4d2_cs_kill_hud.sp](/l4d2_cs_kill_hud/scripting/l4d2_cs_kill_hud.sp#L92-L137) 92 ~ 137 行
         * 重新編譯，完成
 
     * 如何改變 HUD 位置?
