@@ -8,13 +8,13 @@
 #include <l4d2_weapons>
 #include <multicolors>
 
-#define PLUGIN_VERSION		"3.4-2024/2/20"
+#define PLUGIN_VERSION		"3.5-2024/5/5"
 
 public Plugin myinfo = 
 {
 	name = "[L4D2] Gifts Drop & Spawn",
 	author = "Aceleracion & Harry Potter",
-	description = "Drop gifts (touch gift to earn reward) when a special infected or a tank/witch killed by survivor.",
+	description = "Drop gifts when a special infected or a tank/witch killed by survivor.",
 	version = PLUGIN_VERSION,
 	url = "https://forums.alliedmods.net/showthread.php?t=302731"
 }
@@ -791,7 +791,7 @@ void DropGift(int client, int type = TYPE_STANDARD)
 		
 		g_iGifType[gift] = type;
 		DispatchKeyValueVector(gift, "origin", gifPos);
-		DispatchKeyValue(gift, "spawnflags", "8448"); // "Don`t take physics damage" + "Generate output on +USE" + "Force Server Side"
+		DispatchKeyValue(gift, "spawnflags", "8448"); // 2="Don`t take physics damage", 256="Generate output on +USE", 8196:"Force Server Side"
 
 		DispatchSpawn(gift);
 		SetEntPropFloat(gift, Prop_Send, "m_flModelScale", g_fScale[random]);
@@ -865,42 +865,52 @@ Action ColdDown( Handle timer, any ref)
 	if (ref && (gift = EntRefToEntIndex(ref)) != INVALID_ENT_REFERENCE)
 	{
 		SDKHook(gift, SDKHook_TouchPost, OnTouchPost);
+		SDKHook(gift, SDKHook_UsePost, OnUsePost);
 	}
 
 	return Plugin_Continue;
 }
 
-void OnTouchPost(int gift, int other)
+void OnTouchPost(int gift, int client)
 {
-	if (IsValidClient(other))
+	TryOpenGift(gift, client);
+} 
+
+void OnUsePost(int gift, int client, int caller, UseType type, float value)
+{
+	TryOpenGift(gift, client);
+}
+
+void TryOpenGift(int gift, int client)
+{
+	if (IsValidClient(client))
 	{
-		int iTeam = GetClientTeam(other);
+		int iTeam = GetClientTeam(client);
 
 		if(iTeam == 1) return;
 
-		if(iTeam == 2 && IsPlayerAlive(other) &&
-			!IsIncapacitated(other) &&
-			!IsHandingFromLedge(other) &&
-			L4D_GetPinnedInfected(other) == 0 )
+		if(iTeam == 2 && IsPlayerAlive(client) &&
+			!IsIncapacitated(client) &&
+			!IsHandingFromLedge(client) &&
+			L4D_GetPinnedInfected(client) == 0 )
 		{
 
-			g_bHooked[other] = true;
+			g_bHooked[client] = true;
 			if (g_iGifType[gift] == TYPE_STANDARD)
 			{
-				OpenGift(other, TYPE_STANDARD);
+				OpenGift(client, TYPE_STANDARD);
 			}
 			else if (g_iGifType[gift] == TYPE_SPECIAL)
 			{
-				OpenGift(other, TYPE_SPECIAL);
+				OpenGift(client, TYPE_SPECIAL);
 			}
-			g_bHooked[other] = false;
+			g_bHooked[client] = false;
 
-			SDKUnhook(gift, SDKHook_TouchPost, OnTouchPost);
 			AcceptEntityInput(gift, "kill");
 		}
-		else if(iTeam == 3 && IsPlayerAlive(other) && !IsPlayerGhost(other))
+		else if(iTeam == 3 && IsPlayerAlive(client) && !IsPlayerGhost(client))
 		{
-			if(GetEntProp(other, Prop_Send, "m_zombieClass") == ZC_TANK && IsTankDying(other)) return;
+			if(GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_TANK && IsTankDying(client)) return;
 
 			int AddHP = 0;
 			if (g_iGifType[gift] == TYPE_STANDARD) AddHP = g_iGiftHP;
@@ -908,7 +918,7 @@ void OnTouchPost(int gift, int other)
 
 			if(AddHP == 0) return;
 
-			SetEntityHealth(other, GetClientHealth(other) + AddHP);
+			SetEntityHealth(client, GetClientHealth(client) + AddHP);
 
 			switch(g_iCvarAnnounce)
 			{
@@ -921,7 +931,7 @@ void OnTouchPost(int gift, int other)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_INFECTED || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							CPrintToChat(i, "%T", "Infected Got Gift (C)", i, other, AddHP);
+							CPrintToChat(i, "%T", "Infected Got Gift (C)", i, client, AddHP);
 						}
 					}
 				}
@@ -933,7 +943,7 @@ void OnTouchPost(int gift, int other)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_INFECTED || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							PrintHintText(i, "%T", "Infected Got Gift", i, other, AddHP);
+							PrintHintText(i, "%T", "Infected Got Gift", i, client, AddHP);
 						}
 					}
 				}
@@ -945,7 +955,7 @@ void OnTouchPost(int gift, int other)
 						if(IsFakeClient(i)) continue;
 						if(GetClientTeam(i) == TEAM_INFECTED || GetClientTeam(i) == TEAM_SPECTATOR)
 						{
-							PrintCenterText(i, "%T", "Infected Got Gift", i, other, AddHP);
+							PrintCenterText(i, "%T", "Infected Got Gift", i, client, AddHP);
 						}
 					}
 				}
@@ -953,14 +963,13 @@ void OnTouchPost(int gift, int other)
 
 			if (g_iGifType[gift] == TYPE_STANDARD) 
 			{
-				if(strlen(g_sCvarStandSoundFile) > 0) PlaySoundAroundClient(other, g_sCvarStandSoundFile);
+				if(strlen(g_sCvarStandSoundFile) > 0) PlaySoundAroundClient(client, g_sCvarStandSoundFile);
 			}
 			else
 			{
-				if(strlen(g_sCvarSpecialSoundFile) > 0) PlaySoundAroundClient(other, g_sCvarSpecialSoundFile);
+				if(strlen(g_sCvarSpecialSoundFile) > 0) PlaySoundAroundClient(client, g_sCvarSpecialSoundFile);
 			}
 
-			SDKUnhook(gift, SDKHook_TouchPost, OnTouchPost);
 			AcceptEntityInput(gift, "kill");
 		}
 	}

@@ -1,5 +1,5 @@
 # Description | 內容
-Drop gifts (touch gift to earn reward) when a special infected or a witch/tank killed by survivor.
+Drop gifts when a special infected or a witch/tank killed by survivor.
 
 * [Video | 影片展示](https://youtu.be/komzEmVvtH0)
 
@@ -15,7 +15,13 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 	* Drop "Standard Gift" when special infected dies
 	* Drop "Special Gift" when a tank/witch dies
-	* Survivor needs to touch the gifts to get weapons/items/health
+	* How to open gift
+		* Touch the gifts
+		* Press E
+	* Gift
+		* Weapons
+		* Items
+		* Health
 </details>
 
 * <details><summary>ConVar | 指令</summary>
@@ -207,10 +213,9 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 
 * <details><summary>Changelog | 版本日誌</summary>
 
-	```php
-	//[X]Aceleracion @ 2017
-	//HarryPotter @ 2022-2024
-	```
+    * v3.5 (2024-5-5)
+		* Now survivors can press E to open gifts
+
     * v3.4 (2024-2-20)
 		* Use data file to modify the gift items
 		* Update Cvars
@@ -253,7 +258,10 @@ Drop gifts (touch gift to earn reward) when a special infected or a witch/tank k
 * 原理
     * 殺死特感掉落"普通禮盒"
     * 殺死Tank或Witch掉落"特殊禮盒"
-	* 人類只要碰觸到盒便會自動拆開，禮物盒會有各式各樣的武器與物品，也有可能為空或失去血量，驚喜一瞬間
+	* 如何打開禮物盒
+		* 人類碰觸到盒
+		* 按E
+	* 禮物盒會有各式各樣的武器與物品，也有可能為空或失去血量，驚喜一瞬間
 	* 特感也能碰禮盒，會自動增加血量
 
 * <details><summary>指令中文介紹 (點我展開)</summary>

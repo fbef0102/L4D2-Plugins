@@ -28,7 +28,7 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 修復在戰役/寫實模式中重新復活或救援房間救活的時候，武器不一樣
 * <b>[l4d2_biletheworld](/l4d2_biletheworld)</b>: Vomit Jars hit Survivors, Boomer Explosions slime Infected.
     * 膽汁瓶會噴到倖存者身上，Boomer爆炸的膽汁噴到特感、Tank、Witch、普通感染者
-* <b>[l4d2_gifts](/l4d2_gifts)</b>: Drop gifts (touch gift to earn reward) when a special infected or a tank/witch killed by survivor.
+* <b>[l4d2_gifts](/l4d2_gifts)</b>: Drop gifts when a special infected or a tank/witch killed by survivor.
     * 殺死特感會掉落禮物盒，會獲得驚喜物品，聖誕嘉年華
 * <b>[l4d2_item_hint](/l4d2_item_hint)</b>: When using 'Look' in vocalize menu, print corresponding item to chat area.
     * 使用語音雷達"看"可以標記任何物品、武器、地點、特感
