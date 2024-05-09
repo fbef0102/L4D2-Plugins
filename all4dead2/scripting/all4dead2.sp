@@ -1040,6 +1040,7 @@ Action Command_PanicForever(int client, int args) {
 
 void Do_PanicForever(int client, bool value) {
 	StripAndChangeServerConVarBool(client, director_panic_forever, value);
+	if (value == true) L4D_ForcePanicEvent();
 	if (notify_players.BoolValue)
 	{
 		if (value == true)
