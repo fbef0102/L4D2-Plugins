@@ -59,7 +59,7 @@ int g_iItemMax, g_iItemMin, g_iCvarColor, g_iCvarGlowRange,
 	g_iCvarSupplyBoxMaxTime, g_iCvarSupplyBoxMinTime, g_iCvarSupplyBoxLimit,
 	g_iCvarSupplyBoxMaxDrop, g_iCvarSupplyBoxMinDrop, g_iBoxType, g_iItemAnnounceType;
 float g_fSupplyBoxLife, g_fCvarDropItemTime;
-char g_sDropItemChance[5][3], g_sCvarSupplyBoxSoundFile[PLATFORM_MAX_PATH];
+char g_sDropItemChance[5][4], g_sCvarSupplyBoxSoundFile[PLATFORM_MAX_PATH];
 Handle PlayerLeftStartTimer = null, SupplyBoxDropTimer = null;
 bool g_bSupplyBoxSpawnFinal, g_bFinaleStarted;
 Handle g_ItemDeleteTimer[MAXENTITIES+1];
@@ -788,7 +788,7 @@ int SpawnItem(const char[] sClassname, float fPos[3], const char[] sModel = "")
 			return -1;
 
 		DispatchKeyValue(entity, "solid", "6");
-		DispatchKeyValue(entity, "melee_script_name", g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)]);
+		DispatchKeyValue(entity, "melee_script_name", g_sMeleeClass[GetRandomInt(0, g_iMeleeClassCount-1)]);
 	}
 	else
 	{
@@ -1117,7 +1117,7 @@ int GetActiveWeapon(int client)
 	int weapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
 	if (!IsValidEntityIndex(weapon)) 
 	{
-		return false;
+		return 0;
 	}
 	
 	return weapon;

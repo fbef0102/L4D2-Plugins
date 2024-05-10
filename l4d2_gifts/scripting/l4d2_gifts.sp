@@ -490,7 +490,7 @@ void LoadConfigGifts()
 				{
 					if(strcmp(sName, "weapon_melee", false) == 0)
 					{
-						FormatEx(sName, sizeof(sName), "%s", g_sMeleeClass[GetRandomInt(0, --g_iMeleeClassCount)]);
+						FormatEx(sName, sizeof(sName), "%s", g_sMeleeClass[GetRandomInt(0, g_iMeleeClassCount-1)]);
 						g_aStandItemsList.PushString(sName);
 					}
 					else if(strcmp(sName, "hp", false) == 0)
