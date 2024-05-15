@@ -416,7 +416,7 @@ void Event_PlayerDeathInfo_Post(Event event, const char[] name, bool dontBroadca
 					DisplayKillList(killinfo);
 					return;
 				}
-				else if(zombie != ZC_TANK && damagetype == (DMG_PREVENT_PHYSICS_FORCE + DMG_NEVERGIB) && strcmp(sWeapon, "world", false) == 0) // 傷害類型: 6144, 武器: world, 原因: ForcePlayerSuicide 或 特感自動被導演處死
+				else if(damagetype == (DMG_PREVENT_PHYSICS_FORCE + DMG_NEVERGIB) && strcmp(sWeapon, "world", false) == 0) // 傷害類型: 6144, 武器: world, 原因: ForcePlayerSuicide 或 特感自動被導演處死
 				{
 					FormatEx(killinfo,sizeof(killinfo),"    %s  %s",g_kill_type[20],victim_name);
 					DisplayKillList(killinfo);
