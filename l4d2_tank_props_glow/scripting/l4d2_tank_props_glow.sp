@@ -364,7 +364,7 @@ Action OnTransmit(int iEntity, int iClient)
 
 void Hook_PropSpawned(int iEntity)
 {
-	if (iEntity < MaxClients || !IsValidEntity(iEntity)) {
+	if (iEntity <= MaxClients || !IsValidEntity(iEntity)) {
 		return;
 	}
 
@@ -377,7 +377,7 @@ void Hook_PropSpawned(int iEntity)
 			g_hTankPropsList.Push(iEntity);
 			g_hTankPropsHitList.Push(iEntity);
 			CreateTankPropGlow(iEntity);
-			CreateTimer(g_fCvarTankPropsAlive, Timer_DeleteProp, EntIndexToEntRef(iEntity), TIMER_FLAG_NO_MAPCHANGE);
+			if(g_fCvarTankPropsAlive > 0.0) CreateTimer(g_fCvarTankPropsAlive, Timer_DeleteProp, EntIndexToEntRef(iEntity), TIMER_FLAG_NO_MAPCHANGE);
 
 		} else if (StrContains(sModelName, "forklift_brokenfork.mdl") != -1) 
 		{
