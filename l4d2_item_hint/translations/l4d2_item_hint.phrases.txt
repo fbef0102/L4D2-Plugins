@@ -32,6 +32,38 @@
 		"chi"		"(特感) {1}: {2}"
 	}
 
+	"Announce_Vocalize_SURVIVOR (C)"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"({green}Survivor{default}) {olive}{1}{default}: {Blue}{2}"
+		"zho"		"({green}倖存者{default}) {olive}{1}{default}: {Blue}{2}"
+		"chi"		"({green}生还者{default}) {olive}{1}{default}: {Blue}{2}"
+	}
+
+	"Announce_Vocalize_SURVIVOR"
+	{
+		"#format"	"{1:N},{2:s}"
+		"en"		"(Survivor) {1}: {2}"
+		"zho"		"(倖存者) {1}: {2}"
+		"chi"		"(生还者) {1}: {2}"
+	}	
+	
+	"MARKED_SURVIVOR_BY (C)"
+	{
+		"#format"	"{1:N}"
+		"en"		"[{green}Marker{default}] You were marked by {olive}{1}"
+		"zho"		"[{green}Marker{default}] 你被 {olive}{1} 標記"
+		"chi"		"[{green}Marker{default}] 你被 {olive}{1} 标记"
+	}
+
+	"MARKED_SURVIVOR_BY"
+	{
+		"#format"	"{1:N}"
+		"en"		"[Marker] You were marked by {1}"
+		"zho"		"[Marker] 你被 {1} 標記"
+		"chi"		"[Marker] 你被 {1} 标记"
+	}
+
 	"Announce_Spot_Marker (C)"
 	{
 		"#format"	"{1:N}"
