@@ -16,10 +16,12 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>How does it work?</summary>
 
-    * 'Look' in vocalize menu, mark any weapons, items, infected and spots
-    <br/>![l4d2_item_hint_0.jpg](image/l4d2_item_hint_0.jpg)
-    * The infected is unable to mark and see the mark
-    * You can also type```!mark``` to mark anything
+    * Mark any weapons, items, infected and spots
+        * 'Look' in vocalize menu
+        <br/>![l4d2_item_hint_0.jpg](image/l4d2_item_hint_0.jpg)
+        * Type```!mark```
+        * Press shift+E
+    * The infected is unable to mark, unable see the mark and unable to hear the mark sound
 </details>
 
 * Require | 必要安裝
@@ -37,6 +39,18 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 * <details><summary>ConVar | 指令</summary>
 
     * cfg/sourcemod/l4d2_item_hint.cfg
+        * Mark Cvars
+            ```php
+            // If 1, Player can type !mark cmd to mark
+            l4d2_item_hint_cmd "1"
+
+            // If 1, Player can press Shift+E to mark
+            l4d2_item_hint_shiftE "1"
+
+            // If 1, Player can use Vocalize "look" to mark
+            l4d2_item_hint_vocalize "1"
+            ```
+
         * Item Hint
             ```php
             // Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)
@@ -201,6 +215,10 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v3.2 (2024-6-16)
+        * Press Shift+E to mark
+        * Update cvars
+
     * v3.1 (2024-6-11)
         * Add Survivor marker, support custom survivor model
         * Update translation
@@ -251,10 +269,13 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 使用語音雷達"看"可以標記任何物品、武器、地點、特感
 
 * 原理
-    * 使用角色語音雷達"看"，可以標記準心指向的任何東西
-    <br/>![zho/l4d2_item_hint_0.jpg](image/zho/l4d2_item_hint_0.jpg)
+    * 可以標記準心指向的任何東西
+        1. 使用角色語音雷達"看"
+        <br/>![zho/l4d2_item_hint_0.jpg](image/zho/l4d2_item_hint_0.jpg)
+        2. 輸入```!mark```
+        3. 按下Shift+E
     * 特感看不見人類標記的光圈、標記提示，也聽不見標記音校
-    * 輸入```!mark```也可以標記準心指向的任何東西
+
 
 * 注意事項
     * 如果有其他插件會擋住視野的裝飾品譬如帽子插件，你可能無法使用標記功能，請安裝[Use Priority Patch](https://forums.alliedmods.net/showthread.php?t=327511)以修正
@@ -264,6 +285,18 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 * <details><summary>指令中文介紹 (點我展開)</summary>
 
     * cfg/sourcemod/l4d2_item_hint.cfg
+        * 標記指令
+            ```php
+            // 為1時，玩家可以輸入```!mark```標記
+            l4d2_item_hint_cmd "1"
+
+            // 為1時，玩家可以按下Shift+E標記
+            l4d2_item_hint_shiftE "1"
+
+            // 為1時，玩家可以用"看"語音標記
+            l4d2_item_hint_vocalize "1"
+            ```
+
         * 物品、武器標記
             ```php
             // 標記的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格)

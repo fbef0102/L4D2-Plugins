@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "3.1-2024/6/11",
+	version     = "3.2-2024/6/16",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -54,7 +54,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #define ZC_CHARGER		6
 #define ZC_TANK			8
 
-ConVar g_hItemHintCoolDown, g_hSpotMarkCoolDown, g_hInfectedMarkCoolDown, g_hSurvivorMarkCoolDown,
+ConVar g_hItemCvarCMD, g_hItemCvarShiftE, g_hItemCvarVocalize,
+	g_hItemHintCoolDown, g_hSpotMarkCoolDown, g_hInfectedMarkCoolDown, g_hSurvivorMarkCoolDown,
 	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemGlowRange, g_hItemCvarColor,
 	g_hItemInstructorHint, g_hItemInstructorColor, g_hItemInstructorIcon,
 	g_hSpotMarkUseRange, g_hSpotMarkUseSound, g_hSpotMarkAnnounceType, g_hSpotMarkGlowTimer, g_hSpotMarkCvarColor, g_hSpotMarkSpriteModel,
@@ -77,7 +78,8 @@ char g_sItemInstructorColor[12], g_sItemInstructorIcon[16], g_sSpotMarkCvarColor
 			g_sSpotMarkUseSound[100], g_sSpotMarkInstructorColor[12], g_sSpotMarkInstructorIcon[16], g_sSpotMarkSpriteModel[PLATFORM_MAX_PATH],
 			g_sInfectedMarkUseSound[100], g_sInfectedMarkInstructorColor[12], g_sInfectedMarkInstructorIcon[16],
 			g_sSurvivorMarkUseSound[100], g_sSurvivorMarkInstructorColor[12], g_sSurvivorMarkInstructorIcon[16];
-bool g_bItemInstructorHint, 
+bool g_bItemCvarCMD, g_bItemCvarShiftE, g_bItemCvarVocalize,
+	g_bItemInstructorHint, 
 	g_bSpotMarkInstructorHint, 
 	g_bInfectedMarkInstructorHint, g_bInfectedMarkWitch,
 	g_bSurvivorMarkInstructorHint;
@@ -140,6 +142,10 @@ public void OnPluginStart()
 	// g_hItemUseHintRange = FindConVar("player_use_radius");
 	AddCommandListener(Vocalize_Listener, "vocalize");
 
+	g_hItemCvarCMD					= CreateConVar("l4d2_item_hint_cmd", 							"1", 			"If 1, Player can type !mark cmd to mark", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hItemCvarShiftE				= CreateConVar("l4d2_item_hint_shiftE", 						"1", 			"If 1, Player can press Shift+E to mark", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hItemCvarVocalize 			= CreateConVar("l4d2_item_hint_vocalize", 						"1", 			"If 1, Player can use Vocalize \"look\" to mark", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
 	g_hItemCvarColor				= CreateConVar("l4d2_item_hint_glow_color", 					"0 255 255", 			"Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)", FCVAR_NOTIFY);
 	g_hItemHintCoolDown				= CreateConVar("l4d2_item_hint_cooldown_time", 					"1.0", 					"Cold Down Time in seconds a player can use 'Look' Item Hint again.", FCVAR_NOTIFY, true, 0.0);
 	g_hItemUseHintRange				= CreateConVar("l4d2_item_hint_use_range", 						"150", 					"How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
@@ -188,6 +194,9 @@ public void OnPluginStart()
 	AutoExecConfig(true, "l4d2_item_hint");
 
 	GetCvars();
+	g_hItemCvarCMD.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemCvarShiftE.AddChangeHook(ConVarChanged_Cvars);
+	g_hItemCvarVocalize.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemHintCoolDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseHintRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseSound.AddChangeHook(ConVarChanged_Cvars);
@@ -296,6 +305,10 @@ void ConVarChanged_Cvars(ConVar convar, const char[] oldValue, const char[] newV
 
 void GetCvars()
 {
+	g_bItemCvarCMD = g_hItemCvarCMD.BoolValue;
+	g_bItemCvarShiftE = g_hItemCvarShiftE.BoolValue;
+	g_bItemCvarVocalize = g_hItemCvarVocalize.BoolValue;
+
 	g_fItemHintCoolDown = g_hItemHintCoolDown.FloatValue;
 	g_fItemUseHintRange = g_hItemUseHintRange.FloatValue;
 	g_hItemUseSound.GetString(g_sItemUseSound, sizeof(g_sItemUseSound));
@@ -544,12 +557,30 @@ Action CMD_MARK(int client, int args)
 		return Plugin_Handled;
 	}
 
+	if (g_bItemCvarCMD == false)
+	{
+		ReplyToCommand(client, "This command is disable.");
+		return Plugin_Handled;
+	}
+
 	if (IsRealSur(client) && !IsHandingFromLedge(client) && GetInfectedAttacker(client) == -1)
 	{
 		PlayerMarkHint(client);
 	}
 
 	return Plugin_Handled;
+}
+
+public void OnPlayerRunCmdPost(int client, int buttons)
+{
+	if (!g_bItemCvarShiftE) return;
+
+	if (!IsRealSur(client) || IsHandingFromLedge(client) || GetInfectedAttacker(client) != -1) return;
+
+	if ((buttons & IN_SPEED) && (buttons & IN_USE)) // SHIFT + E
+	{
+		PlayerMarkHint(client);
+	}
 }
 
 void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
@@ -607,6 +638,8 @@ void Event_WitchKilled(Event event, const char[] name, bool dontBroadcast)
 
 Action Vocalize_Listener(int client, const char[] command, int argc)
 {
+	if(!g_bItemCvarVocalize) return Plugin_Continue;
+
 	if (IsRealSur(client) && !IsHandingFromLedge(client) && GetInfectedAttacker(client) == -1)
 	{
 		static char sCmdString[32];
@@ -646,7 +679,7 @@ int GetUseEntity(int client, float fRadius)
 
 bool IsRealSur(int client)
 {
-	return (client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVOR && IsPlayerAlive(client) && !IsFakeClient(client));
+	return (client > 0 && client <= MaxClients && !IsFakeClient(client) && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVOR && IsPlayerAlive(client) && !IsFakeClient(client));
 }
 
 void Clear(int client = -1)
