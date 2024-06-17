@@ -441,16 +441,32 @@ Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, in
 
 	damage = float(RoundToNearest(damage));
 
-	char sWeaponName[CLASSNAME_LENGTH];
-	GetClientWeapon(attacker,sWeaponName, sizeof(sWeaponName));
-	#if DEBUG
-		PrintToChatAll("%N use %s to attack %d, damage: %f - > %f",attacker,sWeaponName,victim,damage,damage * g_hCvarWeaponDamageModfiy[weaponId][victimId].FloatValue);
-	#endif
-	WeaponID weaponId = GetWeaponID(sWeaponName);
-	if(weaponId == ID_NONE) return Plugin_Continue; //找不到武器名稱
-	if(g_fCvarWeaponDamageModfiy[weaponId][victimId] < 0.0) return Plugin_Continue; //不修改
+	if(damagetype & DMG_BULLET)
+	{
+		static char sWeaponName[CLASSNAME_LENGTH];
+		GetClientWeapon(attacker,sWeaponName, sizeof(sWeaponName));
+		#if DEBUG
+			PrintToChatAll("%N use %s to attack %d, damage: %f - > %f",attacker,sWeaponName,victim,damage,damage * g_hCvarWeaponDamageModfiy[weaponId][victimId].FloatValue);
+		#endif
+		WeaponID weaponId = GetWeaponID(sWeaponName);
+		if(weaponId == ID_NONE) return Plugin_Continue; //找不到武器名稱
+		if(g_fCvarWeaponDamageModfiy[weaponId][victimId] < 0.0) return Plugin_Continue; //不修改
 
-	damage = damage * g_fCvarWeaponDamageModfiy[weaponId][victimId];
+		damage = damage * g_fCvarWeaponDamageModfiy[weaponId][victimId];
+	}
+	else if(damagetype & DMG_BLAST)
+	{
+		static char classname[CLASSNAME_LENGTH];
+		GetEntityClassname(inflictor, classname, sizeof(classname));
+		if(strncmp(classname, "grenade_launcher_projectile", 27, false) != 0 ) return Plugin_Continue; //非榴彈發射器
+		if(g_fCvarWeaponDamageModfiy[ID_GRENADE][victimId] < 0.0) return Plugin_Continue; //不修改
+		
+		damage = damage * g_fCvarWeaponDamageModfiy[ID_GRENADE][victimId];
+	}
+	else
+	{
+		return Plugin_Continue;
+	}
 
 	return Plugin_Changed;
 }

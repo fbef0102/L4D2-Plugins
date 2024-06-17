@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "3.2-2024/6/16",
+	version     = "3.3-2024/6/17",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -53,6 +53,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #define ZC_JOCKEY		5
 #define ZC_CHARGER		6
 #define ZC_TANK			8
+
+#define SF_PHYSPROP_PREVENT_PICKUP		(1 << 9)
+#define EFL_DONTBLOCKLOS		(1 << 25)
 
 ConVar g_hItemCvarCMD, g_hItemCvarShiftE, g_hItemCvarVocalize,
 	g_hItemHintCoolDown, g_hSpotMarkCoolDown, g_hInfectedMarkCoolDown, g_hSurvivorMarkCoolDown,
@@ -1949,6 +1952,19 @@ void PlayerMarkHint(int client)
 		{
 			if (GetEntPropString(iEntity, Prop_Data, "m_ModelName", sEntModelName, sizeof(sEntModelName)) > 1)
 			{
+				if(strncmp(classname, "prop_dynamic", 12, false) == 0)
+				{
+					int m_iEFlags = GetEntProp(iEntity, Prop_Data, "m_iEFlags");
+					if(m_iEFlags & EFL_DONTBLOCKLOS && m_iEFlags & SF_PHYSPROP_PREVENT_PICKUP)
+					{
+						//PrintToChatAll("this is attach api weapons");
+
+						// client / world / witch
+						CreateSpotMarker(client, bIsAimPlayer);
+						return;
+					}
+				}		
+
 				//PrintToChatAll("%N is looking at %d (%s-%s)", client, iEntity, classname, sEntModelName);
 				StringToLowerCase(sEntModelName);
 				float fHeight = 10.0;

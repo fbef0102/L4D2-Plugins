@@ -215,6 +215,9 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v3.3 (2024-6-17)
+        * Compatible with [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
+
     * v3.2 (2024-6-16)
         * Press Shift+E to mark
         * Update cvars
