@@ -49,6 +49,15 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
             // If 1, Player can use Vocalize "look" to mark
             l4d2_item_hint_vocalize "1"
+
+            // If 1, Player can use mark if get pinned by S.I.
+            l4d2_item_hint_mark_capped "1"
+
+            // If 1, Player can use mark if is haning from ledge
+            l4d2_item_hint_mark_hanging "1"
+
+            // 為1時，死亡的玩家可以使用標記
+            l4d2_item_hint_mark_dead "1"
             ```
 
         * Item Hint
@@ -215,6 +224,10 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v3.4 (2024-6-18)
+        * Player can makr if dead or incapped or get pinned by special infected
+        * Update cvars
+
     * v3.3 (2024-6-17)
         * Compatible with [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
 
@@ -298,6 +311,15 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
             // 為1時，玩家可以用"看"語音標記
             l4d2_item_hint_vocalize "1"
+
+            // 為1時，被特感控制的玩家可以使用標記
+            l4d2_item_hint_mark_capped "1"
+
+            // 為1時，掛邊的玩家可以使用標記
+            l4d2_item_hint_mark_hanging "1"
+
+            // 為1時，死亡的玩家可以使用標記
+            l4d2_item_hint_mark_dead "1"
             ```
 
         * 物品、武器標記

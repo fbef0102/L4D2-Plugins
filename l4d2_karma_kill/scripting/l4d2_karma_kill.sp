@@ -177,7 +177,7 @@ void OnCheckKarmaZoneTouch(int victim, int entity, const char[] zone_name, int p
 				{
 					int ability = L4D_GetPlayerCustomAbility(victim);
 
-					if (ability != -1)
+					if (ability > MaxClients)
 					{
 						// Make game think we're on ground because you don't pummel mid-air.
 						SetEntityFlags(victim, GetEntityFlags(victim) | FL_ONGROUND);
@@ -1043,7 +1043,7 @@ void FixChargeTimeleftBug()
 		int iCustomAbility = L4D_GetPlayerCustomAbility(i);
 
 		// I have no clue why it's exactly 3600.0 when it bugs, but whatever.
-		if (GetEntPropFloat(iCustomAbility, Prop_Send, "m_duration") == 3600.0)
+		if (iCustomAbility > MaxClients && GetEntPropFloat(iCustomAbility, Prop_Send, "m_duration") == 3600.0)
 		{
 			SetEntPropFloat(iCustomAbility, Prop_Send, "m_timestamp", GetGameTime());
 			SetEntPropFloat(iCustomAbility, Prop_Send, "m_duration", 0.0);
