@@ -2,7 +2,7 @@
 {
 	"Got Gift (C)"
 	{
-		"#format"		"{1:N},{2:t}"
+		"#format"		"{1:N},{2:T}"
 		"en"			"{blue}{1}{default} got gift + {green}{2}{default}!"
 		"es"			"{blue}{1}{default} obtuvo un regalo + {green}{2}{default}!"
 		"zho"			"{blue}{1}{default} 取得禮物 + {green}{2}{default}!"
@@ -22,7 +22,7 @@
 
 	"Got Gift"
 	{
-		"#format"		"{1:N},{2:t}"
+		"#format"		"{1:N},{2:T}"
 		"en"			"{1} got gift + {2}!"
 		"es"			"{1} obtuvo un regalo + {2}!"
 		"zho"			"{1} 取得禮物 + {2}!"

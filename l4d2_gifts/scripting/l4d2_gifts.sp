@@ -1297,7 +1297,7 @@ void AnnounceToChat(int client, const char[] buffer, int hp)
 					if(IsFakeClient(i)) continue;
 					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 					{
-						if(bTranslationPhraseExists) CPrintToChat(i, "%T", "Got Gift (C)", i, client, buffer);
+						if(bTranslationPhraseExists) CPrintToChat(i, "%T", "Got Gift (C)", i, client, buffer, i);
 						else CPrintToChat(i, "%T", "Got Gift (CS)", i, client, buffer);
 					}
 				}
@@ -1310,7 +1310,7 @@ void AnnounceToChat(int client, const char[] buffer, int hp)
 					if(IsFakeClient(i)) continue;
 					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 					{
-						if(bTranslationPhraseExists) PrintHintText(i, "%T", "Got Gift", i, client, buffer);
+						if(bTranslationPhraseExists) PrintHintText(i, "%T", "Got Gift", i, client, buffer, i);
 						else PrintHintText(i, "%T", "Got Gift (S)", i, client, buffer);
 					}
 				}
@@ -1323,7 +1323,7 @@ void AnnounceToChat(int client, const char[] buffer, int hp)
 					if(IsFakeClient(i)) continue;
 					if(GetClientTeam(i) == TEAM_SURVIVOR || GetClientTeam(i) == TEAM_SPECTATOR)
 					{
-						if(bTranslationPhraseExists) PrintCenterText(i, "%T", "Got Gift", i, client, buffer);
+						if(bTranslationPhraseExists) PrintCenterText(i, "%T", "Got Gift", i, client, buffer, i);
 						else PrintCenterText(i, "%T", "Got Gift (S)", i, client, buffer);
 					}
 				}
