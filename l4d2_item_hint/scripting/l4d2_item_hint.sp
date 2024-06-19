@@ -15,7 +15,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "3.4-2024/6/18",
+	version     = "3.4-2024/6/19",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -91,17 +91,27 @@ bool g_bItemCvarCMD, g_bItemCvarShiftE, g_bItemCvarVocalize,
 	g_bCappedMark, g_bHaningMark, g_bDeadMark;
 
 
-static bool   ge_bMoveUp[MAXENTITIES+1];
-int       g_iModelIndex[MAXENTITIES+1] = {0};
-Handle    g_iModelTimer[MAXENTITIES+1] = {null};
-int       g_iInstructorIndex[MAXENTITIES+1] = {0};
-Handle    g_iInstructorTimer[MAXENTITIES+1] = {null};
-int       g_iTargetInstructorIndex[MAXENTITIES+1] = {0};
-Handle    g_iTargetInstructorTimer[MAXENTITIES+1] = {null};
-Handle    g_hUseEntity;
-StringMap g_smModelToName;
-StringMap g_smModelHeight;
-bool g_bMapStarted;
+bool   
+	ge_bMoveUp[MAXENTITIES+1];
+
+int       
+	g_iModelIndex[MAXENTITIES+1] = {0},
+	g_iInstructorIndex[MAXENTITIES+1] = {0},
+	g_iTargetInstructorIndex[MAXENTITIES+1] = {0};
+
+Handle  
+	g_iModelTimer[MAXENTITIES+1],
+	g_iInstructorTimer[MAXENTITIES+1],
+	g_iTargetInstructorTimer[MAXENTITIES+1],
+	g_hUseEntity;
+
+StringMap 
+	g_smModelToName,
+	g_smModelHeight,
+	g_smModelNotGlow;
+
+bool 
+	g_bMapStarted;
 
 enum EHintType {
 	eItemHint,
@@ -305,8 +315,6 @@ public void OnPluginStart()
 
 public void OnPluginEnd()
 {
-	delete g_smModelToName;
-	delete g_smModelHeight;
 	RemoveAllGlow_Timer();
 	RemoveAllSpotMark();
 }
@@ -465,7 +473,7 @@ void CreateStringMap()
 	g_smModelToName.SetString("models/infected/jockey.mdl", "Jockey");
 	g_smModelToName.SetString("models/infected/charger.mdl", "Charger");
 
-	g_smModelHeight = CreateTrie();
+	g_smModelHeight = new StringMap();
 
 	// Case-sensitive
 	g_smModelHeight.SetValue("models/w_models/weapons/w_eq_medkit.mdl", 10.0);
@@ -525,6 +533,10 @@ void CreateStringMap()
 	g_smModelHeight.SetValue("models/weapons/melee/w_golfclub.mdl", 5.0);
 	g_smModelHeight.SetValue("models/weapons/melee/w_pitchfork.mdl", 5.0);
 	g_smModelHeight.SetValue("models/weapons/melee/w_shovel.mdl", 5.0);
+
+	g_smModelNotGlow = new StringMap();
+	// 某些三方圖自製的特感模組無法產生光圈
+	g_smModelNotGlow.SetValue("models/sblitz/tank_sb.mdl", true);
 }
 
 int g_iFieldModelIndex;
@@ -902,6 +914,59 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	if (GetVectorDistance(vSurvivorPos, vInfectedPos, true) > g_fInfectedMarkUseRange * g_fInfectedMarkUseRange) // over distance
 		return false;
 
+	int zClass;
+	if(!bIsWitch) zClass = GetZombieClass(infected);
+
+	// Get Model
+	static char sModelName[64];
+	GetEntPropString(infected, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
+
+	if(g_smModelNotGlow.ContainsKey(sModelName))
+	{
+		if(bIsWitch)
+		{
+			FormatEx(sModelName, sizeof(sModelName), "models/infected/witch.mdl");
+		}
+		else
+		{
+			switch(zClass)
+			{
+				case ZC_SMOKER:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/smoker.mdl");
+				}
+				case ZC_BOOMER:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/boomer.mdl");
+				}
+				case ZC_HUNTER:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/hunter.mdl");
+				}
+				case ZC_SPITTER:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/spitter.mdl");
+				}
+				case ZC_JOCKEY:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/jockey.mdl");
+				}
+				case ZC_CHARGER:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/charger.mdl");
+				}
+				case ZC_TANK:
+				{
+					FormatEx(sModelName, sizeof(sModelName), "models/infected/hulk.mdl");
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+	}
+
 	// Spawn dynamic prop entity
 	int entity = -1;
 	entity = CreateEntityByName("prop_dynamic_ornament");
@@ -911,10 +976,6 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 	// Delete previous glow first
 	RemoveEntityModelGlow(infected);
 	delete g_iModelTimer[infected];
-
-	// Get Model
-	static char sModelName[64];
-	GetEntPropString(infected, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
 
 	// Set new fake model
 	SetEntityModel(entity, sModelName);
@@ -974,7 +1035,6 @@ bool CreateInfectedMarker(int client, int infected, bool bIsWitch = false)
 		}
 		else
 		{
-			int zClass = GetZombieClass(infected);
 			switch(zClass)
 			{
 				case ZC_SMOKER:
@@ -1922,37 +1982,35 @@ void PlayerMarkHint(int client)
 
 	// marker priority (infected maker > item hint > spot marker)
 
-	if (g_iInfectedMarkCvarColor != 0)
+	int clientAim = GetClientViewClient(client); //ignore glow model
+
+	if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim))
 	{
-		int clientAim = GetClientViewClient(client); //ignore glow model
-
-		if (1 <= clientAim <= MaxClients && IsClientInGame(clientAim))
+		if(g_iInfectedMarkCvarColor != 0 && GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim))
 		{
-			if(GetClientTeam(clientAim) == TEAM_INFECTED && IsPlayerAlive(clientAim) && !IsPlayerGhost(clientAim))
-			{
-				bIsAimPlayer = true;
-				//PrintToChatAll("look at %N", clientAim);
-				
-				if( CreateInfectedMarker(client, clientAim) == true )
-					return;
-			}
-			else if(GetClientTeam(clientAim) == TEAM_SURVIVOR && IsPlayerAlive(clientAim))
-			{
-				bIsAimPlayer = true;
-				//PrintToChatAll("look at %N", clientAim);
-				
-				if( CreateSurvivorMarker(client, clientAim) == true )
-					return;
-			}
+			bIsAimPlayer = true;
+			//PrintToChatAll("look at %N", clientAim);
+			
+			if( CreateInfectedMarker(client, clientAim) == true )
+				return;
 		}
-		else if ( IsWitch(clientAim) )
+		else if(g_iSurvivorMarkCvarColor != 0 && GetClientTeam(clientAim) == TEAM_SURVIVOR && IsPlayerAlive(clientAim))
 		{
-			bIsAimWitch = true;
-
-			if( CreateInfectedMarker(client, clientAim, true) == true )
+			bIsAimPlayer = true;
+			//PrintToChatAll("look at %N", clientAim);
+			
+			if( CreateSurvivorMarker(client, clientAim) == true )
 				return;
 		}
 	}
+	else if ( g_iInfectedMarkCvarColor != 0 && IsWitch(clientAim) )
+	{
+		bIsAimWitch = true;
+
+		if( CreateInfectedMarker(client, clientAim, true) == true )
+			return;
+	}
+
 
 	static int iEntity;
 	iEntity = GetUseEntity(client, g_fItemUseHintRange);
