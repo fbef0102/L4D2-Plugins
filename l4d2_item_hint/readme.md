@@ -56,41 +56,44 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
             // If 1, Player can use mark if is haning from ledge
             l4d2_item_hint_mark_hanging "1"
 
-            // 為1時，死亡的玩家可以使用標記
+            // If 1, Dead player can use mark
             l4d2_item_hint_mark_dead "1"
+
+            // Display Instruction Hint Text in which language for all players? 0=Server Language (English), 1=Caller Language
+            l4d2_item_hint_instructorhint_translate "0"
             ```
 
         * Item Hint
             ```php
             // Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)
-            l4d2_item_hint_glow_color "0 255 255"
+            l4d2_item_marker_glow_color "0 255 255"
 
             // Cold Down Time in seconds a player can use 'Look' Item Hint again.
-            l4d2_item_hint_cooldown_time "1.0"
+            l4d2_item_marker_cooldown_time "1.0"
 
             // How close can a player use 'Look' item hint.
-            l4d2_item_hint_use_range "150"
+            l4d2_item_marker_use_range "150"
 
             // Item Hint Sound. (relative to to sound/, Empty = OFF)
-            l4d2_item_hint_use_sound "buttons/blip1.wav"
+            l4d2_item_marker_use_sound "buttons/blip1.wav"
 
             // Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
-            l4d2_item_hint_announce_type "1"
+            l4d2_item_marker_announce_type "1"
 
             // Item Glow Time.
-            l4d2_item_hint_glow_timer "10.0"
+            l4d2_item_marker_glow_timer "10.0"
 
             // Item Glow Range.
-            l4d2_item_hint_glow_range "800"
+            l4d2_item_marker_glow_range "800"
 
             // If 1, Create instructor hint on marked item.
-            l4d2_item_instructorhint_enable "1"
+            l4d2_item_marker_instructorhint_enable "1"
 
             // Instructor hint color on marked item. (If empty, off the item name display)
-            l4d2_item_instructorhint_color "0 255 255"
+            l4d2_item_marker_instructorhint_color "0 255 255"
 
             //Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)
-            l4d2_item_instructorhint_icon "icon_interact"
+            l4d2_item_marker_instructorhint_icon "icon_interact"
             ```
             
         * Spot Marker
@@ -224,6 +227,9 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v3.5 (2024-6-22)
+        * Update cvars
+
     * v3.4 (2024-6-18)
         * Player can makr if dead or incapped or get pinned by special infected
         * Update cvars
@@ -320,40 +326,43 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
             // 為1時，死亡的玩家可以使用標記
             l4d2_item_hint_mark_dead "1"
+
+            // 標記的導演提示該使用何種語言翻譯給大家看? 0=伺服器的語言 (英文), 1=呼叫標記的玩家的語言
+            l4d2_item_hint_instructorhint_translate "0"
             ```
 
         * 物品、武器標記
             ```php
             // 標記的光圈顏色，填入RGB三色 (三個數值介於0~255，需要空格)
             // 空=關閉此標記
-            l4d2_item_hint_glow_color "0 255 255"
+            l4d2_item_marker_glow_color "0 255 255"
 
             // 玩家可以再次標記的時間間隔
-            l4d2_item_hint_cooldown_time "1.0"
+            l4d2_item_marker_cooldown_time "1.0"
 
             // 能標記的距離
-            l4d2_item_hint_use_range "150"
+            l4d2_item_marker_use_range "150"
 
             // 標記音效. (路徑相對於sound資料夾, 空 = 無音效)
-            l4d2_item_hint_use_sound "buttons/blip1.wav"
+            l4d2_item_marker_use_sound "buttons/blip1.wav"
 
             // 標記提示該如何顯示. (0: 不提示, 1: 聊天框, 2: 黑底白字框, 3: 螢幕正中間)
-            l4d2_item_hint_announce_type "1"
+            l4d2_item_marker_announce_type "1"
 
             // 標記的光圈顯示時間
-            l4d2_item_hint_glow_timer "10.0"
+            l4d2_item_marker_glow_timer "10.0"
 
             // 標記的光圈可見範圍
-            l4d2_item_hint_glow_range "800"
+            l4d2_item_marker_glow_range "800"
 
             // 為1時，啟用導演提示
-            l4d2_item_instructorhint_enable "1"
+            l4d2_item_marker_instructorhint_enable "1"
 
             // 導演提示的文字顏色 (空=無文字)
-            l4d2_item_instructorhint_color "0 255 255"
+            l4d2_item_marker_instructorhint_color "0 255 255"
 
             // 導演提示的圖案 (查找更多圖案: https://developer.valvesoftware.com/wiki/Env_instructor_hint)
-            l4d2_item_instructorhint_icon "icon_interact"
+            l4d2_item_marker_instructorhint_icon "icon_interact"
             ```
             
         * 地點標記

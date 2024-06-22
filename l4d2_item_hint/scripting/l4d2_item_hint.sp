@@ -15,7 +15,7 @@ public Plugin myinfo =
 	name        = "L4D2 Item hint",
 	author      = "BHaType, fdxx, HarryPotter",
 	description = "When using 'Look' in vocalize menu, print corresponding item to chat area and make item glow or create spot marker/infeced maker like back 4 blood.",
-	version     = "3.4-2024/6/19",
+	version     = "3.5-2024/6/22",
 	url         = "https://forums.alliedmods.net/showpost.php?p=2765332&postcount=30"
 };
 
@@ -59,6 +59,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #define EFL_DONTBLOCKLOS		(1 << 25)
 
 ConVar g_hItemCvarCMD, g_hItemCvarShiftE, g_hItemCvarVocalize,
+	g_hCappedMark, g_hHaningMark, g_hDeadMark,
+	g_hHintTransType,
 	g_hItemHintCoolDown, g_hSpotMarkCoolDown, g_hInfectedMarkCoolDown, g_hSurvivorMarkCoolDown,
 	g_hItemUseHintRange, g_hItemUseSound, g_hItemAnnounceType, g_hItemGlowTimer, g_hItemGlowRange, g_hItemCvarColor,
 	g_hItemInstructorHint, g_hItemInstructorColor, g_hItemInstructorIcon,
@@ -67,9 +69,9 @@ ConVar g_hItemCvarCMD, g_hItemCvarShiftE, g_hItemCvarVocalize,
 	g_hInfectedMarkUseRange, g_hInfectedMarkUseSound, g_hInfectedMarkAnnounceType, g_hInfectedMarkGlowTimer, g_hInfectedMarkGlowRange, g_hInfectedMarkCvarColor, g_hInfectedMarkWitch,
 	g_hInfectedMarkInstructorHint, g_hInfectedMarkInstructorColor, g_hInfectedMarkInstructorIcon,
 	g_hSurvivorMarkUseRange, g_hSurvivorMarkUseSound, g_hSurvivorMarkAnnounceType, g_hSurvivorMarkGlowTimer, g_hSurvivorMarkGlowRange, g_hSurvivorMarkCvarColor,
-	g_hSurvivorMarkInstructorHint, g_hSurvivorMarkInstructorColor, g_hSurvivorMarkInstructorIcon,
-	g_hCappedMark, g_hHaningMark, g_hDeadMark;
-int g_iItemAnnounceType, g_iItemGlowRange, g_iItemCvarColor,
+	g_hSurvivorMarkInstructorHint, g_hSurvivorMarkInstructorColor, g_hSurvivorMarkInstructorIcon;
+int g_iHintTransType,
+	g_iItemAnnounceType, g_iItemGlowRange, g_iItemCvarColor,
 	g_iSpotMarkCvarColorArray[3], g_iSpotMarkAnnounceType,
 	g_iInfectedMarkAnnounceType, g_iInfectedMarkGlowRange, g_iInfectedMarkCvarColor,
 	g_iSurvivorMarkAnnounceType, g_iSurvivorMarkGlowRange, g_iSurvivorMarkCvarColor;
@@ -84,11 +86,11 @@ char g_sItemInstructorColor[12], g_sItemInstructorIcon[16], g_sSpotMarkCvarColor
 			g_sInfectedMarkUseSound[100], g_sInfectedMarkInstructorColor[12], g_sInfectedMarkInstructorIcon[16],
 			g_sSurvivorMarkUseSound[100], g_sSurvivorMarkInstructorColor[12], g_sSurvivorMarkInstructorIcon[16];
 bool g_bItemCvarCMD, g_bItemCvarShiftE, g_bItemCvarVocalize,
+	g_bCappedMark, g_bHaningMark, g_bDeadMark,
 	g_bItemInstructorHint, 
 	g_bSpotMarkInstructorHint, 
 	g_bInfectedMarkInstructorHint, g_bInfectedMarkWitch,
-	g_bSurvivorMarkInstructorHint,
-	g_bCappedMark, g_bHaningMark, g_bDeadMark;
+	g_bSurvivorMarkInstructorHint;
 
 
 bool   
@@ -164,17 +166,18 @@ public void OnPluginStart()
 	g_hCappedMark					= CreateConVar("l4d2_item_hint_mark_capped", 					"0", 			"If 1, Player can use mark if get pinned by S.I.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hHaningMark					= CreateConVar("l4d2_item_hint_mark_hanging", 					"0", 			"If 1, Player can use mark if is haning from ledge", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hDeadMark						= CreateConVar("l4d2_item_hint_mark_dead", 						"0", 			"If 1, Player can use mark if is already dead", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hHintTransType				= CreateConVar("l4d2_item_hint_instructorhint_translate", 		"0", 			"Display Instruction Hint Text in which language for all players? 0=Server Language (English), 1=Caller Language", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
-	g_hItemCvarColor				= CreateConVar("l4d2_item_hint_glow_color", 					"0 255 255", 			"Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)", FCVAR_NOTIFY);
-	g_hItemHintCoolDown				= CreateConVar("l4d2_item_hint_cooldown_time", 					"1.0", 					"Cold Down Time in seconds a player can use 'Look' Item Hint again.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemUseHintRange				= CreateConVar("l4d2_item_hint_use_range", 						"150", 					"How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
-	g_hItemUseSound					= CreateConVar("l4d2_item_hint_use_sound", 						"buttons/blip1.wav", 	"Item Hint Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
-	g_hItemAnnounceType				= CreateConVar("l4d2_item_hint_announce_type", 					"1", 					"Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	g_hItemGlowTimer				= CreateConVar("l4d2_item_hint_glow_timer", 					"10.0", 				"Item Glow Time.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemGlowRange				= CreateConVar("l4d2_item_hint_glow_range", 					"800", 					"Item Glow Range.", FCVAR_NOTIFY, true, 0.0);
-	g_hItemInstructorHint			= CreateConVar("l4d2_item_instructorhint_enable", 				"1", 					"If 1, Create instructor hint on marked item.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hItemInstructorColor			= CreateConVar("l4d2_item_instructorhint_color", 				"0 255 255", 			"Instructor hint color on marked item. (If empty, off the item name display)", FCVAR_NOTIFY);
-	g_hItemInstructorIcon			= CreateConVar("l4d2_item_instructorhint_icon", 				"icon_interact", 		"Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)", FCVAR_NOTIFY);
+	g_hItemCvarColor				= CreateConVar("l4d2_item_marker_glow_color", 					"0 255 255", 			"Item Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Item Glow)", FCVAR_NOTIFY);
+	g_hItemHintCoolDown				= CreateConVar("l4d2_item_marker_cooldown_time", 				"1.0", 					"Cold Down Time in seconds a player can use 'Look' Item Hint again.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemUseHintRange				= CreateConVar("l4d2_item_marker_use_range", 					"150", 					"How close can a player use 'Look' item hint.", FCVAR_NOTIFY, true, 1.0);
+	g_hItemUseSound					= CreateConVar("l4d2_item_marker_use_sound", 					"buttons/blip1.wav", 	"Item Hint Sound. (relative to to sound/, Empty = OFF)", FCVAR_NOTIFY);
+	g_hItemAnnounceType				= CreateConVar("l4d2_item_marker_announce_type", 				"1", 					"Changes how Item Hint displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	g_hItemGlowTimer				= CreateConVar("l4d2_item_marker_glow_timer", 					"10.0", 				"Item Glow Time.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemGlowRange				= CreateConVar("l4d2_item_marker_glow_range", 					"800", 					"Item Glow Range.", FCVAR_NOTIFY, true, 0.0);
+	g_hItemInstructorHint			= CreateConVar("l4d2_item_marker_instructorhint_enable", 		"1", 					"If 1, Create instructor hint on marked item.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hItemInstructorColor			= CreateConVar("l4d2_item_marker_instructorhint_color", 		"0 255 255", 			"Instructor hint color on marked item. (If empty, off the item name display)", FCVAR_NOTIFY);
+	g_hItemInstructorIcon			= CreateConVar("l4d2_item_marker_instructorhint_icon", 			"icon_interact", 		"Instructor icon name on marked item. (For more icons: https://developer.valvesoftware.com/wiki/Env_instructor_hint)", FCVAR_NOTIFY);
 
 	g_hSpotMarkCvarColor			= CreateConVar("l4d2_spot_marker_color", 						"200 200 200", 			"Spot Marker Glow Color, Three values between 0-255 separated by spaces. (Empty = Disable Spot Marker)", FCVAR_NOTIFY);
 	g_hSpotMarkCoolDown				= CreateConVar("l4d2_spot_marker_cooldown_time", 				"2.5", 					"Cold Down Time in seconds a player can use 'Look' Spot Marker again.", FCVAR_NOTIFY, true, 0.0);
@@ -216,6 +219,11 @@ public void OnPluginStart()
 	g_hItemCvarCMD.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemCvarShiftE.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemCvarVocalize.AddChangeHook(ConVarChanged_Cvars);
+	g_hCappedMark.AddChangeHook(ConVarChanged_Cvars);
+	g_hHaningMark.AddChangeHook(ConVarChanged_Cvars);
+	g_hDeadMark.AddChangeHook(ConVarChanged_Cvars);
+	g_hHintTransType.AddChangeHook(ConVarChanged_Cvars);
+
 	g_hItemHintCoolDown.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseHintRange.AddChangeHook(ConVarChanged_Cvars);
 	g_hItemUseSound.AddChangeHook(ConVarChanged_Cvars);
@@ -260,10 +268,6 @@ public void OnPluginStart()
 	g_hSurvivorMarkInstructorHint.AddChangeHook(ConVarChanged_Cvars);
 	g_hSurvivorMarkInstructorColor.AddChangeHook(ConVarChanged_Cvars);
 	g_hSurvivorMarkInstructorIcon.AddChangeHook(ConVarChanged_Cvars);
-
-	g_hCappedMark.AddChangeHook(ConVarChanged_Cvars);
-	g_hHaningMark.AddChangeHook(ConVarChanged_Cvars);
-	g_hDeadMark.AddChangeHook(ConVarChanged_Cvars);
 
 	RegConsoleCmd("sm_mark", CMD_MARK, "Mark item/infected/spot");
 
@@ -329,6 +333,10 @@ void GetCvars()
 	g_bItemCvarCMD = g_hItemCvarCMD.BoolValue;
 	g_bItemCvarShiftE = g_hItemCvarShiftE.BoolValue;
 	g_bItemCvarVocalize = g_hItemCvarVocalize.BoolValue;
+	g_bCappedMark = g_hCappedMark.BoolValue;
+	g_bHaningMark = g_hHaningMark.BoolValue;
+	g_bDeadMark = g_hDeadMark.BoolValue;
+	g_iHintTransType = g_hHintTransType.IntValue;
 
 	g_fItemHintCoolDown = g_hItemHintCoolDown.FloatValue;
 	g_fItemUseHintRange = g_hItemUseHintRange.FloatValue;
@@ -389,10 +397,6 @@ void GetCvars()
 	g_bSurvivorMarkInstructorHint = g_hSurvivorMarkInstructorHint.BoolValue;
 	g_hSurvivorMarkInstructorColor.GetString(g_sSurvivorMarkInstructorColor, sizeof(g_sSurvivorMarkInstructorColor));
 	g_hSurvivorMarkInstructorIcon.GetString(g_sSurvivorMarkInstructorIcon, sizeof(g_sSurvivorMarkInstructorIcon));
-
-	g_bCappedMark = g_hCappedMark.BoolValue;
-	g_bHaningMark = g_hHaningMark.BoolValue;
-	g_bDeadMark = g_hDeadMark.BoolValue;
 }
 
 void CreateStringMap()
@@ -1774,7 +1778,11 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fItemGlowTimer) )
 			{
-				if(strlen(sItemPhrase) > 0 && strlen(g_sItemInstructorColor) > 0) FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, client);
+				if(strlen(sItemPhrase) > 0 && strlen(g_sItemInstructorColor) > 0) 
+				{
+					if(g_iHintTransType == 0) FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, LANG_SERVER);
+					else FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, client);
+				}
 				else sCaption[0] = '\0';
 				Create_env_instructor_hint(iEntity, eItemHint, vOrigin, sTargetName, g_sItemInstructorIcon, sCaption, g_sItemInstructorColor, g_fItemGlowTimer, float(g_iItemGlowRange));
 			}
@@ -1783,7 +1791,11 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fSpotMarkGlowTimer) )
 			{
-				if(strlen(g_sSpotMarkInstructorColor) > 0) FormatEx(sCaption, sizeof(sCaption), "%T", "Spot_Maker", client, client);
+				if(strlen(g_sSpotMarkInstructorColor) > 0)
+				{
+					if(g_iHintTransType == 0) FormatEx(sCaption, sizeof(sCaption), "%T", "Spot_Maker", LANG_SERVER, client);
+					else FormatEx(sCaption, sizeof(sCaption), "%T", "Spot_Maker", client, client);
+				}
 				else sCaption[0] = '\0';
 				Create_env_instructor_hint(iEntity, eSpotMarker, vOrigin, sTargetName, g_sSpotMarkInstructorIcon, sCaption, g_sSpotMarkInstructorColor, g_fSpotMarkGlowTimer, g_fSpotMarkUseRange);
 			}
@@ -1792,7 +1804,11 @@ void CreateInstructorHint(int client, const float vOrigin[3], const char[] sItem
 		{
 			if( Create_info_target(iEntity, vOrigin, sTargetName, g_fInfectedMarkGlowTimer) )
 			{
-				if(strlen(g_sInfectedMarkInstructorColor) > 0) FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, client);
+				if(strlen(g_sInfectedMarkInstructorColor) > 0) 
+				{
+					if(g_iHintTransType == 0) FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, LANG_SERVER);
+					else FormatEx(sCaption, sizeof(sCaption), "%T", sItemPhrase, client);
+				}
 				else sCaption[0] = '\0';
 				Create_env_instructor_hint(iEntity, eInfectedMaker, vOrigin, sTargetName, g_sInfectedMarkInstructorIcon, sCaption, g_sInfectedMarkInstructorColor, g_fInfectedMarkGlowTimer, float(g_iInfectedMarkGlowRange));
 			}
