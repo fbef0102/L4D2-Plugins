@@ -51,13 +51,13 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
             l4d2_item_hint_vocalize "1"
 
             // If 1, Player can use mark if get pinned by S.I.
-            l4d2_item_hint_mark_capped "1"
+            l4d2_item_hint_mark_capped "0"
 
             // If 1, Player can use mark if is haning from ledge
-            l4d2_item_hint_mark_hanging "1"
+            l4d2_item_hint_mark_hanging "0"
 
             // If 1, Dead player can use mark
-            l4d2_item_hint_mark_dead "1"
+            l4d2_item_hint_mark_dead "0"
 
             // Display Instruction Hint Text in which language for all players? 0=Server Language (English), 1=Caller Language
             l4d2_item_hint_instructorhint_translate "0"
@@ -319,13 +319,13 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
             l4d2_item_hint_vocalize "1"
 
             // 為1時，被特感控制的玩家可以使用標記
-            l4d2_item_hint_mark_capped "1"
+            l4d2_item_hint_mark_capped "0"
 
             // 為1時，掛邊的玩家可以使用標記
-            l4d2_item_hint_mark_hanging "1"
+            l4d2_item_hint_mark_hanging "0"
 
             // 為1時，死亡的玩家可以使用標記
-            l4d2_item_hint_mark_dead "1"
+            l4d2_item_hint_mark_dead "0"
 
             // 標記的導演提示該使用何種語言翻譯給大家看? 0=伺服器的語言 (英文), 1=呼叫標記的玩家的語言
             l4d2_item_hint_instructorhint_translate "0"

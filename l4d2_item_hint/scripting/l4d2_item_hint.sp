@@ -604,6 +604,23 @@ Action CMD_MARK(int client, int args)
 	return Plugin_Handled;
 }
 
+
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+{
+	if (!g_bItemCvarShiftE) return Plugin_Continue;
+
+	if (!IsRealSur(client)) return Plugin_Continue;
+
+	if ((buttons & IN_SPEED) && (buttons & IN_USE)) // SHIFT + E
+	{
+		PlayerMarkHint(client);
+	}
+	return Plugin_Continue;
+
+}
+
+/*
+// 註解原因: 倒地無法使用shift+E鍵
 public void OnPlayerRunCmdPost(int client, int buttons)
 {
 	if (!g_bItemCvarShiftE) return;
@@ -615,7 +632,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 		PlayerMarkHint(client);
 	}
 }
-
+*/
 void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Clear();

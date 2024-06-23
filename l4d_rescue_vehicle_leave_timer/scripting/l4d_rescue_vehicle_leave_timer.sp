@@ -1,5 +1,5 @@
 
-#define PLUGIN_VERSION 		"1.9-2024/1/20"
+#define PLUGIN_VERSION 		"2.0-2024/6/23"
 #define PLUGIN_NAME			"[L4D2] Rescue vehicle leave timer"
 #define PLUGIN_AUTHOR		"HarryPotter"
 #define PLUGIN_DES			"When rescue vehicle arrived and a timer will display how many time left for vehicle leaving. If a player is not on rescue vehicle or zone, slay him"
@@ -630,8 +630,10 @@ bool IsInFinalRescueVehicle(int client)
 	{
 		return g_bClientInVehicle[client];
 	}
-
-	return false;
+	else
+	{
+		return g_bClientInVehicle[client];
+	}
 }
 
 void PrecacheParticle(const char[] sEffectName)

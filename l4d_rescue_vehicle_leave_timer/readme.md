@@ -95,6 +95,7 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v2.0 (2024-6-23)
     * v1.9 (2024-1-20)
         * Fix some custom maps not working
 
