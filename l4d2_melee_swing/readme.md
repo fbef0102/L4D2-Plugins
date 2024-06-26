@@ -10,10 +10,6 @@ Adjustable melee swing rate for each melee weapon.
 * Require | 必要安裝
  <br/>None
 
-* Related Plugin | 相關插件
-	1. [Melee Range by Silvers](https://forums.alliedmods.net/showthread.php?t=318958): Adjustable melee range for each melee weapon.
-		> 調整每個近戰武器的揮砍距離
-
 * <details><summary>ConVar | 指令</summary>
 
 	* cfg/sourcemod/l4d2_melee_swing.cfg
