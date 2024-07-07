@@ -52,20 +52,20 @@ L4D2 coop save weapon when map transition if more than 4 players
 
     * cfg\sourcemod\l4d2_ty_saveweapons.cfg
         ```php
-        // Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)
-        l4d2_ty_saveweapons_game_seconds_block "60"
-
         // If 1, restore 100 full health when end of chapter.
         l4d2_ty_saveweapons_health "0"
+
+        // Do not restore weapons and health to a player after survivors have left start safe area for at least x seconds. (0=Always restore)
+        l4d2_ty_saveweapons_game_seconds_block "60"
 
         // If 1, save weapons and health for bots as well.
         l4d2_ty_saveweapons_save_bot "1"
 
-        // If 1, save character model and restore.
-        l4d2_ty_saveweapons_save_character "0"
-
         // If 1, save health and restore. (can save >100 hp)
         l4d2_ty_saveweapons_save_health "1"
+
+        // If 1, save character model and restore.
+        l4d2_ty_saveweapons_save_character "0"
         ```
 </details>
 
@@ -112,12 +112,27 @@ L4D2 coop save weapon when map transition if more than 4 players
         * 血量與黑白狀態
     * 當玩家載入到下一關之後，恢复所有資料
 
-* 功能
-    * 可設置過關時是否恢复滿血
-    * 可設置是否保存血量與黑白狀態
-    * 可設置是否保存人物角色
-    * 可設置是否Bot也要保存並恢复
-    * 可設置出安全室一段時間之後不能恢复 (避免有人載入關卡太慢)
+* <details><summary>ConVar | 指令</summary>
+
+    * cfg\sourcemod\l4d2_ty_saveweapons.cfg
+        ```php
+        // 為1時，過關時回復所有倖存者的血量
+        l4d2_ty_saveweapons_health "0"
+
+        // 倖存者出去安全室60秒之後不能再恢复血量與武器 (避免有人載入關卡太慢)
+        // 0=永遠恢复上一關保存的血量與武器
+        l4d2_ty_saveweapons_game_seconds_block "60"
+
+        // 為1時，也幫AI Bots保存武器與血量
+        l4d2_ty_saveweapons_save_bot "1"
+
+        // 為1時，保存血量與倒地狀態 (可保存超過100HP)
+        l4d2_ty_saveweapons_save_health "1"
+
+        // 為1時，保存角色與模型
+        l4d2_ty_saveweapons_save_character "0"
+        ```
+</details>
 
 
 * <details><summary>相關的官方指令中文介紹 (點我展開)</summary>
