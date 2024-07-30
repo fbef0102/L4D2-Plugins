@@ -12,7 +12,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
-#define PLUGIN_VERSION			"6.1-2023/11/27"
+#define PLUGIN_VERSION			"6.2-2024/7/30"
 #define DEBUG 0
 
 public Plugin myinfo =
@@ -26,6 +26,9 @@ public Plugin myinfo =
 
 GlobalForward g_hForwardSaveWeaponGive;
 
+native void Heartbeat_SetRevives(int client, int reviveCount, bool reviveLogic = true);
+native int Heartbeat_GetRevives(int client);
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	EngineVersion test = GetEngineVersion();
@@ -37,6 +40,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	}
 
 	g_hForwardSaveWeaponGive = new GlobalForward("L4D2_OnSaveWeaponHxGiveC", ET_Ignore, Param_Cell);
+	
+	RegPluginLibrary("l4d2_ty_saveweapons");
+
 	return APLRes_Success;
 }
 
@@ -126,7 +132,7 @@ char 	g_sModelInfo[MAXPLAYERS+1][64]; 						//client character model
 bool g_bGiveWeaponBlock, g_bMapTransition;
 int g_iOffsetAmmo, g_iPrimaryAmmoType, g_iCountDownTime;	
 Handle PlayerLeftStartTimer = null, CountDownTimer = null;
-int g_iReviveTempHealth = 30, g_iSurvivorMaxInc;
+int g_iReviveTempHealth;
 
 static char g_sMeleeClass[16][32];
 static int g_iMeleeClassCount;
@@ -183,6 +189,16 @@ public void OnPluginStart()
 	HxCleaningAll();
 }
 
+public void OnAllPluginsLoaded()
+{
+	if( LibraryExists("l4d_heartbeat") == false )
+	{
+		SetFailState("You are failed at installing!\n" ...
+		"Heartbeat (Revive Fix - Post Revive Options) plugin must be installed first!\n" ...
+		"See: https://forums.alliedmods.net/showthread.php?t=322132");
+	}
+}
+
 public void OnPluginEnd()
 {
 	ResetPlugin();
@@ -235,7 +251,6 @@ void GetCvars()
 	g_bSaveHealth = g_hSaveHealth.BoolValue;
 	g_bSaveCharacter = g_hSaveCharacter.BoolValue;
 	g_iReviveTempHealth = g_hCvarReviveHealth.IntValue;
-	g_iSurvivorMaxInc = g_hSurvivorMaxInc.IntValue;
 }
 
 public void OnClientPutInServer(int client)
@@ -372,24 +387,35 @@ void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
 			{
 				if (IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
 				{
-					if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1)
+					if (L4D_IsPlayerIncapacitated(client))
 					{
-						SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
-						SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
-						SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
-						SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
+						if(L4D2_GetInfectedAttacker(client) < 0) //沒被控
+						{
+							CheatCommand(client, "give", "health");
+							SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
+							SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
+							SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
+						}
+						else //被控
+						{
+							SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
+							SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
+							SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
+							SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
+						}
 					}
 					else
 					{
 						if(GetEntProp(client, Prop_Send, "m_iHealth") + RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") ) < 100)
 						{
+							CheatCommand(client, "give", "health");
 							SetEntProp(client, Prop_Send, "m_iHealth", 100, 1);
 							SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
 							SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
 						}
 					}
 
-					SetEntProp(client, Prop_Send, "m_currentReviveCount", 0);
+					/*SetEntProp(client, Prop_Send, "m_currentReviveCount", 0);
 					SetEntProp(client, Prop_Send, "m_isGoingToDie", 0);
 					SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 0);
 					
@@ -397,7 +423,7 @@ void Event_MapTransition(Event event, const char[] name, bool dontBroadcast)
 					StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
 					StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
 					StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
-					StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
+					StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");*/
 				}
 			}
 		}
@@ -465,14 +491,16 @@ void HxGiveC(int client)
 	{
 		if (GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1) SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
 
-		SetEntProp(client, Prop_Send, "m_currentReviveCount", g_iHealthInfo[client][iReviveCount]);
-		SetEntProp(client, Prop_Send, "m_isGoingToDie", g_iHealthInfo[client][iGoingToDie]);
-		SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", g_iHealthInfo[client][iThirdStrike]);
 		
 		SetEntProp(client, Prop_Send, "m_iHealth", g_iHealthInfo[client][iHealth], 1);
 		SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 1.0*g_iHealthInfo[client][iHealthTemp]);
 		SetEntPropFloat(client, Prop_Send, "m_healthBufferTime", GetGameTime() - 1.0*g_iHealthInfo[client][iHealthTime]);
 		
+		/*
+		SetEntProp(client, Prop_Send, "m_currentReviveCount", g_iHealthInfo[client][iReviveCount]);
+		SetEntProp(client, Prop_Send, "m_isGoingToDie", g_iHealthInfo[client][iGoingToDie]);
+		SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", g_iHealthInfo[client][iThirdStrike]);
+
 		// Disable heart beat sound if not B&W
 		if (!g_iHealthInfo[client][iThirdStrike])
 		{
@@ -481,6 +509,9 @@ void HxGiveC(int client)
 			StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
 			StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
 		}
+		*/
+
+		Heartbeat_SetRevives(client, g_iHealthInfo[client][iReviveCount]);
 	}
 	
 	int iSlot0;
@@ -660,18 +691,20 @@ void HxSaveC(int client)
 			g_iHealthInfo[client][iHealth]      =  1;	
 			g_iHealthInfo[client][iHealthTemp]  =  g_iReviveTempHealth;
 			g_iHealthInfo[client][iHealthTime]  =  0;
-			g_iHealthInfo[client][iGoingToDie]  =  1;
-			g_iHealthInfo[client][iReviveCount] =  GetEntProp(client, Prop_Send, "m_currentReviveCount") + 1;
-			g_iHealthInfo[client][iThirdStrike] =  g_iHealthInfo[client][iReviveCount] >= g_iSurvivorMaxInc ? 1 : 0;
+			//g_iHealthInfo[client][iGoingToDie]  =  1;
+			//g_iHealthInfo[client][iReviveCount] =  GetEntProp(client, Prop_Send, "m_currentReviveCount") + 1;
+			//g_iHealthInfo[client][iThirdStrike] =  g_iHealthInfo[client][iReviveCount] >= g_iSurvivorMaxInc ? 1 : 0;
+			g_iHealthInfo[client][iReviveCount] = Heartbeat_GetRevives(client);
 		}
 		else 
 		{
 			g_iHealthInfo[client][iHealth]		= GetEntProp(client, Prop_Send, "m_iHealth");
 			g_iHealthInfo[client][iHealthTemp]	= RoundToNearest( GetEntPropFloat(client, Prop_Send, "m_healthBuffer") );
 			g_iHealthInfo[client][iHealthTime]  = RoundToNearest( GetGameTime() - GetEntPropFloat(client, Prop_Send, "m_healthBufferTime") );
-			g_iHealthInfo[client][iGoingToDie]  = GetEntProp(client, Prop_Send, "m_isGoingToDie");
-			g_iHealthInfo[client][iReviveCount] = GetEntProp(client, Prop_Send, "m_currentReviveCount");
-			g_iHealthInfo[client][iThirdStrike] = GetEntProp(client, Prop_Send, "m_bIsOnThirdStrike");
+			//g_iHealthInfo[client][iGoingToDie]  = GetEntProp(client, Prop_Send, "m_isGoingToDie");
+			//g_iHealthInfo[client][iReviveCount] = GetEntProp(client, Prop_Send, "m_currentReviveCount");
+			//g_iHealthInfo[client][iThirdStrike] = GetEntProp(client, Prop_Send, "m_bIsOnThirdStrike");
+			g_iHealthInfo[client][iReviveCount] = Heartbeat_GetRevives(client);
 		}
 	}
 	
@@ -867,34 +900,7 @@ void HxCleaningAll()
 		HxCleaning(i);
 	}
 }
-/*
-Action Timer_AdjustHealth(Handle timer, int UserId)
-{
-	int client = GetClientOfUserId(UserId);
-	if( client && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client) && GetEntProp(client, Prop_Send, "m_isIncapacitated") == 1 )
-	{
-		SetEntProp(client, Prop_Send, "m_isIncapacitated", 0);	
 
-		SetEntProp(client, Prop_Send, "m_currentReviveCount", GetEntProp(client, Prop_Send, "m_currentReviveCount") + 1);
-		SetEntProp(client, Prop_Send, "m_isGoingToDie", 1);
-		SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike",  GetEntProp(client, Prop_Send, "m_currentReviveCount") >= g_iSurvivorMaxInc ? 1 : 0);
-		
-		// Disable heart beat sound if not B&W
-		if (!GetEntProp(client, Prop_Send, "m_bIsOnThirdStrike"))
-		{
-			StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
-			StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
-			StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
-			StopSound(client, SNDCHAN_STATIC, "player/heartbeatloop.wav");
-		}
-		
-		SetEntProp(client, Prop_Send, "m_iHealth", 1, 1);
-		SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 1.0 * g_iReviveTempHealth);
-		SetEntPropFloat(client, Prop_Send, "m_healthBufferTime",  GetGameTime());
-	}
-	return Plugin_Continue;
-}
-*/
 bool HasIdlePlayer(int bot)
 {
 	if(HasEntProp(bot, Prop_Send, "m_humanSpectatorUserID"))
@@ -947,4 +953,15 @@ bool IsClientIdle(int client)
 		}
 	}
 	return false;
+}
+
+void CheatCommand(int client, const char[] command, const char[] argument1 = "", const char[] argument2 = "")
+{
+	int userFlags = GetUserFlagBits(client);
+	SetUserFlagBits(client, ADMFLAG_ROOT);
+	int flags = GetCommandFlags(command);
+	SetCommandFlags(command, flags & ~FCVAR_CHEAT);
+	FakeClientCommand(client, "%s %s %s", command, argument1, argument2);
+	SetCommandFlags(command, flags);
+	if(IsClientInGame(client)) SetUserFlagBits(client, userFlags);
 }

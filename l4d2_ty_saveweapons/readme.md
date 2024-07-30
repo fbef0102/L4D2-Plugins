@@ -7,46 +7,9 @@ L4D2 coop save weapon when map transition if more than 4 players
 * Image | 圖示
 <br/>None
 
-* Apply to | 適用於
-    ```
-    L4D2 Coop/Realism
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    * v6.1 (2023-11-27)
-        * Gamedata support
-
-    * v6.0 (2023-6-25)
-        * Fixed melee disapear after map transition
-
-    * v5.9 (2022-9-17)
-        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2757629&postcount=113)
-        * Remake code
-        * Add the last stand two melee
-        * Add ConVar and generate cfg
-        * Save health
-        * Save Character Model
-        * Support Bots
-        * Support custom melee save
-        * Doesn't save if change map in game (ex. vote change new campaign)
-        * Compatible with the [[ANY] Cheats](https://forums.alliedmods.net/showthread.php?t=195037)
-
-    * v4.1
-        * [Original Post by maks](https://forums.alliedmods.net/showthread.php?t=263860)
-</details>
-
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-
-* <details><summary>Related | 相關插件</summary>
-
-    1. [l4dmultislots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dmultislots): Allows additional survivor players in server when 5+ player joins the server
-        * 創造5位以上倖存者遊玩伺服器
-
-    2. [l4d2_afk_saveweapons](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Survivor_人類/l4d2_afk_saveweapons): Save Weapons/Items when going AFK
-        * 當倖存者玩家閒置或旁觀時，保存攜帶的武器、物資
-</details>
+    2. [Heartbeat](https://forums.alliedmods.net/showthread.php?t=322132)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -76,16 +39,10 @@ L4D2 coop save weapon when map transition if more than 4 players
 
 * <details><summary>API | 串接</summary>
 
-    ```c
-    /**
-    * @brief Called when restore and give weapons, health to a player
-    *
-    * @param client    the client who is given to.
-    *
-    * @noreturn
-    */
-    forward void L4D2_OnSaveWeaponHxGiveC(int client);
-    ```
+    * ```scripting\include\l4d2_ty_saveweapons.inc```
+        ```php
+        Registers a library name: l4d2_ty_saveweapons
+        ```
 </details>
 
 * <details><summary>Related Official ConVar</summary>
@@ -97,6 +54,47 @@ L4D2 coop save weapon when map transition if more than 4 players
         // Default: 1
         sm_cvar sb_transition 0 
         ```
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2 Coop/Realism
+    ```
+
+* <details><summary>Related | 相關插件</summary>
+
+    1. [l4dmultislots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dmultislots): Allows additional survivor players in server when 5+ player joins the server
+        * 創造5位以上倖存者遊玩伺服器
+
+    2. [l4d2_afk_saveweapons](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_插件/Survivor_人類/l4d2_afk_saveweapons): Save Weapons/Items when going AFK
+        * 當倖存者玩家閒置或旁觀時，保存攜帶的武器、物資
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v6.2 (2024-7-30)
+        * Fixed m_currentReviveCount
+
+    * v6.1 (2023-11-27)
+        * Gamedata support
+
+    * v6.0 (2023-6-25)
+        * Fixed melee disapear after map transition
+
+    * v5.9 (2022-9-17)
+        * [AlliedModder Post](https://forums.alliedmods.net/showpost.php?p=2757629&postcount=113)
+        * Remake code
+        * Add the last stand two melee
+        * Add ConVar and generate cfg
+        * Save health
+        * Save Character Model
+        * Support Bots
+        * Support custom melee save
+        * Doesn't save if change map in game (ex. vote change new campaign)
+        * Compatible with the [[ANY] Cheats](https://forums.alliedmods.net/showthread.php?t=195037)
+
+    * v4.1
+        * [Original Post by maks](https://forums.alliedmods.net/showthread.php?t=263860)
 </details>
 
 - - - -
