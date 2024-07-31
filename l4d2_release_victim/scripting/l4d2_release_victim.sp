@@ -140,9 +140,18 @@ public Action OnPlayerRunCmd (int client, int &buttons)
 	
 	switch (iClass)
 	{
-		case ZC_CHARGER: victim = L4D_GetVictimCharger(client);
-		case ZC_HUNTER: victim = L4D_GetVictimHunter(client);
-		case ZC_JOCKEY: victim = L4D_GetVictimJockey(client);
+		case ZC_CHARGER: 
+		{
+			victim = L4D_GetVictimCharger(client);
+		}
+		case ZC_HUNTER: 
+		{
+			victim = L4D_GetVictimHunter(client);
+		}
+		case ZC_JOCKEY:
+		{
+			victim = L4D_GetVictimJockey(client);
+		}
 		case ZC_SMOKER: 
 		{
 			victim = L4D_GetVictimSmoker(client);
@@ -168,9 +177,23 @@ void Release (int client, int victim, int iClass)
 {
 	switch (iClass)
 	{
-		case ZC_CHARGER: L4D2_Charger_EndPummel(victim, client);
-		case ZC_HUNTER: L4D_Hunter_ReleaseVictim(victim, client);
-		case ZC_JOCKEY: L4D2_Jockey_EndRide(victim, client);
+		case ZC_CHARGER: 
+		{
+			L4D2_Charger_EndPummel(victim, client);
+			L4D_StopMusic(client, "Event.ChargerSlam");
+
+			// left4dhooks error bug
+			SetEntPropEnt(client, Prop_Send, "m_pummelVictim", -1);
+			SetEntPropEnt(victim, Prop_Send, "m_pummelAttacker", -1);
+		}
+		case ZC_HUNTER:
+		{
+			L4D_Hunter_ReleaseVictim(victim, client);
+		}
+		case ZC_JOCKEY:
+		{
+			L4D2_Jockey_EndRide(victim, client);
+		}
 		case ZC_SMOKER: 
 		{
 			L4D_Smoker_ReleaseVictim(victim, client);
