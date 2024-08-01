@@ -15,7 +15,7 @@ public Plugin myinfo =
 	name = "[L4D2] Release Victim Extended version",
 	author = "BHaType, HarryPotter",
 	description = "Allow to release victim",
-	version = "1.1h-2024/2/6"
+	version = "1.2h-2024/8/1"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) 
@@ -35,13 +35,16 @@ bool g_bReset, g_bEffect;
 int g_iZombieClass, g_iVelocity;
 ConVar sm_release_distance, sm_release_height, sm_release_ability_reset, sm_release_effect,
 	g_hConVar_JockeyAttackDelay, g_hConVar_HunterAttackDelay, g_hConVar_ChargerAttackDelay, g_hConVar_SmokerAttackDelay,
-	g_hCvarAnnounceType;
+	g_hConVar_ReleaseDelay, g_hCvarAnnounceType;
 float g_flDistance, g_flHeight, g_flCharger, g_flSmoker, g_flJockey,
-	g_fJockeyAttackDelay, g_fHunterAttackDelay, g_fChargerAttackDelay, g_fSmokerAttackDelay;
+	g_fJockeyAttackDelay, g_fHunterAttackDelay, g_fChargerAttackDelay, g_fSmokerAttackDelay,
+	g_fConVar_ReleaseDelay;
 
 int g_iCvarAnnounceType;
 
-float g_fButtonDelay[MAXPLAYERS+1];
+float 
+	g_fButtonDelay[MAXPLAYERS+1],
+	g_fReleaseDelay[MAXPLAYERS+1];
 
 #define CBaseAbility "CBaseAbility"
 #define m_nextActivationTimer "m_nextActivationTimer"
@@ -66,10 +69,11 @@ public void OnPluginStart()
 	sm_release_ability_reset 		= CreateConVar( "l4d2_release_victim_ability_reset", 		"1", 		"Reset ability", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	sm_release_effect 				= CreateConVar( "l4d2_release_victim_effect", 				"1", 		"Show effect after release", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	
-	g_hConVar_JockeyAttackDelay 	= CreateConVar( "l4d2_release_victim_jockey_attackdelay", 	"6.0", 		"After dismounting with the jockey, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hConVar_HunterAttackDelay 	= CreateConVar( "l4d2_release_victim_hunter_attackdelay", 	"6.0", 		"After dismounting with the hunter, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hConVar_ChargerAttackDelay 	= CreateConVar( "l4d2_release_victim_charger_attackdelay", 	"6.0", 		"After dismounting with the charger, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
-	g_hConVar_SmokerAttackDelay 	= CreateConVar( "l4d2_release_victim_smoker_attackdelay", 	"10.0", 	"After dismounting with the smoker, how long can the player not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_JockeyAttackDelay 	= CreateConVar( "l4d2_release_victim_jockey_attackdelay", 	"6.0", 		"After dismounting with the jockey, how long the player can not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_HunterAttackDelay 	= CreateConVar( "l4d2_release_victim_hunter_attackdelay", 	"6.0", 		"After dismounting with the hunter, how long the player can not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_ChargerAttackDelay 	= CreateConVar( "l4d2_release_victim_charger_attackdelay", 	"6.0", 		"After dismounting with the charger, how long the player can not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_SmokerAttackDelay 	= CreateConVar( "l4d2_release_victim_smoker_attackdelay", 	"10.0", 	"After dismounting with the smoker, how long the player can not use attack1 and attack2", FCVAR_NOTIFY, true, 0.0);
+	g_hConVar_ReleaseDelay 			= CreateConVar( "l4d2_release_victim_release_delay", 		"1.5", 		"How long can the infected player releases vitcim after pins the survivor", FCVAR_NOTIFY, true, 0.0);
 	g_hCvarAnnounceType 			= CreateConVar( "l4d2_release_victim_announce_type", 		"1", 		"Changes how message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	AutoExecConfig(true, 							"l4d2_release_victim");
 	
@@ -82,12 +86,18 @@ public void OnPluginStart()
 	g_hConVar_HunterAttackDelay.AddChangeHook(OnConVarChanged);
 	g_hConVar_ChargerAttackDelay.AddChangeHook(OnConVarChanged);
 	g_hConVar_SmokerAttackDelay.AddChangeHook(OnConVarChanged);
+	g_hConVar_ReleaseDelay.AddChangeHook(OnConVarChanged);
 	g_hCvarAnnounceType.AddChangeHook(OnConVarChanged);
 	
 	g_iZombieClass = FindSendPropInfo("CTerrorPlayer", "m_zombieClass");
 	g_iVelocity = FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]");
 	
-	HookEvent("round_start", evtRoundStart);
+	HookEvent("round_start", 			evtRoundStart);
+	HookEvent("jockey_ride", 			Infected_Capped);
+	HookEvent("charger_pummel_start", 	Infected_Capped);
+	HookEvent("lunge_pounce", 			Infected_Capped);
+	HookEvent("tongue_grab", 			Infected_Capped);
+	HookEvent("player_spawn",           Event_PlayerSpawn);
 }
 
 public void OnMapStart()
@@ -110,10 +120,11 @@ void GetCvars()
 	g_fChargerAttackDelay = g_hConVar_ChargerAttackDelay.FloatValue;
 	g_fHunterAttackDelay = g_hConVar_HunterAttackDelay.FloatValue;
 	g_fSmokerAttackDelay = g_hConVar_SmokerAttackDelay.FloatValue;
+	g_fConVar_ReleaseDelay = g_hConVar_ReleaseDelay.FloatValue;
 	g_iCvarAnnounceType = g_hCvarAnnounceType.IntValue;
 }
 
-public void evtRoundStart(Event event, const char[] name, bool dontbroadcast)
+void evtRoundStart(Event event, const char[] name, bool dontbroadcast)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -121,9 +132,26 @@ public void evtRoundStart(Event event, const char[] name, bool dontbroadcast)
 	}
 }
 
+void Infected_Capped(Event event, const char[] name, bool dontbroadcast)
+{
+	int attacker = GetClientOfUserId(event.GetInt("userid"));
+	if(attacker && IsClientInGame(attacker)) 
+		g_fReleaseDelay[attacker] = GetEngineTime() + g_fConVar_ReleaseDelay;
+}
+
+void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{ 
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if(client && IsClientInGame(client)) 
+		g_fButtonDelay[client] = 0.0;
+}
+
 public Action OnPlayerRunCmd (int client, int &buttons)
 {
 	if (IsFakeClient(client) || GetClientTeam(client) != 3 || !IsPlayerAlive(client))
+		return Plugin_Continue;
+
+	if(g_fReleaseDelay[client] > GetEngineTime())
 		return Plugin_Continue;
 
 	if(g_fButtonDelay[client] - GetEngineTime() > 0.0)

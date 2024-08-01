@@ -29,17 +29,20 @@ Allow to release victim
         // Show effect after release
         l4d2_release_victim_effect "1"
 
-        // After dismounting with the jockey, how long can the player not use attack1 and attack2
+        // After dismounting with the jockey, how long the player can not use attack1 and attack2
         l4d2_release_victim_jockey_attackdelay "6.0"
 
-        // After dismounting with the hunter, how long can the player not use attack1 and attack2
+        // After dismounting with the hunter, how long the player can not use attack1 and attack2
         l4d2_release_victim_hunter_attackdelay "6.0"
 
-        // After dismounting with the charger, how long can the player not use attack1 and attack2
+        // After dismounting with the charger, how long the player can not use attack1 and attack2
         l4d2_release_victim_charger_attackdelay "6.0"
 
-        // After dismounting with the smoker, how long can the player not use attack1 and attack2
+        // After dismounting with the smoker, how long the player can not use attack1 and attack2
         l4d2_release_victim_smoker_attackdelay "10.0"
+
+        // How long can the infected player releases vitcim after pins the survivor
+        l4d2_release_victim_release_delay "1.5"
 
         // Changes how message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
         l4d2_release_victim_announce_type "1"
@@ -72,6 +75,9 @@ Allow to release victim
     //Shadowysn @ 2022
     //HarryPotter @ 2022-2024
     ```
+    * v1.2h (2023-8-1)
+        * Update Cvars
+
     * v1.1h (2023-2-6)
         * Use better way to release victim
         * Require left4dhooks
@@ -124,6 +130,9 @@ Allow to release victim
 
         // Smoker釋放倖存者後不能攻擊的時間
         l4d2_release_victim_smoker_attackdelay "10.0"
+
+        // 特感抓住人類後需要等待的時間才能釋放倖存者 (避免按錯鍵)
+        l4d2_release_victim_release_delay "1.5"
 
         // 提示該如何顯示. (0: 不提示, 1: 聊天框, 2: 黑底白字框, 3: 螢幕正中間)
         l4d2_release_victim_announce_type "1"
