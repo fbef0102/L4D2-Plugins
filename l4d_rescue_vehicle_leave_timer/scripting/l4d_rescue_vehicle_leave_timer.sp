@@ -512,7 +512,6 @@ Action Timer_AntiPussy(Handle timer)
 
 Action Timer_Strike(Handle timer)
 {
-	float radius = 1.0, pos[3];
 	for( int i = 1; i <= MaxClients; i++ ) 
 	{
 		if(IsClientInGame(i) && GetClientTeam(i) == TEAM_SURVIVORS && IsPlayerAlive(i))
@@ -521,14 +520,8 @@ Action Timer_Strike(Handle timer)
 			
 			if(g_bCvarAirStrike) 
 			{
-				//explosion effect
-				GetClientAbsOrigin(i, pos);
-				pos[0] += GetRandomFloat(radius*-1, radius);
-				pos[1] += GetRandomFloat(radius*-1, radius);
-				CreateExplosion(pos);
-
-				//fade
-				CreateTimer(0.1, Timer_FadeOut, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
+				//explosion effect and fade
+				CreateTimer(GetRandomFloat(0.0, 0.5), Timer_Explode, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
 			}
 
 			//slay
@@ -651,18 +644,6 @@ void PrecacheParticle(const char[] sEffectName)
 	}
 }
 
-Action Timer_FadeOut(Handle timer, int userid)
-{
-	int client = GetClientOfUserId(userid);
-	if(client && IsClientInGame(client))
-	{
-		CreateFade(FFADE_OUT, client);
-		CreateTimer(4.0, Timer_FadeIn, userid, TIMER_FLAG_NO_MAPCHANGE);
-	}
-
-	return Plugin_Continue;
-}
-
 
 Action Timer_FadeIn(Handle timer, int userid)
 {
@@ -752,12 +733,29 @@ void CreateExplosion(const float pos[3], const float duration = 30.0)
 	EmitAmbientSound(EXPLOSION_DEBRIS_L4D2, pos);
 }
 
+Action Timer_Explode(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if(client && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVORS && IsPlayerAlive(client))
+	{
+		CreateFade(FFADE_OUT, client);
+		CreateTimer(4.0, Timer_FadeIn, userid, TIMER_FLAG_NO_MAPCHANGE);
+
+		float radius, pos[3];
+		GetClientAbsOrigin(client, pos);
+		pos[0] += GetRandomFloat(radius*-1, radius);
+		pos[1] += GetRandomFloat(radius*-1, radius);
+		CreateExplosion(pos);
+	}
+
+	return Plugin_Continue;
+}
+
 Action Timer_SlayPlayer(Handle timer, int userid)
 {
 	int client = GetClientOfUserId(userid);
 	if(client && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVORS && IsPlayerAlive(client))
 	{
-		//SDKCall(g_hSDK_CTerrorPlayer_CleanupPlayerState, client);
 		ForcePlayerSuicide(client);
 	}
 
