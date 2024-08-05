@@ -31,12 +31,22 @@ Makes AI SI take (and do) damage like human SI.
 	None
 </details>
 
+* <details><summary>API | 串接</summary>
+
+	```php
+	Registers a library name: l4d2_ai_damagefix
+	```
+</details>
+
 * Apply to | 適用於
 	```
 	L4D2
 	```
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+	* v1.1h (2024-8-6)
+		* Add Library "l4d2_ai_damagefix"
 
 	* v1.0h (2024-2-11)
 		* Disable damage fix if hunter get damaged by melee

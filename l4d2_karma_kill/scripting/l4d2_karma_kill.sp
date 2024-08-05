@@ -7,7 +7,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.0h-2024/1/13"
+#define PLUGIN_VERSION "1.1h-2024/8/6"
 
 #define CVAR_FLAGS                    FCVAR_NOTIFY
 #define CVAR_FLAGS_PLUGIN_VERSION     FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY
@@ -37,12 +37,12 @@ char  SOUND_EFFECT[]         = "./level/loud/climber.wav";
 
 ConVar cvarisEnabled/*, cvarNoFallDamageProtectFromIncap*/;
 ConVar karmaJump, karmaAwardConfirmed, karmaDamageAwardConfirmed, karmaOnlyConfirmed,
-	karmaSlowTimeOnServer, karmaSlowTimeOnCouple, karmaSlow, cvarModeSwitch,
+	karmaSlowTimeOnServer, karmaSlowTimeOnCouple, karmaSlowSpeed, cvarModeSwitch,
 	cvarCooldown, cvarAllowDefib;
 bool g_bEnabled, g_bkarmaJump, g_bkarmaAwardConfirmed, g_bkarmaOnlyConfirmed,
 	/*g_bNoFallDamageProtectFromIncap,*/ g_bModeSwitch, g_bAllowDefib;
 int g_ikarmaDamageAwardConfirmed;
-float g_fkarmaSlowTimeOnServer, g_fkarmaSlowTimeOnCouple, g_fkarmaSlow, g_fCooldown;
+float g_fkarmaSlowTimeOnServer, g_fkarmaSlowTimeOnCouple, g_fkarmaSlowSpeed, g_fCooldown;
 
 ConVar cvarFatalFallDamage;
 float g_fFatalFallDamage;
@@ -128,7 +128,9 @@ Handle PunchRegisterTimer[MAXPLAYERS + 1]    = { INVALID_HANDLE, ... };
 Handle SmokeRegisterTimer[MAXPLAYERS + 1]    = { INVALID_HANDLE, ... };
 Handle JumpRegisterTimer[MAXPLAYERS + 1]     = { INVALID_HANDLE, ... };
 
-Handle cooldownTimer = INVALID_HANDLE;
+Handle 
+	cooldownTimer = null,
+	g_hResetTimer[MAXPLAYERS + 1];
 
 float fLogHeight[MAXPLAYERS + 1] = { -1.0, ... };
 
@@ -145,16 +147,22 @@ public Plugin myinfo =
 bool bLate;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    EngineVersion test = GetEngineVersion();
+	EngineVersion test = GetEngineVersion();
 
-    if( test != Engine_Left4Dead2 )
-    {
-        strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-        return APLRes_SilentFailure;
-    }
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
 
-    bLate = late;
-    return APLRes_Success;
+	fw_OnKarmaEventPost 	= CreateGlobalForward("KarmaKillSystem_OnKarmaEventPost", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell);
+	fw_OnRPGKarmaEventPost 	= CreateGlobalForward("KarmaKillSystem_OnRPGKarmaEventPost", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Array, Param_Array, Param_Array, Param_Cell, Param_String, Param_String);
+	fw_OnKarmaJumpPost  	= CreateGlobalForward("KarmaKillSystem_OnKarmaJumpPost", ET_Ignore, Param_Cell, Param_Array, Param_Array, Param_Array, Param_Cell, Param_String, Param_String);
+	
+	RegPluginLibrary("l4d2_karma_kill");
+
+	bLate = late;
+	return APLRes_Success;
 }
 
 void OnCheckKarmaZoneTouch(int victim, int entity, const char[] zone_name, int pinner = 0)
@@ -325,9 +333,9 @@ public void OnPluginStart()
 	karmaAwardConfirmed              = CreateConVar("l4d2_karma_award_confirmed", 				"1", 	"Award a confirmed karma maker with a player_death event.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	karmaDamageAwardConfirmed        = CreateConVar("l4d2_karma_damage_award_confirmed", 		"300", 	"Damage to award on confirmed kills, or -1 to disable. Requires _karma_award_confirmed set to 1", CVAR_FLAGS, true, -1.0);
 	karmaOnlyConfirmed               = CreateConVar("l4d2_karma_only_confirmed", 				"0", 	"Whenever or not to make karma announce only happen upon death.", CVAR_FLAGS, true, 0.0, true, 1.0);
-	karmaSlowTimeOnServer            = CreateConVar("l4d2_karma_kill_slowtime_on_server", 		"5.0", 	"How long does Time get slowed for the server", CVAR_FLAGS, true, 1.0);
-	karmaSlowTimeOnCouple            = CreateConVar("l4d2_karma_kill_slowtime_on_couple", 		"3.0", 	"How long does Time get slowed for the karma couple (Infected atacker and Survivor victim only)", CVAR_FLAGS, true, 1.0);
-	karmaSlow                        = CreateConVar("l4d2_karma_kill_slowspeed", 				"0.2", 	"How slow Time gets. Hardwired to minimum 0.03 or the server crashes", CVAR_FLAGS, true, 0.03);
+	karmaSlowTimeOnServer            = CreateConVar("l4d2_karma_kill_slowtime_on_server", 		"5.0", 	"If _kill_slowmode = 0, How long does Time get slowed for the server", CVAR_FLAGS, true, 1.0);
+	karmaSlowTimeOnCouple            = CreateConVar("l4d2_karma_kill_slowtime_on_couple", 		"3.0", 	"If _kill_slowmode = 1, How long does Time get slowed for the karma couple (Infected atacker and Survivor victim only)", CVAR_FLAGS, true, 1.0);
+	karmaSlowSpeed                   = CreateConVar("l4d2_karma_kill_slowspeed", 				"0.2", 	"How slow Time gets. Hardwired to minimum 0.03 or the server crashes", CVAR_FLAGS, true, 0.03);
 	cvarisEnabled                    = CreateConVar("l4d2_karma_kill_enabled", 					"1", 	"Turn Karma Kills on and off ", CVAR_FLAGS, true, 0.0, true, 1.0);
 	//cvarNoFallDamageProtectFromIncap = CreateConVar("l4d2_karma_kill_no_fall_damage_protect_from_incap", "1", "If you take more than 224 points of damage while incapacitated, you die.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	cvarModeSwitch                   = CreateConVar("l4d2_karma_kill_slowmode", 				"0", 	"0 - Entire Server gets slowed, 1 - Only Infected atacker and Survivor victim do", CVAR_FLAGS, true, 0.0, true, 1.0);
@@ -344,16 +352,12 @@ public void OnPluginStart()
 	karmaOnlyConfirmed.AddChangeHook(ConVarChanged_Cvars);
 	karmaSlowTimeOnServer.AddChangeHook(ConVarChanged_Cvars);
 	karmaSlowTimeOnCouple.AddChangeHook(ConVarChanged_Cvars);
-	karmaSlow.AddChangeHook(ConVarChanged_Cvars);
+	karmaSlowSpeed.AddChangeHook(ConVarChanged_Cvars);
 	cvarisEnabled.AddChangeHook(ConVarChanged_Cvars);
 	//cvarNoFallDamageProtectFromIncap.AddChangeHook(ConVarChanged_Cvars);
 	cvarModeSwitch.AddChangeHook(ConVarChanged_Cvars);
 	cvarCooldown.AddChangeHook(ConVarChanged_Cvars);
 	cvarAllowDefib.AddChangeHook(ConVarChanged_Cvars);
-
-	fw_OnKarmaEventPost = CreateGlobalForward("KarmaKillSystem_OnKarmaEventPost", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell);
-	fw_OnRPGKarmaEventPost = CreateGlobalForward("KarmaKillSystem_OnRPGKarmaEventPost", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Array, Param_Array, Param_Array, Param_Cell, Param_String, Param_String);
-	fw_OnKarmaJumpPost  = CreateGlobalForward("KarmaKillSystem_OnKarmaJumpPost", ET_Ignore, Param_Cell, Param_Array, Param_Array, Param_Array, Param_Cell, Param_String, Param_String);
 
 	if(bLate)
 	{
@@ -368,45 +372,6 @@ public void OnPluginStart()
 		g_bRoundStarted = true;
 	}
 }
-
-/**
- * Description
- *
- * @param victim             Muse that was honored to model a karma event
- * @param attacker           Artist that crafted the karma event. The only way to check if attacker is valid is: if(attacker > 0)
- * @param KarmaName          Name of karma: "Charge", "Impact", "Jockey", "Slap", "Punch", "Smoke"
- * @param bBird              true if a bird charge event occured, false if a karma kill was detected or performed.
- * @param bKillConfirmed     Whether or not this indicates the complete death of the player. This is NOT just !IsPlayerAlive(victim)
- * @param bOnlyConfirmed     Whether or not only kill confirmed are allowed.
-
- * @noreturn
- * @note					This can be called more than once. One for the announcement, one for the kill confirmed.
-                            If you want to reward both killconfirmed and killunconfirmed you should reward when killconfirmed is false.
-                            If you want to reward if killconfirmed you should reward when killconfirmed is true.
-
- * @note					If the plugin makes a kill confirmed without a previous announcement without kill confirmed,
-                            it compensates by sending two consecutive events, one without kill confirmed, one with kill confirmed.
-
-
-
- */
-forward void KarmaKillSystem_OnKarmaEventPost(int victim, int attacker, const char[] KarmaName, bool bBird, bool bKillConfirmed, bool bOnlyConfirmed);
-
-/**
- * Description
- *
- * @param victim             Player who got killed by the karma jump. This can be anybody. Useful to revive the victim.
- * @param lastPos            Origin from which the jump began.
- * @param jumperWeapons		 Weapon Refs of the jumper at the moment of the jump. Every invalid slot is -1
- * @param jumperHealth    	 jumperHealth[0] and jumperHealth[1] = Health and Temp health from which the jump began.
- * @param jumperTimestamp    Timestamp from which the jump began.
- * @param jumperSteamId      jumper's Steam ID.
- * @param jumperName     	 jumper's name
-
- * @noreturn
-
- */
-forward void KarmaKillSystem_OnKarmaJumpPost(int victim, float lastPos[3], int jumperWeapons[64], int jumperHealth[2], float jumperTimestamp, char[] jumperSteamId, char[] jumperName);
 
 public void OnClientPutInServer(int client)
 {
@@ -465,24 +430,8 @@ Action SDKEvent_OnTakeDamage(int victim, int& attacker, int& inflictor, float& d
 
 public void OnClientDisconnect(int client)
 {
-	if (chargerTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(chargerTimer[client]);
-		chargerTimer[client] = INVALID_HANDLE;
-	}
-
-	if (victimTimer[client].timer != INVALID_HANDLE)
-	{
-		CloseHandle(victimTimer[client].timer);
-		victimTimer[client].timer = INVALID_HANDLE;
-		victimTimer[client].dp    = null;
-	}
-
-	if (ledgeTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(ledgeTimer[client]);
-		ledgeTimer[client] = INVALID_HANDLE;
-	}
+	delete g_hResetTimer[client];
+	ResetKarma(client);
 
 	if (IsFakeClient(client))
 	{
@@ -540,7 +489,7 @@ void GetCvars()
 	g_bkarmaOnlyConfirmed = karmaOnlyConfirmed.BoolValue;
 	g_fkarmaSlowTimeOnServer = karmaSlowTimeOnServer.FloatValue;
 	g_fkarmaSlowTimeOnCouple = karmaSlowTimeOnCouple.FloatValue;
-	g_fkarmaSlow = karmaSlow.FloatValue;
+	g_fkarmaSlowSpeed = karmaSlowSpeed.FloatValue;
 	g_bEnabled = cvarisEnabled.BoolValue;
 	//g_bNoFallDamageProtectFromIncap = cvarNoFallDamageProtectFromIncap.BoolValue;
 	g_bModeSwitch = cvarModeSwitch.BoolValue;
@@ -942,6 +891,8 @@ Action event_playerDeathPre(Event event, const char[] name, bool dontBroadcast)
 	if (L4D_GetClientTeam(victim) != L4DTeam_Survivor)    // L4D_GetClientTeam(victim) == 2 -> Victim is a survivor
 		return Plugin_Continue;
 
+	delete g_hResetTimer[victim];
+
 	FixChargeTimeleftBug();
 
 	// New by Eyal282 because any fall or drown damage trigger this block.
@@ -1024,6 +975,7 @@ Action event_VictimFreeFromPinPre(Handle event, const char[] name, bool dontBroa
 
 	return Plugin_Continue;	
 }
+
 void FixChargeTimeleftBug()
 {
 	for (int i = 1; i <= MaxClients; i++)
@@ -1221,67 +1173,10 @@ void event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 	if (!g_bEnabled || !client || !IsClientInGame(client))
 		return;
 
-	BlockAnnounce[client] = false;
+	delete g_hResetTimer[client];
+	ResetKarma(client);
 
 	DettachKarmaFromVictim(client, KarmaType_MAX);
-
-	preJumpHeight[client] = 0.0;
-	apexHeight[client]    = -65535.0;
-	catchHeight[client]   = -65535.0;
-
-	if (chargerTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(chargerTimer[client]);
-		chargerTimer[client] = INVALID_HANDLE;
-	}
-	if (victimTimer[client].timer != INVALID_HANDLE)
-	{
-		CloseHandle(victimTimer[client].timer);
-		victimTimer[client].timer = INVALID_HANDLE;
-		victimTimer[client].dp    = null;
-	}
-	if (ledgeTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(ledgeTimer[client]);
-		ledgeTimer[client] = INVALID_HANDLE;
-	}
-	if (AllKarmaRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(AllKarmaRegisterTimer[client]);
-		AllKarmaRegisterTimer[client] = INVALID_HANDLE;
-	}
-
-	if (BlockRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(BlockRegisterTimer[client]);
-		BlockRegisterTimer[client] = INVALID_HANDLE;
-	}
-
-	if (JockRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(JockRegisterTimer[client]);
-		JockRegisterTimer[client] = INVALID_HANDLE;
-	}
-	if (SlapRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(SlapRegisterTimer[client]);
-		SlapRegisterTimer[client] = INVALID_HANDLE;
-	}
-	if (PunchRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(PunchRegisterTimer[client]);
-		PunchRegisterTimer[client] = INVALID_HANDLE;
-	}
-	if (JumpRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(JumpRegisterTimer[client]);
-		JumpRegisterTimer[client] = INVALID_HANDLE;
-	}
-	if (SmokeRegisterTimer[client] != INVALID_HANDLE)
-	{
-		CloseHandle(SmokeRegisterTimer[client]);
-		SmokeRegisterTimer[client] = INVALID_HANDLE;
-	}
 }
 
 // Called after player_spawn, so you're allowed to clear variables in player_spawn
@@ -1995,6 +1890,12 @@ void AnnounceKarma(int client, int victim, int type, bool bBird, bool bKillConfi
 			Call_Finish();
 		}
 
+		if(g_hResetTimer[victim] == null)
+		{
+			float time = (g_fkarmaSlowTimeOnServer > g_fkarmaSlowTimeOnCouple) ? g_fkarmaSlowTimeOnServer : g_fkarmaSlowTimeOnCouple;
+			g_hResetTimer[victim] = CreateTimer( time, Timer_ResetKarma, victim);
+		}
+
 		DebugPrintToAll("Karma event by %s %i", LastKarma[victim][type].artistName, bKillConfirmed);
 
 		Call_StartForward(fw_OnKarmaEventPost);
@@ -2088,9 +1989,9 @@ void SlowKarmaCouple(int victim, int attacker, char[] sKarmaName)
 {
 	// Karma can register a lot of time after the register because of ledge hang, so no random slowdowns...
 	if (StrEqual(sKarmaName, "Charge") && attacker > 0 && IsPlayerAlive(attacker))
-		SetEntPropFloat(attacker, Prop_Send, "m_flLaggedMovementValue", g_fkarmaSlow);
+		SetEntPropFloat(attacker, Prop_Send, "m_flLaggedMovementValue", g_fkarmaSlowSpeed);
 
-	SetEntPropFloat(victim, Prop_Send, "m_flLaggedMovementValue", g_fkarmaSlow);
+	SetEntPropFloat(victim, Prop_Send, "m_flLaggedMovementValue", g_fkarmaSlowSpeed);
 
 	DataPack data;
 	CreateDataTimer(g_fkarmaSlowTimeOnCouple, _revertCoupleTimeSlow, data, TIMER_FLAG_NO_MAPCHANGE);
@@ -2147,7 +2048,7 @@ void SlowTime(const char[] re_Acceleration = "2.0", const char[] minBlendRate = 
 
 	if (fSlowPower == -65535.0)
 	{
-		fSlowPower = g_fkarmaSlow;
+		fSlowPower = g_fkarmaSlowSpeed;
 
 		if (fSlowPower < 0.03)
 			fSlowPower = 0.03;
@@ -2748,4 +2649,74 @@ bool CheckIfEntitySafe(int entity)
 		return false;
 	}
 	return true;
+}
+
+Action Timer_ResetKarma(Handle timer, int client)
+{
+	g_hResetTimer[client] = null;
+	ResetKarma(client);
+
+	return Plugin_Continue;
+}
+
+void ResetKarma(int client)
+{
+	BlockAnnounce[client] = false;
+	preJumpHeight[client] = 0.0;
+	apexHeight[client]    = -65535.0;
+	catchHeight[client]   = -65535.0;
+
+	if (chargerTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(chargerTimer[client]);
+		chargerTimer[client] = INVALID_HANDLE;
+	}
+	if (victimTimer[client].timer != INVALID_HANDLE)
+	{
+		CloseHandle(victimTimer[client].timer);
+		victimTimer[client].timer = INVALID_HANDLE;
+		victimTimer[client].dp    = null;
+	}
+	if (ledgeTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(ledgeTimer[client]);
+		ledgeTimer[client] = INVALID_HANDLE;
+	}
+	if (AllKarmaRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(AllKarmaRegisterTimer[client]);
+		AllKarmaRegisterTimer[client] = INVALID_HANDLE;
+	}
+
+	if (BlockRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(BlockRegisterTimer[client]);
+		BlockRegisterTimer[client] = INVALID_HANDLE;
+	}
+
+	if (JockRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(JockRegisterTimer[client]);
+		JockRegisterTimer[client] = INVALID_HANDLE;
+	}
+	if (SlapRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(SlapRegisterTimer[client]);
+		SlapRegisterTimer[client] = INVALID_HANDLE;
+	}
+	if (PunchRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(PunchRegisterTimer[client]);
+		PunchRegisterTimer[client] = INVALID_HANDLE;
+	}
+	if (JumpRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(JumpRegisterTimer[client]);
+		JumpRegisterTimer[client] = INVALID_HANDLE;
+	}
+	if (SmokeRegisterTimer[client] != INVALID_HANDLE)
+	{
+		CloseHandle(SmokeRegisterTimer[client]);
+		SmokeRegisterTimer[client] = INVALID_HANDLE;
+	}
 }

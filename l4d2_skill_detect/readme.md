@@ -131,10 +131,10 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>API | 串接</summary>
 
+    ```php
+    Registers a library name: skill_detect
+    ```
 	* ```scripting\include\l4d2_skill_detect.inc```
-		```php
-		Registers a library name: skill_detect
-		```
 </details>
 
 * Apply to | 適用於
@@ -152,6 +152,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.8h (2024-8-6)
+        * Update API
 
     * v1.8h (2024-4-30)
         * Update translation

@@ -24,7 +24,7 @@
 bool bLateLoad = false;
 
 // CVars
-int fEnabled                                                = ALL_FEATURES;         // Enables individual features of the plugin
+int iEnabled                                                = ALL_FEATURES;         // Enables individual features of the plugin
 int iPounceInterrupt                                        = 150;                  // Caches pounce interrupt cvar's value
 int iHunterSkeetDamage[MAXPLAYERS+1]                        = { 0, ... };           // How much damage done in a single hunter leap so far
 bool g_bHunterAttemptingToPounce[MAXPLAYERS+1]               = { false, ... };
@@ -34,27 +34,30 @@ public Plugin myinfo =
     name = "Bot SI skeet/level damage fix",
     author = "Tabun, dcx2, Harry",
     description = "Makes AI SI take (and do) damage like human SI.",
-    version = "1.0h -2024/2/11",
+    version = "1.1h -2024/8/6",
     url = "https://steamcommunity.com/profiles/76561198026784913/"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    RegPluginLibrary("l4d2_ai_damagefix");
+
     bLateLoad = late;
     return APLRes_Success;
 }
 
 public void OnPluginStart()
 {
-    // find/create cvars, hook changes, cache current values
-    ConVar hCvarEnabled = CreateConVar("sm_aidmgfix_enable", "3", "Bit flag: Enables plugin features (add together): 1=Skeet pouncing AI, 2=Debuff charging AI, 3=all, 0=off", FCVAR_NONE|FCVAR_NOTIFY);
     ConVar hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
-
-    fEnabled = hCvarEnabled.IntValue;
     iPounceInterrupt = hCvarPounceInterrupt.IntValue;
-
-    hCvarEnabled.AddChangeHook(OnAIDamageFixEnableChanged);
     hCvarPounceInterrupt.AddChangeHook(OnPounceInterruptChanged);
+
+    // find/create cvars, hook changes, cache current values
+    ConVar hCvarEnabled = CreateConVar("l4d2_ai_damagefix_enable", "3", "Bit flag: Enables plugin features (add together): 1=Skeet pouncing AI hunter, 2=Debuff charging AI charger, 3=Both, 0=off", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+    AutoExecConfig(true,               "l4d2_ai_damagefix");
+
+    iEnabled = hCvarEnabled.IntValue;
+    hCvarEnabled.AddChangeHook(OnAIDamageFixEnableChanged);
 
     // events
     HookEvent("ability_use", Event_AbilityUse, EventHookMode_Post);
@@ -69,14 +72,66 @@ public void OnPluginStart()
     }
 }
 
-void OnAIDamageFixEnableChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+bool g_bMeleeModfiyDamage;
+ConVar l4d2_melee_modify_damage_enable;
+int g_bl4d2_melee_modify_damage_enable;
+public void OnAllPluginsLoaded()
 {
-    fEnabled = StringToInt(newValue);
+    g_bMeleeModfiyDamage = LibraryExists("l4d2_melee_modify_damage");
+    ConVar convar;
+    convar = FindConVar("l4d2_melee_modify_damage_enable");
+    if (convar != null && l4d2_melee_modify_damage_enable != convar)
+    {
+        l4d2_melee_modify_damage_enable = convar;
+        GetOtherPluginsCvars();
+        l4d2_melee_modify_damage_enable.AddChangeHook(ConVarChanged_l4d2_melee_modify_damage_enable);
+    }
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+    g_bMeleeModfiyDamage = LibraryExists("l4d2_melee_modify_damage");
+    ConVar convar;
+    convar = FindConVar("l4d2_melee_modify_damage_enable");
+    if (convar != null && l4d2_melee_modify_damage_enable != convar)
+    {
+        l4d2_melee_modify_damage_enable = convar;
+        GetOtherPluginsCvars();
+        l4d2_melee_modify_damage_enable.AddChangeHook(ConVarChanged_l4d2_melee_modify_damage_enable);
+    }
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+    g_bMeleeModfiyDamage = LibraryExists("l4d2_melee_modify_damage");
+    ConVar convar;
+    convar = FindConVar("l4d2_melee_modify_damage_enable");
+    if (convar != null && l4d2_melee_modify_damage_enable != convar)
+    {
+        l4d2_melee_modify_damage_enable = convar;
+        GetOtherPluginsCvars();
+        l4d2_melee_modify_damage_enable.AddChangeHook(ConVarChanged_l4d2_melee_modify_damage_enable);
+    }
+}
+
+void ConVarChanged_l4d2_melee_modify_damage_enable(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    GetOtherPluginsCvars();
+}
+
+void GetOtherPluginsCvars()
+{
+    g_bl4d2_melee_modify_damage_enable = l4d2_melee_modify_damage_enable.BoolValue; 
 }
 
 void OnPounceInterruptChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
     iPounceInterrupt = StringToInt(newValue);
+}
+
+void OnAIDamageFixEnableChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    iEnabled = StringToInt(newValue);
 }
 
 public void OnClientPutInServer(int client)
@@ -89,13 +144,15 @@ public void OnClientPutInServer(int client)
 
 Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
+    if(g_bMeleeModfiyDamage && g_bl4d2_melee_modify_damage_enable) return Plugin_Continue;
+
     // Must be enabled, victim and attacker must be ingame, damage must be greater than 0, victim must be AI infected
-    if (fEnabled && IsClientAndInGame(victim) && IsClientAndInGame(attacker) && damage > 0.0 && GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
+    if (iEnabled && IsClientAndInGame(victim) && IsClientAndInGame(attacker) && damage > 0.0 && GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
     {
         int zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
 
         // Is this AI hunter attempting to pounce?
-        if (zombieClass == ZC_HUNTER && (fEnabled & SKEET_POUNCING_AI) && GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce"))
+        if (zombieClass == ZC_HUNTER && (iEnabled & SKEET_POUNCING_AI) && GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce"))
         {
             iHunterSkeetDamage[victim] += RoundToFloor(damage);
             
@@ -116,7 +173,7 @@ Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, in
                 }
             }
         }
-        else if (zombieClass == ZC_CHARGER && (fEnabled & DEBUFF_CHARGING_AI))
+        else if (zombieClass == ZC_CHARGER && (iEnabled & DEBUFF_CHARGING_AI))
         {
             // Is this AI charger charging?
             int abilityEnt = GetEntPropEnt(victim, Prop_Send, "m_customAbility");
@@ -134,7 +191,7 @@ Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, in
 
 void OnTakeDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype)
 {
-    if (fEnabled && IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
+    if (iEnabled && IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED && IsFakeClient(victim))
     {
         if(GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER && g_bHunterAttemptingToPounce[victim]) 
         {

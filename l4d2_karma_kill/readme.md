@@ -27,10 +27,10 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         // Whenever or not to make karma announce only happen upon death.
         l4d2_karma_only_confirmed "0"
 
-        // How long does Time get slowed for the server
+        // If _kill_slowmode = 0, How long does Time get slowed for the server
         l4d2_karma_kill_slowtime_on_server "5.0"
 
-        // How long does Time get slowed for the karma couple (Infected atacker and Survivor victim only)
+        // If _kill_slowmode = 1, How long does Time get slowed for the karma couple (Infected atacker and Survivor victim only)
         l4d2_karma_kill_slowtime_on_couple "3.0"
 
         // How slow Time gets. Hardwired to minimum 0.03 or the server crashes
@@ -55,12 +55,23 @@ Very Very loudly announces the predicted event of a player leaving the map and o
     None
 </details>
 
+* <details><summary>API | 串接</summary>
+
+    ```php
+    Registers a library name: l4d2_karma_kill
+    ```
+	* ```scripting\include\l4d2_skill4d2_karma_kill_detect.inc```
+</details>
+
 * Apply to | 適用於
     ```
     L4D2
     ```
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.1h (2024-8-6)
+        * Add include file
 
     * v1.0h (2024-1-13)
         * Remove some useless cvars
@@ -99,13 +110,13 @@ Very Very loudly announces the predicted event of a player leaving the map and o
         // 為1時，只有倖存者死亡才會有提示
         l4d2_karma_only_confirmed "0"
 
-        // 慢動作維持多久時間?
+        // 如果 _kill_slowmode 為 0，整個伺服器的慢動作維持多久時間?
         l4d2_karma_kill_slowtime_on_server "5.0"
 
         // 如果 _kill_slowmode 為 1，抓人的特感與被抓的倖存者，兩個人的慢動作維持多久時間?
         l4d2_karma_kill_slowtime_on_couple "3.0"
 
-        // 如果 _kill_slowmode 為 1，抓人的特感與被抓的倖存者，兩個人的慢動作速度? (最小值0.03)
+        // 慢動作速度? (最小值0.03)
         l4d2_karma_kill_slowspeed "0.2"
 
         // 為1時，慢動作時有音效

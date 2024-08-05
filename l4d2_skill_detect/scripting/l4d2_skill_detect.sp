@@ -42,36 +42,7 @@
  *	only. 'Skeeting' chipped hunters shouldn't count, IMO.
  *
  *	This performs global forward calls to:
- *		OnSkeet( int survivor, int vicitm, bool isHunter )
- *		OnSkeetMelee( int survivor, int vicitm, bool isHunter )
- *		OnSkeetSniper( int survivor, int vicitm, bool isHunter )
- *		OnSkeetMagnum( int survivor, int vicitm, bool isHunter )
- *		OnSkeetShotgun( int survivor, int vicitm, bool isHunter )
- *		OnSkeetGL( int survivor, int vicitm, bool isHunter )
- *		OnSkeetHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
- *		OnSkeetMeleeHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
- *		OnSkeetSniperHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
- *		OnSkeetMagnumHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
- *		OnSkeetShotgunHurt( int survivor, int vicitm, int damage, bool isOverkill, bool isHunter )
- *		OnHunterDeadstop( int survivor, int hunter )
- *		OnJocekyDeadstop( int survivor, int joceky )
- *		OnBoomerPop( int survivor, int boomer, int shoveCount, float timeAlive )
- *		OnChargerLevel( int survivor, int charger )
- *		OnChargerLevelHurt( int survivor, int charger, int damage )
- *		OnWitchCrown( int survivor, int damage )
- *		OnWitchDrawCrown( int survivor, int damage, int chipdamage )
- *		OnTongueCut( int survivor, int smoker )
- *		OnSmokerSelfClear( int survivor, int smoker, bool withShove )
- *		OnTankRockSkeeted( int survivor, int tank )
- *		OnTankRockEaten( int tank, int survivor )
- *		OnHunterHighPounce( int hunter, int victim, int actualDamage, float calculatedDamage, float height, bool bReportedHigh, bool bPlayerIncapped )
- *		OnJockeyHighPounce( int jockey, int victim, float height, bool bReportedHigh )
- *		OnDeathCharge( int charger, int victim, float height, float distance, bool wasCarried )
- *		OnSpecialShoved( int survivor, int infected, int zombieClass )
- *		OnSpecialClear( int clearer, int pinner, int pinvictim, int zombieClass, float timeA, float timeB, bool withShove )
- *		OnBoomerVomitLanded( int boomer, int amount )
- *		OnBunnyHopStreak( int survivor, int streak, float maxVelocity )
- *		OnCarAlarmTriggered( int survivor, int infected, int reason )
+ *		Check l4d2_skill_detect.inc
  *
  *		OnDeathChargeAssist( int assister, int charger, int victim )	[ not done yet ]
  *		OnBHop( int player, bool isInfected, int speed, int streak )			[ not done yet ]
@@ -81,7 +52,7 @@
  *	and isOverkill indicates whether the shot would've been a skeet if the hunter
  *	had not been chipped.
  *
- *	@author			Tabun
+ *	@author			Tabun, Harry
  *	@libraryname	skill_detect
  */
 
@@ -93,7 +64,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.8h-2024/4/30"
+#define PLUGIN_VERSION "1.9h-2024/8/6"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -476,17 +447,17 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	RegPluginLibrary("skill_detect");
 	
-	g_hForwardSkeet =				CreateGlobalForward("OnSkeet", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeet =				CreateGlobalForward("OnSkeet", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardSkeetMelee =			CreateGlobalForward("OnSkeetMelee", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetSniper =			CreateGlobalForward("OnSkeetSniper", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetMagnum =			CreateGlobalForward("OnSkeetMagnum", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetShotGun =		CreateGlobalForward("OnSkeetShotgun", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetSniper =			CreateGlobalForward("OnSkeetSniper", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetMagnum =			CreateGlobalForward("OnSkeetMagnum", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetShotGun =		CreateGlobalForward("OnSkeetShotgun", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardSkeetGL =				CreateGlobalForward("OnSkeetGL", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetHurt =			CreateGlobalForward("OnSkeetHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetHurt =			CreateGlobalForward("OnSkeetHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardSkeetMeleeHurt =		CreateGlobalForward("OnSkeetMeleeHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetSniperHurt = 	CreateGlobalForward("OnSkeetSniperHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetMagnumHurt = 	CreateGlobalForward("OnSkeetMagnumHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-	g_hForwardSkeetShotGunHurt =	CreateGlobalForward("OnSkeetShotgunHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetSniperHurt = 	CreateGlobalForward("OnSkeetSniperHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetMagnumHurt = 	CreateGlobalForward("OnSkeetMagnumHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+	g_hForwardSkeetShotGunHurt =	CreateGlobalForward("OnSkeetShotgunHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardSIShove =				CreateGlobalForward("OnSpecialShoved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardHunterDeadstop =		CreateGlobalForward("OnHunterDeadstop", ET_Ignore, Param_Cell, Param_Cell );
 	g_hForwardJocekyDeadstop =		CreateGlobalForward("OnJocekyDeadstop", ET_Ignore, Param_Cell, Param_Cell );
@@ -500,7 +471,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	g_hForwardSmokerSelfClear = 	CreateGlobalForward("OnSmokerSelfClear", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardRockSkeeted =			CreateGlobalForward("OnTankRockSkeeted", ET_Ignore, Param_Cell, Param_Cell );
 	g_hForwardRockEaten =			CreateGlobalForward("OnTankRockEaten", ET_Ignore, Param_Cell, Param_Cell );
-	g_hForwardHunterDP =			CreateGlobalForward("OnHunterHighPounce", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Cell, Param_Cell );
+	g_hForwardHunterDP =			CreateGlobalForward("OnHunterHighPounce", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Cell );
 	g_hForwardJockeyDP =			CreateGlobalForward("OnJockeyHighPounce", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Cell );
 	g_hForwardDeathCharge =			CreateGlobalForward("OnDeathCharge", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Cell );
 	g_hForwardClear =				CreateGlobalForward("OnSpecialClear", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Cell, Param_Cell );
@@ -3228,6 +3199,7 @@ stock HandleSkeet( attacker, victim, strWeaponType eWeaponType,
 		Call_PushCell(victim);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 	else if ( eWeaponType == WPTYPE_GL )
@@ -3255,6 +3227,7 @@ stock HandleSkeet( attacker, victim, strWeaponType eWeaponType,
 		Call_PushCell(victim);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 	else if(eWeaponType == WPTYPE_SHOTGUN)
@@ -3264,6 +3237,7 @@ stock HandleSkeet( attacker, victim, strWeaponType eWeaponType,
 		Call_PushCell(victim);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 	else
@@ -3273,6 +3247,7 @@ stock HandleSkeet( attacker, victim, strWeaponType eWeaponType,
 		Call_PushCell(victim);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 }
@@ -3398,6 +3373,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell(bOverKill);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 	else if ( eWeaponType == WPTYPE_MELEE )
@@ -3420,6 +3396,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell(bOverKill);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 	else if ( eWeaponType == WPTYPE_SHOTGUN )
@@ -3431,6 +3408,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell(bOverKill);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 	else
@@ -3442,6 +3420,7 @@ stock HandleNonSkeet( attacker, victim, damage, bool:bOverKill = false, strWeapo
 		Call_PushCell(bOverKill);
 		Call_PushCell((isHunter) ? 1 : 0);
 		Call_PushCell(headshot);
+		Call_PushCell(shots);
 		Call_Finish();
 	}
 }
@@ -3616,13 +3595,12 @@ HandleRockSkeeted( attacker, victim, bool:melee=false, type=ROCK_UNKNOWN )
 }
 
 // highpounces
-stock HandleHunterDP( attacker, victim, actualDamage, Float:calculatedDamage, Float:height, bool:playerIncapped = false )
+stock HandleHunterDP( attacker, victim, actualDamage, Float:calculatedDamage, Float:height)
 {
 	// report?
 	if (	g_bCvarReportEnable
 		&&	(g_iCvarReportFlags & REP_HUNTERDP)
 		&&	height >= GetConVarFloat(g_hCvarHunterDPThresh)
-		&&	!playerIncapped
 	) {
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(attacker) )
 		{
@@ -3643,7 +3621,6 @@ stock HandleHunterDP( attacker, victim, actualDamage, Float:calculatedDamage, Fl
 	Call_PushFloat(calculatedDamage);
 	Call_PushFloat(height);
 	Call_PushCell( (height >= GetConVarFloat(g_hCvarHunterDPThresh)) ? 1 : 0 );
-	Call_PushCell( (playerIncapped) ? 1 : 0 );
 	Call_Finish();
 }
 stock HandleJockeyDP( attacker, victim, Float:height )
