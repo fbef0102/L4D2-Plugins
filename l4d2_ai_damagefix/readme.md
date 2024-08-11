@@ -1,11 +1,11 @@
 # Description | 內容
 Makes AI SI take (and do) damage like human SI.
 
-* Video | 影片展示
-<br/>None
+> __Note__ <br/>
+This Plugin has been discontinued, Use 
+<br/>1. [charging_takedamage_patch](/charging_takedamage_patch)
+<br/>2. [l4d_ai_hunter_skeet_dmg_fix](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_ai_hunter_skeet_dmg_fix)
 
-* Image | 圖示
-<br/>None
 
 * <details><summary>How does it work?</summary>
 
@@ -45,6 +45,9 @@ Makes AI SI take (and do) damage like human SI.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+	* Archived (2024-8-11)
+		* This Plugin has been discontinued
+
 	* v1.1h (2024-8-6)
 		* Add Library "l4d2_ai_damagefix"
 
@@ -60,16 +63,12 @@ Makes AI SI take (and do) damage like human SI.
 # 中文說明
 對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣
 
+> __Note__ <br/>
+此插件已停止更新，請使用
+<br/>1. [charging_takedamage_patch](/charging_takedamage_patch)
+<br/>2. [l4d_ai_hunter_skeet_dmg_fix](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_ai_hunter_skeet_dmg_fix)
+
 * 原理
 	* (裝插件之前) 真人扮演的Hunter在飛撲過程中容易被殺死, 但是AI Hunter不容易被殺死，因為官方故意設置傷害機制不同
 	* (裝插件之前) 真人扮演的Charger在衝鋒過程中容易被殺死, 但是AI Charger不容易被殺死，因為官方故意設置傷害機制不同
 	* (裝插件之後) 對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣 (所以他們更容易被殺死)
-
-* <details><summary>指令中文介紹 (點我展開)</summary>
-
-	* cfg\sourcemod\l4d2_ai_damagefix.cfg
-		```php
-		// 修改以下傷害機制: 1=正在飛撲的AI Hunter, 2=正在衝鋒的AI Hunter, 3=兩者都修改, 0=關閉此插件
-		l4d2_ai_damagefix_enable "3"
-		```
-</details>

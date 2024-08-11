@@ -72,14 +72,18 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 解決最後救援卡關，永遠不能來救援載具的問題
 * <b>[l4d2_gun_damage_modify](/l4d2_gun_damage_modify)</b>: Modify every weapon damage done to Tank, SI, Witch, Common in l4d2
     * 修改每一種槍械武器對普通殭屍/Tank/Witch/特感 的傷害倍率
-* <b>[l4d2_ai_damagefix](/l4d2_ai_damagefix)</b>: Makes AI SI take (and do) damage like human SI.
-    * 對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣
+* <b>[l4d2_ai_damagefix](/l4d2_ai_damagefix)</b>: (Archived) Makes AI SI take (and do) damage like human SI.
+    * (棄案) 對AI Hunter與 AI Charger造成的傷害數據跟真人玩家一樣
 * <b>[lfd_both_fixUpgradePack](/lfd_both_fixUpgradePack)</b>: Fixes upgrade packs pickup bug when there are 5+ survivors
     * 修正高爆彈與燃燒彈無法被重複角色模組的倖存者撿起來
 * <b>[l4d2_chainsaw_refuelling](/l4d2_chainsaw_refuelling)</b>: Allow refuelling of a chainsaw
     * 可以使用汽油桶重新填充電鋸油量
 * <b>[l4d2_bash_kills](/l4d2_bash_kills)</b>: Stop special infected getting bashed to death
     * 特感不會被人類右鍵推到死去
+* <b>[charging_takedamage_patch](/charging_takedamage_patch)</b>: Makes AI Charger take damage like human SI while charging.
+    * 移除AI Charger的衝鋒減傷
+* <b>[rescue_glow](/rescue_glow)</b>: Fixed sometimes glow is invisible when dead survivors appears in rescue closet
+    * 修復有時候救援房間沒有看到倖存者的光圈
 # Scripting Compiler
 * [sourcemod v1.11 compiler](https://www.sourcemod.net/downloads.php?branch=1.11-dev): scripting folder
     * 使用 sourcemod v1.11 的編譯環境
