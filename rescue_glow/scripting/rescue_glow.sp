@@ -4,7 +4,7 @@
 #include <sdktools>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION	"1.0-2024/8/9"
+#define PLUGIN_VERSION	"1.0h-2024/8/15"
 #define PLUGIN_NAME		"rescue_glow"
 #define DEBUG 0
 
@@ -55,8 +55,8 @@ bool
 int 
     g_iRescueEntityRef[MAXPLAYERS+1];
 
-Handle
-    g_hCheckTimer[MAXPLAYERS+1];
+//Handle
+//   g_hCheckTimer[MAXPLAYERS+1];
 
 public void OnPluginStart()
 {
@@ -107,14 +107,14 @@ public void OnMapEnd()
 {
     ResetAllGlow();
 }
-
+/*
 public void OnClientDisconnect(int client)
 {
     if(!IsClientInGame(client)) return;
 
     delete g_hCheckTimer[client];
 } 
-
+*/
 // Event-------------------------------
 
 void survivor_call_for_help(Event event, const char[] name, bool dontBroadcast)
@@ -161,9 +161,9 @@ void survivor_rescue_abandoned(Event event, const char[] name, bool dontBroadcas
 void event_player_spawn(Event event, const char[] name, bool dontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
-    if(client != 0)
+    if(client)
     {
-        delete g_hCheckTimer[client];
+        //delete g_hCheckTimer[client];
         RemoveModelGlow(client);
     }
 }
@@ -171,9 +171,9 @@ void event_player_spawn(Event event, const char[] name, bool dontBroadcast)
 void event_player_team(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client != 0)
+	if(client)
 	{
-        delete g_hCheckTimer[client];
+        //delete g_hCheckTimer[client];
         RemoveModelGlow(client);
 	}
 }
@@ -181,9 +181,9 @@ void event_player_team(Event event, const char[] name, bool dontBroadcast)
 void event_player_death(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client != 0)
+	if(client)
 	{
-        delete g_hCheckTimer[client];
+        //delete g_hCheckTimer[client];
         RemoveModelGlow(client);
 	}
 }
@@ -205,12 +205,12 @@ void NextFrame_survivor_rescue_abandoned()
     int info_survivor_rescue;
     for(int player = 1; player <= MaxClients; player++)
     {
-        if(g_iRescueEntityRef[player] && (info_survivor_rescue = EntRefToEntIndex(g_iRescueEntityRef[player])) != INVALID_ENT_REFERENCE )
+        if(IsClientInGame(player) && g_iRescueEntityRef[player] && (info_survivor_rescue = EntRefToEntIndex(g_iRescueEntityRef[player])) != INVALID_ENT_REFERENCE)
         {
             if(GetEntPropEnt(info_survivor_rescue, Prop_Send, "m_survivor") == player) continue;
         }
 
-        delete g_hCheckTimer[player];
+        //delete g_hCheckTimer[player];
         RemoveModelGlow(player);
     }
 }
@@ -246,7 +246,7 @@ void NextFrame_survivor_rescue_abandoned()
 void RemoveModelGlow(int client)
 {
     g_iRescueEntityRef[client] = 0;
-    if(g_bAdded[client])
+    if(g_bAdded[client] && IsClientInGame(client))
     {
         set_glow(client);
 
@@ -271,7 +271,7 @@ void ResetAllGlow()
 {
     for(int i = 1; i <= MaxClients; i++)
     {
-        delete g_hCheckTimer[i];
+        //delete g_hCheckTimer[i];
         RemoveModelGlow(i);
     }
 }
