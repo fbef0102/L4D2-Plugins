@@ -1,45 +1,28 @@
 # Description | 內容
 Lets players pass pills and adrenaline with +Reload key
 
-* Video | 影片展示
-<br/>None
-
-* Image | 圖示
-<br/>None
-
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* [L4D1 Version | 適用於L4D1的版本](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/pill_passer.sp)
+> __Note__ <br/>
+This Plugin has been discontinued, Use [l4d_item_passer](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Items_%E7%89%A9%E5%93%81/l4d_item_passer)
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * Archived (2024-8-20)
+        * This Plugin has been discontinued
 
     * v4.0 (2023-5-22)
         * Remake code, convert code to latest syntax
         * Fix warnings when compiling on SourceMod 1.11.
 
-	* v3
+    * v3
         * [From SirPlease/L4D2-Competitive-Rework](https://github.com/Attano/L4D2-Competitive-Framework/blob/master/addons/sourcemod/scripting/pill_passer.sp)
-</details>
-
-* Require | 必要安裝
-    1. [[INC] l4d2_weapons](https://github.com/fbef0102/Game-Private_Plugin/blob/main/left4dead2/scripting/include/l4d2_weapons.inc)
-
-* <details><summary>ConVar | 指令</summary>
-
-	None
-</details>
-
-* <details><summary>Command | 命令</summary>
-
-	None
 </details>
 
 - - - -
 # 中文說明
 用R鍵直接傳送藥丸與腎上腺素給隊友
 
+> __Note__ <br/>
+此插件已停止更新，請使用[l4d_item_passer](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Items_%E7%89%A9%E5%93%81/l4d_item_passer)
+
 * 原理
-	* 拿著藥丸或腎上腺素－＞準心對準隊友－＞按下Ｒ鍵－＞藥丸或腎上腺素會直接給隊友
+    * 拿著藥丸或腎上腺素－＞準心對準隊友－＞按下Ｒ鍵－＞藥丸或腎上腺素會直接給隊友

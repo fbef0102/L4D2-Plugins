@@ -39,10 +39,10 @@ L4D2 coop save weapon when map transition if more than 4 players
 
 * <details><summary>API | 串接</summary>
 
-    * ```scripting\include\l4d2_ty_saveweapons.inc```
-        ```php
-        Registers a library name: l4d2_ty_saveweapons
-        ```
+	```php
+	Registers a library name: l4d2_ty_saveweapons
+	```
+	* ```scripting\include\l4d2_ty_saveweapons.inc```
 </details>
 
 * <details><summary>Related Official ConVar</summary>
