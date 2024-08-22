@@ -64,7 +64,7 @@
 #include <left4dhooks>
 #include <multicolors>
 
-#define PLUGIN_VERSION "1.9h-2024/8/6"
+#define PLUGIN_VERSION "1.9h-2024/8/23"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -272,7 +272,7 @@ new		Float:			g_fHunterLastShot		[MAXPLAYERS + 1];								// when the last shotg
 new						g_iHunterLastHealth		[MAXPLAYERS + 1];								// last time hunter took any damage, how much health did it have left?
 new						g_iHunterOverkill		[MAXPLAYERS + 1];								// how much more damage a hunter would've taken if it wasn't already dead
 new		bool:			g_bHunterKilledPouncing [MAXPLAYERS + 1];								// whether the hunter was killed when actually pouncing
-new						g_iPounceDamage			[MAXPLAYERS + 1];								// how much damage on last 'highpounce' done
+//new						g_iPounceDamage			[MAXPLAYERS + 1];								// how much damage on last 'highpounce' done
 new		Float:			g_fPouncePosition		[MAXPLAYERS + 1][3];							// position that a hunter (jockey?) pounced from (or charger started his carry)
 
 // deadstops
@@ -955,9 +955,9 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 			case ZC_HUNTER:
 			{
 				// a hunter pounce landing is DMG_CRUSH
-				if ( damagetype & DMG_CRUSH ) {
-					g_iPounceDamage[attacker] = damage;
-				}
+				//if ( damagetype & DMG_CRUSH ) {
+				//	g_iPounceDamage[attacker] = damage;
+				//}
 			}
 			
 			case ZC_TANK:
@@ -1502,14 +1502,22 @@ public Action: Event_LungePounce( Handle:event, const String:name[], bool:dontBr
 	// apply bounds
 	if (fDamage < 0.0) {
 		fDamage = 0.0;
-	} else if (fDamage > fMaxDmg + 1.0) {
-		fDamage = fMaxDmg + 1.0;
+	}
+
+	int iActualDmg;
+	if (fDamage > fMaxDmg + 1.0) {
+		iActualDmg = RoundToFloor(fMaxDmg + 1.0);
+	}
+	else
+	{
+		iActualDmg = RoundToFloor(fDamage);
 	}
 	
 	DataPack pack;
-	CreateDataTimer( 0.05, Timer_HunterDP, pack );
+	CreateDataTimer( 0.05, Timer_HunterDP, pack, TIMER_FLAG_NO_MAPCHANGE );
 	WritePackCell( pack, GetClientUserId(client) );
 	WritePackCell( pack, GetClientUserId(victim) );
+	WritePackCell( pack, iActualDmg );
 	WritePackFloat( pack, fDamage );
 	WritePackFloat( pack, fHeight );
 	
@@ -1519,12 +1527,14 @@ public Action: Event_LungePounce( Handle:event, const String:name[], bool:dontBr
 Action Timer_HunterDP( Handle timer, DataPack pack )
 {
 	ResetPack( pack );
-	new client = GetClientOfUserId(ReadPackCell( pack ));
-	new victim = GetClientOfUserId(ReadPackCell( pack ));
-	new Float: fDamage = ReadPackFloat( pack );
-	new Float: fHeight = ReadPackFloat( pack );
+	int client = GetClientOfUserId(pack.ReadCell());
+	int victim = GetClientOfUserId(pack.ReadCell());
+	int iActualDmg = pack.ReadCell();
+	float fDamage = pack.ReadFloat();
+	float fHeight = pack.ReadFloat();
 	
-	HandleHunterDP( client, victim, g_iPounceDamage[client], fDamage, fHeight );
+	//HandleHunterDP( client, victim, g_iPounceDamage[client], fDamage, fHeight );
+	HandleHunterDP( client, victim, iActualDmg, fDamage, fHeight );
 
 	return Plugin_Continue;
 }
@@ -3604,11 +3614,11 @@ stock HandleHunterDP( attacker, victim, actualDamage, Float:calculatedDamage, Fl
 	) {
 		if ( IS_VALID_INGAME(attacker) && IS_VALID_INGAME(victim) && !IsFakeClient(attacker) )
 		{
-			CPrintToChatAll( "%t", "HandleHunterDP_1", attacker,  victim, RoundFloat(calculatedDamage), RoundFloat(height) );
+			CPrintToChatAll( "%t", "HandleHunterDP_1", attacker,  victim, actualDamage, RoundFloat(height) );
 		}
 		else if ( IS_VALID_INGAME(victim) )
 		{
-			CPrintToChatAll( "%t", "HandleHunterDP_2", victim, RoundFloat(calculatedDamage), RoundFloat(height) );
+			CPrintToChatAll( "%t", "HandleHunterDP_2", victim, actualDamage, RoundFloat(height) );
 		}
 	}
 	
