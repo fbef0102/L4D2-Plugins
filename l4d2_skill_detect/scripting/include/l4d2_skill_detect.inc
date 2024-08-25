@@ -178,7 +178,7 @@ forward void OnHunterDeadstop( int survivor, int hunter )
  * 
  * @noreturn
  */
-forward void OnJocekyDeadstop( int survivor, int joceky )
+forward void OnJockeyDeadstop( int survivor, int jockey )
 
 /**
  * @brief Called when survivor popped boomer

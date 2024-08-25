@@ -6,7 +6,7 @@ Allow to release victim
 * Image | 圖示
     * Press Right Mouse to release the victim (右鍵釋放抓住的倖存者)
     <br/>![l4d2_release_victim_1](image/l4d2_release_victim_1.gif)
-    * Can't use attack1 and attack2 for short time after release victim (釋放後短時間不能攻擊)
+    * Can't use attack1/attack2 (0=Off) for short time after release victim (釋放後短時間不能攻擊)
     <br/>![l4d2_release_victim_2](image/l4d2_release_victim_2.jpg)
 
 * Require | 必要安裝
@@ -17,31 +17,49 @@ Allow to release victim
 
     * cfg\sourcemod\l4d2_release_victim.cfg
         ```php
+        // 0=Plugin off, 1=Plugin on.
+        l4d2_release_victim_enable "1"
+
+        // If 1, Infected player fly away when release victim
+        l4d2_release_victim_fly "1"
+
         // Release distance
         l4d2_release_victim_distance "900.0"
 
         // Release height
         l4d2_release_victim_height "600.0"
 
-        // Reset ability
+        // If 1, Reset ability
         l4d2_release_victim_ability_reset "1"
 
-        // Show effect after release
+        // If 1, Show effect after release
         l4d2_release_victim_effect "1"
 
-        // After dismounting with the jockey, how long the player can not use attack1 and attack2
-        l4d2_release_victim_jockey_attackdelay "6.0"
+        // If 1, Jockey can release victim (0=Can't)
+        l4d2_release_victim_jockey_yes "1"
 
-        // After dismounting with the hunter, how long the player can not use attack1 and attack2
-        l4d2_release_victim_hunter_attackdelay "6.0"
+        // If 1, Hunter can release victim (0=Can't)
+        l4d2_release_victim_hunter_yes "1"
 
-        // After dismounting with the charger, how long the player can not use attack1 and attack2
-        l4d2_release_victim_charger_attackdelay "6.0"
+        // If 1, Charger can release victim (0=Can't)
+        l4d2_release_victim_charger_yes "1"
 
-        // After dismounting with the smoker, how long the player can not use attack1 and attack2
-        l4d2_release_victim_smoker_attackdelay "10.0"
+        // If 1, Smoker can release victim (0=Can't)
+        l4d2_release_victim_smoker_yes "1"
 
-        // How long can the infected player releases vitcim after pins the survivor
+        // After dismounting with the jockey, how long the player can not use attack1/attack2 (0=Off)
+        l4d2_release_victim_jockey_attack_delay "6.0"
+
+        // After dismounting with the hunter, how long the player can not use attack1/attack2 (0=Off)
+        l4d2_release_victim_hunter_attack_delay "6.0"
+
+        // After dismounting with the charger, how long the player can not use attack1/attack2 (0=Off)
+        l4d2_release_victim_charger_attack_delay "6.0"
+
+        // After dismounting with the smoker, how long the player can not use attack1/attack2 (0=Off)
+        l4d2_release_victim_smoker_attack_delay "10.0"
+
+        // How long can the infected player releases victim after pinned the survivor
         l4d2_release_victim_release_delay "1.5"
 
         // Changes how message displays. (0: Disable, 1:In chat, 2: In Hint Box, 3: In center text)
@@ -75,6 +93,7 @@ Allow to release victim
     //Shadowysn @ 2022
     //HarryPotter @ 2022-2024
     ```
+    * v1.3h (2023-8-25)
     * v1.2h (2023-8-1)
         * Update Cvars
 
@@ -85,7 +104,7 @@ Allow to release victim
 
     * v1.0h (2023-4-11)
         * Translation Support
-        * Add cvars, infected can't use attack1 and attack2 for short time after release victim.
+        * Add cvars, infected can't use attack1/attack2 (0=Off) for short time after release victim.
 
     * v2.5 (2023-1-27)
         * [Shadowysn's fork](https://forums.alliedmods.net/showpost.php?p=2785929&postcount=25)
@@ -107,6 +126,12 @@ Allow to release victim
 
     * cfg\sourcemod\l4d2_release_victim.cfg
         ```php
+        // 0=關閉插件, 1=啟動插件
+        l4d2_release_victim_enable "1"
+
+        // 為1時，釋放倖存者時，特感會被彈飛
+        l4d2_release_victim_fly "1"
+
         // 釋放倖存者後彈走的距離
         l4d2_release_victim_distance "900.0"
 
@@ -119,17 +144,29 @@ Allow to release victim
         // 為1時，釋放倖存者時，顯示白光特效
         l4d2_release_victim_effect "1"
 
-        // Jockey釋放倖存者後不能攻擊的時間
-        l4d2_release_victim_jockey_attackdelay "6.0"
+        // 為1時，Jockey可以釋放倖存者 (0=不能釋放)
+        l4d2_release_victim_jockey_yes "1"
 
-        // Hunter釋放倖存者後不能攻擊的時間
-        l4d2_release_victim_hunter_attackdelay "6.0"
+        // 為1時，Hunter可以釋放倖存者 (0=不能釋放)
+        l4d2_release_victim_hunter_yes "1"
 
-        // Charger釋放倖存者後不能攻擊的時間
-        l4d2_release_victim_charger_attackdelay "6.0"
+        // 為1時，Charger可以釋放倖存者 (0=不能釋放)
+        l4d2_release_victim_charger_yes "1"
 
-        // Smoker釋放倖存者後不能攻擊的時間
-        l4d2_release_victim_smoker_attackdelay "10.0"
+        // 為1時，Smoker可以釋放倖存者 (0=不能釋放)
+        l4d2_release_victim_smoker_yes "1"
+
+        // Jockey釋放倖存者後不能攻擊的時間 (0=關閉這項功能)
+        l4d2_release_victim_jockey_attack_delay "6.0"
+
+        // Hunter釋放倖存者後不能攻擊的時間 (0=關閉這項功能)
+        l4d2_release_victim_hunter_attack_delay "6.0"
+
+        // Charger釋放倖存者後不能攻擊的時間 (0=關閉這項功能)
+        l4d2_release_victim_charger_attack_delay "6.0"
+
+        // Smoker釋放倖存者後不能攻擊的時間 (0=關閉這項功能)
+        l4d2_release_victim_smoker_attack_delay "10.0"
 
         // 特感抓住人類後需要等待的時間才能釋放倖存者 (避免按錯鍵)
         l4d2_release_victim_release_delay "1.5"

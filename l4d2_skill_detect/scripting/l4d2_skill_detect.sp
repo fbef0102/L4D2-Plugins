@@ -229,7 +229,7 @@ Handle 			g_hForwardSkeetMagnum								= null;
 Handle 			g_hForwardSkeetMagnumHurt							= null;
 Handle 			g_hForwardSkeetGL									= null;
 Handle 			g_hForwardHunterDeadstop							= null;
-Handle 			g_hForwardJocekyDeadstop							= null;
+Handle 			g_hForwardJockeyDeadstop							= null;
 Handle 			g_hForwardSIShove									= null;
 Handle 			g_hForwardBoomerPop									= null;
 Handle 			g_hForwardBoomerPopStop								= null;
@@ -460,7 +460,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	g_hForwardSkeetShotGunHurt =	CreateGlobalForward("OnSkeetShotgunHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardSIShove =				CreateGlobalForward("OnSpecialShoved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 	g_hForwardHunterDeadstop =		CreateGlobalForward("OnHunterDeadstop", ET_Ignore, Param_Cell, Param_Cell );
-	g_hForwardJocekyDeadstop =		CreateGlobalForward("OnJocekyDeadstop", ET_Ignore, Param_Cell, Param_Cell );
+	g_hForwardJockeyDeadstop =		CreateGlobalForward("OnJockeyDeadstop", ET_Ignore, Param_Cell, Param_Cell );
 	g_hForwardBoomerPop =			CreateGlobalForward("OnBoomerPop", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float );
 	g_hForwardBoomerPopStop =		CreateGlobalForward("OnBoomerPopStop", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float );
 	g_hForwardLevel =				CreateGlobalForward("OnChargerLevel", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
@@ -2967,7 +2967,7 @@ stock HandleDeadstop( attacker, victim, bool:hunter = true )
 	}
 	else
 	{
-		Call_StartForward(g_hForwardJocekyDeadstop);
+		Call_StartForward(g_hForwardJockeyDeadstop);
 		Call_PushCell(attacker);
 		Call_PushCell(victim);
 		Call_Finish();

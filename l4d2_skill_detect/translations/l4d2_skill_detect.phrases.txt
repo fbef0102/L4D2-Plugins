@@ -9,8 +9,8 @@
 	"HandlePop_2"
 	{
 		"en"		"{lightgreen}★★ {olive}%N{default} popped {green}a boomer{default} (%.1f seconds)."
-		"zho"		"{lightgreen}★★ {olive}%N{default} 安全地解决了 {green}boomer{default} (%.1f 秒)."
-		"chi"		"{lightgreen}★★ {olive}%N{default} 安全地解决了 {green}boomer{default} (%.1f 秒)."
+		"zho"		"{lightgreen}★★ {olive}%N{default} 安全地解决了 {green}Boomer{default} (%.1f 秒)."
+		"chi"		"{lightgreen}★★ {olive}%N{default} 安全地解决了 {green}Boomer{default} (%.1f 秒)."
 	}
 	"HandlePopStop_1"
 	{
@@ -69,7 +69,7 @@
 	}
 	"HandleDeadstop_1_J" 
 	{
-		//Is Joceky
+		//Is Jockey
 		"en"		"{lightgreen}★ {olive}%N{default} deadstopped {green}%N{default}."
 		"zho"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}%N{default}."
 		"chi"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}%N{default}."
@@ -83,7 +83,7 @@
 	}
 	"HandleDeadstop_2_J"
 	{
-		//Is Joceky
+		//Is Jockey
 		"en"		"{lightgreen}★ {olive}%N{default} deadstopped {green}a jockey{default}."
 		"zho"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}Jockey{default}."
 		"chi"		"{lightgreen}★ {olive}%N{default} 推停了空中的 {green}Jockey{default}."
@@ -121,7 +121,7 @@
 	}
 	"HandleSkeet_1_J"
 	{
-		//Is Joceky
+		//Is Jockey
 		"en"		"{lightgreen}★ {green}%N{default} was team-skeeted by {olive}%N{default}."
 		"zho"		"{lightgreen}★ {green}%N{default} 被 {olive}%N{default} 和隊友們合力空爆了."
 		"chi"		"{lightgreen}★ {green}%N{default} 被 {olive}%N{default} 和队友们合力空爆了."
