@@ -9,63 +9,9 @@ A spectator can now see the special infected model glows though the wall
     * Better view for spectator in versus match (提高對抗模式觀賞性)
     <br/>![l4d2_spectating_cheat_2](image/l4d2_spectating_cheat_2.jpg)
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
-
-* <details><summary>Changelog | 版本日誌</summary>
-
-    * v2.9 (2024-3-19)
-        * Require Attachments API
-
-    * v2.8 (2023-6-19)
-        * Optimize code and improve performance
-
-    * v2.6 (2023-2-4)
-        * Remove glow if client leaves the game
-
-    * v2.5 (2023-1-27)
-        * Support [confoglcompmod Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/confoglcompmod/GhostTank.sp#L216): This plugin change tank into ghost state when tank spawns
-
-    * v2.4 (2023-1-22)
-        * Support [l4d2_profitless_ai_tank Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_profitless_ai_tank.sp)
-
-    * v2.3 (2022-12-5)
-        * Support [Zombie Change Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
-
-    * v2.2
-        * Remake code
-        * Alive SI glow color
-        * Ghost SI glow color
-        * Admin Flag to toggle Speatator watching cheat
-        * Enable Speatator watching cheat for spectators default valve
-
-    * v1.0
-        * Initial Release
-</details>
-
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-    2. [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
-
-* <details><summary>Related Plugin | 相關插件</summary>
-
-    1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
-        > 給死亡玩家或旁觀者手電筒，照亮地圖
-
-    2. [l4d_versus_specListener](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener): Allows spectator listen others team voice and see others team chat for l4d
-        > 旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
-
-    3. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
-        > 頭上有血量提示，給旁觀者更好的觀賞性
-
-    4. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
-        > 根據玩家生命值狀態給予輪廓光圈適當的顏色 + 對抗模式中，特感永遠能看到人類光圈 (即使人類靜走或不動)
-
-    5. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
-        > 管理員輸入指令能透視看到特感
-</details>
+    2. Optional - [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -100,6 +46,60 @@ A spectator can now see the special infected model glows though the wall
         sm_fuckyoucheat
         sm_zzz
         ```
+</details>
+
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
+
+* <details><summary>Related Plugin | 相關插件</summary>
+
+    1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
+        > 給死亡玩家或旁觀者手電筒，照亮地圖
+
+    2. [l4d_versus_specListener](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener): Allows spectator listen others team voice and see others team chat for l4d
+        > 旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
+
+    3. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
+        > 頭上有血量提示，給旁觀者更好的觀賞性
+
+    4. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
+        > 根據玩家生命值狀態給予輪廓光圈適當的顏色 + 對抗模式中，特感永遠能看到人類光圈 (即使人類靜走或不動)
+
+    5. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
+        > 管理員輸入指令能透視看到特感
+</details>
+
+* <details><summary>Changelog | 版本日誌</summary>
+
+    * v2.9 (2024-3-19)
+        * Require Attachments API
+
+    * v2.8 (2023-6-19)
+        * Optimize code and improve performance
+
+    * v2.6 (2023-2-4)
+        * Remove glow if client leaves the game
+
+    * v2.5 (2023-1-27)
+        * Support [confoglcompmod Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/confoglcompmod/GhostTank.sp#L216): This plugin change tank into ghost state when tank spawns
+
+    * v2.4 (2023-1-22)
+        * Support [l4d2_profitless_ai_tank Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_profitless_ai_tank.sp)
+
+    * v2.3 (2022-12-5)
+        * Support [Zombie Change Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
+
+    * v2.2
+        * Remake code
+        * Alive SI glow color
+        * Ghost SI glow color
+        * Admin Flag to toggle Speatator watching cheat
+        * Enable Speatator watching cheat for spectators default valve
+
+    * v1.0
+        * Initial Release
 </details>
 
 - - - -

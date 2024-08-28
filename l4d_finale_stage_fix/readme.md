@@ -38,7 +38,7 @@ Fixed the final stage get stucked
 </details>
 
 * Q&A
-	1. <details><summary><b>When do I need this plugin?</b></summary>
+    1. <details><summary><b>When do I need this plugin?</b></summary>
 
         * Sometimes tanks are not appearing on finale map, because "Panic" stage get stucked. 
             * Usuall happen in custom maps. 
@@ -46,12 +46,12 @@ Fixed the final stage get stucked
         * This plugin allows to set timeout (see ConVar) for Panic stage waiting the tank to appear. If that doesn't happen, plugin forcibly call the next stage and director automatically spawns the tank as it normally should.
         </details>
 
-	2. <details><summary><b>What could the reason that final stage stuck?</b></summary>
+    2. <details><summary><b>What could the reason that final stage stuck?</b></summary>
     
         * [Dragokas's explanation](https://forums.alliedmods.net/showpost.php?p=2795565&postcount=23)
     </details>
 
-	3. <details><summary><b>What else can Adm do?</b></summary>
+    3. <details><summary><b>What else can Adm do?</b></summary>
     
         * Adm can type ```!nextstage``` if nothing happened in final stage.
     </details>
@@ -86,7 +86,7 @@ Fixed the final stage get stucked
 
 * <details><summary>指令中文介紹 (點我展開)</summary>
 
-	* cfg/sourcemod/l4d_finale_stage_fix.cfg
+    * cfg/sourcemod/l4d_finale_stage_fix.cfg
         ```php
         // 卡關等待時間，如果有真人特感、小殭屍、真人Tank生成時，則重新計時
         // 如果時間到則視為卡關，插件會強制下一個救援階段
@@ -96,26 +96,31 @@ Fixed the final stage get stucked
 
 * <details><summary>命令中文介紹 (點我展開)</summary>
 
-	* **強制跳到下一個救援階段 (救援開始之後才能使用) (權限: ADMFLAG_ROOT)**
-		```php
-		sm_nextstage
-		```
+    * **強制跳到下一個救援階段 (救援開始之後才能使用) (權限: ADMFLAG_ROOT)**
+        ```php
+        sm_nextstage
+        ```
 
-	* **顯示目前的救援階段以及已經過的時間 (權限: ADMFLAG_ROOT)**
-		```php
-		sm_stage
-		```
+    * **顯示目前的救援階段以及已經過的時間 (權限: ADMFLAG_ROOT)**
+        ```php
+        sm_stage
+        ```
+
+    * **強制呼叫救援載具來臨 (救援開始之後才能使用) (Adm required: ADMFLAG_ROOT)**
+        ```php
+        sm_callrescue
+        ```
 </details>
 
 * Q&A
-	1. <details><summary><b>何時安裝這個插件?</b></summary>
+    1. <details><summary><b>何時安裝這個插件?</b></summary>
 
         * 如果你經常遇到救援關卡
             * 很久的時候沒有特感、小殭屍、Tank生成卡關
             * 救援載具很久不出現卡關
     </details>
 
-	2. <details><summary><b>為什麼會卡關?</b></summary>
+    2. <details><summary><b>為什麼會卡關?</b></summary>
     
         * [請看Dragokas的解釋](https://forums.alliedmods.net/showpost.php?p=2795565&postcount=23)
         * 經常發生於三方圖，伺服器的控制台頻繁出現"5 attempts to found spawn position faile"字樣，特感、小殭屍、Tank找不到位置生成，導致救援無法進行下一個階段
@@ -123,7 +128,7 @@ Fixed the final stage get stucked
             * 有可能是地圖爛，去怪地圖作者
     </details>
 
-	3. <details><summary><b>管理員能做什麼?</b></summary>
+    3. <details><summary><b>管理員能做什麼?</b></summary>
     
         * 管理員可以於聊天框輸入 ```!nextstage``` 強制跳到下一個救援階段 (救援開始之後才能使用)
     </details>
