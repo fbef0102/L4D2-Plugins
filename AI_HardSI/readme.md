@@ -10,6 +10,7 @@ Improves the AI behaviour of special infected
 
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
+    2. [Actions](https://forums.alliedmods.net/showthread.php?t=336374)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -240,9 +241,13 @@ Improves the AI behaviour of special infected
             ```
     </details>
 
-* What is ```nb_assault```?
-    * Tell all special infected bots to assault, attack survivors actively instead of not moving like idiots
-    * This is official command
+    * <details><summary><b>What is nb_assault</b></summary>
+
+        * Tell all special infected bots to assault, attack survivors actively instead of not moving like idiots
+        * This is official command
+        * Not affect AI Smoker
+    </details>
+
 
 * Apply to | 適用於
     ```
@@ -258,6 +263,10 @@ Improves the AI behaviour of special infected
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v1.9 (2024-9-4)
+        * Fixed AI Smoker not moving after tongue breaks
+        * Require Actions
 
     * v1.8 (2024-4-4)
         * Improve hunter, boomer and charger behavior
@@ -482,6 +491,9 @@ Improves the AI behaviour of special infected
             ```
     </details>
 
-* 甚麼是 ```nb_assault```?
-    * 強迫所有特感Bots主動往前攻擊倖存者而非像智障一樣待在原地等倖存者過來
-    * 這是官方的指令
+    * <details><summary><b>甚麼是 nb_assault ?</b></summary>
+
+        * 強迫所有特感Bots主動往前攻擊倖存者而非像智障一樣待在原地等倖存者過來
+        * 這是官方的指令
+        * 不影響AI Smoker的行為
+    </details>

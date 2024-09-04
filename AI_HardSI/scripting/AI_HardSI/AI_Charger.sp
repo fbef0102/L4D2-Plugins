@@ -18,7 +18,7 @@ static bool
 	g_bModify[MAXPLAYERS + 1];
 
 void Charger_OnModuleStart() {
-	g_hCvarEnable 						= CreateConVar( "AI_HardSI_Charger_enable",   		"1",   		"0=Improves the Charger behaviour off, 1=Improves the Charger behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarEnable 						= CreateConVar("AI_HardSI_Charger_enable",   		"1",   		"0=Improves the Charger behaviour off, 1=Improves the Charger behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	
 	g_hChargerBhop 						= CreateConVar("ai_charger_bhop",			  		"1",	 	"Flag to enable bhop facsimile on AI chargers", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hCvarChargeProximity 				= CreateConVar("ai_charge_proximity", 		  		"300", 		"How close a charger will approach before charging", FCVAR_NOTIFY, true, 0.0);	
@@ -42,6 +42,7 @@ void Charger_OnModuleStart() {
 
 static void _OnModuleStart()
 {
+	if(g_bPluginEnd) return;
 }
 
 void Charger_OnModuleEnd() 

@@ -70,6 +70,8 @@ void Hunter_OnModuleStart() {
 
 static void _OnModuleStart()
 {
+	if(g_bPluginEnd) return;
+	
 	hCvarHunterCommittedAttackRange.SetInt(10000);
 	hCvarHunterPounceReadyRange.SetInt(1000);
 	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 

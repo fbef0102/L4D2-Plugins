@@ -33,11 +33,14 @@ void Smoker_OnModuleStart() {
 
 static void _OnModuleStart()
 {
+    if(g_bPluginEnd) return;
+
     hCvarChokeDamageInterrupt.SetInt(hCvarSmokerHealth.IntValue); // default 50
     hCvarTongueDelay.SetFloat(SMOKER_TONGUE_DELAY); // default 1.5
 }
 
-void Smoker_OnModuleEnd() {
+void Smoker_OnModuleEnd() 
+{
 	hCvarChokeDamageInterrupt.RestoreDefault();
 	hCvarTongueDelay.RestoreDefault();
 }

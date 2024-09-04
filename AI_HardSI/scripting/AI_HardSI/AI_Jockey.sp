@@ -41,6 +41,8 @@ void Jockey_OnModuleStart()
 
 static void _OnModuleStart()
 {
+	if(g_bPluginEnd) return;
+	
 	g_hJockeyLeapRange.SetFloat(1000.0); 
 }
 

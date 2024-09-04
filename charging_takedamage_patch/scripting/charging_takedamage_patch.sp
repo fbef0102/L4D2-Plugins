@@ -30,11 +30,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-#define TEAM_SURVIVOR           2
-#define TEAM_INFECTED           3
-
-#define ZC_HUNTER               3
-
 methodmap GameDataWrapper < GameData {
 	public GameDataWrapper(const char[] file) {
 		GameData gd = new GameData(file);

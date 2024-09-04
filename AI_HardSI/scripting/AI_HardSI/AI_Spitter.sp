@@ -22,6 +22,7 @@ void Spitter_OnModuleStart() {
 
 static void _OnModuleStart()
 {
+	if(g_bPluginEnd) return;
 }
 
 void Spitter_OnModuleEnd() 

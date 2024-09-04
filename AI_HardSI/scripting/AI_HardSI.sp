@@ -3,6 +3,25 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
+#include <actions>
+
+bool bLate;
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	EngineVersion test = GetEngineVersion();
+
+	if( test != Engine_Left4Dead2 )
+	{
+		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+		return APLRes_SilentFailure;
+	}
+
+	bLate = late;
+	return APLRes_Success;
+}
+
+bool 
+	g_bPluginEnd;
 
 #include "AI_HardSI/AI_Smoker.sp"
 #include "AI_HardSI/AI_Boomer.sp"
@@ -72,7 +91,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "1.8-2024/4/5",
+	version = "1.9-2024/9/4",
 	url = "github.com/breezyplease"
 };
 
@@ -85,7 +104,7 @@ public void OnPluginStart()
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarAssaultReminderInterval.AddChangeHook(ConVarChanged_Cvars);
-	
+
 	// Event hooks
 	HookEvent("player_spawn", player_spawn);
 	HookEvent("ability_use", ability_use); 
@@ -99,9 +118,24 @@ public void OnPluginStart()
 	Tank_OnModuleStart();
 	//Autoconfig for plugin
 	AutoExecConfig(true, "AI_HardSI");
+
+	if(bLate)
+	{
+		LateLoad();
+	}
 }
 
-public void OnPluginEnd() {
+void LateLoad()
+{
+	if(L4D_HasAnySurvivorLeftSafeArea())
+	{
+		CreateTimer( g_fCvarAssaultReminderInterval, Timer_ForceInfectedAssault, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	}
+}
+
+public void OnPluginEnd() 
+{
+	g_bPluginEnd = true;
 	// Unload modules
 	Smoker_OnModuleEnd();
 	Hunter_OnModuleEnd();
@@ -129,18 +163,48 @@ void GetCvars()
 																	
 ***********************************************************************************************************************************************************************************/
 
-public Action L4D_OnFirstSurvivorLeftSafeArea(int client) {
+public void L4D_OnFirstSurvivorLeftSafeArea_Post(int client) 
+{
 	CreateTimer( g_fCvarAssaultReminderInterval, Timer_ForceInfectedAssault, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
-
-	return Plugin_Continue;
 }
 
-public Action Timer_ForceInfectedAssault( Handle timer ) {
+Action Timer_ForceInfectedAssault( Handle timer ) 
+{
 	if(!g_bCvarEnable) return Plugin_Continue;
 
 	CheatServerCommand("nb_assault");
 
 	return Plugin_Continue;
+}
+
+// Actions API--------------
+
+public void OnActionCreated(BehaviorAction action, int actor, const char[] name)
+{
+	switch (name[0])
+	{
+		case 'S': { if (strncmp(name, "Smoker", 6)) return; }
+		default: { return; }
+	}
+
+	//if (!strcmp(name[6], "Behavior"))
+	//{
+	//	action.InitialContainedAction = SmokerBehavior_InitialContainedAction;
+	//	action.InitialContainedActionPost = SmokerBehavior_InitialContainedAction_Post;
+	//}
+	if (!strcmp(name[6], "Attack"))
+	{
+		action.OnCommandAssault = SmokerAttack_OnCommandAssault;
+	}
+}
+
+Action SmokerAttack_OnCommandAssault(any action, int actor, ActionDesiredResult result)
+{
+	if(!g_bCvarEnable) return Plugin_Continue;
+
+	// 保護smoker不受到nb_assault影響產生bug
+	// 當Smoker的舌頭斷掉之後，站在原地不動不撤退 (nb_assault的bug)
+	return Plugin_Handled;
 }
 
 /***********************************************************************************************************************************************************************************
@@ -248,12 +312,12 @@ void ability_use(Event event, char[] name, bool dontBroadcast) {
 }
 
 // Left 4 Dhooks API----------
+
 public Action L4D2_OnChooseVictim(int specialInfected, int &curTarget) {
 	g_iCurTarget[specialInfected] = curTarget;
 	return Plugin_Continue;
 }
 
-// Left 4 DHooks API-----------
 public Action L4D2_OnSelectTankAttack(int client, int &sequence) {
 	if(!g_bCvarEnable) return Plugin_Continue;
 

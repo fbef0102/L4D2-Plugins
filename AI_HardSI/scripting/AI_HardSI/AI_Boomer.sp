@@ -39,6 +39,8 @@ void Boomer_OnModuleStart() {
 
 static void _OnModuleStart()
 {
+	if(g_bPluginEnd) return;
+	
 	hCvarBoomerExposedTimeTolerance.SetFloat(10000.0);
 	hCvarBoomerVomitDelay.SetFloat(0.1);
 }

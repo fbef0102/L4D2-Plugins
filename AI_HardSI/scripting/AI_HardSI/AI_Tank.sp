@@ -25,6 +25,7 @@ void Tank_OnModuleStart()
 }
 static void _OnModuleStart()
 {
+	if(g_bPluginEnd) return;
 }
 
 void Tank_OnModuleEnd() 
