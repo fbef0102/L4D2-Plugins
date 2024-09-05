@@ -386,7 +386,7 @@ Action Timer_CheckPourGascan(Handle h_Timer, DataPack data)
 	
 	if (i_ShotsFired == 0)
 	{
-		if(IsValidEnt(i_PointEnt)) RemoveEdict(i_PointEnt);
+		if(IsValidEnt(i_PointEnt)) RemoveEntity(i_PointEnt);
 		SetEntProp(i_Ent, Prop_Data, "m_iClip2", -1);
 		
 		g_ClientPour[i_Client] = 0;
