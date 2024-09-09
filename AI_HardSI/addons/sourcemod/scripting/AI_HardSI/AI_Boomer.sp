@@ -4,50 +4,46 @@
 #define BOOST			90.0
 #define PLAYER_HEIGHT	72.0
 
-static ConVar hCvarBoomerExposedTimeTolerance,
-	hCvarBoomerVomitDelay;
+static ConVar g_hVomitRange;
+static float g_fVomitRange;
 
-static ConVar 
-	g_hCvarEnable,
-	g_hBoomerBhop,
-	g_hVomitRange; 
+static ConVar g_hCvarEnable, g_hBoomerBhop; 
+static bool g_bCvarEnable, g_bBoomerBhop;
 
-static bool 
-	g_bCvarEnable,
-	g_bBoomerBhop;
+void Boomer_OnModuleStart() 
+{
+	g_hVomitRange 		= FindConVar("z_vomit_range");
+	GetOfficialCvars();
+	g_hVomitRange.AddChangeHook(OnBoomerCvarChange);
 
-static float
-	g_fVomitRange;
-
-void Boomer_OnModuleStart() {
 	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Boomer_enable",   "1",   "0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hBoomerBhop 		= CreateConVar( "ai_boomer_bhop", 			 "1", 	"Flag to enable bhop facsimile on AI boomers", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hVomitRange 		= FindConVar("z_vomit_range");
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
 	g_hBoomerBhop.AddChangeHook(CvarChanged);
-	g_hVomitRange.AddChangeHook(CvarChanged);
-	
-	hCvarBoomerExposedTimeTolerance = FindConVar("boomer_exposed_time_tolerance");	
-	hCvarBoomerVomitDelay = FindConVar("boomer_vomit_delay");	
 
 	if(g_bCvarEnable) _OnModuleStart();
-	hCvarBoomerExposedTimeTolerance.AddChangeHook(OnBoomerCvarChange);  
-	hCvarBoomerVomitDelay.AddChangeHook(OnBoomerCvarChange); 
 }
 
 static void _OnModuleStart()
 {
 	if(g_bPluginEnd) return;
-	
-	hCvarBoomerExposedTimeTolerance.SetFloat(10000.0);
-	hCvarBoomerVomitDelay.SetFloat(0.1);
 }
 
-void Boomer_OnModuleEnd() {
-	ResetConVar(hCvarBoomerExposedTimeTolerance);
-	ResetConVar(hCvarBoomerVomitDelay);
+void Boomer_OnModuleEnd() 
+{
+
+}
+
+static void OnBoomerCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) 
+{
+    GetOfficialCvars();
+}
+
+static void GetOfficialCvars()
+{
+	g_fVomitRange = g_hVomitRange.FloatValue;
 }
 
 static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
@@ -63,7 +59,8 @@ static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const 
     }
 }
 
-static void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+static void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) 
+{
 	GetCvars();
 }
 
@@ -71,12 +68,6 @@ static void GetCvars()
 {
 	g_bCvarEnable = g_hCvarEnable.BoolValue;
 	g_bBoomerBhop = g_hBoomerBhop.BoolValue;
-	g_fVomitRange = g_hVomitRange.FloatValue;
-}
-
-// Game tries to reset these cvars
-static void OnBoomerCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
-    if(g_bCvarEnable) _OnModuleStart();
 }
 
 stock Action Boomer_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {

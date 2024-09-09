@@ -20,34 +20,43 @@ static bool
 
 void Jockey_OnModuleStart() 
 {
+	g_hJockeyLeapAgain = FindConVar("z_jockey_leap_again_timer");
+	g_hJockeyLeapRange = FindConVar("z_jockey_leap_range");
+	GetOfficialCvars();
+	g_hJockeyLeapAgain.AddChangeHook(OnJockeyCvarChange);
+	g_hJockeyLeapRange.AddChangeHook(OnJockeyCvarChange);
+
 	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Jockey_enable",   "1",   "0=Improves the Jockey behaviour off, 1=Improves the Jockey behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	g_hCvarHopActivationProximity = CreateConVar("ai_hop_activation_proximity", "500", "How close a jockey will approach before it starts hopping", FCVAR_NOTIFY, true, 0.0);
 
-	g_hJockeyLeapAgain = FindConVar("z_jockey_leap_again_timer");
-	g_hJockeyLeapRange = FindConVar("z_jockey_leap_range");
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
 	g_hCvarHopActivationProximity.AddChangeHook(CvarChanged);
-	
-	g_hJockeyLeapAgain.AddChangeHook(CvarChanged);
-	g_hJockeyLeapRange.AddChangeHook(CvarChanged);
 
 	if(g_bCvarEnable) _OnModuleStart();
-	g_hJockeyLeapRange.AddChangeHook(OnJockeyCvarChange);
-	
 }
 
 static void _OnModuleStart()
 {
 	if(g_bPluginEnd) return;
-	
-	g_hJockeyLeapRange.SetFloat(1000.0); 
 }
 
-void Jockey_OnModuleEnd() {
-	g_hJockeyLeapRange.RestoreDefault();
+void Jockey_OnModuleEnd() 
+{
+	
+}
+
+static void OnJockeyCvarChange(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    GetOfficialCvars();
+}
+
+static void GetOfficialCvars()
+{
+	g_fJockeyLeapRange = g_hJockeyLeapRange.FloatValue;
+	g_fJockeyLeapAgain = g_hJockeyLeapAgain.FloatValue;
 }
 
 static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
@@ -72,14 +81,6 @@ static void GetCvars()
 {
 	g_bCvarEnable = g_hCvarEnable.BoolValue;
 	g_iCvarHopActivationProximity = g_hCvarHopActivationProximity.IntValue;
-
-	g_fJockeyLeapRange = g_hJockeyLeapRange.FloatValue;
-	g_fJockeyLeapAgain = g_hJockeyLeapAgain.FloatValue;
-}
-
-// Game tries to reset these cvars
-public void OnJockeyCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
-	if(g_bCvarEnable) _OnModuleStart();
 }
 
 /***********************************************************************************************************************************************************************************

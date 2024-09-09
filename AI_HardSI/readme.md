@@ -22,6 +22,10 @@ Improves the AI behaviour of special infected
         // Frequency(sec) at which the 'nb_assault' command is fired to make SI attack
         ai_assault_reminder_interval "2"
 
+        // File to execute for AI aggressive cvars (in cfg/AI_HardSI folder)
+        // Execute file every map changed
+        AI_HardSI_aggressive_cfg "aggressive_ai.cfg"
+
         // 0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.
         AI_HardSI_Boomer_enable "1"
 
@@ -115,16 +119,12 @@ Improves the AI behaviour of special infected
             ```
     </details>
 
-    * <details><summary><b>Witch</b></summary>
-
-        * None
-    </details>
-
     * <details><summary><b>AI Smoker</b></summary>
 
-        * Modify Official ConVar
+        * Modify Official ConVar in ```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
-            // How much damage to the smoker makes him let go of his victim. (Default: 50)
+            // How much damage to the AI + Human Smoker makes him let go of his victim. (Default: 50)
+            // Taking this much damage while pulling victim will make you die (No matter how much health left you have)
             tongue_break_from_damage_amount 250
 
             // Start to shoot his tongue after 0.1 seconds (Default: 1.5)
@@ -134,7 +134,7 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Boomer</b></summary>
 
-        * Modify Official ConVar
+        * Modify Official ConVar in ```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
             // How long an out-of-range Boomer will tolerate being visible before fleeing (Default: 1.0)
             boomer_exposed_time_tolerance 1000.0
@@ -153,21 +153,23 @@ Improves the AI behaviour of special infected
     * <details><summary><b>AI Hunter</b></summary>
 
         * Won't leap away (Coop/Realism)
-        * Modify Official ConVar
+        * Modify Official ConVar in ```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
             // Range at which hunter prepares pounce	 (Default: 1000)
             hunter_pounce_ready_range 1000
 
-            // Range at which hunter is committed to attack	 (Default: 75)
+            // Range at which hunter is committed to attack (Default: 75)
             hunter_committed_attack_range 10000
 
-            // Range at which shooting a non-committed hunter will cause it to leap away (Coop/Realis, Default: 1000)
+            // Range at which shooting a non-committed AI hunter will cause it to leap away (Coop/Realis, Default: 1000)
+            // 0=Disable leap away ability, >0: Restore back Leap Away ability and wait in ambush mode again.
             hunter_leap_away_give_up_range 0
 
             // Maximum vertical angle hunters can pounce (Default: 45)
             hunter_pounce_max_loft_angle 0
 
-            // AI Hunter skeet damage (Default: 50)
+            // AI + Human Hunter skeet damage (Default: 50)
+            // Taking this much damage while pouncing wiil get you skeeted and die (No matter how much health left you have)
             z_pounce_damage_interrupt 150
             ```
 
@@ -210,7 +212,7 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Jockey</b></summary>
 
-        * Modify Official ConVar
+        * Modify Official ConVar in ```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
             // AI Jockeys will move to attack survivors within this range (Default: 200)
             z_jockey_leap_range 1000
@@ -244,7 +246,7 @@ Improves the AI behaviour of special infected
     * <details><summary><b>What is nb_assault</b></summary>
 
         * Tell all special infected bots to assault, attack survivors actively instead of not moving like idiots
-        * This is official command
+        * This is official command from valve
         * Not affect AI Smoker
     </details>
 
@@ -263,6 +265,9 @@ Improves the AI behaviour of special infected
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v2.0 (2024-9-9)
+        * Add cfg to execute AI aggressive cvars
 
     * v1.9 (2024-9-4)
         * Fixed AI Smoker not moving after tongue breaks
@@ -294,6 +299,7 @@ Improves the AI behaviour of special infected
     * 改變各種特感的行為
     * 可以開關各特感的強化行為
     * 每兩秒執行```nb_assault```命令 (往下看說明)
+    * 修改官方指令強化AI智商，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
 
 * 用意在哪?
     * 每一個特感的攻擊對倖存者造成巨大的壓力
@@ -309,6 +315,10 @@ Improves the AI behaviour of special infected
 
         // 每兩秒執行 nb_assault 命令，強迫所有特感Bots主動往前攻擊倖存者
         ai_assault_reminder_interval "2"
+
+        // 修改官方指令強化AI智商的文件 (位於 cfg/AI_HardSI 資料夾)
+        // 每次換圖都會執行一次
+        AI_HardSI_aggressive_cfg "aggressive_ai.cfg"
 
         // 0=不強化AI Boomer, 1=強化AI Boomer
         AI_HardSI_Boomer_enable "1"
@@ -367,16 +377,11 @@ Improves the AI behaviour of special infected
             ```
     </details>
 
-    * <details><summary><b>Witch</b></summary>
-
-        * 無
-    </details>
-
     * <details><summary><b>AI Smoker</b></summary>
 
-        * 更動的官方指令
+        * 更動的官方指令，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
-            // AI Smoker的舌頭拉走倖存者的期間，被攻擊超過250HP或自身血量才會死亡 (預設: 50)
+            // AI + 真人 Smoker的舌頭拉走倖存者的期間，被攻擊超過此數值會立刻死亡 (無論剩餘多少血量都一樣，別問我為捨，此遊戲設計的, 預設: 50)
             tongue_break_from_damage_amount 250
 
             // 當倖存者靠近範圍內的0.1秒後立刻吐舌頭 (預設: 1.5)
@@ -386,9 +391,9 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Boomer</b></summary>
 
-        * 更動的官方指令
+        * 更動的官方指令，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
-            // 被人類看見1000秒之後才會逃跑 (預設: 1.0)
+            // 被人類看見的1000秒之後才會逃跑 (預設: 1.0)
             boomer_exposed_time_tolerance 1000.0
 
             // 當倖存者靠近範圍內的0.1秒後立刻嘔吐 (預設: 1.0)
@@ -405,21 +410,23 @@ Improves the AI behaviour of special infected
     * <details><summary><b>AI Hunter</b></summary>
 
         * 被攻擊的時候不會自動逃跑跳走 (只會出現在戰役/寫實模式)
-        * 更動的官方指令
+        * 更動的官方指令，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
-            // 1000公尺範圍內才會蹲下準備撲人 (預設: 1000)
+            // 此數值的範圍內才會蹲下準備撲人 (預設: 1000)
             hunter_pounce_ready_range 1000
 
-            // 10000公尺範圍內才會撲人 (預設: 75)
+            // 此數值的範圍內才會開始撲人 (預設: 75)
             hunter_committed_attack_range 10000
 
-            // 0公尺範圍內沒有蹲下的AI Hunter被攻擊時會逃跑跳走 (只會出現在戰役/寫實模式，預設: 1000)
+            // 此數值的範圍內還沒攻擊的AI Hunter被人類傷害時會逃跑跳走 (只會出現在戰役/寫實模式，預設: 1000)
+            // 0=關閉逃跑跳走能力, >0: 回復逃跑跳走能力並且等待玩家過來
             hunter_leap_away_give_up_range 0
 
             // AI Hunter跳躍的最大傾角 (避免飛過頭或飛太高，預設: 45)
             hunter_pounce_max_loft_angle 0
 
-            // AI Hunter飛撲在空中的過程中受到150HP傷害或自身血量以上才會死亡 (避免飛撲過程中容易被殺死，預設: 50)
+            // 此數值的範圍內還沒攻擊的AI Hunter被人類傷害時會逃跑跳走 (只會出現在戰役/寫實模式，預設: 1000)
+            // 0=關閉逃跑跳走能力, >0: 回復逃跑跳走能力並且等待玩家過來
             z_pounce_damage_interrupt 150
             ```
 
@@ -460,7 +467,7 @@ Improves the AI behaviour of special infected
 
     * <details><summary><b>AI Jockey</b></summary>
 
-        * 更動的官方指令
+        * 更動的官方指令，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
             // 1000公尺範圍內才會飛撲 (預設: 200)
             z_jockey_leap_range 1000

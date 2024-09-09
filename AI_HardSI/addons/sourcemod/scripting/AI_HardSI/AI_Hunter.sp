@@ -12,7 +12,9 @@
 #define Z 2
 
 // Vanilla Cvars
-static ConVar g_hCvarHunterHealth, hCvarHunterCommittedAttackRange, hCvarHunterPounceReadyRange, hCvarHunterLeapAwayGiveUpRange, hCvarHunterPounceMaxLoftAngle, hCvarLungeInterval, z_pounce_damage_interrupt;
+static ConVar g_hCvarLungeInterval, g_hCvarHunterLeapAwayGiveUpRange;
+static float g_fCvarLungeInterval;
+static int g_iCvarHunterLeapAwayGiveUpRange;
 static ConVar g_hCvarEnable, g_hCvarPounceAngleMean, g_hCvarPounceAngleStd, g_hCvarPounceVerticalAngle, g_hCvarFastPounceProximity, g_hCvarStraightPounceProximity, 
 	g_hCvarAimOffsetSensitivity, g_hCvarWallDetectionDistance, g_hCvarPounceDancing;
 static bool g_bCvarEnable, g_bCvarPounceDancing;
@@ -26,9 +28,17 @@ static bool
 static float 
 	g_fAttack2[MAXPLAYERS+1];
 
-void Hunter_OnModuleStart() {
-	g_hCvarEnable 					= CreateConVar( "AI_HardSI_Hunter_enable",  		"1",   	"0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+void Hunter_OnModuleStart() 
+{
+	g_hCvarLungeInterval = FindConVar("z_lunge_interval"); // cooldown on lunges
+	g_hCvarHunterLeapAwayGiveUpRange = FindConVar("hunter_leap_away_give_up_range"); // range at which shooting a non-committed hunter will cause it to leap away	
 	
+	GetOfficialCvars();
+	g_hCvarLungeInterval.AddChangeHook(OnHunterCvarChange);
+	g_hCvarHunterLeapAwayGiveUpRange.AddChangeHook(OnHunterCvarChange);
+
+	g_hCvarEnable 					= CreateConVar( "AI_HardSI_Hunter_enable",  		"1",   	"0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
 	g_hCvarFastPounceProximity 		= CreateConVar( "ai_fast_pounce_proximity", 		"1000", "At what distance to start pouncing fast", FCVAR_NOTIFY, true, 0.0);
 	g_hCvarPounceVerticalAngle 		= CreateConVar( "ai_pounce_vertical_angle", 		"7", 	"Vertical angle to which AI hunter pounces will be restricted", FCVAR_NOTIFY, true, 0.0);
 	g_hCvarPounceAngleMean 			= CreateConVar( "ai_pounce_angle_mean", 			"10", 	"Mean angle produced by Gaussian RNG", FCVAR_NOTIFY, true, 0.0 );
@@ -49,43 +59,28 @@ void Hunter_OnModuleStart() {
 	g_hCvarWallDetectionDistance.AddChangeHook(CvarChanged);
 	g_hCvarPounceDancing.AddChangeHook(CvarChanged);
 
-
-	// Set aggressive hunter cvars	
-	g_hCvarHunterHealth = FindConVar("z_hunter_health");
-	hCvarHunterCommittedAttackRange = FindConVar("hunter_committed_attack_range"); // range at which hunter is committed to attack	
-	hCvarHunterPounceReadyRange = FindConVar("hunter_pounce_ready_range"); // range at which hunter prepares pounce	
-	hCvarHunterLeapAwayGiveUpRange = FindConVar("hunter_leap_away_give_up_range"); // range at which shooting a non-committed hunter will cause it to leap away	
-	hCvarLungeInterval = FindConVar("z_lunge_interval"); // cooldown on lunges
-	hCvarHunterPounceMaxLoftAngle = FindConVar("hunter_pounce_max_loft_angle"); // maximum vertical angle hunters can pounce
-	z_pounce_damage_interrupt = FindConVar("z_pounce_damage_interrupt");
-
 	if(g_bCvarEnable) _OnModuleStart();
-	hCvarHunterCommittedAttackRange.AddChangeHook(OnHunterCvarChange);
-	hCvarHunterPounceReadyRange.AddChangeHook(OnHunterCvarChange);
-	hCvarHunterLeapAwayGiveUpRange.AddChangeHook(OnHunterCvarChange);
-	hCvarHunterPounceMaxLoftAngle.AddChangeHook(OnHunterCvarChange);
-	g_hCvarHunterHealth.AddChangeHook(OnHunterCvarChange);
-	z_pounce_damage_interrupt.AddChangeHook(OnHunterCvarChange);
 }
 
 static void _OnModuleStart()
 {
 	if(g_bPluginEnd) return;
-	
-	hCvarHunterCommittedAttackRange.SetInt(10000);
-	hCvarHunterPounceReadyRange.SetInt(1000);
-	hCvarHunterLeapAwayGiveUpRange.SetInt(0); 
-	hCvarHunterPounceMaxLoftAngle.SetInt(0);
-	z_pounce_damage_interrupt.SetInt(g_hCvarHunterHealth.IntValue-100);
 }
 
-void Hunter_OnModuleEnd() {
-	// Reset aggressive hunter cvars
-	ResetConVar(hCvarHunterCommittedAttackRange);
-	ResetConVar(hCvarHunterPounceReadyRange);
-	ResetConVar(hCvarHunterLeapAwayGiveUpRange);
-	ResetConVar(hCvarHunterPounceMaxLoftAngle);
-	ResetConVar(z_pounce_damage_interrupt);
+void Hunter_OnModuleEnd() 
+{
+
+}
+
+static void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) 
+{
+	GetOfficialCvars();
+}
+
+static void GetOfficialCvars()
+{
+	g_fCvarLungeInterval = g_hCvarLungeInterval.FloatValue;
+	g_iCvarHunterLeapAwayGiveUpRange = g_hCvarHunterLeapAwayGiveUpRange.IntValue;
 }
 
 static void ConVarChanged_EnableCvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
@@ -117,11 +112,6 @@ static void GetCvars()
 	g_fCvarAimOffsetSensitivity = g_hCvarAimOffsetSensitivity.FloatValue;
 	g_iCvarWallDetectionDistance = g_hCvarWallDetectionDistance.IntValue;
 	g_bCvarPounceDancing = g_hCvarPounceDancing.BoolValue;
-}
-
-// Game tries to reset these cvars
-static void OnHunterCvarChange(ConVar convar, const char[] oldValue, const char[] newValue) {
-	if(g_bCvarEnable) _OnModuleStart();
 }
 
 void Hunter_OnSpawn(int botHunter) {
@@ -160,7 +150,7 @@ stock Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, float
 				if (!g_bHasQueuedLunge[hunter]) { // check lunge interval timer has not already been initiated
 					g_bCanLunge[hunter] = false;
 					g_bHasQueuedLunge[hunter] = true; // block duplicate lunge interval timers
-					CreateTimer(hCvarLungeInterval.FloatValue, Timer_LungeInterval, hunter, TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(g_fCvarLungeInterval, Timer_LungeInterval, hunter, TIMER_FLAG_NO_MAPCHANGE);
 				} else if (g_bCanLunge[hunter]) { // end of lunge interval; lunge!
 					float now = GetEngineTime();
 					if (g_bCvarPounceDancing == true && g_fAttack2[hunter] < now) 
@@ -333,4 +323,22 @@ static Action Timer_LungeInterval(Handle timer, any client) {
 	g_bCanLunge[client] = true;
 
 	return Plugin_Continue;
+}
+
+// Actions API--------------
+
+stock void AI_Hunter_OnActionCreated(BehaviorAction action, int actor, const char[] name)
+{
+	if (strcmp(name[6], "Attack") == 0)
+	{
+		action.OnCommandAssault = HunterAttack_OnCommandAssault;
+	}
+}
+
+static Action HunterAttack_OnCommandAssault(any action, int actor, ActionDesiredResult result)
+{	
+	if(g_iCvarHunterLeapAwayGiveUpRange <= 0) return Plugin_Continue;
+	
+	// 回復Leap Away能力，也會導致Hunter原地不動等倖存者過來
+	return Plugin_Handled;
 }

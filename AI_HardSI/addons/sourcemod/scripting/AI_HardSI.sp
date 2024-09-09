@@ -74,14 +74,10 @@ bool
 #define FAR_AWAY 5
 #define ABOVE 6
 
-ConVar 
-	g_hCvarEnable, g_hCvarAssaultReminderInterval;
-
-bool 
-	g_bCvarEnable;
-
-float 
-	g_fCvarAssaultReminderInterval;
+ConVar g_hCvarEnable, g_hCvarAssaultReminderInterval, g_hCvarExecAggressiveCfg;
+bool g_bCvarEnable;
+float g_fCvarAssaultReminderInterval;
+char g_sCvarExecAggressiveCfg[64];
 
 int 
 	g_iCurTarget[MAXPLAYERS + 1];
@@ -91,7 +87,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "1.9-2024/9/4",
+	version = "2.0-2024/9/9",
 	url = "github.com/breezyplease"
 };
 
@@ -99,15 +95,18 @@ public void OnPluginStart()
 { 
 	// Cvars
 	g_hCvarEnable 				 	= CreateConVar( "AI_HardSI_enable",        		"1",   	"0=Plugin off, 1=Plugin on.", CVAR_FLAGS, true, 0.0, true, 1.0);
-	g_hCvarAssaultReminderInterval 	= CreateConVar( "ai_assault_reminder_interval", "2", 	"Frequency(sec) at which the 'nb_assault' command is fired to make SI attack" );
+	g_hCvarAssaultReminderInterval 	= CreateConVar( "ai_assault_reminder_interval", "2", 	"Frequency(sec) at which the 'nb_assault' command is fired to make SI attack", CVAR_FLAGS, true, 0.0 );
+	g_hCvarExecAggressiveCfg 		= CreateConVar( "AI_HardSI_aggressive_cfg", 	"aggressive_ai.cfg", 	"File to execute for AI aggressive cvars (in cfg/AI_HardSI folder)\nExecute file every map changed", CVAR_FLAGS );
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_Cvars);
 	g_hCvarAssaultReminderInterval.AddChangeHook(ConVarChanged_Cvars);
+	g_hCvarExecAggressiveCfg.AddChangeHook(ConVarChanged_Cvars);
 
 	// Event hooks
 	HookEvent("player_spawn", player_spawn);
 	HookEvent("ability_use", ability_use); 
+
 	// Load modules
 	Smoker_OnModuleStart();
 	Hunter_OnModuleStart();
@@ -116,6 +115,7 @@ public void OnPluginStart()
 	Charger_OnModuleStart();
 	Jockey_OnModuleStart();
 	Tank_OnModuleStart();
+
 	//Autoconfig for plugin
 	AutoExecConfig(true, "AI_HardSI");
 
@@ -155,6 +155,19 @@ void GetCvars()
 {
 	g_bCvarEnable = g_hCvarEnable.BoolValue;
 	g_fCvarAssaultReminderInterval = g_hCvarAssaultReminderInterval.FloatValue;
+	g_hCvarExecAggressiveCfg.GetString(g_sCvarExecAggressiveCfg, sizeof(g_sCvarExecAggressiveCfg));
+}
+
+//Sourcemod API Forward-------------------------------
+
+public void OnConfigsExecuted()
+{
+	GetCvars();
+
+	if(g_bCvarEnable)
+	{
+		ServerCommand("exec AI_HardSI/%s", g_sCvarExecAggressiveCfg);
+	}
 }
 
 /***********************************************************************************************************************************************************************************
@@ -181,30 +194,26 @@ Action Timer_ForceInfectedAssault( Handle timer )
 
 public void OnActionCreated(BehaviorAction action, int actor, const char[] name)
 {
+	if(!g_bCvarEnable) return;
+
 	switch (name[0])
 	{
-		case 'S': { if (strncmp(name, "Smoker", 6)) return; }
-		default: { return; }
+		case 'S':
+		{ 
+			if (strncmp(name, "Smoker", 6) == 0)
+			{
+				AI_Smoker_OnActionCreated(action, actor, name);
+			}
+		}
+		case 'H':
+		{ 
+			if (strncmp(name, "Hunter", 6) == 0)
+			{
+				AI_Hunter_OnActionCreated(action, actor, name);
+			}
+		}
 	}
 
-	//if (!strcmp(name[6], "Behavior"))
-	//{
-	//	action.InitialContainedAction = SmokerBehavior_InitialContainedAction;
-	//	action.InitialContainedActionPost = SmokerBehavior_InitialContainedAction_Post;
-	//}
-	if (!strcmp(name[6], "Attack"))
-	{
-		action.OnCommandAssault = SmokerAttack_OnCommandAssault;
-	}
-}
-
-Action SmokerAttack_OnCommandAssault(any action, int actor, ActionDesiredResult result)
-{
-	if(!g_bCvarEnable) return Plugin_Continue;
-
-	// 保護smoker不受到nb_assault影響產生bug
-	// 當Smoker的舌頭斷掉之後，站在原地不動不撤退 (nb_assault的bug)
-	return Plugin_Handled;
 }
 
 /***********************************************************************************************************************************************************************************
