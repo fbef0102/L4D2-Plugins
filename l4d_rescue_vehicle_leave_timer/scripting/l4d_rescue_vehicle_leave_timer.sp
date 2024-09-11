@@ -493,7 +493,7 @@ Action Timer_AntiPussy(Handle timer)
 
 	if(iSystemTime <= 1)
 	{
-		EmitSoundToAll(NUKE_SOUND_L4D2);
+		if(g_bCvarAirStrike) EmitSoundToAll(NUKE_SOUND_L4D2);
 
 		CPrintToChatAll("{default}[{olive}TS{default}] %t", "Outside Slay");
 		delete _AntiPussyTimer;
@@ -522,13 +522,14 @@ Action Timer_Strike(Handle timer)
 			{
 				//explosion effect and fade
 				CreateTimer(GetRandomFloat(0.0, 0.5), Timer_Explode, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
+				
+				//slay
+				CreateTimer(2.0, Timer_SlayPlayer, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
 			}
-
-			//slay
-			CreateTimer(2.0, Timer_SlayPlayer, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
-
-			//hint
-			CPrintToChat(i, "{default}[{olive}TS{default}] %T", "You have been executed for not being on rescue vehicle or zone!", i);
+			else
+			{
+				CreateTimer(0.1, Timer_SlayPlayer, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 	}
 
@@ -757,6 +758,8 @@ Action Timer_SlayPlayer(Handle timer, int userid)
 	if(client && IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVORS && IsPlayerAlive(client))
 	{
 		ForcePlayerSuicide(client);
+		//hint
+		CPrintToChat(client, "{default}[{olive}TS{default}] %T", "You have been executed for not being on rescue vehicle or zone!", client);
 	}
 
 	return Plugin_Continue;
