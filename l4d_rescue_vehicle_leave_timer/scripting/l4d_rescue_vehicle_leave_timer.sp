@@ -1,30 +1,24 @@
 
-#define PLUGIN_VERSION 		"2.0-2024/6/23"
-#define PLUGIN_NAME			"[L4D2] Rescue vehicle leave timer"
-#define PLUGIN_AUTHOR		"HarryPotter"
-#define PLUGIN_DES			"When rescue vehicle arrived and a timer will display how many time left for vehicle leaving. If a player is not on rescue vehicle or zone, slay him"
-#define PLUGIN_URL			"https://forums.alliedmods.net/showpost.php?p=2725525&postcount=7"
-
-//======================================================================================*/
-
 #pragma semicolon 1
-
 #pragma newdecls required
+
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
 #include <left4dhooks>
 #include <multicolors>
 
+#define PLUGIN_VERSION 		"2.1-2024/9/14"
+#define PLUGIN_NAME			"l4d_rescue_vehicle_leave_timer"
 #define DEBUG 0
 
 public Plugin myinfo =
 {
-	name = PLUGIN_NAME,
-	author = PLUGIN_AUTHOR,
-	description = PLUGIN_DES,
+	name = "[L4D2] Rescue vehicle leave timer",
+	author = "HarryPotter",
+	description = "When rescue vehicle arrived and a timer will display how many time left for vehicle leaving. If a player is not on rescue vehicle or zone, slay him",
 	version = PLUGIN_VERSION,
-	url = PLUGIN_URL
+	url = "https://steamcommunity.com/profiles/76561198026784913/"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -62,8 +56,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 #define MAX_ENTITIES		8
 
-//#define GAMEDATA					"l4d_rescue_vehicle_leave_timer"
-#define CONFIG_SPAWNS				"data/l4d_rescue_vehicle.cfg"
+#define GAMEDATA_FILE           PLUGIN_NAME
+#define DATA_FILE		        "data/" ... PLUGIN_NAME ... ".cfg"
+#define TRANSLATION_FILE		PLUGIN_NAME ... ".phrases"
 
 /* =============================================================================================================== *
  *                                				F18_Sounds & g_sVocalize										   *
@@ -105,14 +100,31 @@ ConVar g_hCvarMPGameMode;
 // Cvar Handles/Variables
 ConVar g_hCvarAllow, g_hCvarModes, g_hCvarModesOff, g_hCvarModesTog, g_hCvarAnnounceType, g_hCvarEscapeTime, g_hCvarAirStrike;
 int g_iRoundStart, g_iPlayerSpawn, g_iEscapeTime, g_iCvarEscapeTime;
-int iSystemTime;
+
+int iSystemTime, g_iRescueVehicle;
 bool g_bFinalHasTrigger_Multiple, g_bFinalVehicleReady, g_bFinalVehicleLeaving, g_bCvarAirStrike;
 bool g_bClientInVehicle[MAXPLAYERS+1], g_bMapStarted, g_bValidMap, g_bHookStart;
 Handle AntiPussyTimer, _AntiPussyTimer, AirstrikeTimer;
 
+Handle
+	g_hSDK_CDirectorChallengeMode_FindRescueAreaTrigger;
+
 public void OnPluginStart()
 {
-	LoadTranslations("l4d_rescue_vehicle_leave_timer.phrases");
+	GameData hGameData = new GameData(GAMEDATA_FILE);
+	if (!hGameData)
+		SetFailState("Failed to load \"%s.txt\" gamedata.", GAMEDATA_FILE);
+
+	StartPrepSDKCall(SDKCall_GameRules);
+	if (!PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CDirectorChallengeMode::FindRescueAreaTrigger"))
+		SetFailState("Failed to find signature: CDirectorChallengeMode::FindRescueAreaTrigger");
+	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
+	if (!(g_hSDK_CDirectorChallengeMode_FindRescueAreaTrigger = EndPrepSDKCall()))
+		SetFailState("Failed to create SDKCall: CDirectorChallengeMode::FindRescueAreaTrigger");
+
+	delete hGameData;
+
+	LoadTranslations(TRANSLATION_FILE);
 	
 	g_hCvarAllow =			CreateConVar(	"l4d_rescue_vehicle_leave_timer_allow",					"1",			"0=Plugin off, 1=Plugin on.", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvarModes =			CreateConVar(	"l4d_rescue_vehicle_leave_timer_modes",					"",				"Turn on the plugin in these game modes, separate by commas (no spaces). (Empty = all).", CVAR_FLAGS );
@@ -416,6 +428,7 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 	g_bFinalVehicleLeaving = false;
 	g_bHookStart = false;
 	g_iEscapeTime = 0;
+	g_iRescueVehicle = 0;
 
 	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
 		CreateTimer(0.5, tmrStart, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -540,7 +553,7 @@ Action Timer_Strike(Handle timer)
 bool LoadData()
 {
 	char sPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, sPath, sizeof(sPath), CONFIG_SPAWNS);
+	BuildPath(Path_SM, sPath, sizeof(sPath), DATA_FILE);
 	if( !FileExists(sPath) )
 	{
 		SetFailState("File Not Found: %s", sPath);
@@ -626,7 +639,7 @@ bool IsInFinalRescueVehicle(int client)
 	}
 	else
 	{
-		return g_bClientInVehicle[client];
+		return false;
 	}
 }
 
@@ -814,6 +827,20 @@ void OnStartTouch(const char[] output, int caller, int activator, float delay)
 {
 	if (g_bFinalVehicleReady && activator > 0 && activator <= MaxClients && IsClientInGame(activator))
 	{
+		//PrintToChatAll("%d %d", caller, SDKCall(g_hSDK_CDirectorChallengeMode_FindRescueAreaTrigger));
+		if(!IsValidEntRef(g_iRescueVehicle))
+		{
+			if (caller != SDKCall(g_hSDK_CDirectorChallengeMode_FindRescueAreaTrigger))
+				return;
+
+			g_iRescueVehicle = EntIndexToEntRef(caller);
+		}
+		else
+		{
+			if(g_iRescueVehicle != EntIndexToEntRef(caller)) 
+				return;
+		}
+
 		#if DEBUG
 			PrintToChatAll("OnStartTouch, caller: %d, activator: %d", caller, activator);
 		#endif
@@ -825,6 +852,19 @@ void OnEndTouch(const char[] output, int caller, int activator, float delay)
 {
 	if (g_bFinalVehicleReady && activator > 0 && activator <= MaxClients && IsClientInGame(activator))
 	{
+		if(!IsValidEntRef(g_iRescueVehicle))
+		{
+			if (caller != SDKCall(g_hSDK_CDirectorChallengeMode_FindRescueAreaTrigger))
+				return;
+
+			g_iRescueVehicle = EntIndexToEntRef(caller);
+		}
+		else
+		{
+			if(g_iRescueVehicle != EntIndexToEntRef(caller)) 
+				return;
+		}
+
 		#if DEBUG
 			PrintToChatAll("OnEndTouch, caller: %d, activator: %d", caller, activator);
 		#endif
@@ -1287,6 +1327,7 @@ void Vocalize(int client)
 bool IsValidEntRef(int entity)
 {
 	if (entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE) return true;
+
 	return false;
 }
 
