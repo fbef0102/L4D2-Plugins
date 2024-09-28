@@ -983,7 +983,7 @@ int L4D_GetMaxReviveCount()
 		return -1;
 	}
 	
-	return GetConVarInt(hMaxReviveCount);
+	return hMaxReviveCount.IntValue;
 }
 
 void eItemUsedPill(Event event, const char[] name, bool dontBroadcast) 
@@ -1111,7 +1111,7 @@ Action CheckBlackAndWhiteGlows_Timer(Handle timer)
 		if(!IsClientInGame(client)) continue;
 		if(GetClientTeam(client) != 2) continue;
 
-		lastLife = L4D_GetPlayerReviveCount(client) >= L4D_GetMaxReviveCount();
+		lastLife = (L4D_GetPlayerReviveCount(client) >= L4D_GetMaxReviveCount() && L4D_GetMaxReviveCount() > 0);
 
 		if(bGlow[client] && lastLife == false)
 		{
