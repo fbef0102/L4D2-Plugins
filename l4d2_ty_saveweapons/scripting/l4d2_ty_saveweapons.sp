@@ -12,7 +12,8 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
-#define PLUGIN_VERSION			"6.2-2024/7/30"
+#include <l4d_heartbeat>
+#define PLUGIN_VERSION			"6.3-2024/10/3"
 #define DEBUG 0
 
 public Plugin myinfo =
@@ -25,9 +26,6 @@ public Plugin myinfo =
 };
 
 GlobalForward g_hForwardSaveWeaponGive;
-
-native void Heartbeat_SetRevives(int client, int reviveCount, bool reviveLogic = true);
-native int Heartbeat_GetRevives(int client);
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {

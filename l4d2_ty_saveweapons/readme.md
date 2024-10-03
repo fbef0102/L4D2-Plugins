@@ -9,7 +9,7 @@ L4D2 coop save weapon when map transition if more than 4 players
 
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-    2. [Heartbeat](https://forums.alliedmods.net/showthread.php?t=322132)
+    2. [l4d_heartbeat](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_heartbeat)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -71,6 +71,9 @@ L4D2 coop save weapon when map transition if more than 4 players
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v6.3 (2024-10-3)
+        * Require l4d_heartbeat
 
     * v6.2 (2024-7-30)
         * Fixed m_currentReviveCount
