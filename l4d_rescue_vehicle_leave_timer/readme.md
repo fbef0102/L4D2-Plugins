@@ -49,7 +49,7 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 
 * <details><summary>Data Example</summary>
 
-    * data/l4d_rescue_vehicle.cfg
+    * [data/l4d_rescue_vehicle_leave_timer.cfg](data/l4d_rescue_vehicle_leave_timer.cfg)
         ```php
         "rescue_vehicle"
         {
@@ -171,7 +171,7 @@ When rescue vehicle arrived and a timer will display how many time left for vehi
 * <details><summary>Data設定範例</summary>
 
     * 可自行調整關卡，設置每個章節逃亡倒數時間
-    * data/l4d_rescue_vehicle.cfg
+    * [data/l4d_rescue_vehicle_leave_timer.cfg](data/l4d_rescue_vehicle_leave_timer.cfg)
         ```php
         "rescue_vehicle"
         {

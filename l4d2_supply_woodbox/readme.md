@@ -99,7 +99,7 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>Data Config</summary>
 
-	* Check ```data/l4d2_supply_woodbox.txt``` for more details
+	* Check [data\l4d2_supply_woodbox.cfg](data\l4d2_supply_woodbox.cfg) for more details
 		```php
 		"l4d2_supply_woodbox"
 		{
@@ -330,7 +330,7 @@ Supply boxes are dropped randomly in the map every certain seconds to provide su
 
 * <details><summary>文件設定範例</summary>
 
-	* 查看```data/l4d2_supply_woodbox.txt```有更多說明
+	* 查看[data\l4d2_supply_woodbox.cfg](data\l4d2_supply_woodbox.cfg)有更多說明
 	* 修改掉落的物資
 		```php
 		"l4d2_supply_woodbox"

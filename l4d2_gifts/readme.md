@@ -76,7 +76,7 @@ Drop gifts when a special infected or a witch/tank killed by survivor.
 
 * <details><summary>Data Config</summary>
 
-	* ```data\l4d2_gifts.cfg```
+	* [data\l4d2_gifts.cfg](data\l4d2_gifts.cfg)
 		```php
 		"models" // modify the gift Model
 		{
@@ -317,7 +317,7 @@ Drop gifts when a special infected or a witch/tank killed by survivor.
 
 * <details><summary>文件設定範例</summary>
 
-	* ```data\l4d2_gifts.cfg```
+	* [data\l4d2_gifts.cfg](data\l4d2_gifts.cfg)
 		```php
 		"models" // 修改禮物盒模型
 		{
@@ -429,7 +429,7 @@ Drop gifts when a special infected or a witch/tank killed by survivor.
 		"weapon_melee" => 隨機近戰武器 (支援三方圖近戰)
 		"gnome" => 精靈小矮人
 		"cola_bottles" => 可樂瓶
-		"laser_sight" => 雷射激光
+		"laser_sight" => 升級紅外線
 		"incendiary_ammo" => 升級火焰子彈
 		"explosive_ammo" => 升級高爆子彈
 		"ammo" => 補給子彈
