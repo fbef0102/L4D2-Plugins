@@ -4,6 +4,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <left4dhooks>
+#include <multicolors>
 #undef REQUIRE_PLUGIN
 #tryinclude <attachments_api>
 
@@ -50,7 +51,7 @@ public Plugin myinfo =
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator can now see the special infected model glows though the wall",
-    version = "2.9-2024/3/19",
+    version = "3.0-2024/10/25",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -59,7 +60,7 @@ public void OnPluginStart()
 	g_hCvarColorGhost =	CreateConVar(	"l4d2_specting_cheat_ghost_color",		"255 255 255",		"Ghost SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCvarColorAlive =	CreateConVar(	"l4d2_specting_cheat_alive_color",		"255 0 0",			"Alive SI glow color, Three values between 0-255 separated by spaces. RGB Color255 - Red Green Blue.", FCVAR_NOTIFY);
 	g_hCommandAccess = 	CreateConVar(	"l4d2_specting_cheat_use_command_flag", "z", 				"Players with these flags have access to use command to toggle Speatator watching cheat. (Empty = Everyone, -1: Nobody)", FCVAR_NOTIFY);
-	g_hDefaultValue = 	CreateConVar(	"l4d2_specting_cheat_default_value", 	"0", 				"Enable Speatator watching cheat for spectators default? [1-Enable/0-Disable]", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hDefaultValue = 	CreateConVar(	"l4d2_specting_cheat_default_value", 	"0", 				"By default, enable Speatator watching cheat for spectators? [1-Enable/0-Disable]", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarColorGhost.AddChangeHook(ConVarChanged_Glow_Ghost);
@@ -79,6 +80,7 @@ public void OnPluginStart()
 	HookEvent("tank_spawn", Event_TankSpawn);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("player_team",	Event_PlayerTeam);
+	HookEvent("jockey_ride_end",	jockey_ride_end);
 
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	HookEvent("tank_frustrated", OnTankFrustrated);
@@ -93,11 +95,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_areyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_fuckyoucheat", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
 	RegConsoleCmd("sm_zzz", ToggleSpecCheatCmd, "Toggle Speatator watching cheat");
-
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		g_bSpecCheatActive[i] = g_bDefaultValue;
-	}
 	
 	if(g_bLateLoad)
 	{
@@ -125,11 +122,36 @@ public void OnMapEnd()
 	ClearDefault();
 }
 
+bool g_bFirstLoad = true;
+public void OnConfigsExecuted()
+{
+	GetCvars();
+
+	if(g_bFirstLoad)
+	{
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			g_bSpecCheatActive[i] = g_bDefaultValue;
+		}
+
+		g_bFirstLoad = false;
+	}
+}
+
 public void OnClientDisconnect(int client)
 {
 	RemoveInfectedModelGlow(client);
-
 	delete DelayWatchGlow_Timer[client];
+
+	if(IsClientInGame(client) && GetClientTeam(client) == L4D_TEAM_SURVIVOR)
+	{
+		// jockey正在騎的倖存者玩家如果離開遊戲, 光圈會卡住
+		int jockey = GetEntPropEnt(client, Prop_Send, "m_jockeyAttacker");
+		if(jockey > 0)
+		{
+			RequestFrame(OnNextFrame, GetClientUserId(jockey));
+		}
+	}
 } 
 
 Action ToggleSpecCheatCmd(int client, int args) 
@@ -137,28 +159,33 @@ Action ToggleSpecCheatCmd(int client, int args)
 	if(client == 0 || GetClientTeam(client)!= L4D_TEAM_SPECTATOR)
 		return Plugin_Handled;
 	
-	if(HasAccess(client, g_sCommandAccesslvl))
+	if(!HasAccess(client, g_sCommandAccesslvl))
 	{
-		if(g_bSpecCheatActive[client])
-		{
-			g_bSpecCheatActive[client] = false;
-			PrintToChat(client, "\x01[\x04WatchMode\x01]\x03 Watch Cheater Mode \x01 is now \x05Off\x01.");
-			StopAllModelGlow();
-			delete DelayWatchGlow_Timer[client];
-			DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
+		CPrintToChat(client, "{default}[{green}WatchMode{default}]{lightgreen} You don't have access.");
+		return Plugin_Handled;
+	}
 
-			delete DelayWatchGlow_Timer[0];
-			DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
-		}
-		else
-		{
-			g_bSpecCheatActive[client] = true;
-			PrintToChat(client, "\x01[\x04WatchMode\x01]\x03 Watch Cheater Mode \x01 is now \x05On\x01.");
-		}
+	if(IsClientIdle(client))
+	{
+		CPrintToChat(client, "{default}[{green}WatchMode{default}]{lightgreen} You are idle.{default} Unable to use.");
+		return Plugin_Handled;
+	}
+
+	if(g_bSpecCheatActive[client])
+	{
+		g_bSpecCheatActive[client] = false;
+		CPrintToChat(client, "[{green}WatchMode{default}]{lightgreen} Watch Cheater Mode {default}is now {olive}Off{default}.");
+		StopAllModelGlow();
+		delete DelayWatchGlow_Timer[client];
+		DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
+
+		delete DelayWatchGlow_Timer[0];
+		DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
 	}
 	else
 	{
-		PrintToChat(client, "\x01[\x04WatchMode\x01]\x03 You don't have access.");
+		g_bSpecCheatActive[client] = true;
+		CPrintToChat(client, "[{green}WatchMode{default}]{lightgreen} Watch Cheater Mode {default}is now {olive}On{default}.");
 	}
 
 	return Plugin_Handled;
@@ -192,11 +219,6 @@ void OnTankFrustrated(Event event, const char[] name, bool dontBroadcast)
 	int userid = event.GetInt("userid");
 	RemoveInfectedModelGlow(GetClientOfUserId(userid));
 	RequestFrame(OnNextFrame, userid);
-}
-
-public void L4D_OnEnterGhostState(int client)
-{
-	RequestFrame(OnNextFrame, GetClientUserId(client));
 }
 
 //有插件在此事件把Tank變成靈魂克的時候不會觸發後續的player_spawn事件，譬如使用confoglcompmod
@@ -248,20 +270,57 @@ void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 
 void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(event.GetInt("userid"));
+	int userid = event.GetInt("userid");
+	int client = GetClientOfUserId(userid);
 	int oldteam = event.GetInt("oldteam");
 	
 	RemoveInfectedModelGlow(client);
 	
-	if(client && IsClientInGame(client) && !IsFakeClient(client) && oldteam == L4D_TEAM_SPECTATOR && g_bSpecCheatActive[client])
+	if(client && IsClientInGame(client) && !IsFakeClient(client) && g_bSpecCheatActive[client])
 	{
-		StopAllModelGlow();
-		delete DelayWatchGlow_Timer[client];
-		DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
+		if(oldteam == L4D_TEAM_SPECTATOR)
+		{
+			StopAllModelGlow();
+			delete DelayWatchGlow_Timer[client];
+			DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
 
-		delete DelayWatchGlow_Timer[0];
-		DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
+			delete DelayWatchGlow_Timer[0];
+			DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
+		}
+		
+		CreateTimer(0.1, PlayerChangeTeamCheck, userid);//延遲一秒檢查
 	}
+}
+
+Action PlayerChangeTeamCheck(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client && IsClientInGame(client) && !IsFakeClient(client))
+	{
+		if( GetClientTeam(client) != L4D_TEAM_SPECTATOR )
+		{
+			g_bSpecCheatActive[client] = false;
+		}
+		else if(IsClientIdle(client))
+		{
+			g_bSpecCheatActive[client] = false;
+
+			StopAllModelGlow();
+			delete DelayWatchGlow_Timer[client];
+			DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
+
+			delete DelayWatchGlow_Timer[0];
+			DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+// jockey正在騎的倖存者bots如果被踢出遊戲, 光圈會卡住
+void jockey_ride_end(Event event, const char[] name, bool dontBroadcast)
+{
+	RequestFrame(OnNextFrame, event.GetInt("userid"));
 }
 
 void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -302,7 +361,7 @@ void CreateInfectedModelGlow(int client)
 	// Get Client Model
 	char sModelName[64];
 	GetEntPropString(client, Prop_Data, "m_ModelName", sModelName, sizeof(sModelName));
-	//PrintToChatAll("%N: %s",client,sModelName);
+	//CPrintToChatAll("%N: %s",client,sModelName);
 
 	// Set new fake model
 	//PrecacheModel(sModelName);
@@ -568,14 +627,31 @@ void ClearDefault()
 	g_iPlayerSpawn = 0;
 }
 
-//-------------------------------Other API Forward-------------------------------
+bool IsClientIdle(int client)
+{
+	if(GetClientTeam(client) != L4D_TEAM_SPECTATOR)
+		return false;
+	
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && IsFakeClient(i) && GetClientTeam(i) == L4D_TEAM_SURVIVOR && IsPlayerAlive(i))
+		{
+			if(HasEntProp(i, Prop_Send, "m_humanSpectatorUserID"))
+			{
+				if(GetClientOfUserId(GetEntProp(i, Prop_Send, "m_humanSpectatorUserID")) == client)
+						return true;
+			}
+		}
+	}
+	return false;
+}
 
-// https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs
-// from l4d_zcs.smx by Harry, player can change Zombie Class during ghost state
-//public void L4D2_OnClientChangeZombieClass(int client, int new_zombieclass)
-//{
-//	RequestFrame(OnNextFrame, GetClientUserId(client));
-//}
+//-------------------------------Left4Dhooks API Forward-------------------------------
+
+public void L4D_OnEnterGhostState(int client)
+{
+	RequestFrame(OnNextFrame, GetClientUserId(client));
+}
 
 //-------------------------------Attachments API-------------------------------
 

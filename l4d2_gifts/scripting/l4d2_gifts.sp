@@ -1351,7 +1351,7 @@ void GetMeleeClasses()
 
 // from lockdown_system-l4d2_b.smx
 // when door is fully opened
-public void L4D2_OnLockDownOpenDoorFinish(const char[] sKeyMan)
+public void L4DLockDownSystem_OnOpenDoorFinish(const char[] sKeyMan)
 {
 	g_bIsDoorOpen_LockDown = true;
 }

@@ -11,7 +11,8 @@ A spectator can now see the special infected model glows though the wall
 
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-    2. Optional - [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
+    2. [[INC] Multi Colors](https://github.com/fbef0102/L4D1_2-Plugins/releases/tag/Multi-Colors)
+	3. [Attachments API](https://forums.alliedmods.net/showthread.php?t=325651)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -58,20 +59,21 @@ A spectator can now see the special infected model glows though the wall
     1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
         > 給死亡玩家或旁觀者手電筒，照亮地圖
 
-    2. [l4d_versus_specListener](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener): Allows spectator listen others team voice and see others team chat for l4d
-        > 旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
-
-    3. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
+    2. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
         > 頭上有血量提示，給旁觀者更好的觀賞性
 
-    4. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
+    3. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
         > 根據玩家生命值狀態給予輪廓光圈適當的顏色 + 對抗模式中，特感永遠能看到人類光圈 (即使人類靜走或不動)
-
-    5. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
+        
+    4. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
         > 管理員輸入指令能透視看到特感
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v3.0 (2024-10-26)
+        * Idle player can not see the glow
+        * Fixed jockey glow disappear if survivor leaves the game during ridden
 
     * v2.9 (2024-3-19)
         * Require Attachments API
