@@ -42,10 +42,10 @@ Fixed sometimes glow is invisible when dead survivors appears in rescue closet
 
 * <details><summary>API | 串接</summary>
 
-	```php
-	Registers a library name: rescue_glow
-	```
-	* ```scripting\include\rescue_glow.inc```
+	* [rescue_glow.inc](scripting\include\rescue_glow.inc)
+		```php
+		library name: rescue_glow
+		```
 </details>
 
 * Apply to | 適用於

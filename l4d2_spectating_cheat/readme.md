@@ -71,6 +71,9 @@ A spectator can now see the special infected model glows though the wall
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v3.1 (2024-10-30)
+        * Optimize code 
+
     * v3.0 (2024-10-26)
         * Idle player can not see the glow
         * Fixed jockey glow disappear if survivor leaves the game during ridden

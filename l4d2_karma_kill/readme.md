@@ -57,10 +57,10 @@ Very Very loudly announces the predicted event of a player leaving the map and o
 
 * <details><summary>API | 串接</summary>
 
-    ```php
-    Registers a library name: l4d2_karma_kill
-    ```
-	* ```scripting\include\l4d2_skill4d2_karma_kill_detect.inc```
+    * [l4d2_karma_kill.inc](scripting\include\l4d2_karma_kill.inc)
+        ```php
+        library name: l4d2_karma_kill
+        ```
 </details>
 
 * Apply to | 適用於

@@ -44,14 +44,17 @@ bool g_bMapStarted;
 bool g_bSpecCheatActive[MAXPLAYERS + 1]; //spectatpr open watch
 int g_iModelIndex[MAXPLAYERS+1];			// Player Model entity reference
 Handle DelayWatchGlow_Timer[MAXPLAYERS+1] ; //prepare to disable player spec glow
-int g_iRoundStart, g_iPlayerSpawn;
+int 
+	g_iRoundStart, g_iPlayerSpawn,
+	g_bInGame[MAXPLAYERS+1];
+
 
 public Plugin myinfo = 
 {
     name = "l4d2 specating cheat",
     author = "Harry Potter",
     description = "A spectator can now see the special infected model glows though the wall",
-    version = "3.0-2024/10/25",
+    version = "3.1-2024/10/30",
     url = "https://steamcommunity.com/profiles/76561198026784913"
 }
 
@@ -276,9 +279,18 @@ void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 	
 	RemoveInfectedModelGlow(client);
 	
-	if(client && IsClientInGame(client) && !IsFakeClient(client) && g_bSpecCheatActive[client])
+	if(client && IsClientInGame(client))
 	{
-		if(oldteam == L4D_TEAM_SPECTATOR)
+		if(event.GetBool("disconnect") && IsFakeClient(client) && oldteam == 2 && HasEntProp(client, Prop_Send, "m_humanSpectatorUserID"))
+		{
+			int idle_player = GetClientOfUserId(GetEntProp(client, Prop_Send, "m_humanSpectatorUserID"));
+			if(idle_player && IsClientInGame(idle_player))
+			{
+				g_bInGame[idle_player] = false;
+			}
+		}
+
+		else if(!IsFakeClient(client) && g_bSpecCheatActive[client] && oldteam == L4D_TEAM_SPECTATOR)
 		{
 			StopAllModelGlow();
 			delete DelayWatchGlow_Timer[client];
@@ -297,20 +309,30 @@ Action PlayerChangeTeamCheck(Handle timer, int userid)
 	int client = GetClientOfUserId(userid);
 	if (client && IsClientInGame(client) && !IsFakeClient(client))
 	{
-		if( GetClientTeam(client) != L4D_TEAM_SPECTATOR )
+		switch(GetClientTeam(client))
 		{
-			g_bSpecCheatActive[client] = false;
-		}
-		else if(IsClientIdle(client))
-		{
-			g_bSpecCheatActive[client] = false;
+			case L4D_TEAM_SPECTATOR:
+			{
+				if(IsClientIdle(client))
+				{
+					g_bInGame[client] = true;
+					StopAllModelGlow();
+					delete DelayWatchGlow_Timer[client];
+					DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
 
-			StopAllModelGlow();
-			delete DelayWatchGlow_Timer[client];
-			DelayWatchGlow_Timer[client] = CreateTimer(0.1, Timer_StopGlowTransmit, client);
-
-			delete DelayWatchGlow_Timer[0];
-			DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
+					delete DelayWatchGlow_Timer[0];
+					DelayWatchGlow_Timer[0] = CreateTimer(0.2, Timer_StartAllGlow);
+				}
+				else g_bInGame[client] = false;
+			}
+			case L4D_TEAM_INFECTED, L4D_TEAM_SURVIVOR, L4D_TEAM_FOUR:
+			{
+				g_bInGame[client] = true;
+			}
+			default:
+			{
+				g_bInGame[client] = false;
+			}
 		}
 	}
 
@@ -417,7 +439,7 @@ Action Hook_SetTransmit(int entity, int client)
 {
 	if(DelayWatchGlow_Timer[client] != null) return Plugin_Continue;
 
-	if( g_bSpecCheatActive[client] && GetClientTeam(client) == L4D_TEAM_SPECTATOR)
+	if( g_bSpecCheatActive[client] && !g_bInGame[client] && GetClientTeam(client) == L4D_TEAM_SPECTATOR)
 	{
 	 	return Plugin_Continue;
 	}

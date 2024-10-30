@@ -34,7 +34,7 @@ Makes AI Charger take damage like human SI while charging.
 * <details><summary>API | 串接</summary>
 
 	```php
-	Registers a library name: charging_takedamage_patch
+	library name: charging_takedamage_patch
 	```
 </details>
 
