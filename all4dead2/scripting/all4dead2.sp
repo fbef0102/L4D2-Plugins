@@ -466,7 +466,8 @@ Action Command_SpawnUInfected(int client, int args) {
  * 	the action is the console.
  * </remarks>
 */
-void Do_SpawnInfected(int client, const char[] type) {
+void Do_SpawnInfected(int client, const char[] type) 
+{
 	if(client == 0)
 	{
 		return;
@@ -475,6 +476,12 @@ void Do_SpawnInfected(int client, const char[] type) {
 	if(RealFreePlayersOnInfected())
 	{
 		Do_SpawnInfected_Old(client, type, false);
+		return;
+	}
+
+	if (GetClientCount(false) >= MaxClients)
+	{
+		CPrintToChat(client, "%T", "Not enough player slots", client);
 		return;
 	}
 
@@ -549,6 +556,10 @@ void Do_SpawnInfected(int client, const char[] type) {
 	{
 		if(notify_players.BoolValue) CPrintToChatAll("%t", "has been spawned", type);
 		LogAction(client, -1, "[NOTICE]: (%L) has spawned a %s", client, type);
+	}
+	else
+	{
+		CPrintToChat(client, "%T", "Not enough player slots", client);
 	}
 }
 

@@ -691,4 +691,10 @@
 		"chi"			"此服务器太多物件了，生成失败!"
 		"zho"			"此伺服器太多物件了，生成失敗!"
 	}
+	"Not enough player slots"
+	{
+		"en"			"Not enough player slots for AI spawn"
+		"chi"			"伺服器位置已满，没有空位给AI特感生成!"
+		"zho"			"伺服器位置已滿，沒有空位給AI特感生成!"
+	}
 }
