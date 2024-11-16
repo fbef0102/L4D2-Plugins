@@ -85,7 +85,7 @@ void Charger_OnSpawn(int botCharger) {
 	g_bShouldCharge[botCharger] = false;
 }
 
-stock Action Charger_OnPlayerRunCmd(int charger, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+stock Action Charger_OnPlayerRunCmd(int charger, int &buttons) {
 	if(!g_bCvarEnable) return Plugin_Continue;
 
 	// prevent charge until survivors are within the defined proximity

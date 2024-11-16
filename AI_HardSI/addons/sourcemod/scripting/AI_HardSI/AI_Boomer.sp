@@ -70,7 +70,7 @@ static void GetCvars()
 	g_bBoomerBhop = g_hBoomerBhop.BoolValue;
 }
 
-stock Action Boomer_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+stock Action Boomer_OnPlayerRunCmd(int client, int &buttons) {
 	if (!g_bCvarEnable || !g_bBoomerBhop)
 		return Plugin_Continue;
 

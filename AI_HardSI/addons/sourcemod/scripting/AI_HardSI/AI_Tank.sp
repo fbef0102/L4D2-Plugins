@@ -58,7 +58,7 @@ static void GetCvars()
 }
 
 // Tank bhop and blocking rock throw
-stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, float vel[3] ) {
 	if(!g_bCvarEnable) return Plugin_Continue;
 
 	// block rock throws

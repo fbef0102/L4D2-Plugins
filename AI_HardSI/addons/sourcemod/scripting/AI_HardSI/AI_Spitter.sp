@@ -1,7 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required //強制1.7以後的新語法
 
-#define BOOST	90.0
+
 
 static ConVar
 	g_hCvarEnable,
@@ -52,7 +52,7 @@ static void GetCvars() {
 	g_bSpitterBhop = g_hSpitterBhop.BoolValue;
 }
 
-stock Action Spitter_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {
+stock Action Spitter_OnPlayerRunCmd(int client, int &buttons) {
 	if (!g_bCvarEnable) return Plugin_Continue;
 
 	if (!g_bSpitterBhop)

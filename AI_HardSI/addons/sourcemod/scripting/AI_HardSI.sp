@@ -202,14 +202,14 @@ public void OnActionCreated(BehaviorAction action, int actor, const char[] name)
 		{ 
 			if (strncmp(name, "Smoker", 6) == 0)
 			{
-				AI_Smoker_OnActionCreated(action, actor, name);
+				AI_Smoker_OnActionCreated(action, name);
 			}
 		}
 		case 'H':
 		{ 
 			if (strncmp(name, "Hunter", 6) == 0)
 			{
-				AI_Hunter_OnActionCreated(action, actor, name);
+				AI_Hunter_OnActionCreated(action, name);
 			}
 		}
 	}
@@ -234,27 +234,27 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		switch( GetInfectedClass(client) ) {
 
 			case (L4D2Infected_Boomer): {
-				return Boomer_OnPlayerRunCmd( client, buttons, impulse, vel, angles, weapon );
+				return Boomer_OnPlayerRunCmd( client, buttons);
 			}
 		
 			case (L4D2Infected_Hunter): {
-				return Hunter_OnPlayerRunCmd( client, buttons, impulse, vel, angles, weapon );
+				return Hunter_OnPlayerRunCmd( client, buttons);
 			}		
 
 			case (L4D2Infected_Spitter): {
-				return Spitter_OnPlayerRunCmd( client, buttons, impulse, vel, angles, weapon );
+				return Spitter_OnPlayerRunCmd( client, buttons );
 			}	
 			
 			case (L4D2Infected_Charger): {
-				return Charger_OnPlayerRunCmd( client, buttons, impulse, vel, angles, weapon );
+				return Charger_OnPlayerRunCmd( client, buttons);
 			}	
 			
 			case (L4D2Infected_Jockey): {
-				return Jockey_OnPlayerRunCmd( client, buttons, impulse, vel, angles, weapon );
+				return Jockey_OnPlayerRunCmd( client, buttons);
 			}
 				
 			case (L4D2Infected_Tank): {
-				return Tank_OnPlayerRunCmd( client, buttons, impulse, vel, angles, weapon );
+				return Tank_OnPlayerRunCmd( client, buttons, vel);
 			}
 				
 			default: {

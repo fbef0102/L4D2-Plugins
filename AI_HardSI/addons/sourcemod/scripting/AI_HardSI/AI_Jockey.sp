@@ -89,7 +89,7 @@ static void GetCvars()
 
 ***********************************************************************************************************************************************************************************/
 
-stock Action Jockey_OnPlayerRunCmd(int jockey, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon) {
+stock Action Jockey_OnPlayerRunCmd(int jockey, int &buttons) {
 	if(!g_bCvarEnable) return Plugin_Continue;
 
 	if (!GetEntProp(jockey, Prop_Send, "m_hasVisibleThreats"))

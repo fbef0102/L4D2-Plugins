@@ -127,7 +127,7 @@ void Hunter_OnSpawn(int botHunter) {
 
 ***********************************************************************************************************************************************************************************/
 
-stock Action Hunter_OnPlayerRunCmd(int hunter, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon ) {	
+stock Action Hunter_OnPlayerRunCmd(int hunter, int &buttons ) {	
 	if(!g_bCvarEnable) return Plugin_Continue;
 
 	if (!GetEntProp(hunter, Prop_Send, "m_hasVisibleThreats"))
@@ -327,7 +327,7 @@ static Action Timer_LungeInterval(Handle timer, any client) {
 
 // Actions API--------------
 
-stock void AI_Hunter_OnActionCreated(BehaviorAction action, int actor, const char[] name)
+stock void AI_Hunter_OnActionCreated(BehaviorAction action, const char[] name)
 {
 	if (strcmp(name[6], "Attack") == 0)
 	{

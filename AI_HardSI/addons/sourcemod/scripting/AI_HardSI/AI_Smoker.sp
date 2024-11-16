@@ -45,7 +45,7 @@ static void GetCvars()
 
 // Actions API--------------
 
-stock void AI_Smoker_OnActionCreated(BehaviorAction action, int actor, const char[] name)
+stock void AI_Smoker_OnActionCreated(BehaviorAction action, const char[] name)
 {
     //if (!strcmp(name[6], "Behavior"))
     //{
