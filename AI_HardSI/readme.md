@@ -1,12 +1,19 @@
 # Description | 內容
 Improves the AI behaviour of special infected
-(Execute ```nb_assault``` every 2.0 seconds)
 
 * Video | 影片展示
 <br/>None
 
 * Image｜ 圖示
 <br/>None
+
+* <details><summary>How does it work?</summary>
+
+    * Improves the AI behaviour of special infected, make each of them very aggresive
+    * Make special infected behop jump as they can
+    * Use official cvar to improve AI bots, please check[cfg/AI_HardSI/aggressive_ai.cfg](cfg/AI_HardSI/aggressive_ai.cfg)
+	* Execute ```nb_assault``` every 2.0 seconds, read more details about this command below
+</details>
 
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
@@ -108,7 +115,13 @@ Improves the AI behaviour of special infected
 * Improve Infected
     * <details><summary><b>AI Tank</b></summary>
 
-        * Stop throwing the rock after approaching the survivors
+        * Stop throwing the underhand rock
+        * Modify Official ConVar in ```cfg\AI_HardSI\aggressive_ai.cfg```
+            ```php
+            // AI Tank will not throw rock within this range (default: 250)
+            sm_cvar tank_throw_allow_range 300
+            ```
+
         * Plugin ConVar
             ```php
             // Flag to enable bhop facsimile on AI tanks
@@ -161,7 +174,7 @@ Improves the AI behaviour of special infected
             // Range at which hunter is committed to attack (Default: 75)
             hunter_committed_attack_range 10000
 
-            // Range at which shooting a non-committed AI hunter will cause it to leap away (Coop/Realis, Default: 1000)
+            // Range at which shooting a non-committed AI hunter will cause it to leap away (Coop/Realism, Default: 1000)
             // 0=Disable leap away ability, >0: Restore back Leap Away ability and wait in ambush mode again.
             hunter_leap_away_give_up_range 0
 
@@ -299,7 +312,7 @@ Improves the AI behaviour of special infected
     * 改變各種特感的行為
     * 可以開關各特感的強化行為
     * 每兩秒執行```nb_assault```命令 (往下看說明)
-    * 修改官方指令強化AI智商，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
+    * 修改官方指令強化AI智商，請查看[cfg/AI_HardSI/aggressive_ai.cfg](cfg/AI_HardSI/aggressive_ai.cfg)
 
 * 用意在哪?
     * 每一個特感的攻擊對倖存者造成巨大的壓力
@@ -365,7 +378,13 @@ Improves the AI behaviour of special infected
 * 各特感強化內容
     * <details><summary><b>AI Tank</b></summary>
 
-        * 靠近倖存者一定範圍內不會主動丟石頭
+        * 取消"低手投擲"的丟石頭動作，因為瞄準率0%
+        * 更動的官方指令，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
+            ```php
+            // AI Tank 在距離倖存者此範圍內不會丟石頭 (預設: 250)
+            sm_cvar tank_throw_allow_range 300
+            ```
+
         * 插件自帶的指令
             ```php
             // 為1時，AI Tank會連跳

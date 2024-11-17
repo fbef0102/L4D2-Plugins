@@ -146,7 +146,8 @@ stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, float vel[3] ) {
 Action Tank_OnSelectTankAttack(int client, int &sequence) {
 	if(!g_bCvarEnable) return Plugin_Continue;
 
-	if (IsFakeClient(client) && sequence == 50) {
+	if (IsFakeClient(client) && sequence == 50) // underhand rock
+	{
 		sequence = GetRandomInt(0, 1) ? 49 : 51;
 		return Plugin_Handled;
 	}

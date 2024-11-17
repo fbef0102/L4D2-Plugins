@@ -385,7 +385,7 @@ int GetCurTarget(int client)
  * @param client: client ID
  * @return bool
  */
-stock bool IsSurvivor(int client) {
+bool IsSurvivor(int client) {
 	if( IsValidClient(client) && GetClientTeam(client) == L4D2Team_Survivor ) {
 		return true;
 	} else {
@@ -393,127 +393,6 @@ stock bool IsSurvivor(int client) {
 	}
 }
 
-stock bool IsPinned(int client) {
-	bool bIsPinned = false;
-	if (IsSurvivor(client)) {
-		// check if held by:
-		if( GetEntPropEnt(client, Prop_Send, "m_tongueOwner") > 0 ) bIsPinned = true; // smoker
-		if( GetEntPropEnt(client, Prop_Send, "m_pounceAttacker") > 0 ) bIsPinned = true; // hunter
-		if( GetEntPropEnt(client, Prop_Send, "m_carryAttacker") > 0 ) bIsPinned = true; // charger carry
-		if( GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") > 0 ) bIsPinned = true; // charger pound
-		if( GetEntPropEnt(client, Prop_Send, "m_jockeyAttacker") > 0 ) bIsPinned = true; // jockey
-	}		
-	return bIsPinned;
-}
-
-/**
- * @return: The highest %map completion held by a survivor at the current point in time
- */
-stock int GetMaxSurvivorCompletion() {
-	float flow = 0.0;
-	float tmp_flow;
-	float origin[3];
-	for ( int client = 1; client <= MaxClients; client++ ) {
-		if ( IsSurvivor(client) && IsPlayerAlive(client) ) {
-			GetClientAbsOrigin(client, origin);
-			tmp_flow = GetFlow(origin);
-			flow = MAX(flow, tmp_flow);
-		}
-	}
-	
-	int current = RoundToNearest(flow * 100 / L4D2Direct_GetMapMaxFlowDistance());
-		
-		#if DEBUG_FLOW
-			Client_PrintToChatAll( true, "Current: {G}%d%%", current );
-		#endif
-		
-	return current;
-}
-
-/**
- * @return: the farthest flow distance currently held by a survivor
- */
-stock float GetFarthestSurvivorFlow() {
-	float farthest_flow = 0.0;
-	float origin[3];
-	for (int client = 1; client <= MaxClients; client++) {
-        if ( IsSurvivor(client) && IsPlayerAlive(client) ) {
-            GetClientAbsOrigin(client, origin);
-            float flow = GetFlow(origin);
-            if ( flow > farthest_flow ) {
-            	farthest_flow = flow;
-            }
-        }
-    }
-	return farthest_flow;
-}
-
-/**
- * Returns the average flow distance covered by each survivor
- */
-stock float GetAverageSurvivorFlow() {
-    int survivor_count = 0;
-    float total_flow = 0.0;
-    float origin[3];
-    for (int client = 1; client <= MaxClients; client++) {
-        if ( IsSurvivor(client) && IsPlayerAlive(client) ) {
-            survivor_count++;
-            GetClientAbsOrigin(client, origin);
-            if ( GetFlow(origin) != -1.0 ) {
-            	total_flow++;
-            }
-        }
-    }
-    return (total_flow / float(survivor_count));
-}
-
-/**
- * Returns the flow distance from given point to closest alive survivor. 
- * Returns -1.0 if either the given point or the survivors as a whole are not upon a valid nav mesh
- */
-stock float GetFlowDistToSurvivors(const float pos[3]) {
-	float spawnpoint_flow;
-	float lowest_flow_dist = -1.0;
-	
-	spawnpoint_flow = GetFlow(pos);
-	if ( spawnpoint_flow < 0) {
-		return -1.0;
-	}
-	
-	for ( int j = 1; j <= MaxClients; j++ ) {
-		if ( IsSurvivor(j) && IsPlayerAlive(j) ) {
-			float origin[3];
-			float flow_dist;
-			
-			GetClientAbsOrigin(j, origin);
-			flow_dist = GetFlow(origin);
-			
-			// have we found a int valid(i.e. != -1) lowest flow_dist
-			if ( flow_dist > 0.0 && FloatCompare(FloatAbs(flow_dist - spawnpoint_flow), lowest_flow_dist) == -1 ) {
-				lowest_flow_dist = flow_dist;
-			}
-		}
-	}
-	
-	return lowest_flow_dist;
-}
-
-/**
- * Returns the flow distance of a given point
- */
- stock float GetFlow(const float o[3]) {
- 	float origin[3]; //non constant var
- 	origin[0] = o[0];
- 	origin[1] = o[1];
- 	origin[2] = o[2];
- 	Address pNavArea;
- 	pNavArea = L4D2Direct_GetTerrorNavArea(origin);
- 	if ( pNavArea != Address_Null ) {
- 		return L4D2Direct_GetTerrorNavAreaFlow(pNavArea);
- 	} else {
- 		return -1.0;
- 	}
- }
  
 /**
  * Returns true if the player is incapacitated. 
@@ -521,7 +400,7 @@ stock float GetFlowDistToSurvivors(const float pos[3]) {
  * @param client client ID
  * @return bool
  */
-stock bool IsIncapacitated(int client) {
+bool IsIncapacitated(int client) {
     return view_as<bool>(GetEntProp(client, Prop_Send, "m_isIncapacitated"));
 }
 
@@ -531,7 +410,7 @@ stock bool IsIncapacitated(int client) {
  * @param excludeSurvivor: ignores this survivor
  * @return: the entity index of the closest survivor
 **/
-stock int GetClosestSurvivor( float referencePos[3], int excludeSurvivor = -1 ) {
+int GetClosestSurvivor( float referencePos[3], int excludeSurvivor = -1 ) {
 	float survivorPos[3];
 	int closestSurvivor = GetRandomSurvivor(1, -1);	
 	if (closestSurvivor <= 0) return -1;
@@ -559,7 +438,7 @@ stock int GetClosestSurvivor( float referencePos[3], int excludeSurvivor = -1 ) 
  * @param specificSurvivor: the index of the survivor to be measured, -1 to search for distance to closest survivor
  * @return: the distance
  */
-stock int GetSurvivorProximity( const float rp[3], int specificSurvivor = -1 ) {
+int GetSurvivorProximity( const float rp[3], int specificSurvivor = -1 ) {
 	
 	int targetSurvivor;
 	float targetSurvivorPos[3];
@@ -590,11 +469,11 @@ stock int GetSurvivorProximity( const float rp[3], int specificSurvivor = -1 ) {
 /**
  * @return: the special infected class of the client
  */
-stock int GetInfectedClass(int client) {
+int GetInfectedClass(int client) {
     return GetEntProp(client, Prop_Send, "m_zombieClass");
 }
 
-stock bool IsInfected(int client) {
+bool IsInfected(int client) {
     if (!IsClientInGame(client) || GetClientTeam(client) != L4D2Team_Infected) {
         return false;
     }
@@ -604,7 +483,7 @@ stock bool IsInfected(int client) {
 /**
  * @return: true if client is a special infected bot
  */
-stock bool IsBotInfected(int client) {
+bool IsBotInfected(int client) {
     // Check the input is valid
     if (!IsValidClient(client))return false;
     
@@ -615,101 +494,10 @@ stock bool IsBotInfected(int client) {
     return false; // otherwise
 }
 
-stock bool IsBotHunter(int client) {
-	return (IsBotInfected(client) && GetInfectedClass(client) == L4D2Infected_Hunter);
-}
-
-stock bool IsBotCharger(int client) {
+bool IsBotCharger(int client) {
 	return (IsBotInfected(client) && GetInfectedClass(client) == L4D2Infected_Charger);
 }
 
-stock bool IsBotJockey(int client) {
-	return (IsBotInfected(client) && GetInfectedClass(client) == L4D2Infected_Jockey);
-}
-
-// @return: the number of a particular special infected class alive in the game
-stock int CountSpecialInfectedClass(int targetClass) {
-    int count = 0;
-    for (int i = 1; i <= MaxClients; i++) {
-        if ( IsBotInfected(i) && IsPlayerAlive(i) && !IsClientInKickQueue(i) ) {
-            int playerClass = GetEntProp(i, Prop_Send, "m_zombieClass");
-            if (playerClass == targetClass) {
-                count++;
-            }
-        }
-    }
-    return count;
-}
-
-// @return: the total special infected bots alive in the game
-stock int CountSpecialInfectedBots() {
-    int count = 0;
-    for (int i = 1; i <= MaxClients; i++) {
-        if (IsBotInfected(i) && IsPlayerAlive(i)) {
-            count++;
-        }
-    }
-    return count;
-}
-
-/***********************************************************************************************************************************************************************************
-
-                                                                       		TANK
-                                                                    
-***********************************************************************************************************************************************************************************/
-
-/**
- *@return: true if client is a tank
- */
-stock bool IsTank(int client) {
-    return IsClientInGame(client)
-        && GetClientTeam(client) == L4D2Team_Infected
-        && GetInfectedClass(client) == L4D2Infected_Tank;
-}
-
-/**
- * Searches for a player who is in control of a tank.
- *
- * @param iTankClient client index to begin searching from
- * @return client ID or -1 if not found
- */
-stock int FindTankClient(int iTankClient) {
-    for (int i = iTankClient < 0 ? 1 : iTankClient+1; i <= MaxClients; i++) {
-        if (IsTank(i)) {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-/**
- * Is there a tank currently in play?
- *
- * @return bool
- */
-stock bool IsTankInPlay() {
-	if(FindTankClient(-1) != -1)
-	{
-		return true;
-	}
-	return false;
-}
-
-stock bool IsBotTank(int client) {
-	// Check the input is valid
-	if (!IsValidClient(client)) return false;
-	// Check if player is on the infected team, a hunter, and a bot
-	if (GetClientTeam(client) == L4D2Team_Infected) {
-		int zombieClass = GetEntProp(client, Prop_Send, "m_zombieClass");
-		if (zombieClass == L4D2Infected_Tank) {
-			if(IsFakeClient(client)) {
-				return true;
-			}
-		}
-	}
-	return false; // otherwise
-}
 
 /***********************************************************************************************************************************************************************************
 
@@ -717,8 +505,7 @@ stock bool IsBotTank(int client) {
                                                                     
 ***********************************************************************************************************************************************************************************/
 
-
-stock void CheatServerCommand(char[] command)
+void CheatServerCommand(char[] command)
 {
     int flags = GetCommandFlags(command);
     SetCommandFlags(command, flags & ~FCVAR_CHEAT);
@@ -733,16 +520,12 @@ stock void CheatServerCommand(char[] command)
  * @param client: client ID
  * @return bool
  */
-stock bool IsValidClient(int client) {
+bool IsValidClient(int client) {
     if( client > 0 && client <= MaxClients && IsClientInGame(client) ) {
     	return true;
     } else {
     	return false;
     }    
-}
-
-stock bool IsGenericAdmin(int client) {
-	return CheckCommandAccess(client, "generic_admin", ADMFLAG_GENERIC, false); 
 }
 
 /**
@@ -751,7 +534,7 @@ stock bool IsGenericAdmin(int client) {
 	@param attacker: the client number of the attacking SI
 	@param offsetThreshold: the radius(degrees) of the cone of detection around the straight line from the attacked survivor to the SI
 **/
-stock bool IsTargetWatchingAttacker( int attacker, float offsetThreshold ) {
+bool IsTargetWatchingAttacker( int attacker, float offsetThreshold ) {
 	bool isWatching = true;
 	if( GetClientTeam(attacker) == 3 && IsPlayerAlive(attacker) ) { // SI continue to hold on to their targets for a few seconds after death
 		int target = GetClientAimTarget(attacker);
@@ -773,7 +556,7 @@ stock bool IsTargetWatchingAttacker( int attacker, float offsetThreshold ) {
 	@target: considers this player's position
 	Adapted from code written by Guren with help from Javalia
 **/
-stock float GetPlayerAimOffset( int attacker, int target ) {
+float GetPlayerAimOffset( int attacker, int target ) {
 	if( !IsClientConnected(attacker) || !IsClientInGame(attacker) || !IsPlayerAlive(attacker) )
 		ThrowError("Client is not Alive."); 
 	if(!IsClientConnected(target) || !IsClientInGame(target) || !IsPlayerAlive(target) )
@@ -801,37 +584,37 @@ stock float GetPlayerAimOffset( int attacker, int target ) {
 	return resultAngle;
 }
 
-stock bool IsGrounded(int client) {
+bool IsGrounded(int client) {
 	return GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") != -1;
 }
 
-stock bool TargetSur(int client) {
+bool TargetSur(int client) {
 	return IsAliveSur(GetClientAimTarget(client, true));
 }
 
-stock bool CheckPlayerMove(int client, float vel) {
+bool CheckPlayerMove(int client, float vel) {
 	return vel > 0.9 * GetEntPropFloat(client, Prop_Send, "m_flMaxspeed") > 0.0;
 }
 
-stock bool CheckHopVel(int client, const float vAng[3], const float vVel[3]) {
-	static float vMins[3];
-	static float vMaxs[3];
+bool CheckHopVel(int client, const float vAng[3], const float vVel[3]) {
+	float vMins[3];
+	float vMaxs[3];
 	GetClientMins(client, vMins);
 	GetClientMaxs(client, vMaxs);
 
-	static float vPos[3];
-	static float vEnd[3];
+	float vPos[3];
+	float vEnd[3];
 	GetClientAbsOrigin(client, vPos);
 	float vel = GetVectorLength(vVel);
 	NormalizeVector(vVel, vEnd);
 	ScaleVector(vEnd, vel + FloatAbs(vMaxs[0] - vMins[0]) + 3.0);
 	AddVectors(vPos, vEnd, vEnd);
 
-	static bool hit;
-	static Handle hndl;
-	static float vVec[3];
-	static float vNor[3];
-	static float vPlane[3];
+	bool hit;
+	Handle hndl;
+	float vVec[3];
+	float vNor[3];
+	float vPlane[3];
 
 	hit = false;
 	vPos[2] += 10.0;
@@ -880,7 +663,11 @@ stock bool CheckHopVel(int client, const float vAng[3], const float vVel[3]) {
 
 	delete hndl;
 	if (!hit)
-		vVec = vEnd;
+	{
+		vVec[0] = vEnd[0];
+		vVec[1] = vEnd[1];
+		vVec[2] = vEnd[2];
+	}
 
 	static float vDown[3];
 	vDown[0] = vVec[0];
@@ -898,11 +685,11 @@ stock bool CheckHopVel(int client, const float vAng[3], const float vVel[3]) {
 	return vVec[2] - vEnd[2] < 104.0;
 }
 
-stock bool TraceSelfFilter(int entity, int contentsMask, any data) {
+bool TraceSelfFilter(int entity, int contentsMask, any data) {
 	return entity != data;
 }
 
-stock bool TraceWallFilter(int entity, int contentsMask, any data) {
+bool TraceWallFilter(int entity, int contentsMask, any data) {
 	if (entity != data) {
 		static char cls[5];
 		GetEdictClassname(entity, cls, sizeof cls);
@@ -912,7 +699,7 @@ stock bool TraceWallFilter(int entity, int contentsMask, any data) {
 	return false;
 }
 
-stock bool TraceEntityFilter(int entity, int contentsMask) {
+bool TraceEntityFilter(int entity, int contentsMask) {
 	if (!entity || entity > MaxClients) {
 		static char cls[5];
 		GetEdictClassname(entity, cls, sizeof cls);
@@ -922,7 +709,7 @@ stock bool TraceEntityFilter(int entity, int contentsMask) {
 	return false;
 }
 
-stock float NearestSurDistance(int client) {
+float NearestSurDistance(int client) {
 	static int i;
 	static float vPos[3];
 	static float vTar[3];
@@ -943,18 +730,18 @@ stock float NearestSurDistance(int client) {
 	return minDist;
 }
 
-stock bool IsAliveSur(int client) {
+bool IsAliveSur(int client) {
 	return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client);
 }
 
-stock void ResetAbilityTime(int charger, float time) {
+void ResetAbilityTime(int charger, float time) {
 	static int ent;
 	ent = GetEntPropEnt(charger, Prop_Send, "m_customAbility");
 	if (ent > MaxClients)
 		SetEntPropFloat(ent, Prop_Send, "m_timestamp", GetGameTime() + time);
 }
 
-stock bool entHitWall(int client, int target) {
+bool entHitWall(int client, int target) {
 	static float vPos[3];
 	static float vTar[3];
 	GetClientAbsOrigin(client, vPos);
@@ -984,7 +771,7 @@ stock bool entHitWall(int client, int target) {
 	return hit;
 }
 
-stock bool vecHitWall(int client, float vPos[3], float vTar[3]) {
+bool vecHitWall(int client, float vPos[3], float vTar[3]) {
 	vPos[2] += 10.0;
 	vTar[2] += 10.0;
 	MakeVectorFromPoints(vPos, vTar, vTar);
@@ -1009,7 +796,7 @@ stock bool vecHitWall(int client, float vPos[3], float vTar[3]) {
 	return hit;
 }
 
-stock bool WithinViewAngle(int client, float offsetThreshold) {
+bool WithinViewAngle(int client, float offsetThreshold) {
 	static int target;
 	target = GetClientAimTarget(client);
 	if (!IsAliveSur(target))
@@ -1028,7 +815,7 @@ stock bool WithinViewAngle(int client, float offsetThreshold) {
 	return false;
 }
 
-stock bool WithinViewAngle2(int client, int viewer, float offsetThreshold) {
+bool WithinViewAngle2(int client, int viewer, float offsetThreshold) {
 	static float vSrc[3];
 	static float vTar[3];
 	static float vAng[3];
@@ -1042,7 +829,7 @@ stock bool WithinViewAngle2(int client, int viewer, float offsetThreshold) {
 	return false;
 }
 
-stock int Math_GetRandomInt(int min, int max)
+int Math_GetRandomInt(int min, int max)
 {
 	int random = GetURandomInt();
 
@@ -1054,7 +841,7 @@ stock int Math_GetRandomInt(int min, int max)
 }
 
 // credits = "AtomicStryker"
-stock bool IsVisibleTo(const float vPos[3], const float vTarget[3]) {
+bool IsVisibleTo(const float vPos[3], const float vTarget[3]) {
 	static float vLookAt[3];
 	MakeVectorFromPoints(vPos, vTarget, vLookAt);
 	GetVectorAngles(vLookAt, vLookAt);
@@ -1076,7 +863,7 @@ stock bool IsVisibleTo(const float vPos[3], const float vTarget[3]) {
 	return isVisible;
 }
 
-stock bool PointWithinViewAngle(const float vecSrcPosition[3], const float vecTargetPosition[3], const float vecLookDirection[3], float flCosHalfFOV) {
+bool PointWithinViewAngle(const float vecSrcPosition[3], const float vecTargetPosition[3], const float vecLookDirection[3], float flCosHalfFOV) {
 	static float vecDelta[3];
 	SubtractVectors(vecTargetPosition, vecSrcPosition, vecDelta);
 	static float cosDiff;
@@ -1088,6 +875,6 @@ stock bool PointWithinViewAngle(const float vecSrcPosition[3], const float vecTa
 	return cosDiff * cosDiff >= GetVectorLength(vecDelta, true) * flCosHalfFOV * flCosHalfFOV;
 }
 
-stock float GetFOVDotProduct(float angle) {
+float GetFOVDotProduct(float angle) {
 	return Cosine(DegToRad(angle) / 2.0);
 }
