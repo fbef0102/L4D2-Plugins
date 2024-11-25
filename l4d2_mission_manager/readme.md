@@ -1,9 +1,9 @@
 # Description | 內容
 Mission manager for L4D2, provide information about map orders for other plugins
 
-> __Note__ <br/>
-🟥Dedicated Server Only<br/>
-🟥只能安裝在Dedicated Server
+> __Note__
+<br/>🟥Dedicated Server Only
+<br/>🟥只能安裝在Dedicated Server
 
 * Video | 影片展示
 <br/>None
