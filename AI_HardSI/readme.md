@@ -488,7 +488,7 @@ Improves the AI behaviour of special infected
 
         * 更動的官方指令，請查看```cfg\AI_HardSI\aggressive_ai.cfg```
             ```php
-            // 1000公尺範圍內才會飛撲 (預設: 200)
+            // 1000公尺範圍內才會跳躍攻擊倖存者 (預設: 200)
             z_jockey_leap_range 1000
             ```
 
