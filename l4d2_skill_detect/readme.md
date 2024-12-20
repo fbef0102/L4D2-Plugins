@@ -153,6 +153,9 @@ Detects and reports skeets, crowns, levels, highpounces, etc.
 
 * <details><summary>Changelog | 版本日誌</summary>
 
+    * v1.9h (2024-12-20)
+        * Compatible with with l4d2_kills_manager by Harry
+
     * v1.8h (2024-8-6)
         * Update API
 

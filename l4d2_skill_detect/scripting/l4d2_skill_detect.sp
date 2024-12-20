@@ -63,8 +63,10 @@
 #include <sdktools>
 #include <left4dhooks>
 #include <multicolors>
+#undef REQUIRE_PLUGIN
+#tryinclude <l4d2_kills_manager>
 
-#define PLUGIN_VERSION "1.9h-2024/8/23"
+#define PLUGIN_VERSION "2.0h-2024/12/20"
 #define DEBUG 0
 
 #define IS_VALID_CLIENT(%1)		(%1 > 0 && %1 <= MaxClients)
@@ -496,7 +498,7 @@ public OnPluginStart()
 	
 	HookEvent("player_spawn",				Event_PlayerSpawn,				EventHookMode_Post);
 	HookEvent("player_hurt",				Event_PlayerHurt,				EventHookMode_Pre);
-	HookEvent("player_death",				Event_PlayerDeath,				EventHookMode_Pre);
+	HookEvent("player_death",				Event_PlayerDeath_Pre,				EventHookMode_Pre);
 	HookEvent("ability_use",				Event_AbilityUse,				EventHookMode_Post);
 	HookEvent("lunge_pounce",				Event_LungePounce,				EventHookMode_Post);
 	HookEvent("player_shoved",				Event_PlayerShoved,				EventHookMode_Post);
@@ -604,6 +606,7 @@ public OnPluginStart()
 	}
 }
 
+bool g_bAvailable_l4d2_kills_manager;
 public void OnAllPluginsLoaded()
 {
 	g_hCvarMaxPounceDistance = FindConVar("z_pounce_damage_range_max");
@@ -612,6 +615,18 @@ public void OnAllPluginsLoaded()
 	if ( g_hCvarMaxPounceDistance == null ) { g_hCvarMaxPounceDistance = CreateConVar( "z_pounce_damage_range_max",  		"1000.0", 	"Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
 	if ( g_hCvarMinPounceDistance == null ) { g_hCvarMinPounceDistance = CreateConVar( "z_pounce_damage_range_min",  		"300.0", 	"Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
 	if ( g_hCvarMaxPounceDamage == null ) 	{ g_hCvarMaxPounceDamage = CreateConVar( "z_hunter_max_pounce_bonus_damage",  	"24", 		"Not available on this server, added by l4d2_skill_detect.", FCVAR_NONE, true, 0.0, false ); }
+
+	g_bAvailable_l4d2_kills_manager = LibraryExists("l4d2_kills_manager");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	g_bAvailable_l4d2_kills_manager = LibraryExists("l4d2_kills_manager");
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	g_bAvailable_l4d2_kills_manager = LibraryExists("l4d2_kills_manager");
 }
 
 void ConVarChanged_Cvars(ConVar hCvar, const char[] sOldVal, const char[] sNewVal)
@@ -1150,8 +1165,188 @@ public Action: TraceAttack_Jockey (victim, &attacker, &inflictor, &Float:damage,
 	}
 }
 
-public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroadcast )
+public void l4d2_kills_manager_PlayerDeath_Pre(int userid, int entityid, int attacker, const char[] attackername, int attackerentid, const char[] weapon, bool headshot, bool attackerisbot, const char[] victimname, bool victimisbot, bool abort, int type, float victim_x, float victim_y, float victim_z)
 {
+	if(!g_bAvailable_l4d2_kills_manager) return;
+
+	int victim = GetClientOfUserId( userid );
+	attacker = GetClientOfUserId( attacker ); 
+	if ( IS_VALID_INFECTED(victim) )
+	{
+
+		new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
+		
+		switch ( zClass )
+		{
+			case ZC_HUNTER, ZC_JOCKEY:
+			{
+				if ( !IS_VALID_SURVIVOR(attacker) ) { return; }
+				
+				strWeaponType weaponType = WPTYPE_NONE;
+				GetTrieValue(g_hTrieWeapons, weapon, weaponType);
+				if(weaponType == WPTYPE_SHOTGUN && g_hCvarAllowShotgun.BoolValue == false) ResetHunter(victim, true);
+
+				if ( g_iHunterShotDmgTeam[victim] > 0 && g_bHunterKilledPouncing[victim] )
+				{
+					// skeet?
+					if (	g_iHunterShotDmgTeam[victim] > g_iHunterShotDmg[victim][attacker] &&
+							g_iHunterShotDmgTeam[victim] >= g_iPounceInterrupt
+					) {
+						// team skeet
+						HandleSkeet( -2, victim, weaponType, g_iHunterShotCount[victim][attacker], attacker,
+							zClass == ZC_HUNTER, headshot );
+					}
+					else if ( g_iHunterShotDmg[victim][attacker] >= g_iPounceInterrupt )
+					{
+						// single player skeet
+						HandleSkeet( attacker, victim, weaponType, g_iHunterShotCount[victim][attacker],
+							-1, zClass == ZC_HUNTER, headshot );
+					}
+					else if ( g_iHunterOverkill[victim] > 0 )
+					{
+						// overkill? might've been a skeet, if it wasn't on a hurt hunter (only for shotguns)
+						HandleNonSkeet( attacker, victim, g_iHunterShotDmgTeam[victim],
+							( g_iHunterOverkill[victim] + g_iHunterShotDmgTeam[victim] > g_iPounceInterrupt ),
+							weaponType, 1, zClass == ZC_HUNTER, headshot);
+					}
+					else
+					{
+						// not a skeet at all
+						HandleNonSkeet( attacker, victim, g_iHunterShotDmg[victim][attacker], false,
+							weaponType, 1, zClass == ZC_HUNTER, headshot);
+					}
+				}
+				else {
+					// check whether it was a clear
+					if ( g_iSpecialVictim[victim] > 0 )
+					{
+						HandleClear( attacker, victim, g_iSpecialVictim[victim],
+								zClass,
+								( GetEngineTime() - g_fPinTime[victim][0]),
+								-1.0,
+								false,
+								true
+							);
+					}
+				}
+				
+				ResetHunter(victim, true);
+			}
+			
+			case ZC_SMOKER:
+			{
+				if ( !IS_VALID_SURVIVOR(attacker) ) { return; }
+				
+				DebugPrint("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
+					g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
+
+				if(L4D_IsSurvivalMode() || L4D_IsVersusMode() || L4D2_IsScavengeMode())
+				{
+					if (	g_iSmokerVictim[victim] > 0 &&
+							g_iSmokerVictim[victim] == attacker &&
+							g_iSmokerVictimDamage[victim] >= GetConVarInt(g_hCvarSelfClearThresh) ) 
+					{
+							HandleSmokerSelfClear( attacker, victim, false, headshot );
+					}
+					else if ( g_iSmokerVictim[victim] > 0 &&
+								g_iSmokerVictim[victim] != attacker )
+					{
+						int smoker = victim;
+						victim = g_iSmokerVictim[smoker];
+						HandleClear( attacker, smoker, victim,
+								ZC_SMOKER,
+								(g_fPinTime[smoker][1] > 0.0) ? ( GetEngineTime() - g_fPinTime[smoker][1]) : -1.0,
+								( GetEngineTime() - g_fPinTime[smoker][0]),
+								false,
+								headshot
+							);
+					}
+					else
+					{
+						g_bSmokerClearCheck[victim] = false;
+						g_iSmokerVictim[victim] = 0;
+					}
+				}
+				else
+				{
+					if (	g_bSmokerClearCheck[victim] &&
+							g_iSmokerVictim[victim] == attacker &&
+							g_iSmokerVictimDamage[victim] >= GetConVarInt(g_hCvarSelfClearThresh) ) 
+					{
+							HandleSmokerSelfClear( attacker, victim, false, headshot );
+					}
+					else
+					{
+						g_bSmokerClearCheck[victim] = false;
+						g_iSmokerVictim[victim] = 0;
+					}
+				}
+
+			}
+			
+			/*
+			case ZC_JOCKEY:
+			{
+				// check whether it was a clear
+				if ( g_iSpecialVictim[victim] > 0 )
+				{
+					HandleClear( attacker, victim, g_iSpecialVictim[victim],
+							ZC_JOCKEY,
+							( GetEngineTime() - g_fPinTime[victim][0]),
+							-1.0,
+							false,
+							headgshot
+						);
+				}
+			}
+			*/
+			
+			case ZC_CHARGER:
+			{
+				// is it someone carrying a survivor (that might be DC'd)?
+				// switch charge victim to 'impact' check (reset checktime)
+				if ( IS_VALID_INGAME(g_iChargeVictim[victim]) ) {
+					g_fChargeTime[ g_iChargeVictim[victim] ] = GetEngineTime();
+				}
+				
+				// check whether it was a clear
+				if ( g_iSpecialVictim[victim] > 0 )
+				{
+					HandleClear( attacker, victim, g_iSpecialVictim[victim],
+							ZC_CHARGER,
+							(g_fPinTime[victim][1] > 0.0) ? ( GetEngineTime() - g_fPinTime[victim][1]) : -1.0,
+							( GetEngineTime() - g_fPinTime[victim][0]),
+							false,
+							headshot
+						);
+				}
+			}
+		}
+	}
+	else if ( IS_VALID_SURVIVOR(victim) )
+	{
+		// check for deathcharges
+		//new atkent = GetEventInt(hEvent, "attackerentid"); 
+
+		
+		//DebugPrint("Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
+		
+		if ( type & DMG_FALL)
+		{
+			g_iVictimFlags[victim] = g_iVictimFlags[victim] | VICFLG_FALL;
+		}
+		else if ( IS_VALID_INFECTED(attacker) && attacker != g_iVictimCharger[victim] )
+		{
+			// if something other than the charger killed them, remember (not a DC)
+			g_iVictimFlags[victim] = g_iVictimFlags[victim] | VICFLG_KILLEDBYOTHER;
+		}
+	}
+}
+
+void Event_PlayerDeath_Pre( Event event, const char[] name, bool dontBroadcast )
+{
+	if(g_bAvailable_l4d2_kills_manager) return;
+
 	new victim = GetClientOfUserId( event.GetInt("userid") );
 	new attacker = GetClientOfUserId( event.GetInt("attacker") ); 
 	bool headshot = event.GetBool("headshot");
@@ -1165,7 +1360,7 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 		{
 			case ZC_HUNTER, ZC_JOCKEY:
 			{
-				if ( !IS_VALID_SURVIVOR(attacker) ) { return Plugin_Continue; }
+				if ( !IS_VALID_SURVIVOR(attacker) ) { return; }
 				
 				static char weapon_type[64];
 				event.GetString("weapon",weapon_type, sizeof(weapon_type));
@@ -1222,7 +1417,7 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 			
 			case ZC_SMOKER:
 			{
-				if ( !IS_VALID_SURVIVOR(attacker) ) { return Plugin_Continue; }
+				if ( !IS_VALID_SURVIVOR(attacker) ) { return; }
 				
 				DebugPrint("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
 					g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
@@ -1328,8 +1523,6 @@ public Action: Event_PlayerDeath( Event event, const char[] name, bool dontBroad
 			g_iVictimFlags[victim] = g_iVictimFlags[victim] | VICFLG_KILLEDBYOTHER;
 		}
 	}
-	
-	return Plugin_Continue;
 }
 
 public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontBroadcast )
