@@ -9,10 +9,13 @@ Stop tank props from fading whilst the tank is alive
     * Hittabe car glow (打到的車子均發光)
     <br/>![l4d2_tank_props_glow_1](image/l4d2_tank_props_glow_1.jpg)
 
-* [L4D1 version | 適用於L4D1的版本](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/l4d_tank_props.sp)
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
 
 * Require | 必要安裝
-    1. [[INC] l4d2_hittable_control](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/include/l4d2_hittable_control.inc)
+    1. [[INC] l4d2_hittable_control](https://github.com/fbef0102/Game-Private_Plugin/blob/main/L4D_插件/Require_檔案/scripting/include/l4d2_hittable_control.inc)
 
 * <details><summary>ConVar | 指令</summary>
 
@@ -49,10 +52,11 @@ Stop tank props from fading whilst the tank is alive
     None
 </details>
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
+* <details><summary>Other Version | 其他版本</summary>
+
+    1. [l4d_tank_props](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/l4d_tank_props.sp): (L4D1) Stop tank props from fading whilst the tank is alive + add Hittable Glow
+        > (L4D1) Tank打到的物件都會產生光圈，只有特感能看見 + Tank死亡之後車子自動消失
+</details>
 
 * <details><summary>Changelog | 版本日誌</summary>
 

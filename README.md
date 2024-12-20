@@ -9,8 +9,8 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
 
 # Plugins
 > __Note__  
-> **[>>Click here to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**<br/>
-> **[>>點擊我查看更多私人插件<<](https://github.com/fbef0102/Game-Private_Plugin#l4d12-plugin-list--l4d1%E5%92%8C2%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8)**
+> **[>>Click here to see my private plugin list<<](https://github.com/fbef0102/Game-Private_Plugin?tab=readme-ov-file#%E7%A7%81%E4%BA%BA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8-private-plugins-list)**<br/>
+> **[>>點擊我查看更多私人插件<<](https://github.com/fbef0102/Game-Private_Plugin?tab=readme-ov-file#%E7%A7%81%E4%BA%BA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8-private-plugins-list)**
 * <b>[l4d2_Death_Survivor](/l4d2_Death_Survivor)</b>: If a player die as a survivor, this model survior bot keep death until map change or server shutdown
 * <b>[clear_dead_body](/clear_dead_body)</b>: Remove Dead Body Entity
 * <b>[l4d2_vocalizebasedmodel](/l4d2_vocalizebasedmodel)</b>: Survivors will vocalize based on their model

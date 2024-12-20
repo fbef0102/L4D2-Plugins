@@ -3,15 +3,19 @@ Quickswitch Reloading like CS:GO in L4D2
 
 * [Video | 影片展示](https://youtu.be/t7n1vYBb5sk)
 
-* Image | 圖示
-<br/>None
-
 * Apply to | 適用於
     ```
     L4D2
     ```
 
-* [L4D1 Version | 適用於L4D1的版本](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/l4d_weapon_csgo_reload.sp)
+* Require | 必要安裝
+    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696) 
+
+* <details><summary>Other Version | 其他版本</summary>
+
+    1. [l4d_weapon_csgo_reload](https://github.com/fbef0102/Rotoblin-AZMod/blob/master/SourceCode/scripting-az/l4d_weapon_csgo_reload.sp): (L4D1) Quickswitch Reloading like CS:GO
+        > (L4D1) 將武器改成現代遊戲的裝子彈機制
+</details>
 
 * <details><summary>Changelog | 版本日誌</summary>
 
@@ -31,9 +35,6 @@ Quickswitch Reloading like CS:GO in L4D2
 	* v1.0
 	    * Initial Release
 </details>
-
-* Require | 必要安裝
-    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696) 
 
 * <details><summary>ConVar | 指令</summary>
 
