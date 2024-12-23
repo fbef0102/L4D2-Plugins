@@ -90,5 +90,6 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
 
 # Others
 * <b>[L4D1_2-Plugins](https://github.com/fbef0102/L4D1_2-Plugins)</b>: L4D1/2 general purpose and freaky-fun plugins.
+* <b>[Sourcemod-Plugins](https://github.com/fbef0102/Sourcemod-Plugins)</b>: Plugins for most source engine games.
 * <b>[L4D2-Server4Dead](https://github.com/fbef0102/L4D2-Server4Dead)</b>: Setup your own L4D2 Servers.
 * <b>[Game-Private_Plugin](https://github.com/fbef0102/Game-Private_Plugin)</b>: Private Plugin List.

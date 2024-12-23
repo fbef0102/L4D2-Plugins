@@ -221,7 +221,7 @@ When using 'Look' in vocalize menu, print corresponding item to chat area and ma
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
-	1. [l4d2_infected_hp_hint](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Special_Infected_%E7%89%B9%E6%84%9F/l4d2_infected_hp_hint): Display corresponding health value hint of all Special Infected
+	1. [l4d2_infected_hp_hint](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Special_Infected_%E7%89%B9%E6%84%9F/l4d2_infected_hp_hint): Display corresponding health value hint of all Special Infected
         * 在特感身上顯示剩餘血量
 </details>
 

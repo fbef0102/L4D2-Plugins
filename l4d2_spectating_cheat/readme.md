@@ -56,16 +56,16 @@ A spectator can now see the special infected model glows though the wall
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
-    1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
+    1. [l4d_flashlight_speconly](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_flashlight_speconly): Attaches an extra flashlight to spectators and dead survivors.
         > 給死亡玩家或旁觀者手電筒，照亮地圖
 
     2. [HP Sprite](https://forums.alliedmods.net/showthread.php?p=2735149): Shows a sprite at the client head based on its HP
         > 頭上有血量提示，給旁觀者更好的觀賞性
 
-    3. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
+    3. [l4d2healthglow](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Survivor_%E4%BA%BA%E9%A1%9E/l4d2healthglow): Gives the Survivors a health glow around them + For the infected, survivors always glow with a non-disappearing aura. (Even if survivor doesn't move or walk)
         > 根據玩家生命值狀態給予輪廓光圈適當的顏色 + 對抗模式中，特感永遠能看到人類光圈 (即使人類靜走或不動)
         
-    4. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
+    4. [l4d2_wallhack_cheat](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Nothing_Impossible_%E7%84%A1%E7%90%86%E6%94%B9%E9%80%A0%E7%89%88/l4d2_wallhack_cheat): Admins can use commands to see the infected model glows though the wall
         > 管理員輸入指令能透視看到特感
 </details>
 
@@ -94,7 +94,7 @@ A spectator can now see the special infected model glows though the wall
         * Support [l4d2_profitless_ai_tank Plugin](https://github.com/SirPlease/L4D2-Competitive-Rework/blob/master/addons/sourcemod/scripting/l4d2_profitless_ai_tank.sp)
 
     * v2.3 (2022-12-5)
-        * Support [Zombie Change Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
+        * Support [Zombie Change Class Plugin](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Versus_%E5%B0%8D%E6%8A%97%E6%A8%A1%E5%BC%8F/l4d_zcs)
 
     * v2.2
         * Remake code

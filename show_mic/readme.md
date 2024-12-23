@@ -15,7 +15,7 @@ Voice Announce in centr text + create hat to Show Who is speaking.
     3. [ThirdPersonShoulder_Detect](https://forums.alliedmods.net/showthread.php?p=2529779)
 
 * Related Plugin | 相關插件
-    1. [l4d_versus_specListener](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener): Allows spectator listen others team voice and see others team chat for l4d
+    1. [l4d_versus_specListener](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener): Allows spectator listen others team voice and see others team chat for l4d
         > 旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
 
 * <details><summary>ConVar | 指令</summary>
@@ -66,7 +66,7 @@ Voice Announce in centr text + create hat to Show Who is speaking.
     * 當倖存者在遊戲中使用麥克風說話時，頭上產生對話框的模組   
         * 只有相同的倖存者隊伍才看得到頭上對話框的模組
         * 如果伺服器開啟```sv_alltalk 1```，則所有人都能看到倖存者頭上對話框的模組
-    * 可以搭配[l4d_versus_specListener插件](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener)，旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
+    * 可以搭配[l4d_versus_specListener插件](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Spectator_%E6%97%81%E8%A7%80%E8%80%85/l4d_versus_specListener)，旁觀者可以透過聊天視窗看到倖存者和特感的隊伍對話，亦可透過音頻聽到隊伍談話
     * 戰役模式也適用
 
 * <details><summary>指令中文介紹 (點我展開)</summary>

@@ -2,7 +2,7 @@
 Lets players pass pills and adrenaline with +Reload key
 
 > __Note__ <br/>
-This Plugin has been discontinued, Use [l4d_item_passer](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Items_%E7%89%A9%E5%93%81/l4d_item_passer)
+This Plugin has been discontinued, Use [l4d_item_passer](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Items_%E7%89%A9%E5%93%81/l4d_item_passer)
 
 * <details><summary>Changelog | 版本日誌</summary>
 
@@ -22,7 +22,7 @@ This Plugin has been discontinued, Use [l4d_item_passer](https://github.com/fbef
 用R鍵直接傳送藥丸與腎上腺素給隊友
 
 > __Note__ <br/>
-此插件已停止更新，請使用[l4d_item_passer](https://github.com/fbef0102/Game-Private_Plugin/tree/main/Plugin_%E6%8F%92%E4%BB%B6/Items_%E7%89%A9%E5%93%81/l4d_item_passer)
+此插件已停止更新，請使用[l4d_item_passer](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Items_%E7%89%A9%E5%93%81/l4d_item_passer)
 
 * 原理
     * 拿著藥丸或腎上腺素－＞準心對準隊友－＞按下Ｒ鍵－＞藥丸或腎上腺素會直接給隊友
