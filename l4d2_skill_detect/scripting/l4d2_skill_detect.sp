@@ -933,7 +933,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 							}
 							
 							// charger was killed, was it a full level?
-							DebugPrint("health: %d, damage: %d, chip-level: %d", health, damage, iChargeHealth * 0.8);
+							//LogError("health: %d, damage: %d, chip-level: %d", health, damage, iChargeHealth * 0.8);
 							if ( damage >= (iChargeHealth * 0.5) ) {
 								HandleLevel( attacker, victim, hitgroup == HITGROUP_HEAD );
 							}
@@ -948,7 +948,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 				if ( health > 0 )
 				{
 					g_iChargerHealth[victim] = health;
-					DebugPrint("g_iChargerHealth[victim]: %d", g_iChargerHealth[victim]);
+					//LogError("g_iChargerHealth[victim]: %d", g_iChargerHealth[victim]);
 				}
 			}
 			
@@ -1105,7 +1105,7 @@ public Action: Event_IncapStart( Handle:event, const String:name[], bool:dontBro
 	
 	new Float: flow = GetSurvivorDistance(client);
 	
-	//DebugPrint("Incap Pre on [%N]: attk: %i / %i (%s) - dmgtype: %i - flow: %.1f", client, attacker, attackent, classname, dmgtype, flow );
+	//LogError("Incap Pre on [%N]: attk: %i / %i (%s) - dmgtype: %i - flow: %.1f", client, attacker, attackent, classname, dmgtype, flow );
 	
 	// drown is damage type
 	if ( dmgtype & DMG_DROWN )
@@ -1237,8 +1237,8 @@ public void l4d2_kills_manager_PlayerDeath_Pre(int userid, int entityid, int att
 			{
 				if ( !IS_VALID_SURVIVOR(attacker) ) { return; }
 				
-				DebugPrint("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
-					g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
+				//LogError("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
+				//	g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
 
 				if(L4D_IsSurvivalMode() || L4D_IsVersusMode() || L4D2_IsScavengeMode())
 				{
@@ -1329,7 +1329,7 @@ public void l4d2_kills_manager_PlayerDeath_Pre(int userid, int entityid, int att
 		//new atkent = GetEventInt(hEvent, "attackerentid"); 
 
 		
-		//DebugPrint("Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
+		//LogError("Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
 		
 		if ( type & DMG_FALL)
 		{
@@ -1419,8 +1419,8 @@ void Event_PlayerDeath_Pre( Event event, const char[] name, bool dontBroadcast )
 			{
 				if ( !IS_VALID_SURVIVOR(attacker) ) { return; }
 				
-				DebugPrint("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
-					g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
+				//LogError("g_bSmokerClearCheck %d - g_iSmokerVictim: %d, g_iSmokerVictimDamage: %d, attacker: %d, CvarSelfClearThresh: %d", 
+				//	g_bSmokerClearCheck[victim], g_iSmokerVictim[victim],  g_iSmokerVictimDamage[victim], attacker, GetConVarInt(g_hCvarSelfClearThresh));
 
 				if(L4D_IsSurvivalMode() || L4D_IsVersusMode() || L4D2_IsScavengeMode())
 				{
@@ -1511,7 +1511,7 @@ void Event_PlayerDeath_Pre( Event event, const char[] name, bool dontBroadcast )
 		//new atkent = GetEventInt(hEvent, "attackerentid"); 
 		new dmgtype = event.GetInt("type"); 
 		
-		//DebugPrint("Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
+		//LogError("Died [%N]: attk: %i / %i - dmgtype: %i", victim, attacker, atkent, dmgtype );
 		
 		if ( dmgtype & DMG_FALL)
 		{
@@ -1530,13 +1530,13 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	//DebugPrint("Shove from %i on %i", attacker, victim);
+	//LogError("Shove from %i on %i", attacker, victim);
 	
 	if ( !IS_VALID_SURVIVOR(attacker) || !IS_VALID_INFECTED(victim) ) { return Plugin_Continue; }
 	
 	new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
 	
-	//DebugPrint(" --> Shove from %N on %N (class: %i) -- (last shove time: %.2f / %.2f)", attacker, victim, zClass, g_fVictimLastShove[victim][attacker], ( GetEngineTime() - g_fVictimLastShove[victim][attacker] ) );
+	//LogError(" --> Shove from %N on %N (class: %i) -- (last shove time: %.2f / %.2f)", attacker, victim, zClass, g_fVictimLastShove[victim][attacker], ( GetEngineTime() - g_fVictimLastShove[victim][attacker] ) );
 	
 	// track on boomers
 	if ( zClass == ZC_BOOMER )
@@ -1606,7 +1606,7 @@ public Action: Event_PlayerShoved( Handle:event, const String:name[], bool:dontB
 		// CPrintToChat(attacker, "shoved %d player_shoved", victim);
 	}
 	
-	//DebugPrint("shove by %i on %i", attacker, victim );
+	//LogError("shove by %i on %i", attacker, victim );
 	return Plugin_Continue;
 }
 
@@ -1958,7 +1958,7 @@ public Action: Event_ChargeCarryStart( Handle:event, const String:name[], bool:d
 	new victim = GetClientOfUserId( GetEventInt(event, "victim") );
 	if ( !IS_VALID_INFECTED(client) ) { return; }
 
-	DebugPrint("Charge carry start: %i - %i -- time: %.2f", client, victim, GetEngineTime() );
+	//LogError("Charge carry start: %i - %i -- time: %.2f", client, victim, GetEngineTime() );
 	
 	g_fChargeTime[client] = GetEngineTime();
 	g_fPinTime[client][0] = g_fChargeTime[client];
@@ -2070,7 +2070,7 @@ Action Timer_DeathChargeCheck( Handle timer, int userid )
 	if ( !IS_VALID_INGAME(client) ) { return Plugin_Continue; }
 	
 	// check conditions.. if flags match up, it's a DC
-	DebugPrint("Checking charge victim: %i - %i - flags: %i (alive? %i)", g_iVictimCharger[client], client, g_iVictimFlags[client], IsPlayerAlive(client) );
+	//LogError("Checking charge victim: %i - %i - flags: %i (alive? %i)", g_iVictimCharger[client], client, g_iVictimFlags[client], IsPlayerAlive(client) );
 	
 	new flags = g_iVictimFlags[client];
 	
@@ -2517,7 +2517,7 @@ stock CheckWitchCrown ( witch, attacker, bool: bOneShot = false )
 	FormatEx(witch_key, sizeof(witch_key), "%x", witch);
 	decl witch_dmg_array[MAXPLAYERS+DMGARRAYEXT];
 	if ( !GetTrieArray(g_hWitchTrie, witch_key, witch_dmg_array, MAXPLAYERS+DMGARRAYEXT) ) {
-		DebugPrint("Witch Crown Check: Error: Trie entry missing (entity: %i, oneshot: %i)", witch, bOneShot);
+		//LogError("Witch Crown Check: Error: Trie entry missing (entity: %i, oneshot: %i)", witch, bOneShot);
 		return;
 	}
 	
@@ -2542,26 +2542,26 @@ stock CheckWitchCrown ( witch, attacker, bool: bOneShot = false )
 	
 	if ( witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_GOTSLASH)] || !witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNTYPE)] )
 	{
-		DebugPrint("Witch Crown Check: Failed: bungled: %i / crowntype: %i (entity: %i)",
+		/*LogError("Witch Crown Check: Failed: bungled: %i / crowntype: %i (entity: %i)",
 				witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_GOTSLASH)],
 				witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNTYPE)],
 				witch
 			);
-		DebugPrint("Witch Crown Check: Further details: attacker: %N, attacker dmg: %i, teamless dmg: %i",
+		LogError("Witch Crown Check: Further details: attacker: %N, attacker dmg: %i, teamless dmg: %i",
 				attacker,
 				witch_dmg_array[attacker],
 				witch_dmg_array[0]
-			);
+			);*/
 		return;
 	}
 	
-	DebugPrint("Witch Crown Check: crown shot: %i, harrassed: %i (full health: %i / drawthresh: %i / oneshot %i)", 
+	/*LogError("Witch Crown Check: crown shot: %i, harrassed: %i (full health: %i / drawthresh: %i / oneshot %i)", 
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNSHOT)],
 			witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_STARTLED)],
 			iWitchHealth,
 			GetConVarInt(g_hCvarDrawCrownThresh),
 			bOneShot
-		);
+		);*/
 	
 	// full crown? unharrassed
 	if ( !witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_STARTLED)] && ( bOneShot || witch_dmg_array[MAXPLAYERS+view_as<int>(WTCH_CROWNSHOT)] >= iWitchHealth ) )
@@ -2687,7 +2687,7 @@ public Action: Event_TonguePullStopped (Handle:event, const String:name[], bool:
 	
 	if ( !IS_VALID_SURVIVOR(attacker) || !IS_VALID_INFECTED(smoker) ) { return Plugin_Continue; }
 
-	DebugPrint("Event_TonguePullStopped attacker %N, victim: %N, smoker: %N, reason: %d", attacker, victim, smoker, reason);
+	//LogError("Event_TonguePullStopped attacker %N, victim: %N, smoker: %N, reason: %d", attacker, victim, smoker, reason);
 
 	// clear check -  if the smoker itself was not shoved, handle the clear
 	HandleClear( attacker, smoker, victim,
@@ -2739,7 +2739,7 @@ public void Event_TongueRelease(Event event, const char[] name, bool dontBroadca
 
 	if (L4D_IsCoopMode() || L4D2_IsRealismMode()) return;
 
-	DebugPrint("Event_TongueRelease smoker %N, victim: %N", smoker, victim);
+	//LogError("Event_TongueRelease smoker %N, victim: %N", smoker, victim);
 }
 
 public Action: Event_TongueGrab (Handle:event, const String:name[], bool:dontBroadcast)
@@ -2777,7 +2777,7 @@ public Action: Event_ChokeStop (Handle:event, const String:name[], bool:dontBroa
 	new reason = GetEventInt(event, "release_type");
 	
 	if ( !IS_VALID_SURVIVOR(attacker) || !IS_VALID_INFECTED(smoker) ) { return; }
-	DebugPrint("Event_ChokeStop attacker %N, victim: %N, smoker: %N, reason: %d", attacker, victim, smoker, reason);
+	//LogError("Event_ChokeStop attacker %N, victim: %N, smoker: %N, reason: %d", attacker, victim, smoker, reason);
 	
 	// if the smoker itself was not shoved, handle the clear
 
@@ -2799,7 +2799,7 @@ public Hook_CarAlarmStart ( const String:output[], caller, activator, Float:dela
 	//decl String:car_key[10];
 	//FormatEx(car_key, sizeof(car_key), "%x", entity);
 	
-	DebugPrint( "calarm trigger: caller %i / activator %i / delay: %.2f", caller, activator, delay );
+	//LogError( "calarm trigger: caller %i / activator %i / delay: %.2f", caller, activator, delay );
 }
 
 void Event_CarAlarmGoesOff( Handle:event, const String:name[], bool:dontBroadcast )
@@ -3921,7 +3921,7 @@ stock HandleClear( attacker, victim, pinVictim, zombieClass, Float:clearTimeA, F
 	if ( clearTimeA < 0 && clearTimeA != -1.0 ) { clearTimeA = 0.0; }
 	if ( clearTimeB < 0 && clearTimeB != -1.0 ) { clearTimeB = 0.0; }
 	
-	DebugPrint("Clear: %i freed %i from %i: time: %.2f / %.2f -- class: %s (with shove? %i)", attacker, pinVictim, victim, clearTimeA, clearTimeB, g_csSIClassName[zombieClass], bWithShove );
+	//LogError("Clear: %i freed %i from %i: time: %.2f / %.2f -- class: %s (with shove? %i)", attacker, pinVictim, victim, clearTimeA, clearTimeB, g_csSIClassName[zombieClass], bWithShove );
 	
 	if ( attacker != pinVictim && g_bCvarReportEnable && (g_iCvarReportFlags & REP_INSTACLEAR) )
 	{
@@ -4155,17 +4155,7 @@ public bool: ChargeTraceFilter (entity, contentsMask)
 }
 */
 
-stock void DebugPrint(const char[] Message, any ...)
-{
-    #if DEBUG
-        char DebugBuff[128];
-        VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
-        PrintToChatAll("%s",DebugBuff);
-        PrintToServer(DebugBuff);
-        LogMessage(DebugBuff);
-    #endif 
-}
-stock bool: IsWitch(entity)
+bool: IsWitch(entity)
 {
 	if ( !IsValidEntity(entity) ) { return false; }
 	

@@ -178,7 +178,7 @@ stock ModelID GetModelID(const char[] model_name)
 		if(strcmp(model_name,sModel_Name[i],false) == 0)
 			return i;
 	}
-	return ModelID:MODEL_NONE;
+	return MODEL_NONE;
 }
 
 bool IsClientSurvivorIndex(int client)
