@@ -836,7 +836,7 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 								else
 								{
 									g_iHunterShotDmgTeam[victim] += damage;
-									// g_iHunterShotDmg[victim][attacker] += damage;
+									g_iHunterShotDmg[victim][attacker] += damage; //此行原本被comment
 									g_iHunterShotDamage[victim][attacker] += damage;
 								}
 							}
@@ -875,10 +875,17 @@ public Action: Event_PlayerHurt( Handle:event, const String:name[], bool:dontBro
 								else
 								{
 									g_iHunterShotDmgTeam[victim] += damage;
-									// g_iHunterShotDmg[victim][attacker] += damage;
+									g_iHunterShotDmg[victim][attacker] += damage; //此行原本被comment
 									g_iHunterShotDamage[victim][attacker] += damage;
 								}
 							}
+						}
+						else
+						{
+							//這三行原本不存在
+							g_iHunterShotDmgTeam[victim] += damage;
+							g_iHunterShotDmg[victim][attacker] += damage; 
+							g_iHunterShotDamage[victim][attacker] += damage;
 						}
 						// already handled hurt skeet above
 						//g_bHunterKilledPouncing[victim] = true;
@@ -1212,8 +1219,12 @@ public void l4d2_kills_manager_PlayerDeath_Pre(int userid, int entityid, int att
 					else
 					{
 						// not a skeet at all
-						HandleNonSkeet( attacker, victim, g_iHunterShotDmg[victim][attacker], false,
-							weaponType, 1, zClass == ZC_HUNTER, headshot);
+						//PrintToChatAll("g_iHunterShotDmg: %d", g_iHunterShotDmg[victim][attacker]);
+						if(g_iHunterShotDmg[victim][attacker] > 0)
+						{
+							HandleNonSkeet( attacker, victim, g_iHunterShotDmg[victim][attacker], false,
+								weaponType, 1, zClass == ZC_HUNTER, headshot);
+						}
 					}
 				}
 				else {

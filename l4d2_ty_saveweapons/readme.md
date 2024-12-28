@@ -1,12 +1,6 @@
 # Description | 內容
 L4D2 coop save weapon when map transition if more than 4 players
 
-* Video | 影片展示
-<br/>None
-
-* Image | 圖示
-<br/>None
-
 * Require | 必要安裝
     1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
     2. [l4d_heartbeat](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4d_heartbeat)
@@ -32,19 +26,6 @@ L4D2 coop save weapon when map transition if more than 4 players
         ```
 </details>
 
-* <details><summary>Command | 命令</summary>
-
-    None
-</details>
-
-* <details><summary>API | 串接</summary>
-
-    * [l4d2_ty_saveweapons.inc](scripting\include\l4d2_ty_saveweapons.inc)
-        ```php
-        library name: l4d2_ty_saveweapons
-        ```
-</details>
-
 * <details><summary>Related Official ConVar</summary>
 
     * Write down the follong cvars in cfg/server.cfg
@@ -53,6 +34,14 @@ L4D2 coop save weapon when map transition if more than 4 players
         // If 0, prevent bots from moving, changing weapons, using kits while human survivors are still changing levels
         // Default: 1
         sm_cvar sb_transition 0 
+        ```
+</details>
+
+* <details><summary>API | 串接</summary>
+
+    * [l4d2_ty_saveweapons.inc](scripting\include\l4d2_ty_saveweapons.inc)
+        ```php
+        library name: l4d2_ty_saveweapons
         ```
 </details>
 
@@ -113,7 +102,7 @@ L4D2 coop save weapon when map transition if more than 4 players
         * 血量與黑白狀態
     * 當玩家載入到下一關之後，恢复所有資料
 
-* <details><summary>ConVar | 指令</summary>
+* <details><summary>指令中文介紹 (點我展開)</summary>
 
     * cfg\sourcemod\l4d2_ty_saveweapons.cfg
         ```php
@@ -134,7 +123,6 @@ L4D2 coop save weapon when map transition if more than 4 players
         l4d2_ty_saveweapons_save_character "0"
         ```
 </details>
-
 
 * <details><summary>相關的官方指令中文介紹 (點我展開)</summary>
 
