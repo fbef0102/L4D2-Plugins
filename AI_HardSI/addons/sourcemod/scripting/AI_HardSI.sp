@@ -23,14 +23,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 bool 
 	g_bPluginEnd;
 
-#include "AI_HardSI/AI_Smoker.sp"
-#include "AI_HardSI/AI_Boomer.sp"
-#include "AI_HardSI/AI_Hunter.sp"
-#include "AI_HardSI/AI_Spitter.sp"
-#include "AI_HardSI/AI_Charger.sp"
-#include "AI_HardSI/AI_Jockey.sp"
-#include "AI_HardSI/AI_Tank.sp"
-
 #define CVAR_FLAGS                    FCVAR_NOTIFY
 #define CVAR_FLAGS_PLUGIN_VERSION     FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY
 
@@ -74,6 +66,16 @@ bool
 #define FAR_AWAY 5
 #define ABOVE 6
 
+#define PLAYER_HEIGHT	72.0
+
+#include "AI_HardSI/AI_Smoker.sp"
+#include "AI_HardSI/AI_Boomer.sp"
+#include "AI_HardSI/AI_Hunter.sp"
+#include "AI_HardSI/AI_Spitter.sp"
+#include "AI_HardSI/AI_Charger.sp"
+#include "AI_HardSI/AI_Jockey.sp"
+#include "AI_HardSI/AI_Tank.sp"
+
 ConVar g_hCvarEnable, g_hCvarAssaultReminderInterval, g_hCvarExecAggressiveCfg;
 bool g_bCvarEnable;
 float g_fCvarAssaultReminderInterval;
@@ -87,7 +89,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "2.0-2024/9/9",
+	version = "2.1-2025/1/2",
 	url = "github.com/breezyplease"
 };
 
@@ -322,8 +324,10 @@ void ability_use(Event event, char[] name, bool dontBroadcast) {
 
 // Left 4 Dhooks API----------
 
-public Action L4D2_OnChooseVictim(int specialInfected, int &curTarget) {
+public Action L4D2_OnChooseVictim(int specialInfected, int &curTarget) 
+{
 	g_iCurTarget[specialInfected] = curTarget;
+
 	return Plugin_Continue;
 }
 
@@ -377,7 +381,6 @@ int GetCurTarget(int client)
 {
 	return g_iCurTarget[client];
 }
-
 
 /**
  * Returns true if the player is currently on the survivor team. 
@@ -796,11 +799,14 @@ bool vecHitWall(int client, float vPos[3], float vTar[3]) {
 	return hit;
 }
 
-bool WithinViewAngle(int client, float offsetThreshold) {
-	static int target;
-	target = GetClientAimTarget(client);
-	if (!IsAliveSur(target))
-		return true;
+bool WithinViewAngle(int client, float offsetThreshold, int target = 0) {
+	
+	if(target == 0)
+	{
+		target = GetClientAimTarget(client);
+		if (!IsAliveSur(target))
+			return true;
+	}
 	
 	static float vSrc[3];
 	static float vTar[3];

@@ -12,16 +12,16 @@ static bool g_bCvarEnable, g_bCvarTankBhop, g_bCvarTankRock;
 
 void Tank_OnModuleStart() 
 {
-	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Tank_enable",   	"1",   	"0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
-	g_hCvarTankBhop 	= CreateConVar("ai_tank_bhop", 				"1", 	"Flag to enable bhop facsimile on AI tanks", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hCvarTankRock 	= CreateConVar("ai_tank_rock", 				"1", 	"Flag to enable rocks on AI tanks", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarEnable 				= CreateConVar("AI_HardSI_Tank_enable",   				"1",   	"0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
+	g_hCvarTankBhop 			= CreateConVar("ai_tank_bhop", 							"1", 	"Flag to enable bhop facsimile on AI tanks", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCvarTankRock 			= CreateConVar("ai_tank_rock", 							"1", 	"Flag to enable rocks on AI tanks", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);
 	g_hCvarTankBhop.AddChangeHook(CvarChanged);
 	g_hCvarTankRock.AddChangeHook(CvarChanged);
-
 }
 static void _OnModuleStart()
 {
@@ -54,7 +54,6 @@ static void GetCvars()
 {
 	g_bCvarEnable = g_hCvarEnable.BoolValue;
 	g_bCvarTankBhop = g_hCvarTankBhop.BoolValue;
-	g_bCvarTankRock = g_hCvarTankRock.BoolValue;
 }
 
 // Tank bhop and blocking rock throw
@@ -69,6 +68,9 @@ stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, float vel[3] ) {
 	
 	if( g_bCvarTankBhop ) 
 	{
+		if (GetEntityMoveType(tank) == MOVETYPE_LADDER || GetEntProp(tank, Prop_Data, "m_nWaterLevel") > 1 || (!GetEntProp(tank, Prop_Send, "m_hasVisibleThreats") && !TargetSur(tank)))
+			return Plugin_Continue;
+
 		int flags = GetEntityFlags(tank);
 		
 		// Get the player velocity:
@@ -86,12 +88,10 @@ stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, float vel[3] ) {
 		GetClientAbsOrigin(tank, tankPos);
 		int iSurvivorsProximity = GetSurvivorProximity(tankPos);
 		if (iSurvivorsProximity == -1) return Plugin_Continue;
-		
-		bool bHasSight = view_as<bool>(GetEntProp(tank, Prop_Send, "m_hasVisibleThreats")); //Line of sight to survivors
-		
+
 		// Near survivors
-		if( bHasSight && (1500 > iSurvivorsProximity > 100) && currentspeed > 190.0 ) 
-		{ // Random number to make bhop?
+		if( (1500 > iSurvivorsProximity > 105) && currentspeed > 190.0 ) 
+		{ 
 			if (flags & FL_ONGROUND) 
 			{
 				buttons |= IN_DUCK;
@@ -140,6 +140,7 @@ stock Action Tank_OnPlayerRunCmd( int tank, int &buttons, float vel[3] ) {
 			}
 		}
 	}
+
 	return Plugin_Continue;	
 }
 

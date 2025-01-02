@@ -2,7 +2,6 @@
 #pragma newdecls required //強制1.7以後的新語法
 
 #define BOOST			90.0
-#define PLAYER_HEIGHT	72.0
 
 static ConVar g_hVomitRange;
 static float g_fVomitRange;

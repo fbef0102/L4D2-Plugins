@@ -1,11 +1,10 @@
 # Description | 內容
 Improves the AI behaviour of special infected
 
-* Video | 影片展示
-<br/>None
-
-* Image｜ 圖示
-<br/>None
+* Apply to | 適用於
+    ```
+    L4D2
+    ```
 
 * <details><summary>How does it work?</summary>
 
@@ -15,102 +14,6 @@ Improves the AI behaviour of special infected
 	* Execute ```nb_assault``` every 2.0 seconds, read more details about this command below
 </details>
 
-* Require | 必要安裝
-    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-    2. [Actions](https://forums.alliedmods.net/showthread.php?t=336374)
-
-* <details><summary>ConVar | 指令</summary>
-
-    * cfg\sourcemod\AI_HardSI.cfg
-        ```php
-        // 0=Plugin off, 1=Plugin on.
-        AI_HardSI_enable "1"
-
-        // Frequency(sec) at which the 'nb_assault' command is fired to make SI attack
-        ai_assault_reminder_interval "2"
-
-        // File to execute for AI aggressive cvars (in cfg/AI_HardSI folder)
-        // Execute file every map changed
-        AI_HardSI_aggressive_cfg "aggressive_ai.cfg"
-
-        // 0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.
-        AI_HardSI_Boomer_enable "1"
-
-        // 0=Improves the Charger behaviour off, 1=Improves the Charger behaviour on.
-        AI_HardSI_Charger_enable "1"
-
-        // 0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.
-        AI_HardSI_Hunter_enable "1"
-
-        // 0=Improves the Jockey behaviour off, 1=Improves the Jockey behaviour on.
-        AI_HardSI_Jockey_enable "1"
-
-        // 0=Improves the Smoker behaviour off, 1=Improves the Smoker behaviour on.
-        AI_HardSI_Smoker_enable "1"
-
-        // 0=Improves the Spitter behaviour off, 1=Improves the Spitter behaviour on.
-        AI_HardSI_Spitter_enable "1"
-
-        // 0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.
-        AI_HardSI_Tank_enable "1"
-
-        // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
-        ai_aim_offset_sensitivity_charger "22.5"
-
-        // If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
-        ai_aim_offset_sensitivity_hunter "30"
-
-        // Flag to enable bhop facsimile on AI chargers
-        ai_charger_bhop "1"
-
-        // How close a charger will approach before charging
-        ai_charge_proximity "300"
-
-        // At what distance to start pouncing fast
-        ai_fast_pounce_proximity "1000"
-
-        // Charger will charge if its health drops to this level
-        ai_health_threshold_charger "300"
-
-        // How close a jockey will approach before it starts hopping
-        ai_hop_activation_proximity "500"
-
-        // Mean angle produced by Gaussian RNG
-        ai_pounce_angle_mean "10"
-
-        // One standard deviation from mean as produced by Gaussian RNG
-        ai_pounce_angle_std "20"
-
-        // Vertical angle to which AI hunter pounces will be restricted
-        ai_pounce_vertical_angle "7"
-
-        // Flag to enable bhop facsimile on AI spitters
-        ai_spitter_bhop "1"
-
-        // Distance to nearest survivor at which hunter will consider pouncing straight
-        ai_straight_pounce_proximity "200"
-
-        // Flag to enable bhop facsimile on AI tanks
-        ai_tank_bhop "1"
-
-        // Flag to enable rocks on AI tanks
-        ai_tank_rock "1"
-
-        // How far in front of hunter infected bot will check for a wall. Use '-1' to disable feature
-        ai_wall_detection_distance "-1"
-
-        // If 1, Hunter do scratch animation when pouncing
-        ai_pounce_dancing_enable "1"
-
-        // Flag to enable bhop facsimile on AI boomers
-        ai_boomer_bhop "1"
-        ```
-</details>
-
-* <details><summary>Command | 命令</summary>
-
-    None
-</details>
 
 * Improve Infected
     * <details><summary><b>AI Tank</b></summary>
@@ -246,7 +149,7 @@ Improves the AI behaviour of special infected
             ai_charger_bhop "1"
 
             // How close a charger will approach before charging
-            ai_charge_proximity 300
+            ai_charger_proximity 300
 
             // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
             ai_aim_offset_sensitivity_charger 22.5
@@ -264,20 +167,118 @@ Improves the AI behaviour of special infected
     </details>
 
 
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
+
+* Require | 必要安裝
+    1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
+    2. [Actions](https://forums.alliedmods.net/showthread.php?t=336374)
+
+* <details><summary>ConVar | 指令</summary>
+
+    * cfg\sourcemod\AI_HardSI.cfg
+        ```php
+        // 0=Plugin off, 1=Plugin on.
+        AI_HardSI_enable "1"
+
+        // Frequency(sec) at which the 'nb_assault' command is fired to make SI attack
+        ai_assault_reminder_interval "2"
+
+        // File to execute for AI aggressive cvars (in cfg/AI_HardSI folder)
+        // Execute file every map changed
+        AI_HardSI_aggressive_cfg "aggressive_ai.cfg"
+
+        // 0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.
+        AI_HardSI_Boomer_enable "1"
+
+        // 0=Improves the Charger behaviour off, 1=Improves the Charger behaviour on.
+        AI_HardSI_Charger_enable "1"
+
+        // 0=Improves the Hunter behaviour off, 1=Improves the Hunter behaviour on.
+        AI_HardSI_Hunter_enable "1"
+
+        // 0=Improves the Jockey behaviour off, 1=Improves the Jockey behaviour on.
+        AI_HardSI_Jockey_enable "1"
+
+        // 0=Improves the Smoker behaviour off, 1=Improves the Smoker behaviour on.
+        AI_HardSI_Smoker_enable "1"
+
+        // 0=Improves the Spitter behaviour off, 1=Improves the Spitter behaviour on.
+        AI_HardSI_Spitter_enable "1"
+
+        // 0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.
+        AI_HardSI_Tank_enable "1"
+
+        // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
+        ai_aim_offset_sensitivity_charger "22.5"
+
+        // If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
+        ai_aim_offset_sensitivity_hunter "30"
+
+        // Flag to enable bhop facsimile on AI chargers
+        ai_charger_bhop "1"
+
+        // How close a charger will approach before charging
+        ai_charger_proximity "300"
+
+        // At what distance to start pouncing fast
+        ai_fast_pounce_proximity "1000"
+
+        // Charger will charge if its health drops to this level
+        ai_health_threshold_charger "300"
+
+        // How close a jockey will approach before it starts hopping
+        ai_hop_activation_proximity "500"
+
+        // Mean angle produced by Gaussian RNG
+        ai_pounce_angle_mean "10"
+
+        // One standard deviation from mean as produced by Gaussian RNG
+        ai_pounce_angle_std "20"
+
+        // Vertical angle to which AI hunter pounces will be restricted
+        ai_pounce_vertical_angle "7"
+
+        // Flag to enable bhop facsimile on AI spitters
+        ai_spitter_bhop "1"
+
+        // Distance to nearest survivor at which hunter will consider pouncing straight
+        ai_straight_pounce_proximity "200"
+
+        // Flag to enable bhop facsimile on AI tanks
+        ai_tank_bhop "1"
+
+        // Flag to enable rocks on AI tanks
+        ai_tank_rock "1"
+
+        // How far in front of hunter infected bot will check for a wall. Use '-1' to disable feature
+        ai_wall_detection_distance "-1"
+
+        // If 1, Hunter do scratch animation when pouncing
+        ai_pounce_dancing_enable "1"
+
+        // Flag to enable bhop facsimile on AI boomers
+        ai_boomer_bhop "1"
+        ```
+</details>
+
+* <details><summary>Command | 命令</summary>
+
+    None
+</details>
 
 * <details><summary>Related Plugin | 相關插件</summary>
 
     1. [l4dinfectedbots](https://github.com/fbef0102/L4D1_2-Plugins/tree/master/l4dinfectedbots): Spawns multi infected bots in any mode + allows playable special infected in coop/survival + unlock infected slots (10 VS 10 available)
-        > 生成多特感控制插件
-    1. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
-        > 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
+        * 生成多特感控制插件
+    2. [l4d_ssi_teleport_fix](https://github.com/fbef0102/Game-Private_Plugin/tree/main/L4D_插件/Special_Infected_%E7%89%B9%E6%84%9F/l4d_ssi_teleport_fix): Teleport AI Infected player to the teammate who is much nearer to survivors.
+        * 傳送比較遠的AI特感到靠近倖存者的特感隊友附近
+    3. [smart_ai_rock](https://github.com/Target5150/MoYu_Server_Stupid_Plugins/tree/master/The%20Last%20Stand/smart_ai_rock): Fix sticking aim after throws for AI Tanks.
+        * AI Tank不會丟underhand rocks動作且丟完石頭後會立馬轉頭攻擊背後的倖存者
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v2.1 (2025-1-2)
+        * Improve code
 
     * v2.0 (2024-9-9)
         * Add cfg to execute AI aggressive cvars
@@ -355,23 +356,7 @@ Improves the AI behaviour of special infected
         AI_HardSI_Tank_enable "1"
 
         // 以下指令說明請查看下方"各特感強化內容"
-        ai_aim_offset_sensitivity_charger "22.5"
-        ai_aim_offset_sensitivity_hunter "30"
-        ai_charger_bhop "1"
-        ai_charge_proximity "300"
-        ai_fast_pounce_proximity "1000"
-        ai_health_threshold_charger "300"
-        ai_hop_activation_proximity "500"
-        ai_pounce_angle_mean "10"
-        ai_pounce_angle_std "20"
-        ai_pounce_vertical_angle "7"
-        ai_spitter_bhop "1"
-        ai_straight_pounce_proximity "200"
-        ai_tank_bhop "1"
-        ai_tank_rock "1"
-        ai_wall_detection_distance "-1"
-        ai_pounce_dancing_enable "1"
-        ai_boomer_bhop "1"
+        ....
         ```
 </details> 
 
@@ -507,7 +492,7 @@ Improves the AI behaviour of special infected
             ai_charger_bhop "1"
 
             // 強迫AI Charger在300公尺範圍內開始衝刺
-            ai_charge_proximity 300
+            ai_charger_proximity 300
 
             // 目標倖存者的準心如果在瞄自身AI Charger的身體低於20度視野範圍內則強制衝刺
             ai_aim_offset_sensitivity_charger 22.5
