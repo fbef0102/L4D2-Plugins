@@ -50,8 +50,6 @@ L4D2 Competitive enhancement, bug/glitch fixes, general purpose and freaky-fun p
     * 顯示誰在語音並且在說話的玩家頭上帶帽子
 * <b>[l4d2_ty_saveweapons](/l4d2_ty_saveweapons)</b>: L4D2 coop save weapon when map transition if more than 4 players
     * 當伺服器有5+以上玩家遊玩戰役、寫實時，保存他們過關時的血量以及攜帶的武器、物資
-* <b>[l4d2_release_victim](/l4d2_release_victim)</b>: Allow to release victim
-    * 特感可以釋放被抓住的倖存者
 * <b>[l4d2_mission_manager](/l4d2_mission_manager)</b>: Mission manager for L4D2, provide information about map orders for other plugins
     * 地圖管理器，提供給其他插件做依賴與API串接
 * <b>[AI_HardSI](/AI_HardSI)</b>: Improves the AI behaviour of special infected
