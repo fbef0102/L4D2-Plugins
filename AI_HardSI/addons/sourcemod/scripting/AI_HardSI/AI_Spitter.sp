@@ -13,7 +13,7 @@ static bool
 
 void Spitter_OnModuleStart() {
 	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Spitter_enable",   "1",   "0=Improves the Spitter behaviour off, 1=Improves the Spitter behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hSpitterBhop 		= CreateConVar( "ai_spitter_bhop", 			  "1", "Flag to enable bhop facsimile on AI spitters", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSpitterBhop 		= CreateConVar( "ai_spitter_bhop", 			  "1", 	 "If 1, enable bhop facsimile on AI spitters", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);

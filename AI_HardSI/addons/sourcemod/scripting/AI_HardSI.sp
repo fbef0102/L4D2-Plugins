@@ -89,7 +89,7 @@ public Plugin myinfo =
 	name = "AI: Hard SI",
 	author = "Breezy & HarryPotter",
 	description = "Improves the AI behaviour of special infected",
-	version = "2.1-2025/1/2",
+	version = "2.2-2025/1/15",
 	url = "github.com/breezyplease"
 };
 

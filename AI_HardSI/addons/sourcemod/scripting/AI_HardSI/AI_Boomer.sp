@@ -16,7 +16,7 @@ void Boomer_OnModuleStart()
 	g_hVomitRange.AddChangeHook(OnBoomerCvarChange);
 
 	g_hCvarEnable 		= CreateConVar( "AI_HardSI_Boomer_enable",   "1",   "0=Improves the Boomer behaviour off, 1=Improves the Boomer behaviour on.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hBoomerBhop 		= CreateConVar( "ai_boomer_bhop", 			 "1", 	"Flag to enable bhop facsimile on AI boomers", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hBoomerBhop 		= CreateConVar( "ai_boomer_bhop", 			 "1", 	"If 1, enable bhop facsimile on AI boomers", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	GetCvars();
 	g_hCvarEnable.AddChangeHook(ConVarChanged_EnableCvars);

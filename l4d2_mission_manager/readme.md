@@ -5,19 +5,19 @@ Mission manager for L4D2, provide information about map orders for other plugins
 <br/>🟥Dedicated Server Only
 <br/>🟥只能安裝在Dedicated Server
 
-* Video | 影片展示
-<br/>None
+* Apply to | 適用於
+    ```
+    L4D2 Dedicated Server
+    ```
 
-* Image | 圖示
-<br/>None
+* <details><summary>How does it work?</summary>
+
+    * For better description, read [this](https://github.com/rikka0w0/l4d2_mission_manager#function-description)
+    * Install only when other plugin requires this plugin
+</details>
 
 * Require | 必要安裝
 	1. [left4dhooks](https://forums.alliedmods.net/showthread.php?t=321696)
-
-* <details><summary>ConVar | 指令</summary>
-
-	None
-</details>
 
 * <details><summary>Command | 命令</summary>
 
@@ -32,9 +32,6 @@ Mission manager for L4D2, provide information about map orders for other plugins
         ```
 </details>
 
-* Function & API Usage & Notes & FAQ
-    * For better description, read [this](https://github.com/rikka0w0/l4d2_mission_manager#function-description)
-
 * <details><summary>API | 串接</summary>
 
     * [l4d2_mission_manager.inc](scripting\include\l4d2_mission_manager.inc)
@@ -42,11 +39,6 @@ Mission manager for L4D2, provide information about map orders for other plugins
         library name: l4d2_mission_manager
         ```
 </details>
-
-* Apply to | 適用於
-    ```
-    L4D2
-    ```
 
 * <details><summary>Translation Support | 支援翻譯</summary>
 

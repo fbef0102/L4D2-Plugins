@@ -14,7 +14,6 @@ Improves the AI behaviour of special infected
 	* Execute ```nb_assault``` every 2.0 seconds, read more details about this command below
 </details>
 
-
 * Improve Infected
     * <details><summary><b>AI Tank</b></summary>
 
@@ -27,10 +26,11 @@ Improves the AI behaviour of special infected
 
         * Plugin ConVar
             ```php
-            // Flag to enable bhop facsimile on AI tanks
+            // If 1, bhop facsimile on AI tanks
             ai_tank_bhop "1"
 
-            // Flag to enable rocks on AI tanks
+            // 1=AI tanks throw rock
+            // 0=Ai tanl won't throw rocks
             ai_tank_rock "1"
             ```
     </details>
@@ -61,7 +61,7 @@ Improves the AI behaviour of special infected
 
         * Plugin ConVar
             ```php
-            // Flag to enable bhop facsimile on AI boomers
+            // If 1, enable bhop facsimile on AI boomers
             ai_boomer_bhop "1"
             ```
     </details>
@@ -121,7 +121,7 @@ Improves the AI behaviour of special infected
 
         * Plugin ConVar
             ```php
-            // Flag to enable bhop facsimile on AI spitters
+            // If 1, enable bhop facsimile on AI spitters
             ai_spitter_bhop "1"
             ```
     </details>
@@ -145,7 +145,7 @@ Improves the AI behaviour of special infected
 
         * Plugin ConVar
             ```php
-            // Flag to enable bhop facsimile on AI chargers
+            // If 1, enable bhop facsimile on AI chargers
             ai_charger_bhop "1"
 
             // How close a charger will approach before charging
@@ -207,56 +207,7 @@ Improves the AI behaviour of special infected
         // 0=Improves the Tank behaviour off, 1=Improves the Tank behaviour on.
         AI_HardSI_Tank_enable "1"
 
-        // If the charger has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
-        ai_aim_offset_sensitivity_charger "22.5"
-
-        // If the hunter has a target, it will not straight pounce if the target's aim on the horizontal axis is within this radius
-        ai_aim_offset_sensitivity_hunter "30"
-
-        // Flag to enable bhop facsimile on AI chargers
-        ai_charger_bhop "1"
-
-        // How close a charger will approach before charging
-        ai_charger_proximity "300"
-
-        // At what distance to start pouncing fast
-        ai_fast_pounce_proximity "1000"
-
-        // Charger will charge if its health drops to this level
-        ai_health_threshold_charger "300"
-
-        // How close a jockey will approach before it starts hopping
-        ai_hop_activation_proximity "500"
-
-        // Mean angle produced by Gaussian RNG
-        ai_pounce_angle_mean "10"
-
-        // One standard deviation from mean as produced by Gaussian RNG
-        ai_pounce_angle_std "20"
-
-        // Vertical angle to which AI hunter pounces will be restricted
-        ai_pounce_vertical_angle "7"
-
-        // Flag to enable bhop facsimile on AI spitters
-        ai_spitter_bhop "1"
-
-        // Distance to nearest survivor at which hunter will consider pouncing straight
-        ai_straight_pounce_proximity "200"
-
-        // Flag to enable bhop facsimile on AI tanks
-        ai_tank_bhop "1"
-
-        // Flag to enable rocks on AI tanks
-        ai_tank_rock "1"
-
-        // How far in front of hunter infected bot will check for a wall. Use '-1' to disable feature
-        ai_wall_detection_distance "-1"
-
-        // If 1, Hunter do scratch animation when pouncing
-        ai_pounce_dancing_enable "1"
-
-        // Flag to enable bhop facsimile on AI boomers
-        ai_boomer_bhop "1"
+        ... (see "Improve Infected" part)
         ```
 </details>
 
@@ -276,6 +227,9 @@ Improves the AI behaviour of special infected
 </details>
 
 * <details><summary>Changelog | 版本日誌</summary>
+
+    * v2.2 (2025-1-15)
+        * Fixed ai tank rock won't throw rocks
 
     * v2.1 (2025-1-2)
         * Improve code
@@ -319,46 +273,6 @@ Improves the AI behaviour of special infected
     * 每一個特感的攻擊對倖存者造成巨大的壓力
     * 有效解決許多特感長期站著不動也不攻擊的智商與行為
     * 伺服器遊玩難度提升10倍以上
-
-* <details><summary>指令中文介紹 (點我展開)</summary>
-
-    * cfg\sourcemod\AI_HardSI.cfg
-        ```php
-        // 0=關閉插件, 1=啟動插件
-        AI_HardSI_enable "1"
-
-        // 每兩秒執行 nb_assault 命令，強迫所有特感Bots主動往前攻擊倖存者
-        ai_assault_reminder_interval "2"
-
-        // 修改官方指令強化AI智商的文件 (位於 cfg/AI_HardSI 資料夾)
-        // 每次換圖都會執行一次
-        AI_HardSI_aggressive_cfg "aggressive_ai.cfg"
-
-        // 0=不強化AI Boomer, 1=強化AI Boomer
-        AI_HardSI_Boomer_enable "1"
-
-        // 0=不強化AI Charger, 1=強化AI Charger
-        AI_HardSI_Charger_enable "1"
-
-        // 0=不強化AI Hunter, 1=強化AI Hunter
-        AI_HardSI_Hunter_enable "1"
-
-        // 0=不強化AI Jockey, 1=強化AI Jockey
-        AI_HardSI_Jockey_enable "1"
-
-        // 0=不強化AI Smoker, 1=強化AI Smoker
-        AI_HardSI_Smoker_enable "1"
-
-        // 0=不強化AI Spitter, 1=強化AI Spitter
-        AI_HardSI_Spitter_enable "1"
-
-        // 0=不強化AI Tank, 1=強化AI Tank
-        AI_HardSI_Tank_enable "1"
-
-        // 以下指令說明請查看下方"各特感強化內容"
-        ....
-        ```
-</details> 
 
 * 各特感強化內容
     * <details><summary><b>AI Tank</b></summary>
@@ -508,3 +422,43 @@ Improves the AI behaviour of special infected
         * 這是官方的指令
         * 不影響AI Smoker的行為
     </details>
+
+* <details><summary>指令中文介紹 (點我展開)</summary>
+
+    * cfg\sourcemod\AI_HardSI.cfg
+        ```php
+        // 0=關閉插件, 1=啟動插件
+        AI_HardSI_enable "1"
+
+        // 每兩秒執行 nb_assault 命令，強迫所有特感Bots主動往前攻擊倖存者
+        ai_assault_reminder_interval "2"
+
+        // 修改官方指令強化AI智商的文件 (位於 cfg/AI_HardSI 資料夾)
+        // 每次換圖都會執行一次
+        AI_HardSI_aggressive_cfg "aggressive_ai.cfg"
+
+        // 0=不強化AI Boomer, 1=強化AI Boomer
+        AI_HardSI_Boomer_enable "1"
+
+        // 0=不強化AI Charger, 1=強化AI Charger
+        AI_HardSI_Charger_enable "1"
+
+        // 0=不強化AI Hunter, 1=強化AI Hunter
+        AI_HardSI_Hunter_enable "1"
+
+        // 0=不強化AI Jockey, 1=強化AI Jockey
+        AI_HardSI_Jockey_enable "1"
+
+        // 0=不強化AI Smoker, 1=強化AI Smoker
+        AI_HardSI_Smoker_enable "1"
+
+        // 0=不強化AI Spitter, 1=強化AI Spitter
+        AI_HardSI_Spitter_enable "1"
+
+        // 0=不強化AI Tank, 1=強化AI Tank
+        AI_HardSI_Tank_enable "1"
+
+        // 以下指令說明請查看"各特感強化內容"
+        ....
+        ```
+</details> 
