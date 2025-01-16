@@ -10,19 +10,15 @@
 #pragma semicolon 1
 #pragma newdecls required //強制1.7以後的新語法
 #include <sourcemod>
-#include <sdktools>
-#include <sdkhooks>
-#undef REQUIRE_PLUGIN
-#tryinclude <l4d_info_editor>
-#define DEBUG 0
+#include <left4dhooks>
 
-#define WEPID_PISTOL 1
+#define DEBUG 0
 
 public Plugin myinfo =
 {
 	name		= "L4D2 Drop Secondary",
 	author		= "HarryPotter",
-	version		= "2.5",
+	version		= "2.6-2025/1/16",
 	description	= "Survivor players will drop their secondary weapon when they die",
 	url			= "https://steamcommunity.com/profiles/76561198026784913/"
 };
@@ -40,12 +36,16 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success; 
 }
 
-static int iOffs_m_hSecondaryHiddenWeaponPreDead = -1;
-static int iOffs_m_SecondaryWeaponDoublePistolPreDead = -1;
-static int iOffs_m_SecondaryWeaponIDPreDead = -1;
+int iOffs_m_hSecondaryHiddenWeaponPreDead = -1;
+int iOffs_m_SecondaryWeaponDoublePistolPreDead = -1;
+int iOffs_m_SecondaryWeaponIDPreDead = -1;
 
-static char g_sMeleeClass[16][32];
-static int g_iMeleeClassCount;
+char g_sMeleeClass[16][32];
+int g_iMeleeClassCount;
+
+int 
+	g_iSecondary[MAXPLAYERS+1] = {-1},
+	g_iHidden[MAXPLAYERS+1] = {-1};
 
 public void OnPluginStart()
 {
@@ -53,8 +53,11 @@ public void OnPluginStart()
 	iOffs_m_SecondaryWeaponDoublePistolPreDead = FindSendPropInfo("CTerrorPlayer", "m_knockdownTimer") + 112;
 	iOffs_m_hSecondaryHiddenWeaponPreDead = FindSendPropInfo("CTerrorPlayer", "m_knockdownTimer") + 116;
 
-	HookEvent("player_spawn", Event_PlayerSpawn,	EventHookMode_Post);
-	HookEvent("player_death", OnPlayerDeath, 		EventHookMode_Pre);
+	HookEvent("round_start",  				Event_RoundStart, EventHookMode_PostNoCopy);
+	HookEvent("player_spawn", 				Event_PlayerSpawn,	EventHookMode_Post);
+	HookEvent("player_death", 				OnPlayerDeath, 		EventHookMode_Pre);
+
+	HookEvent("player_incapacitated", 		PlayerIncap_Event);
 }
 
 public void OnMapStart()
@@ -62,226 +65,183 @@ public void OnMapStart()
 	CreateTimer(1.0, Timer_GetMeleeTable, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-//playerspawn is triggered even when bot or human takes over each other (even they are already dead state) or a survivor is spawned
-public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
+void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) 
 {
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if(client && IsClientInGame(client) && GetClientTeam(client) == 2 && IsPlayerAlive(client))
+	for(int i = 1; i <= MaxClients; i++)
 	{
-		Clear(client);
+		if(!IsClientInGame(i)) continue;
+
+		Clear(i);
 	}
 }
 
-public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) 
+//playerspawn is triggered even when bot or human takes over each other (even they are already dead state) or a survivor is spawned
+void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) 
+{
+	int userid = event.GetInt("userid");
+	int client = GetClientOfUserId(userid);
+	if(client && IsClientInGame(client) && GetClientTeam(client) == 2)
+	{
+		Clear(client);
+		CreateTimer(0.1, Timer_TraceHiddenWeapon, userid);
+	}
+}
+
+/**
+ * @brief Called when CTerrorPlayer::DropWeapons() is invoked
+ * @remarks Called when a player dies, listing their currently held weapons and objects that are being dropped
+ * @remarks Array index is as follows:
+ * @remarks [0] = L4DWeaponSlot_Primary
+ * @remarks [1] = L4DWeaponSlot_Secondary
+ * @remarks [2] = L4DWeaponSlot_Grenade
+ * @remarks [3] = L4DWeaponSlot_FirstAid
+ * @remarks [4] = L4DWeaponSlot_Pills
+ * @remarks [5] = Held item (e.g. weapon_gascan, weapon_gnome etc)
+ *
+ * @param client		Client index of the player who died
+ * @param weapons		Array of weapons dropped, valid entity index or -1 if empty
+ *
+ * @noreturn
+ **/
+
+// bot取代玩家時 -> 玩家觸發
+// 玩家取代bot時 -> bot觸發
+// 死前觸發
+public void L4D_OnDeathDroppedWeapons(int client, int weapons[6])
+{
+	if(!IsClientInGame(client) || GetClientTeam(client) != 2
+		|| weapons[1] <= MaxClients)
+		return;
+
+	int HiddenWeapon = EntRefToEntIndex(g_iHidden[client]);
+	if(HiddenWeapon == INVALID_ENT_REFERENCE)
+	{
+		HiddenWeapon = GetSecondaryHiddenWeaponPreDead(client);
+	}
+
+	//PrintToChatAll("L4D_OnDeathDroppedWeapons %N - %d - %d", client, weapons[1], HiddenWeapon);
+	if(HiddenWeapon > MaxClients && IsValidEntity(HiddenWeapon))
+	{
+		g_iHidden[client] = EntIndexToEntRef(HiddenWeapon);
+
+		// 玩家拿近戰->閒置->bot先倒地->取代->死亡->該近戰的m_hOwnerEntity為bot, 而非玩家 (會有error)
+		if(GetEntPropEnt(HiddenWeapon, Prop_Data, "m_hOwnerEntity") != client)
+		{
+			//PrintToChatAll("L4D_OnDeathDroppedWeapons wrong m_hOwnerEntity");
+
+			RemovePlayerItem(client, weapons[1]);
+			RemoveEntity(weapons[1]);
+			SetEntPropEnt(HiddenWeapon, Prop_Data, "m_hOwnerEntity", -1);
+			SetEntPropEnt(HiddenWeapon, Prop_Data, "m_hOwner", -1);
+			EquipPlayerWeapon(client, HiddenWeapon); //<--給玩家拿隱藏武器, 重置
+			SetEntPropEnt(client, Prop_Data, "m_hActiveWeapon", HiddenWeapon); //<--強制玩家用該武器，避免丟電鋸時崩潰
+
+			g_iSecondary[client] = -1;
+			return;
+		}
+	}
+
+	g_iSecondary[client] = EntIndexToEntRef(weapons[1]);
+}
+
+void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) 
 {
 	int userid = event.GetInt("userid");
 	int client = GetClientOfUserId(userid);
 	
-	if(client == 0 || !IsClientInGame(client) || GetClientTeam(client) != 2)
-	{
+	if(!client || !IsClientInGame(client) || GetClientTeam(client) != 2)
 		return;
-	}
 
-	int weapon = GetSecondaryHiddenWeaponPreDead(client);
-	//PrintToChatAll("%N - %d, %d, %d - skin: %d", client, GetSecondaryWeaponIDPreDead(client), GetSecondaryWeaponDoublePistolPreDead(client), GetSecondaryHiddenWeaponPreDead(client), GetEntProp(weapon, Prop_Send, "m_nSkin", 4));
-	if(weapon <= MaxClients || !IsValidEntity(weapon))
+	int secondary = EntRefToEntIndex(g_iSecondary[client]);
+	int HiddenWeapon = EntRefToEntIndex(g_iHidden[client]);
+	//PrintToChatAll("OnPlayerDeath %N - secondary: %d, hidden: %d", client, secondary, HiddenWeapon);
+	if(HiddenWeapon == INVALID_ENT_REFERENCE)
 	{
-		if(GetSecondaryWeaponIDPreDead(client) == WEPID_PISTOL)
+		if(secondary != INVALID_ENT_REFERENCE)
 		{
 			float origin[3];
-			float ang[3];
 			GetClientEyePosition(client, origin);
-			GetClientEyeAngles(client, ang);
-			GetAngleVectors(ang, ang, NULL_VECTOR,NULL_VECTOR);
-			NormalizeVector(ang,ang);
-			ScaleVector(ang, 90.0);
-			
-			int entity = CreateEntityByName("weapon_pistol");
-			if(entity == -1) return;
-				
-			TeleportEntity(entity, origin, NULL_VECTOR, ang);
-			DispatchSpawn(entity);
+			SDKHooks_DropWeapon(client, secondary, origin);
 
-			//create weapon_drop event
-			Event hEvent = CreateEvent("weapon_drop");
-			if( hEvent != null )
+			for(int i = 1; i <= MaxClients; i++)
 			{
-				hEvent.SetInt("userid", userid);
-				hEvent.SetInt("propid", entity);
-				hEvent.Fire();
-			}
+				if(!IsClientInGame(i)) continue;
 
-			if(GetSecondaryWeaponDoublePistolPreDead(client) == 1) //dual pistol
-			{
-				entity = CreateEntityByName("weapon_pistol");
-				if(entity == -1) return;
-					
-				TeleportEntity(entity, origin, NULL_VECTOR, ang);
-				DispatchSpawn(entity);
+				if(GetSecondaryHiddenWeaponPreDead(i) != secondary) continue;
 
-				//create weapon_drop event
-				hEvent = CreateEvent("weapon_drop");
-				if( hEvent != null )
-				{
-					hEvent.SetInt("userid", userid);
-					hEvent.SetInt("propid", entity);
-					hEvent.Fire();
-				}
+				SetSecondaryHiddenWeapon(i, -1);
 			}
 		}
-
-		Clear(client);
-		return;
 	}
-
-	char sWeapon[32];
-	GetEntityClassname(weapon, sWeapon, sizeof(sWeapon));
-
-	int new_weapon, clip, skin;
-	skin = GetEntProp(weapon, Prop_Send, "m_nSkin", 4);
-	if (strcmp(sWeapon, "weapon_melee") == 0)
+	else
 	{
-		/*
-		//註解以下code
-		//原因：有時候死亡得到的 m_strMapSetScriptName 為空
-		char sMeleeName[64];
-		if (HasEntProp(weapon, Prop_Data, "m_strMapSetScriptName")) //support custom melee
+		if(GetEntPropEnt(HiddenWeapon, Prop_Data, "m_hOwnerEntity") == client)
 		{
-			GetEntPropString(weapon, Prop_Data, "m_strMapSetScriptName", sMeleeName, sizeof(sMeleeName));
+			float origin[3];
+			GetClientEyePosition(client, origin);
+			SDKHooks_DropWeapon(client, HiddenWeapon, origin);
 
-			// char sTime[32];
-			// FormatTime(sTime, sizeof(sTime), "%H-%M", GetTime()); 
-			// char sMap[64];
-			// GetCurrentMap(sMap, sizeof(sMap));
-			// char sModel[PLATFORM_MAX_PATH];
-			// GetEntPropString(weapon, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
-			// LogMessage("%N drops melee %s (%s) on %s in time: %s", client, sMeleeName, sModel, sMap, sTime);
-
-			TrimString(sMeleeName);
-			if(strlen(sMeleeName) > 0)
+			for(int i = 1; i <= MaxClients; i++)
 			{
-				new_weapon = CreateEntityByName(sWeapon);
-				if(new_weapon == -1) return;
+				if(!IsClientInGame(i)) continue;
 
-				DispatchKeyValue(new_weapon, "solid", "6");
-				DispatchKeyValue(new_weapon, "melee_script_name", sMeleeName);
-			}
-			else
-			{
-				// LogMessage("%N drops empty melee weapon", client);
-				Clear(client);
-				return;
+				if(GetSecondaryHiddenWeaponPreDead(i) != HiddenWeapon) continue;
+
+				SetSecondaryHiddenWeapon(i, -1);
 			}
 		}
-		else
-		{
-			// LogMessage("%N drops unknow melee weapon", client);
-			Clear(client);
-			return;
-		}*/
-		int meleeWeaponId = GetEntProp(weapon, Prop_Send, "m_hMeleeWeaponInfo");
-		if(meleeWeaponId >= 0 && meleeWeaponId < g_iMeleeClassCount)
-		{
-			new_weapon = CreateEntityByName(sWeapon);
-			if(new_weapon == -1) return;
-
-			DispatchKeyValue(new_weapon, "solid", "6");
-			DispatchKeyValue(new_weapon, "melee_script_name", g_sMeleeClass[meleeWeaponId]);
-
-			#if DEBUG
-				char m_ModelName[PLATFORM_MAX_PATH];
-				GetEntPropString(weapon, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
-				LogMessage(">>>>[Melee] Drop Melee Weapon: %s (%s), player: %N", g_sMeleeClass[meleeWeaponId], m_ModelName, client);
-			#endif
-		}
-		else
-		{
-			#if DEBUG
-				char m_ModelName[PLATFORM_MAX_PATH];
-				GetEntPropString(weapon, Prop_Data, "m_ModelName", m_ModelName, sizeof(m_ModelName));
-				LogMessage(">>>>[Melee] Drop Unknown Melee Weapon ID: %d (%s), player: %N", meleeWeaponId, m_ModelName, client);
-			#endif
-
-			Clear(client);
-			return;
-		}
 	}
-	else //chainsaw, magnum
+
+	int hidden = GetSecondaryHiddenWeaponPreDead(client);
+	if(hidden > MaxClients && IsValidEntity(hidden))
 	{
-		clip = GetEntProp(weapon, Prop_Send, "m_iClip1");
-
-		new_weapon = CreateEntityByName(sWeapon);
-		if(new_weapon == -1) return;
+		RemoveEntity(hidden);
 	}
-
-	if(new_weapon > MaxClients && IsValidEntity(new_weapon))
-	{
-		float origin[3];
-		float ang[3];
-		GetClientEyePosition(client,origin);
-		GetClientEyeAngles(client, ang);
-		GetAngleVectors(ang, ang, NULL_VECTOR,NULL_VECTOR);
-		NormalizeVector(ang,ang);
-		ScaleVector(ang, 90.0);
-		
-		DispatchSpawn(new_weapon);
-		TeleportEntity(new_weapon, origin, NULL_VECTOR, ang);
-
-		if (strcmp(sWeapon, "weapon_melee") != 0)
-		{
-			SetEntProp(new_weapon, Prop_Send, "m_iClip1", clip);
-		}
-
-		SetEntProp(new_weapon, Prop_Send, "m_nSkin", skin);
-
-		if (HasEntProp(new_weapon, Prop_Data, "m_nWeaponSkin"))
-			SetEntProp(new_weapon, Prop_Data, "m_nWeaponSkin", skin);
-
-		RemovePlayerItem(client, weapon);
-		RemoveEntity(weapon);
-
-		Event hEvent = CreateEvent("weapon_drop");
-		if( hEvent != null )
-		{
-			hEvent.SetInt("userid", userid);
-			hEvent.SetInt("propid", new_weapon);
-			hEvent.Fire();
-		}
-	}
-	
-	/*
-	//註解以下code
-	//原因：倒地之前閒置=>等待自己的bot倒地=>取代bot=>接著死亡=>出現error
-	//Exception reported: Weapon X is not owned by client X
-	SetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity", client);
-
-	float origin[3];
-	GetClientEyePosition(client, origin);
-	SDKHooks_DropWeapon(client, weapon, origin);
-
-	if(IsFakeClient(client)) //真人玩家使用SDKHooks_DropWeapon 觸發"weapon_drop" event, 而AI bot不會
-	{
-		Event hEvent = CreateEvent("weapon_drop");
-		if( hEvent != null )
-		{
-			hEvent.SetInt("userid", userid);
-			hEvent.SetInt("propid", weapon);
-			hEvent.Fire();
-		}
-	}
-	*/
 
 	Clear(client);
 }
 
-public Action Timer_GetMeleeTable(Handle timer)
+void PlayerIncap_Event(Event event, const char[] name, bool dontBroadcast) 
+{
+	int userid = event.GetInt("userid");
+	int client = GetClientOfUserId(userid);
+	
+	if(!client || !IsClientInGame(client) || GetClientTeam(client) != 2)
+		return;
+
+	g_iSecondary[client] = -1;
+	g_iHidden[client] = -1;
+
+	CreateTimer(0.1, Timer_TraceHiddenWeapon, userid);
+}
+
+Action Timer_TraceHiddenWeapon(Handle Timer, int client)
+{
+	client = GetClientOfUserId(client);
+	if(!client || !IsClientInGame(client) || GetClientTeam(client) != 2 || !IsPlayerAlive(client) || !L4D_IsPlayerIncapacitated(client))
+		return Plugin_Continue;
+
+	int hidden = GetSecondaryHiddenWeaponPreDead(client);
+	if(hidden > MaxClients && IsValidEntity(hidden))
+	{
+		g_iHidden[client] = EntIndexToEntRef(hidden);
+	}
+	else
+	{
+		g_iHidden[client] = -1;
+	}
+
+	return Plugin_Continue;
+}
+
+Action Timer_GetMeleeTable(Handle timer)
 {
 	GetMeleeClasses();
 	return Plugin_Continue;
 }
 
 //credit spirit12 for auto melee detection
-stock void GetMeleeClasses()
+void GetMeleeClasses()
 {
 	int MeleeStringTable = FindStringTable( "MeleeWeapons" );
 	g_iMeleeClassCount = GetStringTableNumStrings( MeleeStringTable );
@@ -299,41 +259,17 @@ stock void GetMeleeClasses()
 	}	
 }
 
-// Credit: github.com/SamuelXXX/l4d2_supercoop_for2/blob/master/left4dead2/addons/sourcemod/scripting/_sc_drop_melee_when_died.sp
-/* comment out reason: too frequently call OnGetMissionInfo (every 20~30 seconds)
-public void OnGetMissionInfo(int pThis)
-{
-	//由info_editor提供的一个回调函数，用来获取当前战役的一些设置信息
-	//在本插件中则是为了获取地图设定的近战列表
-	RequestFrame(onMissionSettingParsed, pThis);
-}
-
-public void onMissionSettingParsed(int pThis)
-{
-	//提取本轮战役的近战字符串列表
-	char temp[256];
-	InfoEditor_GetString(pThis, "meleeweapons", temp, sizeof(temp));
-	g_iMeleeClassCount = ExplodeString(temp,";",g_sMeleeClass,16,16,true);
-
-	#if DEBUG
-		char sMap[64];
-		GetCurrentMap(sMap, sizeof(sMap));
-		LogMessage(">>>>[Melee] Melee Weapon List In %s: %s", sMap, temp);
-		for(int i=0;i<g_iMeleeClassCount;i++)
-		{
-			LogMessage(">>>>[Melee] Melee Weapon %d : %s",i,g_sMeleeClass[i]);
-		}
-	#endif
-}
-*/
 void Clear(int client)
 {
 	SetSecondaryWeaponIDPreDead(client, 1);
 	SetSecondaryWeaponDoublePistolPreDead(client, 0);
 	SetSecondaryHiddenWeapon(client, -1);
+
+	g_iSecondary[client] = -1;
+	g_iHidden[client] = -1;
 }
 
-int GetSecondaryWeaponIDPreDead(int client)
+stock int GetSecondaryWeaponIDPreDead(int client)
 {
 	return GetEntData(client, iOffs_m_SecondaryWeaponIDPreDead);
 }
@@ -343,7 +279,7 @@ void SetSecondaryWeaponIDPreDead(int client, int data)
 	SetEntData(client, iOffs_m_SecondaryWeaponIDPreDead, data);
 }
 
-int GetSecondaryWeaponDoublePistolPreDead(int client)
+stock int GetSecondaryWeaponDoublePistolPreDead(int client)
 {
 	return GetEntData(client, iOffs_m_SecondaryWeaponDoublePistolPreDead);
 }
